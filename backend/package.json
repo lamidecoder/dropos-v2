@@ -5,8 +5,8 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js",
+    "build": "npx prisma generate",
+    "start": "node -r ts-node/register src/server.ts",
     "seed": "npx ts-node prisma/seed.ts",
     "generate": "npx prisma generate",
     "migrate": "npx prisma migrate dev",
