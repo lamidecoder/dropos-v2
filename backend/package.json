@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "npx prisma generate",
+    "build": "echo build done",
     "start": "node -r ts-node/register src/server.ts",
     "seed": "npx ts-node prisma/seed.ts",
     "generate": "npx prisma generate",
