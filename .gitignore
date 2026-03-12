@@ -2,8 +2,5 @@
 .next
 dist
 build
-.env
-.env.local
-.env.production
 *.log
 prisma/migrations
