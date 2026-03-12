@@ -1,0 +1,10 @@
+import { Router } from "express";
+import { authenticate } from "../middleware/auth";
+import { createApiKey, getApiKeys, revokeApiKey, updateApiKey, listPermissions } from "../controllers/apiKey.controller";
+const r = Router();
+r.get("/permissions", authenticate, listPermissions);
+r.post("/:storeId", authenticate, createApiKey);
+r.get("/:storeId", authenticate, getApiKeys);
+r.delete("/:storeId/:keyId", authenticate, revokeApiKey);
+r.patch("/:storeId/:keyId", authenticate, updateApiKey);
+export default r;

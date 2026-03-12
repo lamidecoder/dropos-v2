@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install All",
+      "type": "shell",
+      "command": "cd backend && npm install && npx prisma generate && cd ../frontend && npm install",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "new" }
+    },
+    {
+      "label": "Migrate & Seed DB",
+      "type": "shell",
+      "command": "cd backend && npx prisma migrate dev --name init && npx ts-node prisma/seed.ts",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "new" }
+    },
+    {
+      "label": "Start Backend",
+      "type": "shell",
+      "command": "cd backend && npm run dev",
+      "group": "test",
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "servers" }
+    },
+    {
+      "label": "Start Frontend",
+      "type": "shell",
+      "command": "cd frontend && npm run dev",
+      "group": "test",
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "servers" }
+    },
+    {
+      "label": "🚀 Start Both Servers",
+      "dependsOn": ["Start Backend", "Start Frontend"],
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+import { Router } from "express";
+import { authenticate } from "../middleware/auth";
+import { createWebhook, getWebhooks, deleteWebhook, updateWebhook, testWebhook } from "../controllers/webhook.controller";
+const r = Router();
+r.post("/:storeId", authenticate, createWebhook);
+r.get("/:storeId", authenticate, getWebhooks);
+r.delete("/:storeId/:webhookId", authenticate, deleteWebhook);
+r.patch("/:storeId/:webhookId", authenticate, updateWebhook);
+r.post("/:storeId/:webhookId/test", authenticate, testWebhook);
+export default r;
