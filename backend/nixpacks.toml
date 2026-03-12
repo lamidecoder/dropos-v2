@@ -1,0 +1,11 @@
+﻿[phases.setup]
+nixPkgs = ["openssl"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npx prisma generate", "npx tsc -p tsconfig.json"]
+
+[start]
+cmd = "node dist/server.js"
