@@ -1,11 +1,10 @@
-// next.config.js
+﻿// next.config.js
 const withPWA = require("next-pwa")({
   dest:        "public",
   register:    true,
   skipWaiting: true,
-  disable:     process.env.NODE_ENV === "development",  // no SW in dev
+  disable:     process.env.NODE_ENV === "development",
   runtimeCaching: [
-    // API routes — network-first, fallback to cache
     {
       urlPattern: /^https?.*\/api\/.*/i,
       handler:    "NetworkFirst",
@@ -16,7 +15,6 @@ const withPWA = require("next-pwa")({
         cacheableResponse:   { statuses: [0, 200] },
       },
     },
-    // Static assets — cache first
     {
       urlPattern: /\.(?:js|css|woff2?|png|jpg|jpeg|gif|svg|ico|webp)$/i,
       handler:    "CacheFirst",
@@ -25,7 +23,6 @@ const withPWA = require("next-pwa")({
         expiration: { maxEntries: 256, maxAgeSeconds: 60 * 60 * 24 * 30 },
       },
     },
-    // Pages — stale while revalidate
     {
       urlPattern: /^\/(?!api\/).*/i,
       handler:    "StaleWhileRevalidate",
@@ -38,10 +35,9 @@ const withPWA = require("next-pwa")({
   ],
 });
 
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: true },`n  eslint: { ignoreDuringBuilds: true },`n  typescript: { ignoreBuildErrors: true },
+  typescript: { ignoreBuildErrors: true },
   images: {
     remotePatterns: [
       { protocol: "http",  hostname: "localhost" },
@@ -56,5 +52,3 @@ const nextConfig = {
 };
 
 module.exports = withPWA(nextConfig);
-
-
