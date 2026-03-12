@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://postgres:kdGWohNbUTyxlxrBTzSAoeYxsMbnKpOm@postgres.railway.internal:5432/railway"
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
