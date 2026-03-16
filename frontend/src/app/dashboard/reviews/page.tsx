@@ -262,7 +262,8 @@ export default function ReviewsPage() {
 
   const bulkApproveMut = useMutation({
     mutationFn: () => api.post(`/reviews/${storeId}/approve-all`),
-    onSuccess:  () => { toast.success("All pending reviews approved!"); qc.invalidateQueries({ queryKey: ["reviews-admin"] });
+    onSuccess:  () => { toast.success("All pending reviews approved!"); qc.invalidateQueries({ queryKey: ["reviews-admin"] }); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
   });
 
   // Filter + sort

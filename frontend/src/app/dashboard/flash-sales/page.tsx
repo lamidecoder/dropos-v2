@@ -39,7 +39,8 @@ export default function FlashSalesPage() {
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.delete(`/ops/flash-sales/${storeId}/${id}`),
-    onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["flash-sales"] });
+    onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["flash-sales"] }); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
   });
 
   const sales = data?.data || [];

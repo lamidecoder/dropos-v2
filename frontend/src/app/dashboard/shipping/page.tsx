@@ -72,7 +72,8 @@ export default function ShippingPage() {
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.delete(`/shipping/${storeId}/${id}`),
-    onSuccess:  () => { toast.success("Zone deleted"); qc.invalidateQueries({ queryKey: ["shipping-zones"] });
+    onSuccess:  () => { toast.success("Zone deleted"); qc.invalidateQueries({ queryKey: ["shipping-zones"] }); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
   });
 
   const openCreate = () => { setEditing(null); reset({}); setModal(true); };
