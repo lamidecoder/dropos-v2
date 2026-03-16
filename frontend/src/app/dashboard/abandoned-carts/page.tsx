@@ -92,7 +92,6 @@ export default function AbandonedCartsPage() {
       sub:   "from email campaigns",
       color: "#a78bfa",
       bg:    "rgba(167,139,250,0.08)",
-    },
   ];
 
   return (

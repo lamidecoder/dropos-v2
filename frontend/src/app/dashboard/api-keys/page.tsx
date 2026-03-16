@@ -44,8 +44,8 @@ export default function ApiKeysPage() {
 
   const revokeMut = useMutation({
     mutationFn: (keyId: string) => api.delete(`/api-keys/${storeId}/${keyId}`),
-    onSuccess: () => { toast.success("Key revoked"); qc.invalidateQueries({ queryKey: ["api-keys"] },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")); },
+    onSuccess: () => { toast.success("Key revoked"); qc.invalidateQueries({ queryKey: ["api-keys"] });
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) },
   });
 
   const keys = data?.data || [];

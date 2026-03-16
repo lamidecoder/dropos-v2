@@ -68,8 +68,8 @@ export default function ProductVariantsPage() {
     mutationFn: (d: any) => api.post(`/products/${storeId}/${productId}/variants`, d),
     onSuccess: () => {
       toast.success("Variant added");
-      qc.invalidateQueries({ queryKey: ["variants", productId] },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"));
+      qc.invalidateQueries({ queryKey: ["variants", productId] });
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"))
       setForm(BLANK);
       setCreating(false);
     },
@@ -80,8 +80,8 @@ export default function ProductVariantsPage() {
     mutationFn: ({ id, data }: any) => api.put(`/products/${storeId}/${productId}/variants/${id}`, data),
     onSuccess: () => {
       toast.success("Variant updated");
-      qc.invalidateQueries({ queryKey: ["variants", productId] },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"));
+      qc.invalidateQueries({ queryKey: ["variants", productId] });
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"))
       setEditing(null);
     },
     onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
@@ -91,8 +91,8 @@ export default function ProductVariantsPage() {
     mutationFn: (id: string) => api.delete(`/products/${storeId}/${productId}/variants/${id}`),
     onSuccess: () => {
       toast.success("Variant deleted");
-      qc.invalidateQueries({ queryKey: ["variants", productId] },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"));
+      qc.invalidateQueries({ queryKey: ["variants", productId] });
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"))
     },
   });
 

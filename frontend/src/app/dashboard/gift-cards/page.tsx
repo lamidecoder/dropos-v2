@@ -24,8 +24,8 @@ export default function GiftCardsPage() {
 
   const createMut = useMutation({
     mutationFn: (d: any) => api.post(`/gift-cards/${storeId}`, d),
-    onSuccess: () => { toast.success("Gift card created!"); qc.invalidateQueries({ queryKey: ["gift-cards"] },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")); setModal(false); reset(); },
+    onSuccess: () => { toast.success("Gift card created!"); qc.invalidateQueries({ queryKey: ["gift-cards"] });
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) setModal(false); reset(); },
     onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
   });
 

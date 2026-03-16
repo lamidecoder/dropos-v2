@@ -56,8 +56,8 @@ export default function SupplierAssignmentPage() {
     mutationFn: (d: any) => api.post(`/suppliers/${storeId}/products/${selectedProduct.id}/suppliers`, d),
     onSuccess: () => {
       toast.success("Supplier assigned");
-      qc.invalidateQueries({ queryKey: ["supplier-assignments", selectedProduct?.id] },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"));
+      qc.invalidateQueries({ queryKey: ["supplier-assignments", selectedProduct?.id] });
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"))
       setShowAssignModal(false);
       setAssignForm({ supplierId: "", supplierSku: "", supplierPrice: "", supplierUrl: "", priority: "1", notes: "" });
     },

@@ -33,15 +33,15 @@ export default function FlashSalesPage() {
 
   const createMut = useMutation({
     mutationFn: (d: any) => api.post(`/ops/flash-sales/${storeId}`, d),
-    onSuccess: () => { toast.success("Flash sale created!"); qc.invalidateQueries({ queryKey: ["flash-sales"] },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")); setModal(false); },
+    onSuccess: () => { toast.success("Flash sale created!"); qc.invalidateQueries({ queryKey: ["flash-sales"] });
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) setModal(false); },
     onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.delete(`/ops/flash-sales/${storeId}/${id}`),
-    onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["flash-sales"] },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")); },
+    onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["flash-sales"] });
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) },
   });
 
   const sales = data?.data || [];
