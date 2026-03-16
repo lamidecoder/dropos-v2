@@ -91,8 +91,9 @@ export default function AbandonedCartsPage() {
       value: currency(stats.recoveredRevenue),
       sub:   "from email campaigns",
       color: "#a78bfa",
-      bg:    "rgba(167,139,250,0.08)",
-  ];
+      bg:    
+    },
+
 
   return (
     <DashboardLayout>
