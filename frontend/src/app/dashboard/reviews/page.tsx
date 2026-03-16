@@ -76,8 +76,8 @@ function ReviewCard({ r, storeId }: { r: any; storeId: string }) {
 
   const deleteMut = useMutation({
     mutationFn: () => api.delete(`/reviews/${storeId}/${r.id}`),
-    onSuccess:  () => { toast.success("Review deleted"); qc.invalidateQueries({ queryKey: ["reviews-admin"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) },
+    onSuccess:  () => { toast.success("Review deleted"); qc.invalidateQueries({ queryKey: ["reviews-admin"] }); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"),
   });
 
   const ratingColor = r.rating >= 4 ? "#10B981" : r.rating === 3 ? "#F59E0B" : "#EF4444";
@@ -263,7 +263,7 @@ export default function ReviewsPage() {
   const bulkApproveMut = useMutation({
     mutationFn: () => api.post(`/reviews/${storeId}/approve-all`),
     onSuccess:  () => { toast.success("All pending reviews approved!"); qc.invalidateQueries({ queryKey: ["reviews-admin"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")); },
   });
 
   // Filter + sort

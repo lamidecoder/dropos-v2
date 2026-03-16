@@ -77,8 +77,8 @@ export default function NotificationsPage() {
 
   const saveMut = useMutation({
     mutationFn: (d: any) => api.put(`/notification-settings/${storeId}`, d),
-    onSuccess:  () => { toast.success("Settings saved"); qc.invalidateQueries({ queryKey: ["notif-settings"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) },
+    onSuccess:  () => { toast.success("Settings saved"); qc.invalidateQueries({ queryKey: ["notif-settings"] }); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"),
   });
 
   const [channel, setChannel] = useState<"push"|"email"|"sms">("push");
