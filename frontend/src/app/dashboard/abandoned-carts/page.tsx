@@ -91,9 +91,9 @@ export default function AbandonedCartsPage() {
       value: currency(stats.recoveredRevenue),
       sub:   "from email campaigns",
       color: "#a78bfa",
-      bg:    
+      bg:    "rgba(167,139,250,0.08)",
     },
-
+  ];
 
   return (
     <DashboardLayout>
@@ -110,7 +110,7 @@ export default function AbandonedCartsPage() {
           <button
             onClick={() => triggerRemindersMut.mutate()}
             disabled={triggerRemindersMut.isPending || !storeId}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-black text-black disabled:opacity-50 shadow-lg flex-shrink-0" style={{ boxShadow: "var(--shadow-md)" }"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-black text-black disabled:opacity-50 shadow-lg flex-shrink-0"
             style={{ background: "linear-gradient(135deg,var(--accent),var(--accent-light))" }}>
             {triggerRemindersMut.isPending
               ? <><RefreshCw size={13} className="animate-spin" /> Sending…</>

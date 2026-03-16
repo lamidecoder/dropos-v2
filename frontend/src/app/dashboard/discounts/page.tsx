@@ -276,7 +276,6 @@ export default function DiscountsPage() {
     onSuccess:  () => {
       toast.success("Discount created!");
       qc.invalidateQueries({ queryKey: ["discounts"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"))
       setModal(false); setSelType(null);
     },
     onError: (e: any) => toast.error(e.response?.data?.message || "Failed to create discount"),
@@ -284,8 +283,8 @@ export default function DiscountsPage() {
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.delete(`/discounts/${storeId}/${id}`),
-    onSuccess:  () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["discounts"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) },
+    onSuccess:  () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["discounts"] }); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"),
   });
 
   // Form state

@@ -45,8 +45,8 @@ function AffiliateRow({ a, storeId, baseUrl, onSelect }: {
 
   const deleteMut = useMutation({
     mutationFn: () => api.delete(`/affiliates/${storeId}/${a.id}`),
-    onSuccess: () => { toast.success("Affiliate removed"); qc.invalidateQueries({ queryKey: ["affiliates"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) },
+    onSuccess: () => { toast.success("Affiliate removed"); qc.invalidateQueries({ queryKey: ["affiliates"] }); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"),
   });
 
   const pendingBalance = (a.totalEarned || 0) - (a.totalPaid || 0);
@@ -298,7 +298,7 @@ export default function AffiliatesPage() {
     onSuccess:  () => {
       toast.success("Affiliate added!");
       qc.invalidateQueries({ queryKey: ["affiliates"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"))
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed");
       setModal(false);
       setForm({ name: "", email: "", commissionPct: 10, commissionFlat: "", payoutMethod: "PayPal", notes: "", code: "" });
     },

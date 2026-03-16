@@ -50,8 +50,7 @@ export default function CouponsPage() {
 
   const createMut = useMutation({
     mutationFn: (d: any) => api.post(`/coupons/${storeId}`, d),
-    onSuccess: () => { toast.success("Coupon created!"); qc.invalidateQueries({ queryKey: ["coupons"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) setModal(false); reset(); },
+    onSuccess: () => { toast.success("Coupon created!"); qc.invalidateQueries({ queryKey: ["coupons"] }); setModal(false); reset(); },
     onError:   (e: any) => toast.error(e.response?.data?.message || "Failed to create coupon"),
   });
 
@@ -62,8 +61,8 @@ export default function CouponsPage() {
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.delete(`/coupons/${storeId}/${id}`),
-    onSuccess: () => { toast.success("Coupon deleted"); qc.invalidateQueries({ queryKey: ["coupons"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) },
+    onSuccess: () => { toast.success("Coupon deleted"); qc.invalidateQueries({ queryKey: ["coupons"] }); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"),
   });
 
   const typeVal = watch("type");
