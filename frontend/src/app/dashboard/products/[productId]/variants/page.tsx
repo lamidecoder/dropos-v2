@@ -80,7 +80,6 @@ export default function ProductVariantsPage() {
     onSuccess: () => {
       toast.success("Variant updated");
       qc.invalidateQueries({ queryKey: ["variants", productId] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"));
       setEditing(null);
     },
     onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
@@ -91,7 +90,6 @@ export default function ProductVariantsPage() {
     onSuccess: () => {
       toast.success("Variant deleted");
       qc.invalidateQueries({ queryKey: ["variants", productId] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed"));
     },
   });
 

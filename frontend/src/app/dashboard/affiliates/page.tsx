@@ -298,7 +298,6 @@ export default function AffiliatesPage() {
     onSuccess:  () => {
       toast.success("Affiliate added!");
       qc.invalidateQueries({ queryKey: ["affiliates"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed");
       setModal(false);
       setForm({ name: "", email: "", commissionPct: 10, commissionFlat: "", payoutMethod: "PayPal", notes: "", code: "" });
     },

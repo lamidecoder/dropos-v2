@@ -36,7 +36,6 @@ export default function WebhooksPage() {
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.delete(`/webhooks/${storeId}/${id}`),
     onSuccess: () => { toast.success("Webhook deleted"); qc.invalidateQueries({ queryKey: ["webhooks"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) },
   });
 
   const testMut = useMutation({

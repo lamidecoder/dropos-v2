@@ -68,21 +68,19 @@ export default function SuppliersPage() {
 
   const createMut = useMutation({
     mutationFn: (d: any) => api.post(`/suppliers/${storeId}`, d),
-    onSuccess:  () => { toast.success("Supplier added"); qc.invalidateQueries({ queryKey: ["suppliers"] }); setModal(null); },
-    onError:    (e: any) => toast.error(e.response?.data?.message || "Failed to add supplier"),
+    onSuccess:  () => { toast.success("Supplier added"); qc.invalidateQueries({ queryKey: ["suppliers"] }); },
+    onError:    () => toast.error("Failed to add supplier"),
   });
 
   const updateMut = useMutation({
     mutationFn: (d: any) => api.put(`/suppliers/${storeId}/${editing?.id}`, d),
-    onSuccess:  () => { toast.success("Supplier updated"); qc.invalidateQueries({ queryKey: ["suppliers"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) setModal(null); },
+    onSuccess:  () => { toast.success("Supplier updated"); qc.invalidateQueries({ queryKey: ["suppliers"] }); },
     onError:    () => toast.error("Update failed"),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.delete(`/suppliers/${storeId}/${id}`),
-    onSuccess:  () => { toast.success("Supplier removed"); qc.invalidateQueries({ queryKey: ["suppliers"] });
-    onError: (e: any) => toast.error(e.response?.data?.message || "Operation failed")) },
+    onSuccess:  () => { toast.success("Supplier removed"); qc.invalidateQueries({ queryKey: ["suppliers"] }); },
     onError:    () => toast.error("Delete failed"),
   });
 
