@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { User, Lock, Bell, Sun, Moon, ShieldCheck, ShieldOff, Smartphone } from "lucide-react";
+import { useTheme } from "next-themes";
 
 const profileSchema = z.object({
   name:  z.string().min(2),
@@ -39,6 +40,13 @@ export default function SettingsPage() {
   const [twoFAQR,    setTwoFAQR]      = useState<string | null>(null);
   const [twoFASecret,setTwoFASecret]  = useState<string | null>(null);
   const [twoFACode,  setTwoFACode]    = useState("");
+  const [notifSettings, setNotifSettings] = useState({
+    "New orders": true,
+    "Order status updates": true,
+    "Payment received": true,
+    "Low inventory": false,
+    "Weekly digest": false,
+  });
 
   const card = "[background:var(--bg-secondary)] [border-color:var(--border)]";
   const inp  = "[background:var(--bg-secondary)] [border-color:var(--border)] [color:var(--text-primary)]";
@@ -147,7 +155,7 @@ export default function SettingsPage() {
                     <label className={`block text-xs font-semibold mb-1.5 ${sub}`}>{label}</label>
                     <input {...regPro(name)} type={type}
                       className={`w-full rounded-xl px-3 py-2.5 text-sm border outline-none focus:border-violet-500 transition-all ${inp}`} />
-                    {errPro[name] && <p className="text-xs text-red-400 mt-1">{errPro[name]?.message}</p>}
+                    {errPro[name] && <p className="text-xs text-red-400 mt-1">{(errPro[name] as any)?.message}</p>}
                   </div>
                 ))}
                 <button type="submit" disabled={updateProfile.isPending}
@@ -188,7 +196,7 @@ export default function SettingsPage() {
                     <label className={`block text-xs font-semibold mb-1.5 ${sub}`}>{label}</label>
                     <input {...regPwd(name)} type="password"
                       className={`w-full rounded-xl px-3 py-2.5 text-sm border outline-none focus:border-violet-500 transition-all ${inp}`} />
-                    {errPwd[name] && <p className="text-xs text-red-400 mt-1">{errPwd[name]?.message}</p>}
+                    {errPwd[name] && <p className="text-xs text-red-400 mt-1">{(errPwd[name] as any)?.message}</p>}
                   </div>
                 ))}
                 <button type="submit" disabled={changePwd.isPending}
@@ -220,20 +228,20 @@ export default function SettingsPage() {
             <h3 className={`font-bold mb-4 ${tx}`}>Email Notifications</h3>
             <div className="space-y-4">
               {[
-                { label: "New orders",         sub: "Get notified when you receive a new order", default: true },
-                { label: "Order status updates",sub: "Updates when your orders change status",   default: true },
-                { label: "Payment received",    sub: "Confirmation when payments are processed", default: true },
-                { label: "Low inventory",       sub: "Alert when product stock runs low",        default: false },
-                { label: "Weekly digest",       sub: "Weekly summary of your store performance", default: false },
+                { label: "New orders",          sub: "Get notified when you receive a new order" },
+                { label: "Order status updates", sub: "Updates when your orders change status"   },
+                { label: "Payment received",     sub: "Confirmation when payments are processed" },
+                { label: "Low inventory",        sub: "Alert when product stock runs low"        },
+                { label: "Weekly digest",        sub: "Weekly summary of your store performance" },
               ].map((item, i) => {
-                const [on, setOn] = useState(item.default);
+                const on = notifSettings[item.label as keyof typeof notifSettings];
                 return (
                   <div key={i} className={`flex items-center justify-between p-3 rounded-xl border ${"[border-color:var(--border)]"}`}>
                     <div>
                       <div className={`font-semibold text-sm ${tx}`}>{item.label}</div>
                       <div className={`text-xs ${sub}`}>{item.sub}</div>
                     </div>
-                    <button onClick={() => setOn(o => !o)}
+                    <button onClick={() => setNotifSettings(s => ({ ...s, [item.label]: !on }))}
                       className={`relative w-11 h-6 rounded-full transition-all duration-200 ${on ? "bg-violet-600" : "[background:var(--bg-card)]"}`}>
                       <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${on ? "left-6" : "left-1"}`} />
                     </button>
