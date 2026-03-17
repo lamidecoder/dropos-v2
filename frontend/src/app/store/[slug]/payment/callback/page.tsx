@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense } from "react";
-import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useQuery }    from "@tanstack/react-query";
 import { api }         from "@/lib/api";
