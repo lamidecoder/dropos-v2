@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { adminAPI } from "@/lib/api";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { adminAPI } from "../../../lib/api";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { Save, AlertTriangle, RefreshCcw, DollarSign, Package } from "lucide-react";
 import toast from "react-hot-toast";

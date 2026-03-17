@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 import toast from "react-hot-toast";
 import {
   Plus, Tag, Zap, BarChart2, Repeat2, Clock, Layers, Package,

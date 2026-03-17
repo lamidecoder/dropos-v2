@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { paymentAPI } from "@/lib/api";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { paymentAPI } from "../../../lib/api";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { CreditCard, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 

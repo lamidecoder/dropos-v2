@@ -3,9 +3,9 @@
 import { Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useQuery }    from "@tanstack/react-query";
-import { api }         from "@/lib/api";
-import { useCartStore } from "@/store/cart.store";
-import { useCurrencyStore } from "@/store/currency.store";
+import { api }         from "../../../../../lib/api";
+import { useCartStore } from "../../../../../store/cart.store";
+import { useCurrencyStore } from "../../../../../store/currency.store";
 import Link from "next/link";
 import {
   CheckCircle, XCircle, Loader2, Package, Truck, MapPin,

@@ -1,13 +1,13 @@
 "use client";
-import { useCurrencyStore } from "@/store/currency.store";
+import { useCurrencyStore } from "../../../../../store/currency.store";
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useCartStore } from "@/store/cart.store";
-import CartDrawer from "@/components/store/CartDrawer";
-import ProductReviews from "@/components/store/ProductReviews";
+import { api } from "../../../../../lib/api";
+import { useCartStore } from "../../../../../store/cart.store";
+import CartDrawer from "../../../../../components/store/CartDrawer";
+import ProductReviews from "../../../../../components/store/ProductReviews";
 import Link from "next/link";
 import {
   ShoppingBag, ArrowLeft, Minus, Plus, Package,

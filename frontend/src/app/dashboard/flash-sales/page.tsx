@@ -2,9 +2,9 @@
 // Flash Sales Page
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { Zap, Plus, X, Clock, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 

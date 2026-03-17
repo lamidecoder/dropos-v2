@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { Plus, Copy, Trash2, Tag, X, ToggleLeft, ToggleRight, RefreshCw } from "lucide-react";
 import { useForm } from "react-hook-form";

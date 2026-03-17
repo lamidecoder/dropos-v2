@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { analyticsAPI } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { analyticsAPI } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { DollarSign, ShoppingCart, Users, TrendingUp } from "lucide-react";

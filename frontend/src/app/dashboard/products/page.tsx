@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { productAPI } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import ImageUploader from "@/components/ui/ImageUploader";
+import { productAPI } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
+import ImageUploader from "../../../components/ui/ImageUploader";
 import Link from "next/link";
 import {
   Plus, Search, Edit2, Trash2, Package, X, Layers,

@@ -2,13 +2,13 @@
 
 // src/app/auth/login/page.tsx
 import { Suspense } from "react";
-import { Logo } from "@/components/Logo";
+import { Logo } from "../../../components/Logo";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, Zap, AlertCircle } from "lucide-react";
-import { useLogin } from "@/hooks/useAuth";
+import { useLogin } from "../../../hooks/useAuth";
 import { useSearchParams } from "next/navigation";
 
 const schema = z.object({

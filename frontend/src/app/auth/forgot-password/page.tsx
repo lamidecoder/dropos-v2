@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Logo } from "@/components/Logo";
+import { Logo } from "../../../components/Logo";
 import { useMutation } from "@tanstack/react-query";
-import { authAPI } from "@/lib/api";
+import { authAPI } from "../../../lib/api";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

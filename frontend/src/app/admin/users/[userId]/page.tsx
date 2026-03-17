@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { adminAPI } from "@/lib/api";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { adminAPI } from "../../../../lib/api";
+import DashboardLayout from "../../../../components/layout/DashboardLayout";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

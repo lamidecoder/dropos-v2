@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supportAPI } from "@/lib/api";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { supportAPI } from "../../../lib/api";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { Plus, LifeBuoy, X, ChevronDown, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";

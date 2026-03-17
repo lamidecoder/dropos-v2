@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
-import { useAuthStore } from "@/store/auth.store";
-import { useUpdateProfile } from "@/hooks/useAuth";
+import { useAuthStore } from "../../../store/auth.store";
+import { useUpdateProfile } from "../../../hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
-import { authAPI, api } from "@/lib/api";
+import { authAPI, api } from "../../../lib/api";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

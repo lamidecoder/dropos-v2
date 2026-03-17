@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useCartStore } from "@/store/cart.store";
+import { api } from "../../../../lib/api";
+import { useCartStore } from "../../../../store/cart.store";
 import Link from "next/link";
 import {
   User, Mail, Lock, Phone, Eye, EyeOff, ShoppingBag,

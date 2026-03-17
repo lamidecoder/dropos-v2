@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { storeAPI } from "@/lib/api";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { storeAPI } from "../../../lib/api";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { Plus, Edit2, Trash2, Globe, Package, ShoppingCart, Users, X, ExternalLink } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast from "react-hot-toast";
-import { useAuthStore } from "@/store/auth.store";
+import { useAuthStore } from "../../../store/auth.store";
 
 const schema = z.object({
   name:         z.string().min(2, "Name too short"),

@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { storeAPI } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { TEMPLATES, getAvailableTemplates, type TemplateConfig } from "@/components/store/templates/registry";
+import { storeAPI } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
+import { TEMPLATES, getAvailableTemplates, type TemplateConfig } from "../../../components/store/templates/registry";
 import {
   Save, Eye, Palette, Type, Layout, Globe, Lock,
   CheckCircle, Sparkles, ArrowRight, Layers

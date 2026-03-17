@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { Search, Users, ChevronLeft, ChevronRight, X, ShoppingCart, DollarSign, Eye, Mail, Phone, Calendar } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { adminAPI } from "@/lib/api";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { adminAPI } from "../../../lib/api";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 

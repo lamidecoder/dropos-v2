@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { api } from "../../../lib/api";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { Shield, Search, ChevronLeft, ChevronRight, User, Zap } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 

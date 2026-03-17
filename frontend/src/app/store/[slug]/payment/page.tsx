@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api } from "../../../../lib/api";
 import { Lock, ShieldCheck, ArrowLeft, CreditCard, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 

@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, Zap, CheckCircle } from "lucide-react";
-import { useRegister } from "@/hooks/useAuth";
+import { useRegister } from "../../../hooks/useAuth";
 
 const schema = z.object({
   name:     z.string().min(2, "Name too short"),

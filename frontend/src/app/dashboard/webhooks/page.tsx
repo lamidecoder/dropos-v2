@@ -2,9 +2,9 @@
 // Webhooks Page
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { Webhook, Plus, Trash2, X, Play, CheckCircle, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 

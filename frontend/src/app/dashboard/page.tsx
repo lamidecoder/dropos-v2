@@ -1,13 +1,13 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { analyticsAPI, orderAPI, storeAPI } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { StoreStatCards } from "@/components/dashboard/StatCards";
-import { RevenueChart } from "@/components/dashboard/RevenueChart";
-import { RecentOrdersTable } from "@/components/dashboard/RecentOrdersTable";
-import { PaymentSplit } from "@/components/dashboard/PaymentSplit";
-import { TopProducts } from "@/components/dashboard/TopProducts";
+import { analyticsAPI, orderAPI, storeAPI } from "../../lib/api";
+import { useAuthStore } from "../../store/auth.store";
+import DashboardLayout from "../../components/layout/DashboardLayout";
+import { StoreStatCards } from "../../components/dashboard/StatCards";
+import { RevenueChart } from "../../components/dashboard/RevenueChart";
+import { RecentOrdersTable } from "../../components/dashboard/RecentOrdersTable";
+import { PaymentSplit } from "../../components/dashboard/PaymentSplit";
+import { TopProducts } from "../../components/dashboard/TopProducts";
 import Link from "next/link";
 import { Zap } from "lucide-react";
 

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useCartStore } from "@/store/cart.store";
+import { useCartStore } from "../../store/cart.store";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api } from "../../lib/api";
 import {
   X, Minus, Plus, ShoppingBag, Trash2, ArrowRight,
   Package, Tag, Loader2, CheckCircle, Gift,

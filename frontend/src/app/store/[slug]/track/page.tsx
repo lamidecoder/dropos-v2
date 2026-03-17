@@ -1,10 +1,10 @@
 "use client";
-import { useCurrencyStore } from "@/store/currency.store";
+import { useCurrencyStore } from "../../../../store/currency.store";
 
 import { useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api } from "../../../../lib/api";
 import Link from "next/link";
 import {
   CheckCircle, Package, Truck, MapPin, Clock,

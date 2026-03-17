@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api } from "../../../lib/api";
 import { Package } from "lucide-react";
-import { TemplateRenderer } from "@/components/store/templates/TemplateRenderer";
+import { TemplateRenderer } from "../../../components/store/templates/TemplateRenderer";
 
 export default function StorefrontPage() {
   const { slug } = useParams<{ slug: string }>();

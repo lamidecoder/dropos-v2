@@ -1,11 +1,11 @@
 "use client";
 
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { PushNotificationSettings } from "@/components/ui/PushNotificationSettings";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
+import { PushNotificationSettings } from "../../../components/ui/PushNotificationSettings";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
 import toast from "react-hot-toast";
 import { Bell, Mail, MessageSquare, Zap, ShoppingBag, Package, Star, CreditCard } from "lucide-react";
 

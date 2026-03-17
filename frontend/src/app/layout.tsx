@@ -1,7 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Providers } from "@/components/layout/Providers";
+import { Providers } from "../components/layout/Providers";
 
 export const metadata: Metadata = {
   title:       { default: "DropOS", template: "%s | DropOS" },

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { orderAPI, api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { orderAPI, api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { Search, ShoppingCart, ChevronLeft, ChevronRight, Eye, X, Package, Truck, Download, Zap, CheckSquare, Square, ListChecks } from "lucide-react";
 import toast from "react-hot-toast";

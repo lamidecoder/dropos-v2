@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
 import toast from "react-hot-toast";
 import {
   Mail, CheckCircle, Send, Zap, ShoppingBag, Truck, CreditCard,

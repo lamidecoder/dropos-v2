@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { adminAPI } from "@/lib/api";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { adminAPI } from "../../../lib/api";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { Search, Edit2, Trash2, ChevronLeft, ChevronRight, Flag, Filter, X } from "lucide-react";
 import Link from "next/link";

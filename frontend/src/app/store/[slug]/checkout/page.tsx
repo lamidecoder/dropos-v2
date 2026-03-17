@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useCartStore } from "@/store/cart.store";
-import { useCurrencyStore } from "@/store/currency.store";
+import { api } from "../../../../lib/api";
+import { useCartStore } from "../../../../store/cart.store";
+import { useCurrencyStore } from "../../../../store/currency.store";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

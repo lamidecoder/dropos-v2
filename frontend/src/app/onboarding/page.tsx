@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { storeAPI, productAPI } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
+import { storeAPI, productAPI } from "../../lib/api";
+import { useAuthStore } from "../../store/auth.store";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useForm } from "react-hook-form";

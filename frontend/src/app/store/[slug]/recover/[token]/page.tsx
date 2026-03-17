@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { api } from "@/lib/api";
-import { useCartStore } from "@/store/cart.store";
+import { api } from "../../../../../lib/api";
+import { useCartStore } from "../../../../../store/cart.store";
 import { ShoppingBag, CheckCircle, Loader2, ArrowRight, Package } from "lucide-react";
 
 export default function CartRecoveryPage() {

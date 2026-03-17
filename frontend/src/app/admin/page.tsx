@@ -2,9 +2,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { adminAPI } from "@/lib/api";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { AdminStatCards } from "@/components/dashboard/StatCards";
+import { adminAPI } from "../../lib/api";
+import DashboardLayout from "../../components/layout/DashboardLayout";
+import { AdminStatCards } from "../../components/dashboard/StatCards";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 import { AlertCircle, ChevronRight, Users, TrendingUp } from "lucide-react";
