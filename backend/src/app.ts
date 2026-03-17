@@ -47,7 +47,6 @@ import webhookRoutes              from "./routes/webhook.routes";
 import returnsRoutes              from "./routes/returns.routes";
 import twoFARoutes                from "./routes/twoFA.routes";
 import productSubscriptionRoutes  from "./routes/productSubscription.routes";
-import upsellRoutes from './routes/upsell.routes';
 
 const app = express();
 
@@ -74,8 +73,20 @@ app.use(helmet({
   hsts: { maxAge: 31536000, includeSubDomains: true },
 }));
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:3000",
+  "http://localhost:3000",
+  "https://dropos-frontend1.vercel.app",
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
