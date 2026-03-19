@@ -19,7 +19,7 @@ export default function StorefrontPage() {
 
   const { data: productsData, isLoading: productsLoading } = useQuery({
     queryKey: ["public-products", slug, search, category, sort],
-    queryFn:  () => api.get(`/products/${store?.id}/public`, {
+    queryFn:  () => api.get(`/products/public/${store?.id}`, {
       params: { search, category: category === "All" ? "" : category, sort, limit: 48 },
     }).then(r => r.data),
     enabled: !!store?.id,
