@@ -1,20 +1,11 @@
 // src/services/email.service.ts
-import nodemailer from "nodemailer";
 import { logger } from "../utils/logger";
 
-const DEV_MODE = !process.env.SMTP_USER || process.env.SMTP_USER.trim() === "";
-const FROM     = process.env.EMAIL_FROM || "DropOS <noreply@dropos.io>";
+const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.SMTP_PASS || "";
+const DEV_MODE = !RESEND_API_KEY || RESEND_API_KEY.trim() === "";
+const FROM     = process.env.EMAIL_FROM || "DropOS <onboarding@resend.dev>";
 const BASE     = process.env.FRONTEND_URL || "http://localhost:3000";
 const YEAR     = new Date().getFullYear();
-
-const transporter = DEV_MODE
-  ? null
-  : nodemailer.createTransport({
-      host:   process.env.SMTP_HOST   || "smtp.gmail.com",
-      port:   Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === "true",
-      auth:   { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    });
 
 // ── Base luxury template ───────────────────────────────────────────────────
 const base = (opts: {
@@ -120,12 +111,28 @@ class EmailService {
       logger.info(`[EMAIL DEV] ─────────────────────────────────`);
       logger.info(`[EMAIL DEV] To:      ${options.to}`);
       logger.info(`[EMAIL DEV] Subject: ${options.subject}`);
-      logger.info(`[EMAIL DEV] Set SMTP_USER + SMTP_PASS in backend/.env to send real emails`);
+      logger.info(`[EMAIL DEV] Set RESEND_API_KEY in environment to send real emails`);
       logger.info(`[EMAIL DEV] ─────────────────────────────────`);
       return;
     }
     try {
-      await transporter!.sendMail({ from: FROM, ...options });
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: FROM,
+          to:   [options.to],
+          subject: options.subject,
+          html: options.html,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`Resend API error: ${err}`);
+      }
       logger.info(`✉️  Email sent → ${options.to} | ${options.subject}`);
     } catch (err) {
       logger.error("Email error:", err);
