@@ -71,27 +71,28 @@ function LiveChatWidget({ store }: { store: any }) {
 function DarkNav({ store, slug, brand, textColor = "white" }: any) {
   const cartCount  = useCartStore(s => s.count());
   const toggleCart = useCartStore(s => s.toggleCart);
+  const customerName = typeof window !== "undefined" ? (() => { try { return JSON.parse(localStorage.getItem("customer_data") || "null")?.name; } catch { return null; } })() : null;
   return (
-    <nav className="sticky top-0 z-40 border-b" style={{ background: "rgba(0,0,0,0.9)", backdropFilter: "blur(20px)", borderColor: "rgba(255,255,255,0.07)" }}>
+    <nav className="sticky top-0 z-40 border-b" style={{ background: "rgba(10,10,20,0.95)", backdropFilter: "blur(20px)", borderColor: "rgba(255,255,255,0.07)" }}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-        <Link href={`/store/${slug}`} className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm" style={{ background: `linear-gradient(135deg,${brand},${brand}bb)` }}>
-            {store.name?.charAt(0)}
+        <Link href={`/store/${slug}`} className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm text-white shadow-lg" style={{ background: `linear-gradient(135deg,${brand},${brand}cc)` }}>
+            {store.name?.charAt(0)?.toUpperCase()}
           </div>
-          <span className="font-black text-lg text-[var(--text-primary)] tracking-tight">{store.name}</span>
+          <span className="font-black text-base text-white tracking-tight">{store.name}</span>
         </Link>
         <div className="flex items-center gap-2">
-          <CurrencyPicker
-            supportedCurrencies={store.supportedCurrencies ?? []}
-            brand={brand}
-            variant="dark"
-          />
-          <Link href={`/store/${slug}/account`} className="p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-all" title="My Account">
-            <User size={16} />
+          <CurrencyPicker supportedCurrencies={store.supportedCurrencies ?? []} brand={brand} variant="dark" />
+          <Link href={`/store/${slug}/track`} className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+            <Package size={14} /> Track Order
           </Link>
-          <button onClick={toggleCart} className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-black" style={{ background: brand }}>
-            <ShoppingBag size={15} /> Cart
-            {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-[var(--text-primary)] text-[9px] font-black flex items-center justify-center">{cartCount}</span>}
+          <Link href={`/store/${slug}/account`} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all" style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.1)" }}>
+            <User size={14} /> {customerName ? customerName.split(" ")[0] : "Account"}
+          </Link>
+          <button onClick={toggleCart} className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: `linear-gradient(135deg,${brand},${brand}cc)` }}>
+            <ShoppingBag size={15} />
+            <span className="hidden sm:inline">Cart</span>
+            {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">{cartCount}</span>}
           </button>
         </div>
       </div>
@@ -103,35 +104,33 @@ function DarkNav({ store, slug, brand, textColor = "white" }: any) {
 function LightNav({ store, slug, brand, search, setSearch }: any) {
   const cartCount  = useCartStore(s => s.count());
   const toggleCart = useCartStore(s => s.toggleCart);
+  const customerName = typeof window !== "undefined" ? (() => { try { return JSON.parse(localStorage.getItem("customer_data") || "null")?.name; } catch { return null; } })() : null;
   return (
-    <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100 shadow-sm">
+    <nav className="sticky top-0 z-40 bg-white/98 backdrop-blur-xl border-b border-slate-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-        <Link href={`/store/${slug}`} className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm text-[var(--text-primary)] shadow-md" style={{ background: `linear-gradient(135deg,${brand},${brand}bb)` }}>
-            {store.name?.charAt(0)}
+        <Link href={`/store/${slug}`} className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm text-white shadow-md" style={{ background: `linear-gradient(135deg,${brand},${brand}cc)` }}>
+            {store.name?.charAt(0)?.toUpperCase()}
           </div>
-          <span className="font-black text-slate-900 text-lg tracking-tight">{store.name}</span>
+          <span className="font-black text-slate-900 text-base tracking-tight">{store.name}</span>
         </Link>
-        <div className="hidden md:flex items-center gap-2 bg-slate-100 rounded-xl px-4 py-2.5 w-72">
+        <div className="hidden md:flex items-center gap-2 bg-slate-100 rounded-2xl px-4 py-2.5 flex-1 max-w-xs">
           <Search size={14} className="text-slate-400 flex-shrink-0" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products…" className="bg-transparent outline-none text-sm text-slate-700 placeholder-slate-400 w-full" />
           {search && <button onClick={() => setSearch("")}><X size={12} className="text-slate-400" /></button>}
         </div>
-        <div className="flex items-center gap-3">
-          <Link href={`/store/${slug}/track`} className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900">
-            <Package size={15} /> Track
+        <div className="flex items-center gap-2">
+          <Link href={`/store/${slug}/track`} className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+            <Package size={14} /> Track
           </Link>
-          <Link href={`/store/${slug}/account`} className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900">
-            <User size={15} /> Account
+          <Link href={`/store/${slug}/account`} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-all border border-slate-200">
+            <User size={14} /> {customerName ? customerName.split(" ")[0] : "Account"}
           </Link>
-          <CurrencyPicker
-            supportedCurrencies={store.supportedCurrencies ?? []}
-            brand={brand}
-            variant="light"
-          />
-          <button onClick={toggleCart} className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-[var(--text-primary)] shadow-md" style={{ background: `linear-gradient(135deg,${brand},${brand}bb)` }}>
-            <ShoppingBag size={15} /> Cart
-            {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-[var(--text-primary)] text-[9px] font-black flex items-center justify-center">{cartCount}</span>}
+          <CurrencyPicker supportedCurrencies={store.supportedCurrencies ?? []} brand={brand} variant="light" />
+          <button onClick={toggleCart} className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white shadow-md" style={{ background: `linear-gradient(135deg,${brand},${brand}cc)` }}>
+            <ShoppingBag size={15} />
+            <span className="hidden sm:inline">Cart</span>
+            {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">{cartCount}</span>}
           </button>
         </div>
       </div>
