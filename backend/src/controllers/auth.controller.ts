@@ -55,7 +55,8 @@ export const register = async (req: Request, res: Response) => {
       phone:            body.phone,
       country:          body.country,
       role:             "STORE_OWNER",
-      status:           "PENDING_VERIFICATION",
+      status:           "ACTIVE",
+      emailVerified:    true,
       emailVerifyToken: verifyToken,
     },
   });
@@ -106,7 +107,13 @@ export const verifyEmail = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   const { email, password } = loginSchema.parse(req.body);
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: {
+      subscription: true,
+      stores: { select: { id: true, name: true, slug: true, status: true } },
+    },
+  });
   if (!user) throw new AppError("Invalid email or password", 401);
 
   // Check lock
