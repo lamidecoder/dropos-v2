@@ -1,7 +1,6 @@
 "use client";
 
 // src/components/store/templates/TemplateRenderer.tsx
-"use client";
 import Link from "next/link";
 import { ShoppingBag, Search, Package, Truck, ShieldCheck, RotateCcw, Star, X, ArrowRight, Instagram, Twitter, User } from "lucide-react";
 import { useEffect } from "react";
@@ -16,6 +15,10 @@ interface TemplateProps {
   store:         any;
   products:      any[];
   slug:          string;
+  storeId?:      string;
+  storeSlug?:    string;
+  brand?:        any;
+  fmt?:          (amount: number) => string;
   search:        string;
   setSearch:     (v: string) => void;
   category:      string;
@@ -25,6 +28,9 @@ interface TemplateProps {
   categories:    string[];
   isLoading:     boolean;
 }
+
+// Default formatter
+const defaultFmt = (amount: number) => `$${amount.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 
 // ── Live Chat Widget injector ─────────────────────────────────────────────────
@@ -266,7 +272,7 @@ function ClassicTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -307,7 +313,7 @@ function DarkLuxeTemplate(p: TemplateProps) {
         </div>
       </section>
       <DarkFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -323,8 +329,8 @@ function BoldTemplate(p: TemplateProps) {
       <nav className="sticky top-0 z-40 bg-white border-b-4 border-black">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href={`/store/${slug}`} className="font-black text-2xl tracking-tighter text-black uppercase">{store.name}</Link>
-          <button onClick={useCartStore.getState().toggleCart} className="flex items-center gap-2 px-5 py-2 font-black text-sm uppercase text-[var(--text-primary)]" style={{ background: "black" }}>
-            <ShoppingBag size={15} /> Cart ({useCartStore.getState().count()})
+          <button onClick={() => useCartStore.getState().toggleCart()} className="flex items-center gap-2 px-5 py-2 font-black text-sm uppercase text-[var(--text-primary)]" style={{ background: "black" }}>
+            <ShoppingBag size={15} /> Cart ({0})
           </button>
         </div>
       </nav>
@@ -347,7 +353,7 @@ function BoldTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -356,6 +362,7 @@ function BoldTemplate(p: TemplateProps) {
 //  TEMPLATE 4: EDITORIAL (Pro)
 // ════════════════════════════════════════════════════════════════════════════
 function EditorialTemplate(p: TemplateProps) {
+  const fmt = defaultFmt;
   const _fmt = useCurrencyStore(s => s.format);
   const fmt = (n: number) => _fmt(n, p.store?.currency || "USD");
   const { store, products, slug, category, setCategory, categories } = p;
@@ -370,8 +377,8 @@ function EditorialTemplate(p: TemplateProps) {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
             {categories.slice(0, 4).map(c => <button key={c} onClick={() => setCategory(c)} className={`hover:text-black transition-colors ${category === c ? "text-black font-bold" : ""}`}>{c}</button>)}
           </div>
-          <button onClick={useCartStore.getState().toggleCart} className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
-            <ShoppingBag size={16} /> Bag ({useCartStore.getState().count()})
+          <button onClick={() => useCartStore.getState().toggleCart()} className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+            <ShoppingBag size={16} /> Bag ({0})
           </button>
         </div>
       </nav>
@@ -403,7 +410,7 @@ function EditorialTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -419,8 +426,8 @@ function NeonTemplate(p: TemplateProps) {
       <nav className="sticky top-0 z-40 border-b" style={{ background: "rgba(5,5,8,0.95)", backdropFilter: "blur(20px)", borderColor: `${brand}30` }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <span className="font-black text-xl" style={{ color: brand, textShadow: `0 0 20px ${brand}` }}>{store.name}</span>
-          <button onClick={useCartStore.getState().toggleCart} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border" style={{ color: brand, borderColor: `${brand}50`, background: `${brand}10`, boxShadow: `0 0 12px ${brand}20` }}>
-            <ShoppingBag size={15} /> Cart ({useCartStore.getState().count()})
+          <button onClick={() => useCartStore.getState().toggleCart()} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border" style={{ color: brand, borderColor: `${brand}50`, background: `${brand}10`, boxShadow: `0 0 12px ${brand}20` }}>
+            <ShoppingBag size={15} /> Cart ({0})
           </button>
         </div>
       </nav>
@@ -445,7 +452,7 @@ function NeonTemplate(p: TemplateProps) {
         </div>
       </section>
       <DarkFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -464,8 +471,8 @@ function BoutiqueTemplate(p: TemplateProps) {
           <div className="hidden md:flex gap-8 text-sm font-medium" style={{ color: "#8b6914" }}>
             {categories.slice(0, 4).map(c => <button key={c} onClick={() => setCategory(c)} className="hover:opacity-70 transition-opacity">{c}</button>)}
           </div>
-          <button onClick={useCartStore.getState().toggleCart} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold text-[var(--text-primary)]" style={{ background: brand }}>
-            <ShoppingBag size={14} /> Bag ({useCartStore.getState().count()})
+          <button onClick={() => useCartStore.getState().toggleCart()} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold text-[var(--text-primary)]" style={{ background: brand }}>
+            <ShoppingBag size={14} /> Bag ({0})
           </button>
         </div>
       </nav>
@@ -484,7 +491,7 @@ function BoutiqueTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -503,8 +510,8 @@ function MinimalProTemplate(p: TemplateProps) {
           <div className="hidden md:flex gap-8 text-xs font-medium tracking-widest uppercase text-slate-400">
             {categories.slice(0, 4).map(c => <button key={c} onClick={() => setCategory(c)} className="hover:text-slate-900 transition-colors">{c}</button>)}
           </div>
-          <button onClick={useCartStore.getState().toggleCart} className="text-xs font-medium tracking-widest uppercase text-slate-600 flex items-center gap-2">
-            <ShoppingBag size={14} /> ({useCartStore.getState().count()})
+          <button onClick={() => useCartStore.getState().toggleCart()} className="text-xs font-medium tracking-widest uppercase text-slate-600 flex items-center gap-2">
+            <ShoppingBag size={14} /> ({0})
           </button>
         </div>
       </nav>
@@ -522,7 +529,7 @@ function MinimalProTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -542,8 +549,8 @@ function GlassmorphicTemplate(p: TemplateProps) {
       <nav className="sticky top-0 z-40 border-b" style={{ background: "rgba(255,255,255,0.05)", backdropFilter: "blur(20px)", borderColor: "rgba(255,255,255,0.1)" }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <span className="font-black text-[var(--text-primary)] text-lg">{store.name}</span>
-          <button onClick={useCartStore.getState().toggleCart} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border text-[var(--text-primary)]" style={{ background: "rgba(255,255,255,0.1)", borderColor: "rgba(255,255,255,0.2)", backdropFilter: "blur(8px)" }}>
-            <ShoppingBag size={14} /> Cart ({useCartStore.getState().count()})
+          <button onClick={() => useCartStore.getState().toggleCart()} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border text-[var(--text-primary)]" style={{ background: "rgba(255,255,255,0.1)", borderColor: "rgba(255,255,255,0.2)", backdropFilter: "blur(8px)" }}>
+            <ShoppingBag size={14} /> Cart ({0})
           </button>
         </div>
       </nav>
@@ -563,7 +570,7 @@ function GlassmorphicTemplate(p: TemplateProps) {
         </div>
       </section>
       <DarkFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -579,8 +586,8 @@ function VintageTemplate(p: TemplateProps) {
       <nav className="sticky top-0 z-40 border-b-2" style={{ background: "#fdf6ed", borderColor: "#2d1a0e" }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <span className="font-bold text-2xl tracking-tight" style={{ color: "#2d1a0e" }}>{store.name}</span>
-          <button onClick={useCartStore.getState().toggleCart} className="flex items-center gap-2 px-5 py-2 text-sm font-bold" style={{ background: "#2d1a0e", color: "#fdf6ed", borderRadius: "4px" }}>
-            <ShoppingBag size={14} /> Cart ({useCartStore.getState().count()})
+          <button onClick={() => useCartStore.getState().toggleCart()} className="flex items-center gap-2 px-5 py-2 text-sm font-bold" style={{ background: "#2d1a0e", color: "#fdf6ed", borderRadius: "4px" }}>
+            <ShoppingBag size={14} /> Cart ({0})
           </button>
         </div>
       </nav>
@@ -605,7 +612,7 @@ function VintageTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -621,8 +628,8 @@ function UltraDarkTemplate(p: TemplateProps) {
       <nav className="sticky top-0 z-40 border-b" style={{ background: "#030303", borderColor: "#1a1a1a" }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <span className="font-black text-[var(--text-primary)] text-lg tracking-tighter">{store.name}</span>
-          <button onClick={useCartStore.getState().toggleCart} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[var(--text-primary)] border" style={{ borderColor: "#333" }}>
-            <ShoppingBag size={14} /> {useCartStore.getState().count()}
+          <button onClick={() => useCartStore.getState().toggleCart()} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[var(--text-primary)] border" style={{ borderColor: "#333" }}>
+            <ShoppingBag size={14} /> {0}
           </button>
         </div>
       </nav>
@@ -670,7 +677,7 @@ function GridTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -678,8 +685,8 @@ function GridTemplate(p: TemplateProps) {
 function MagazineTemplate(p: TemplateProps) { return <EditorialTemplate {...p} />; }
 
 function SplitTemplate(p: TemplateProps) {
-  const _fmtS = useCurrencyStore(s => s.format);
-  const fmtS = (n: number) => _fmtS(n, p.store?.currency || "USD");
+  const _defaultFmt = useCurrencyStore(s => s.format);
+  const defaultFmt = (n: number) => _defaultFmt(n, p.store?.currency || "USD");
   const { store, products, slug, category, setCategory, categories } = p;
   const brand = store?.primaryColor || "#1a1a2e";
   const featured = products[0];
@@ -688,8 +695,8 @@ function SplitTemplate(p: TemplateProps) {
       <nav className="sticky top-0 z-40 bg-white border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <span className="font-black text-slate-900 text-lg">{store.name}</span>
-          <button onClick={useCartStore.getState().toggleCart} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-[var(--text-primary)]" style={{ background: brand }}>
-            <ShoppingBag size={14} /> Cart ({useCartStore.getState().count()})
+          <button onClick={() => useCartStore.getState().toggleCart()} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-[var(--text-primary)]" style={{ background: brand }}>
+            <ShoppingBag size={14} /> Cart ({0})
           </button>
         </div>
       </nav>
@@ -698,7 +705,7 @@ function SplitTemplate(p: TemplateProps) {
           <div className="flex flex-col justify-center px-12 py-16" style={{ background: brand }}>
             <div className="text-xs tracking-[0.3em] uppercase mb-4 text-[var(--text-secondary)]">Featured</div>
             <h1 className="text-5xl font-black text-[var(--text-primary)] leading-tight mb-4">{featured.name}</h1>
-            <div className="text-3xl font-black text-[var(--text-primary)] mb-6">{fmt(featured.price ?? 0)}</div>
+            <div className="text-3xl font-black text-[var(--text-primary)] mb-6">{defaultFmt(featured.price ?? 0)}</div>
             <Link href={`/store/${slug}/product/${featured.id}`} className="inline-flex items-center gap-2 px-7 py-3 bg-white font-bold text-sm w-fit" style={{ color: brand }}>
               Shop Now <ArrowRight size={14} />
             </Link>
@@ -714,7 +721,7 @@ function SplitTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }
@@ -729,7 +736,7 @@ function RunwayTemplate(p: TemplateProps) {
     <div className="min-h-screen bg-black text-[var(--text-primary)]">
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-5">
         <span className="font-black text-[var(--text-primary)] text-xl tracking-tight">{store.name}</span>
-        <button onClick={useCartStore.getState().toggleCart} className="text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Bag ({useCartStore.getState().count()})</button>
+        <button onClick={() => useCartStore.getState().toggleCart()} className="text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Bag ({0})</button>
       </nav>
       {hero && hero.images?.[0] && (
         <section className="relative h-screen flex items-end overflow-hidden">
@@ -751,7 +758,7 @@ function RunwayTemplate(p: TemplateProps) {
         </div>
       </section>
       <DarkFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
     </div>
   );
 }

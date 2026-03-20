@@ -1,7 +1,6 @@
 "use client";
 
 // src/components/store/templates/ProductCard.tsx
-"use client";
 import { useState } from "react";
 import Link from "next/link";
 import { Heart, Package, ShoppingBag, Check } from "lucide-react";
