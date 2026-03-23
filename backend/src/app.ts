@@ -35,6 +35,7 @@ import reviewRoutes   from "./routes/review.routes";
 import invoiceRoutes from "./routes/invoice.routes";
 import emailRoutes         from "./routes/email.routes";
 import upsellRoutes        from "./routes/upsell.routes";
+import kaiRoutes           from "./routes/kai.routes";
 import abandonedCartRoutes       from "./routes/abandonedCart.routes";
 import notifSettingsRoutes       from "./routes/notificationSettings.routes";
 import currencyRoutes             from "./routes/currency.routes";
@@ -175,6 +176,7 @@ app.use("/api/ops",                   returnsRoutes);
 app.use("/api/2fa",                   twoFARoutes);
 app.use("/api/product-subscriptions", productSubscriptionRoutes);
 app.use("/api/upsell",                 upsellRoutes);
+app.use("/api/kai",                   kaiRoutes);
 
 // ─── Error Handling ──────────────────────────────────────────────────────────
 app.use(notFound);

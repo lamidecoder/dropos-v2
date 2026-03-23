@@ -22,6 +22,7 @@ import { ThemeToggle } from "../ui/ThemeToggle";
 
 const OWNER_NAV = [
   { group: "Overview", items: [
+    { href: "/dashboard/kai",       icon: Zap,          label: "KAI ✨",  special: true },
     { href: "/dashboard",           icon: Home,         label: "Dashboard"   },
   ]},
   { group: "Store", items: [
