@@ -176,7 +176,7 @@ export default function CustomizePage() {
 
   const [form, setForm] = useState({
     theme:           "classic",
-    primaryColor:    "var(--accent)",
+    primaryColor:    "#7c3aed",
     secondaryColor:  "#7c3aed",
     fontFamily:      "Inter",
     borderRadius:    "rounded",
@@ -193,7 +193,7 @@ export default function CustomizePage() {
     if (store) {
       setForm({
         theme:           store.theme           || "classic",
-        primaryColor:    store.primaryColor    || "var(--accent)",
+        primaryColor:    store.primaryColor    || "#7c3aed",
         secondaryColor:  store.secondaryColor  || "#7c3aed",
         fontFamily:      store.fontFamily      || "Inter",
         borderRadius:    store.borderRadius    || "rounded",
@@ -210,9 +210,11 @@ export default function CustomizePage() {
   const update = (key: string, value: any) => setForm(f => ({ ...f, [key]: value }));
 
   const saveMut = useMutation({
-    mutationFn: () => storeAPI.update(storeId!, form),
+    mutationFn: () => storeAPI.update(storeId!, { ...form, name: store?.name || "My Store" }),
     onSuccess:  () => {
-      toast.success("Changes saved!");
+      toast.success("Changes saved! ✅");
+      qc.invalidateQueries({ queryKey: ["store-detail", storeId] });
+      qc.invalidateQueries({ queryKey: ["stores"] });
       qc.invalidateQueries({ queryKey: ["store-detail"] });
     },
     onError: () => toast.error("Save failed"),
