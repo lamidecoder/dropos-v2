@@ -75,7 +75,7 @@ function LiveChatWidget({ store }: { store: any }) {
 
 // ── Shared nav for dark templates ─────────────────────────────────────────────
 function DarkNav({ store, slug, brand, textColor = "white" }: any) {
-  const cartCount  = useCartStore(s => s.count());
+  const cartCount  = useCartStore(s => s.count);
   const toggleCart = useCartStore(s => s.toggleCart);
   const customerName = typeof window !== "undefined" ? (() => { try { return JSON.parse(localStorage.getItem("customer_data") || "null")?.name; } catch { return null; } })() : null;
   return (
@@ -98,7 +98,7 @@ function DarkNav({ store, slug, brand, textColor = "white" }: any) {
           <button onClick={toggleCart} className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: `linear-gradient(135deg,${brand},${brand}cc)` }}>
             <ShoppingBag size={15} />
             <span className="hidden sm:inline">Cart</span>
-            {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">{cartCount}</span>}
+            {cartCount() > 0 && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">{cartCount()}</span>}
           </button>
         </div>
       </div>
@@ -108,7 +108,7 @@ function DarkNav({ store, slug, brand, textColor = "white" }: any) {
 
 // ── Shared nav for light templates ────────────────────────────────────────────
 function LightNav({ store, slug, brand, search, setSearch }: any) {
-  const cartCount  = useCartStore(s => s.count());
+  const cartCount  = useCartStore(s => s.count);
   const toggleCart = useCartStore(s => s.toggleCart);
   const customerName = typeof window !== "undefined" ? (() => { try { return JSON.parse(localStorage.getItem("customer_data") || "null")?.name; } catch { return null; } })() : null;
   return (
@@ -136,7 +136,7 @@ function LightNav({ store, slug, brand, search, setSearch }: any) {
           <button onClick={toggleCart} className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white shadow-md" style={{ background: `linear-gradient(135deg,${brand},${brand}cc)` }}>
             <ShoppingBag size={15} />
             <span className="hidden sm:inline">Cart</span>
-            {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">{cartCount}</span>}
+            {cartCount() > 0 && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">{cartCount()}</span>}
           </button>
         </div>
       </div>
@@ -272,7 +272,7 @@ function ClassicTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -313,7 +313,7 @@ function DarkLuxeTemplate(p: TemplateProps) {
         </div>
       </section>
       <DarkFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -353,7 +353,7 @@ function BoldTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -362,7 +362,6 @@ function BoldTemplate(p: TemplateProps) {
 //  TEMPLATE 4: EDITORIAL (Pro)
 // ════════════════════════════════════════════════════════════════════════════
 function EditorialTemplate(p: TemplateProps) {
-  const fmt = defaultFmt;
   const _fmt = useCurrencyStore(s => s.format);
   const fmt = (n: number) => _fmt(n, p.store?.currency || "USD");
   const { store, products, slug, category, setCategory, categories } = p;
@@ -410,7 +409,7 @@ function EditorialTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -452,7 +451,7 @@ function NeonTemplate(p: TemplateProps) {
         </div>
       </section>
       <DarkFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -491,7 +490,7 @@ function BoutiqueTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -529,7 +528,7 @@ function MinimalProTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -570,7 +569,7 @@ function GlassmorphicTemplate(p: TemplateProps) {
         </div>
       </section>
       <DarkFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -612,7 +611,7 @@ function VintageTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -650,7 +649,7 @@ function UltraDarkTemplate(p: TemplateProps) {
         </div>
       </section>
       <DarkFooter store={store} slug={slug} brand="white" />
-      <CartDrawer storeSlug={slug} brand="white" />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand="white" fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -677,7 +676,7 @@ function GridTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -721,7 +720,7 @@ function SplitTemplate(p: TemplateProps) {
         </div>
       </section>
       <LightFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
@@ -758,7 +757,7 @@ function RunwayTemplate(p: TemplateProps) {
         </div>
       </section>
       <DarkFooter store={store} slug={slug} brand={brand} />
-      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
