@@ -164,18 +164,16 @@ export default function CheckoutPage() {
         discountAmount: discount + autoDiscountTotal,
         couponCode:     couponApplied?.code,
         shippingMethod: shipping.id,
-        notes:        d.notes,
-        items:        items.map(i => ({
+        notes:          d.notes,
+        items:          items.map(i => ({
           productId: i.productId, variantId: i.variantId,
           quantity:  i.quantity,  price: i.price, name: i.name,
         })),
         subtotal,
-        taxAmount:    tax,
-        shippingCost: effectiveShipCost,
-        total:        effectiveTotal,
-        couponCode:   couponApplied?.code,
+        taxAmount:      tax,
+        shippingCost:   effectiveShipCost,
+        total:          effectiveTotal,
         discountAmount: discount + autoDiscountTotal,
-        shippingMethod: shipping.id,
       });
       const order = orderRes.data.data;
 
