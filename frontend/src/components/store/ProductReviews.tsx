@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "../../lib/api";
+import { api, publicApi } from "../../lib/api";
 import { Star, ThumbsUp, Flag, User } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,7 +52,7 @@ export default function ProductReviews({ productId, storeId, brand }: Props) {
 
   const { data: reviews = [], isLoading } = useQuery({
     queryKey: ["reviews", productId],
-    queryFn:  () => api.get(`/reviews/${storeId}/${productId}`).then((r) => r.data.data),
+    queryFn:  () => publicApi.get(`/reviews/${storeId}/${productId}`).then((r) => r.data.data),
   });
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
@@ -60,7 +60,7 @@ export default function ProductReviews({ productId, storeId, brand }: Props) {
   });
 
   const submitMut = useMutation({
-    mutationFn: (d: any) => api.post(`/reviews/${storeId}/${productId}`, { ...d, rating }),
+    mutationFn: (d: any) => publicApi.post(`/reviews/${storeId}/${productId}`, { ...d, rating }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["reviews", productId] });
       reset();
@@ -70,7 +70,7 @@ export default function ProductReviews({ productId, storeId, brand }: Props) {
   });
 
   const helpfulMut = useMutation({
-    mutationFn: (id: string) => api.post(`/reviews/${storeId}/${productId}/${id}/helpful`),
+    mutationFn: (id: string) => publicApi.post(`/reviews/${storeId}/${productId}/${id}/helpful`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["reviews", productId] }),
   });
 

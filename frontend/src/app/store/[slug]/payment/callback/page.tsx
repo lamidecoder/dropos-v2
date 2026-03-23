@@ -3,7 +3,7 @@
 import { Suspense , useState, useEffect} from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useQuery }    from "@tanstack/react-query";
-import { api }         from "../../../../../lib/api";
+import { api, publicApi }         from "../../../../../lib/api";
 import { useCartStore } from "../../../../../store/cart.store";
 import { useCurrencyStore } from "../../../../../store/currency.store";
 import Link from "next/link";
@@ -102,7 +102,7 @@ function CallbackInner() {
   // ── Fetch store for branding ──────────────────────────────────────────────
   const { data: store } = useQuery({
     queryKey: ["public-store", slug],
-    queryFn:  () => api.get(`/stores/public/${slug}`).then(r => r.data.data),
+    queryFn:  () => publicApi.get(`/stores/public/${slug}`).then(r => r.data.data),
   });
   const brand    = store?.primaryColor || "#7c3aed";
   const currency = store?.currency     || "USD";

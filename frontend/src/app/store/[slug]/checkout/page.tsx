@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "../../../../lib/api";
+import { publicApi } from "../../../../lib/api";
 import { useCartStore } from "../../../../store/cart.store";
 import { useCurrencyStore } from "../../../../store/currency.store";
 import Link from "next/link";
@@ -79,7 +80,7 @@ export default function CheckoutPage() {
 
   const { data: store } = useQuery({
     queryKey: ["public-store", slug],
-    queryFn:  () => api.get(`/stores/public/${slug}`).then(r => r.data.data),
+    queryFn:  () => publicApi.get(`/stores/public/${slug}`).then(r => r.data.data),
   });
 
   const brand    = store?.primaryColor || "#7c3aed";
@@ -112,7 +113,7 @@ export default function CheckoutPage() {
     setCouponLoading(true);
     setCouponError("");
     try {
-      const res = await api.post("/coupons/validate", {
+      const res = await publicApi.post("/coupons/validate", {
         code:       couponCode.trim().toUpperCase(),
         storeId:    store?.id,
         orderTotal: subtotal,
@@ -130,7 +131,7 @@ export default function CheckoutPage() {
   // ── Also check automatic discounts ───────────────────────────────────────
   const { data: autoDiscounts } = useQuery({
     queryKey: ["auto-discounts", store?.id, subtotal],
-    queryFn:  () => api.post("/discounts/evaluate", {
+    queryFn:  () => publicApi.post("/discounts/evaluate", {
       storeId:    store?.id,
       cartItems:  items.map(i => ({ productId: i.productId, qty: i.quantity, price: i.price })),
       subtotal,
@@ -146,7 +147,7 @@ export default function CheckoutPage() {
   // ── Place order ───────────────────────────────────────────────────────────
   const checkoutMut = useMutation({
     mutationFn: async (d: CheckoutForm) => {
-      const orderRes = await api.post("/orders", {
+      const orderRes = await publicApi.post("/orders", {
         storeId:       store.id,
         customerName:  d.name,
         customerEmail: d.email,
@@ -179,7 +180,7 @@ export default function CheckoutPage() {
       const order = orderRes.data.data;
 
       // Init payment
-      const payRes = await api.post("/payments/initialize", {
+      const payRes = await publicApi.post("/payments/initialize", {
         orderId: order.id,
         country: d.country,
       });

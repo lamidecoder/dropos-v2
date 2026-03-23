@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useCartStore } from "../../store/cart.store";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "../../lib/api";
+import { api, publicApi } from "../../lib/api";
 import {
   X, Minus, Plus, ShoppingBag, Trash2, ArrowRight,
   Package, Tag, Loader2, CheckCircle, Gift,
@@ -27,7 +27,7 @@ export default function CartDrawer({ storeSlug, storeId, brand, currency = "USD"
   const [couponError,   setCouponError]   = useState("");
 
   const couponMut = useMutation({
-    mutationFn: () => api.post("/coupons/validate", {
+    mutationFn: () => publicApi.post("/coupons/validate", {
       code:       couponCode.trim().toUpperCase(),
       storeId,
       orderTotal: total(),
