@@ -189,8 +189,12 @@ export const getPublicProducts = async (req: Request, res: Response) => {
 // Public single product
 export const getPublicProduct = async (req: Request, res: Response) => {
   const { storeId, slug } = req.params;
+  // Accept both slug and UUID id
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
   const product = await prisma.product.findFirst({
-    where: { storeId, slug, status: "ACTIVE" },
+    where: isUUID
+      ? { storeId, id: slug, status: "ACTIVE" }
+      : { storeId, slug, status: "ACTIVE" },
     include: { variants: true },
   });
   if (!product) throw new AppError("Product not found", 404);

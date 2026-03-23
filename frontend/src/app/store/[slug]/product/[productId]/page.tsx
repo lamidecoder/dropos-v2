@@ -23,7 +23,7 @@ export default function ProductPage() {
   const [adding, setAdding]   = useState(false);
   const [added, setAdded]     = useState(false);
   const addItem    = useCartStore((s) => s.addItem);
-  const cartCount  = useCartStore((s) => s.count());
+  const cartCount  = useCartStore((s) => s.count);
   const toggleCart = useCartStore((s) => s.toggleCart);
 
   const { data: store } = useQuery({
@@ -33,7 +33,7 @@ export default function ProductPage() {
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["public-product", productId],
-    queryFn:  () => api.get(`/products/${store?.id}/public/${productId}`).then((r) => r.data.data),
+    queryFn:  () => api.get(`/products/public/${store?.id}/${productId}`).then((r) => r.data.data),
     enabled:  !!store?.id,
   });
 
@@ -99,7 +99,7 @@ export default function ProductPage() {
             className="relative flex items-center gap-2 text-[var(--text-primary)] px-4 py-2 rounded-xl text-sm font-bold"
             style={{ background: `linear-gradient(135deg, ${brand}, ${brand}bb)` }}>
             <ShoppingBag size={16} />
-            {cartCount > 0 && (
+            {cartCount() > 0 && (
               <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 text-[var(--text-primary)] text-xs font-black flex items-center justify-center">
                 {cartCount}
               </span>
@@ -317,7 +317,7 @@ export default function ProductPage() {
         </div>
       )}
 
-      <CartDrawer storeSlug={slug} brand={brand} />
+      <CartDrawer storeSlug={slug} storeId={store?.id || ""} brand={brand} fmt={(n) => `${store?.currency || "$"}${n.toLocaleString()}`} />
     </div>
   );
 }
