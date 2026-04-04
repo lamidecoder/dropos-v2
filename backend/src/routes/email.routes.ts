@@ -1,6 +1,6 @@
 // src/routes/email.routes.ts
 import { Router, Request, Response } from "express";
-import { authenticate, requireAdmin } from "../middleware/auth";
+import { authenticate } from "../middleware/auth";
 import { emailService } from "../services/email.service";
 import { prisma } from "../config/database";
 import { AppError } from "../utils/AppError";

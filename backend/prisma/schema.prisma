@@ -219,6 +219,7 @@ model Store {
   @@index([slug])
   @@index([status])
   @@map("stores")
+  integrations    StoreIntegration[]
 }
 
 // ─── Product ─────────────────────────────────────────────────────────────────
@@ -1317,4 +1318,41 @@ model KaiMessage {
 
   @@index([conversationId])
   @@map("kai_messages")
+}
+
+
+model StoreIntegration {
+  id           String    @id @default(cuid())
+  storeId      String
+  store        Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  provider     String
+  email        String?
+  password     String?
+  accessToken  String?   @db.Text
+  refreshToken String?
+  expiresAt    DateTime?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([storeId, provider], name: "storeId_provider")
+  @@index([storeId])
+}
+
+model WaitlistEntry {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  whatsapp     String?
+  spotNumber   Int      @unique
+  referralCode String   @unique
+  referredBy   String?
+  source       String?
+  ipHash       String?
+  confirmed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([email])
+  @@index([referralCode])
+  @@index([spotNumber])
 }

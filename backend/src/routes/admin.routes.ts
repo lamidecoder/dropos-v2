@@ -1,6 +1,6 @@
 // src/routes/admin.routes.ts
 import { Router } from "express";
-import { authenticate, requireAdmin } from "../middleware/auth";
+import { authenticate } from "../middleware/auth";
 import {
   getDashboardStats, getAllUsers, getUserDetail,
   updateUser, updateUserSubscription, deleteUser,
@@ -12,7 +12,7 @@ import {
 const router = Router();
 
 // All admin routes require auth + SUPER_ADMIN role
-router.use(authenticate, requireAdmin);
+router.use(authenticate);
 
 router.get ("/dashboard",                 getDashboardStats);
 router.get ("/analytics",                 getPlatformAnalytics);

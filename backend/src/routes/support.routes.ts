@@ -1,6 +1,6 @@
 // src/routes/support.routes.ts
 import { Router } from "express";
-import { authenticate, requireAdmin } from "../middleware/auth";
+import { authenticate } from "../middleware/auth";
 import { prisma } from "../config/database";
 import { z } from "zod";
 import { paginate } from "../utils/helpers";

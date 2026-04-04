@@ -157,6 +157,7 @@ export const login = async (req: Request, res: Response) => {
     message: "Login successful",
     data: {
       accessToken,
+      refreshToken,
       user: sanitizeUser(user),
     },
   });
