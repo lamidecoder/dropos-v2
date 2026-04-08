@@ -24,42 +24,107 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auto-refresh on 401 - ONLY redirect to login for dashboard pages
+// ── Refresh lock — prevents race condition ────────────────────
+// Only ONE refresh call happens at a time.
+// All other 401s queue up and wait for it.
+let isRefreshing = false;
+let refreshQueue: Array<(token: string) => void> = [];
+
+function processQueue(token: string) {
+  refreshQueue.forEach(resolve => resolve(token));
+  refreshQueue = [];
+}
+
+// ── Response interceptor ──────────────────────────────────────
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Store refresh token when login succeeds
+    if (res.config.url?.includes("/auth/login") && res.data?.data?.refreshToken) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("dropos-refresh-token", res.data.data.refreshToken);
+      }
+      // Also set the access token immediately in store
+      if (res.data?.data?.accessToken) {
+        useAuthStore.getState().setAccessToken(res.data.data.accessToken);
+      }
+    }
+    return res;
+  },
   async (err) => {
     const original = err.config;
-    if (err.response?.status === 401 && !original._retry) {
-      original._retry = true;
-      try {
-        const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
-        const newToken = data.data?.accessToken;
-        if (newToken) {
-          useAuthStore.getState().setAccessToken(newToken);
+
+    if (err.response?.status !== 401 || original._retry) {
+      return Promise.reject(err);
+    }
+
+    // If already refreshing, queue this request
+    if (isRefreshing) {
+      return new Promise((resolve) => {
+        refreshQueue.push((newToken: string) => {
           original.headers.Authorization = `Bearer ${newToken}`;
-          return api(original);
-        }
-      } catch {
-        useAuthStore.getState().logout();
+          resolve(api(original));
+        });
+      });
+    }
+
+    // Mark as retrying so this exact request doesn't loop
+    original._retry = true;
+    isRefreshing = true;
+
+    try {
+      const storedRefreshToken = typeof window !== "undefined"
+        ? localStorage.getItem("dropos-refresh-token")
+        : null;
+
+      const { data } = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/auth/refresh`,
+        { refreshToken: storedRefreshToken },
+        { withCredentials: true }
+      );
+
+      const newToken   = data.data?.accessToken;
+      const newRefresh = data.data?.refreshToken;
+
+      if (!newToken) throw new Error("No token in refresh response");
+
+      // Save new tokens
+      useAuthStore.getState().setAccessToken(newToken);
+      if (newRefresh && typeof window !== "undefined") {
+        localStorage.setItem("dropos-refresh-token", newRefresh);
       }
-      // Only redirect to login if on dashboard pages, NOT store pages
+
+      // Update default header
+      api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+
+      // Release all queued requests
+      processQueue(newToken);
+
+      // Retry original request
+      original.headers.Authorization = `Bearer ${newToken}`;
+      return api(original);
+
+    } catch (refreshError) {
+      // Refresh failed — clear everything and redirect
+      refreshQueue = [];
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("dropos-refresh-token");
+      }
+      useAuthStore.getState().logout();
+
       if (typeof window !== "undefined") {
         const path = window.location.pathname;
-        const isStorePage = path.startsWith("/store/");
-        if (!isStorePage) {
+        if (!path.startsWith("/store/") && !path.startsWith("/auth/")) {
           window.location.href = "/auth/login";
         }
       }
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
     }
-    return Promise.reject(err);
   }
 );
 
-// ── Namespaced API helpers ────────────────────────────────────────────────────
+// ── Namespaced API helpers ────────────────────────────────────
 export const authAPI = {
   login:           (d: any) => api.post("/auth/login", d),
   register:        (d: any) => api.post("/auth/register", d),
@@ -116,4 +181,23 @@ export const uploadAPI = {
     if (folder) fd.append("folder", folder);
     return api.post("/upload/images", fd, { headers: { "Content-Type": "multipart/form-data" } });
   },
+};
+
+export const analyticsAPI = {
+  getSummary:  (storeId: string, period?: string) => api.get(`/analytics/${storeId}`, { params: { period } }),
+  getRevenue:  (storeId: string, period?: string) => api.get(`/analytics/${storeId}/revenue`, { params: { period } }),
+  getOrders:   (storeId: string, period?: string) => api.get(`/analytics/${storeId}/orders`, { params: { period } }),
+  getProducts: (storeId: string) => api.get(`/analytics/${storeId}/products`),
+  getCustomers:(storeId: string) => api.get(`/analytics/${storeId}/customers`),
+};
+
+export const adminAPI = {
+  getStats:    () => api.get("/admin/stats"),
+  getUsers:    (p?: any) => api.get("/admin/users", { params: p }),
+  getUser:     (id: string) => api.get(`/admin/users/${id}`),
+  updateUser:  (id: string, d: any) => api.patch(`/admin/users/${id}`, d),
+  deleteUser:  (id: string) => api.delete(`/admin/users/${id}`),
+  getStores:   (p?: any) => api.get("/admin/stores", { params: p }),
+  getOrders:   (p?: any) => api.get("/admin/orders", { params: p }),
+  getRevenue:  () => api.get("/admin/revenue"),
 };

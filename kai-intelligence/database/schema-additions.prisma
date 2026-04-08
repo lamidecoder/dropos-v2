@@ -1,0 +1,25 @@
+// Add these models to backend/prisma/schema.prisma
+
+model ProfitProtectionRule {
+  id           String   @id @default(cuid())
+  storeId      String
+  store        Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name         String
+  trigger      String   // price_rise | price_drop | out_of_stock | margin_below | margin_above
+  threshold    Float
+  action       String   // alert | auto_reprice | hide_product | auto_reorder
+  actionValue  Float?
+  isActive     Boolean  @default(true)
+  triggeredAt  DateTime?
+  createdAt    DateTime @default(now())
+  @@index([storeId])
+}
+
+// Also add to Order model:
+// fulfillmentStatus String @default("UNFULFILLED")
+// trackingNumber    String?
+// carrier           String?
+// shippedAt         DateTime?
+
+// Add to Store model:
+// profitRules ProfitProtectionRule[]

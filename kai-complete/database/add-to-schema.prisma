@@ -1,0 +1,190 @@
+// ============================================================
+// KAI — Add ALL of these to backend/prisma/schema.prisma
+// Then run: npx prisma migrate dev --name add_kai_complete
+// ============================================================
+//
+// Also add to Store model:
+//   kaiConversations  KaiConversation[]
+//   kaiMemories       KaiMemory[]
+//   kaiGoals          KaiGoal[]
+//   kaiSkills         KaiSkill[]
+//   kaiPulseAlerts    KaiPulseAlert[]
+//   kaiBrandVoice     KaiBrandVoice?
+//   kaiMorningBriefs  KaiMorningBrief[]
+// ============================================================
+
+model KaiConversation {
+  id        String       @id @default(cuid())
+  storeId   String
+  store     Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  title     String       @default("New Conversation")
+  pinned    Boolean      @default(false)
+  archived  Boolean      @default(false)
+  messages  KaiMessage[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([storeId])
+}
+
+model KaiMessage {
+  id             String          @id @default(cuid())
+  conversationId String
+  conversation   KaiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String          @db.Text
+  metadata       Json?
+  createdAt      DateTime        @default(now())
+
+  @@index([conversationId])
+}
+
+model KaiActionLog {
+  id             String   @id @default(cuid())
+  storeId        String
+  conversationId String
+  actionType     String
+  payload        Json
+  approved       Boolean  @default(false)
+  executed       Boolean  @default(false)
+  result         Json?
+  createdAt      DateTime @default(now())
+
+  @@index([storeId])
+}
+
+// Persistent memory — KAI remembers across ALL sessions forever
+model KaiMemory {
+  id         String   @id @default(cuid())
+  storeId    String
+  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  category   String   // business_fact, owner_preference, seasonal_pattern, etc.
+  key        String   // unique identifier for this memory
+  value      String   @db.Text
+  confidence Float    @default(1.0)
+  learnedAt  DateTime @default(now())
+  lastUsed   DateTime @default(now())
+  sourceConversationId String?
+
+  @@unique([storeId, key])
+  @@index([storeId])
+  @@index([storeId, category])
+}
+
+// Business goals — KAI tracks and pushes toward these
+model KaiGoal {
+  id           String         @id @default(cuid())
+  storeId      String
+  store        Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  targetValue  Float
+  currentValue Float          @default(0)
+  unit         String         // "NGN", "orders", "customers"
+  deadline     DateTime
+  status       String         @default("active")
+  milestones   KaiMilestone[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([storeId])
+}
+
+model KaiMilestone {
+  id          String   @id @default(cuid())
+  goalId      String
+  goal        KaiGoal  @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  title       String
+  targetValue Float
+  achieved    Boolean  @default(false)
+  achievedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([goalId])
+}
+
+// Saved prompts — one-tap execute
+model KaiSkill {
+  id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  prompt      String   @db.Text
+  variables   Json     @default("[]")
+  icon        String?
+  usageCount  Int      @default(0)
+  isGlobal    Boolean  @default(false) // DropOS default skills
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([storeId])
+}
+
+// Proactive alerts from KAI Pulse
+model KaiPulseAlert {
+  id              String   @id @default(cuid())
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  type            String
+  title           String
+  message         String   @db.Text
+  severity        String   @default("info")
+  read            Boolean  @default(false)
+  actionable      Boolean  @default(false)
+  suggestedPrompt String?
+  data            Json?
+  createdAt       DateTime @default(now())
+
+  @@index([storeId])
+  @@index([storeId, read])
+}
+
+// Brand voice profile — KAI learns how the owner writes
+model KaiBrandVoice {
+  id             String   @id @default(cuid())
+  storeId        String   @unique
+  store          Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  tone           String   @default("casual")
+  usesEmojis     Boolean  @default(true)
+  language       String   @default("english")
+  sentenceLength String   @default("medium")
+  keywords       Json     @default("[]")
+  avoidWords     Json     @default("[]")
+  sampleContent  String?  @db.Text
+  analyzedAt     DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// Daily morning briefs
+model KaiMorningBrief {
+  id                String   @id @default(cuid())
+  storeId           String
+  store             Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  date              String   // YYYY-MM-DD
+  revenueLastNight  Float    @default(0)
+  ordersLastNight   Int      @default(0)
+  topOpportunity    String
+  urgentAction      String?
+  trendAlert        String?
+  goalProgress      Json?
+  generatedAt       DateTime @default(now())
+
+  @@unique([storeId, date])
+  @@index([storeId])
+}
+
+// Market intelligence cache — shared across all stores
+model KaiMarketCache {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  category  String
+  data      Json
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
+  @@index([expiresAt])
+}

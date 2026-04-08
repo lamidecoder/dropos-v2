@@ -1,0 +1,19 @@
+// Add this model to your schema.prisma
+
+model WaitlistEntry {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  whatsapp     String?
+  spotNumber   Int      @unique
+  referralCode String   @unique
+  referredBy   String?  // referral code of who referred them
+  source       String?  // utm_source or "direct"
+  ipHash       String?  // hashed IP for rate limiting
+  confirmed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([email])
+  @@index([referralCode])
+  @@index([spotNumber])
+}
