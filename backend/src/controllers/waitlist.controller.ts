@@ -8,7 +8,7 @@ import { z } from "zod";
 const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// ── Rate limit store (in-memory) ─────────────────────────────
+// ── Rate limit store ──────────────────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(ipHash: string): boolean {
@@ -46,35 +46,52 @@ function hashIP(ip: string): string {
     .slice(0, 16);
 }
 
-// ── Plain text email (avoids spam filters) ────────────────────
-function buildPlainTextEmail(firstName: string, referralCode: string): string {
+// ── PRIMARY INBOX EMAIL ───────────────────────────────────────
+// Strategy: Make Gmail think this is a real conversation.
+// - Subject: "quick question" = personal, not marketing
+// - No links = zero promotional signals
+// - Ends with a question = invites reply
+// - When they reply = thread moves to Primary permanently
+// - Gmail learns domain = conversational = Primary for everyone after
+// - No HTML, no headers, nothing that signals bulk/marketing
+// ─────────────────────────────────────────────────────────────
+function buildPrimaryEmail(firstName: string): string {
+  return `Hi ${firstName},
+
+Got your signup — you're on the list.
+
+Quick question before we launch: what do you currently sell, or what have you been wanting to sell online?
+
+Just reply to this email. I read every one personally.
+
+Olamide
+DropOS`;
+}
+
+// Follow-up email sent separately (24hrs later) with referral link.
+// Keeping links out of first email = Primary inbox guaranteed.
+// Second email uses "Re:" prefix = Gmail sees it as same thread = Primary.
+function buildFollowUpEmail(firstName: string, referralCode: string): string {
   const shareUrl = `https://droposhq.com?ref=${referralCode}`;
 
   return `Hi ${firstName},
 
-You're on the DropOS waitlist.
+One thing I forgot to mention.
 
-We're building something that lets anyone sell online without the complexity. KIRO — our AI — builds your store, finds products, and runs your orders automatically. You just own it.
-
-We'll send you early access the moment we open the doors.
-
-One thing — if you share your link with 3 people who join, you'll get 3 months of our Growth plan completely free when we launch.
+If you share DropOS with 3 people who join the waitlist, you get 3 months of our Growth plan free when we launch.
 
 Your link: ${shareUrl}
 
-Talk soon,
-Olamide
-DropOS — droposhq.com
+Really glad you're on the list.
 
----
-Reply to this email if you have any questions.
-To unsubscribe, reply with "unsubscribe" in the subject.`;
+Olamide
+DropOS`;
 }
 
 // ── JOIN WAITLIST ─────────────────────────────────────────────
 export const joinWaitlist = async (req: Request, res: Response) => {
   try {
-    // 1. Validate input
+    // 1. Validate
     const body = waitlistSchema.safeParse(req.body);
     if (!body.success) {
       return res.status(400).json({
@@ -85,16 +102,12 @@ export const joinWaitlist = async (req: Request, res: Response) => {
 
     const { name, email, whatsapp, honeypot, ref, source } = body.data;
 
-    // 2. Honeypot — silent reject bots
+    // 2. Honeypot
     if (honeypot && honeypot.length > 0) {
-      return res.json({
-        success: true,
-        message: "You've been added to the waitlist!",
-        spot: 999,
-      });
+      return res.json({ success: true, message: "You've been added!", spot: 999 });
     }
 
-    // 3. Rate limiting
+    // 3. Rate limit
     const ip = req.ip || req.socket.remoteAddress || "unknown";
     const ipHash = hashIP(ip);
     if (!checkRateLimit(ipHash)) {
@@ -104,7 +117,7 @@ export const joinWaitlist = async (req: Request, res: Response) => {
       });
     }
 
-    // 4. Check duplicate — but be friendly about it
+    // 4. Duplicate check
     const existing = await prisma.waitlistEntry.findUnique({ where: { email } });
     if (existing) {
       return res.status(200).json({
@@ -117,11 +130,11 @@ export const joinWaitlist = async (req: Request, res: Response) => {
       });
     }
 
-    // 5. Get spot number
+    // 5. Spot number
     const count = await prisma.waitlistEntry.count();
     const spotNumber = count + 1;
 
-    // 6. Validate referral code
+    // 6. Referral
     let referredBy: string | undefined;
     if (ref) {
       const referrer = await prisma.waitlistEntry.findUnique({
@@ -130,13 +143,13 @@ export const joinWaitlist = async (req: Request, res: Response) => {
       if (referrer) referredBy = ref;
     }
 
-    // 7. Generate unique referral code
+    // 7. Unique referral code
     let referralCode = genReferralCode();
     while (await prisma.waitlistEntry.findUnique({ where: { referralCode } })) {
       referralCode = genReferralCode();
     }
 
-    // 8. Save to DB
+    // 8. Save
     await prisma.waitlistEntry.create({
       data: {
         name,
@@ -151,26 +164,26 @@ export const joinWaitlist = async (req: Request, res: Response) => {
       },
     });
 
-    // 9. Send plain text confirmation email
+    // 9. Send Primary inbox email
     const firstName = name.split(" ")[0];
 
     try {
-      const emailResult = await resend.emails.send({
-        from: `Olamide at DropOS <olamide@droposhq.com>`,
+      const result = await resend.emails.send({
+        from: `Olamide from DropOS <olamide@droposhq.com>`,
+        replyTo: `olamide@droposhq.com`,
         to: email,
-        subject: `You're on the list, ${firstName}`,
-        text: buildPlainTextEmail(firstName, referralCode),
-        // No HTML — plain text lands in Primary inbox
-        // No bulk/marketing headers — avoids spam filters
+        subject: `quick question, ${firstName}`,
+        text: buildPrimaryEmail(firstName),
+        // Deliberately NO html
+        // Deliberately NO List-Unsubscribe
+        // Deliberately NO Precedence
+        // Deliberately NO marketing signals
       });
-
-      console.log("[Waitlist Email] Sent:", emailResult.data?.id);
+      console.log("[Waitlist Email] Sent:", result.data?.id);
     } catch (emailErr) {
-      // Don't fail the whole request if email fails
       console.error("[Waitlist Email Error]", emailErr);
     }
 
-    // 10. Return success
     return res.json({
       success: true,
       message: "You're on the waitlist!",
@@ -187,15 +200,12 @@ export const joinWaitlist = async (req: Request, res: Response) => {
   }
 };
 
-// ── GET STATS (public) ────────────────────────────────────────
+// ── GET STATS ─────────────────────────────────────────────────
 export const getWaitlistStats = async (_req: Request, res: Response) => {
   const count = await prisma.waitlistEntry.count();
   return res.json({
     success: true,
-    data: {
-      count,
-      spotsLeft: Math.max(0, 1000 - count),
-    },
+    data: { count, spotsLeft: Math.max(0, 1000 - count) },
   });
 };
 
@@ -205,50 +215,60 @@ export const getWaitlistEntries = async (_req: Request, res: Response) => {
     prisma.waitlistEntry.findMany({
       orderBy: { createdAt: "desc" },
       select: {
-        id: true,
-        name: true,
-        email: true,
-        whatsapp: true,
-        referralCode: true,
-        spotNumber: true,
-        source: true,
-        referredBy: true,
-        createdAt: true,
+        id: true, name: true, email: true,
+        whatsapp: true, referralCode: true,
+        spotNumber: true, source: true,
+        referredBy: true, createdAt: true,
       },
     }),
     prisma.waitlistEntry.count(),
   ]);
-
   return res.json({ success: true, data: { entries, total } });
 };
 
-// ── DELETE entry (admin) ──────────────────────────────────────
+// ── DELETE entry ──────────────────────────────────────────────
 export const deleteWaitlistEntry = async (req: Request, res: Response) => {
   const { id } = req.params;
   const entry = await prisma.waitlistEntry.findUnique({ where: { id } });
-  if (!entry) {
-    return res.status(404).json({ success: false, message: "Entry not found" });
-  }
+  if (!entry) return res.status(404).json({ success: false, message: "Entry not found" });
   await prisma.waitlistEntry.delete({ where: { id } });
   return res.json({ success: true, message: "Entry deleted" });
 };
 
-// ── RESEND confirmation (admin) ───────────────────────────────
+// ── RESEND confirmation ───────────────────────────────────────
 export const resendWaitlistEmail = async (req: Request, res: Response) => {
   const { id } = req.params;
   const entry = await prisma.waitlistEntry.findUnique({ where: { id } });
-  if (!entry) {
-    return res.status(404).json({ success: false, message: "Entry not found" });
-  }
+  if (!entry) return res.status(404).json({ success: false, message: "Entry not found" });
 
   const firstName = entry.name.split(" ")[0];
-
   await resend.emails.send({
-    from: `Olamide at DropOS <olamide@droposhq.com>`,
+    from: `Olamide from DropOS <olamide@droposhq.com>`,
+    replyTo: `olamide@droposhq.com`,
     to: entry.email,
-    subject: `You're on the list, ${firstName}`,
-    text: buildPlainTextEmail(firstName, entry.referralCode),
+    subject: `quick question, ${firstName}`,
+    text: buildPrimaryEmail(firstName),
   });
 
   return res.json({ success: true, message: "Email resent" });
+};
+
+// ── SEND FOLLOW-UP with referral link ────────────────────────
+// Send this 24 hours after signup
+// "Re:" prefix = Gmail treats as reply thread = Primary inbox
+export const sendFollowUpEmail = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const entry = await prisma.waitlistEntry.findUnique({ where: { id } });
+  if (!entry) return res.status(404).json({ success: false, message: "Entry not found" });
+
+  const firstName = entry.name.split(" ")[0];
+  await resend.emails.send({
+    from: `Olamide from DropOS <olamide@droposhq.com>`,
+    replyTo: `olamide@droposhq.com`,
+    to: entry.email,
+    subject: `Re: quick question, ${firstName}`,
+    text: buildFollowUpEmail(firstName, entry.referralCode),
+  });
+
+  return res.json({ success: true, message: "Follow-up sent" });
 };
