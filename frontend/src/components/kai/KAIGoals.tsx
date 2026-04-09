@@ -152,7 +152,7 @@ export function KAIGoals() {
                     <button onClick={() => askKaiAboutGoal(goal)}
                       className="text-xs px-2 py-1 rounded-lg transition-all"
                       style={{ background: "rgba(167,139,250,0.1)", color: "#a78bfa", fontSize: "11px" }}>
-                      Ask KAI →
+                      Ask KIRO →
                     </button>
                   )}
                 </div>

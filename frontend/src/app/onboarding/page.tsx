@@ -71,7 +71,7 @@ export default function OnboardingPage() {
       setStoreId(newStoreId);
       await new Promise(r => setTimeout(r, 800));
 
-      addLog("KAI is picking the best template for you...");
+      addLog("KIRO is picking the best template for you...");
       const templateMap: Record<string, string> = {
         fashion: "Lagos Noir", beauty: "Glow", electronics: "Circuit",
         food: "Feast", home: "Cozy", health: "Lab",
@@ -91,7 +91,7 @@ export default function OnboardingPage() {
       }).catch(() => {});
       await new Promise(r => setTimeout(r, 1000));
 
-      addLog("KAI is writing product descriptions...");
+      addLog("KIRO is writing product descriptions...");
       await new Promise(r => setTimeout(r, 800));
 
       addLog("Setting up shipping zones for Nigeria...");
@@ -126,7 +126,7 @@ export default function OnboardingPage() {
           </h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
             {step === "done" ? "KAI has everything set up for you"
-              : step === "building" ? "KAI is setting everything up..."
+              : step === "building" ? "KIRO is setting everything up..."
               : "3 quick questions — 5 minutes total"}
           </p>
         </div>

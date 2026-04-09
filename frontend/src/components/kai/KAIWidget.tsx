@@ -234,7 +234,7 @@ export function KAIWidget() {
                     K
                   </motion.div>
                   <div>
-                    <p className="text-white text-sm font-semibold leading-none">KAI</p>
+                    <p className="text-white text-sm font-semibold leading-none">KIRO</p>
                     <p style={{ color: streaming ? "#a78bfa" : "#34d399", fontSize: "9px" }}>
                       {streaming ? "Thinking..." : "Online"}
                     </p>
@@ -300,7 +300,7 @@ export function KAIWidget() {
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && sendMessage()}
-                    placeholder={isLoggedIn ? "Ask KAI anything..." : "Sign up to chat with KAI..."}
+                    placeholder={isLoggedIn ? "Ask KIRO anything..." : "Sign up to chat with KAI..."}
                     className="flex-1 bg-transparent outline-none text-sm"
                     style={{ color: "rgba(255,255,255,0.8)", fontSize: "13px" }}
                   />

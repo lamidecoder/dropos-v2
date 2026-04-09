@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 
 interface Msg {
   id: string;
-  role: "user" | "kai";
+  role: "user" | "KIRO";
   text: string;
   streaming?: boolean;
 }
@@ -69,7 +69,7 @@ export default function KAIPage() {
     if (inputRef.current) inputRef.current.style.height = "auto";
 
     const userMsg: Msg = { id: Date.now().toString(), role: "user", text: msg };
-    const kaiPlaceholder: Msg = { id: (Date.now()+1).toString(), role: "kai", text: "", streaming: true };
+    const kaiPlaceholder: Msg = { id: (Date.now()+1).toString(), role: "KIRO", text: "", streaming: true };
     setMsgs(prev => [...prev, userMsg, kaiPlaceholder]);
     setLoad(true);
 
@@ -156,7 +156,7 @@ export default function KAIPage() {
               K
             </motion.div>
             <div>
-              <p className="text-sm font-semibold text-white leading-tight">KAI</p>
+              <p className="text-sm font-semibold text-white leading-tight">KIRO</p>
               <div className="flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#34d399" }} />
                 <p style={{ color: "#34d399", fontSize: "11px" }}>
@@ -217,7 +217,7 @@ export default function KAIPage() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ type: "spring", damping: 22 }}>
 
-                {m.role === "kai" && (
+                {m.role === "KIRO" && (
                   <div className="w-7 h-7 rounded-xl flex items-center justify-center font-black text-white text-xs flex-shrink-0 mt-0.5"
                     style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", boxShadow: "0 0 12px rgba(124,58,237,0.4)" }}>
                     K
@@ -225,7 +225,7 @@ export default function KAIPage() {
                 )}
 
                 <div className={`max-w-[78%] flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
-                  {m.role === "kai" && !m.text && m.streaming ? (
+                  {m.role === "KIRO" && !m.text && m.streaming ? (
                     <TypingDots />
                   ) : (
                     <div className="px-4 py-3 rounded-2xl text-sm leading-relaxed"
@@ -280,7 +280,7 @@ export default function KAIPage() {
             <textarea ref={inputRef} value={input}
               onChange={e => { setInput(e.target.value); autoResize(); }}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-              placeholder="Ask KAI anything about your business..."
+              placeholder="Ask KIRO anything about your business..."
               rows={1}
               disabled={loading}
               className="flex-1 bg-transparent outline-none resize-none"

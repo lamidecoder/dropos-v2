@@ -69,7 +69,7 @@ function PulseAlert({ alert }: { alert: any }) {
       {alert.suggestedPrompt && (
         <button className="text-xs flex items-center gap-1 flex-shrink-0"
           style={{ color: c }}>
-          Ask KAI <ChevronRight size={10} />
+          Ask KIRO <ChevronRight size={10} />
         </button>
       )}
     </motion.div>
@@ -246,7 +246,7 @@ export default function OverviewPage() {
               K
             </motion.div>
             <div className="flex-1 text-left">
-              <p className="text-sm font-semibold text-white">Ask KAI anything</p>
+              <p className="text-sm font-semibold text-white">Ask KIRO anything</p>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
                 "What should I sell this week?" · "Write me a TikTok script"
               </p>

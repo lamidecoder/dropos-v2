@@ -155,7 +155,7 @@ export function KAISidebar() {
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #5b21b6)" }}>K</div>
                 <div>
-                  <p className="text-white text-sm font-semibold">KAI</p>
+                  <p className="text-white text-sm font-semibold">KIRO</p>
                   <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "10px", letterSpacing: "0.05em" }}>YOUR BUSINESS PARTNER</p>
                 </div>
               </div>

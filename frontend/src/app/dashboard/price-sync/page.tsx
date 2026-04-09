@@ -26,7 +26,7 @@ export function PriceSyncPage() {
       <div className="p-6 max-w-3xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-0.5">Price & Stock Sync</h1>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Check if supplier prices changed — or ask KAI "sync my prices"</p>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Check if supplier prices changed — or Ask KIRO "sync my prices"</p>
         </div>
 
         <button onClick={() => syncMutation.mutate()} disabled={syncMutation.isLoading}

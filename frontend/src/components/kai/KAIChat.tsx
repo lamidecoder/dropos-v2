@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI Chat — Premium UI, Smooth UX
+// KIRO chat — Premium UI, Smooth UX
 // Path: frontend/src/components/kai/KAIChat.tsx
 //
 // Every detail matters:
@@ -26,7 +26,7 @@ import toast from "react-hot-toast";
 // ── Types ─────────────────────────────────────────────────────
 interface Message {
   id:        string;
-  role:      "user" | "kai";
+  role:      "user" | "KIRO";
   content:   string;
   timestamp: Date;
   isStreaming?: boolean;
@@ -76,7 +76,7 @@ function KAIAvatar({ size = 28 }: { size?: number }) {
 
 // ── Message Bubble ────────────────────────────────────────────
 function MessageBubble({ msg, onCopy }: { msg: Message; onCopy: (text: string) => void }) {
-  const isKai    = msg.role === "kai";
+  const isKai    = msg.role === "KIRO";
   const [liked, setLiked] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -203,7 +203,7 @@ function KAIEmptyState({ onChip }: { onChip: (prompt: string) => void }) {
   );
 }
 
-// ── MAIN KAI CHAT ─────────────────────────────────────────────
+// ── MAIN KIRO chat ─────────────────────────────────────────────
 export default function KAIChat({ storeId, className }: { storeId?: string; className?: string }) {
   const user         = useAuthStore(s => s.user);
   const effectiveStoreId = storeId || user?.stores?.[0]?.id || "";
@@ -245,7 +245,7 @@ export default function KAIChat({ storeId, className }: { storeId?: string; clas
 
     const kaiPlaceholder: Message = {
       id:          (Date.now() + 1).toString(),
-      role:        "kai",
+      role:        "KIRO",
       content:     "",
       timestamp:   new Date(),
       isStreaming: true,
@@ -318,7 +318,7 @@ export default function KAIChat({ storeId, className }: { storeId?: string; clas
         <div className="flex items-center gap-2.5">
           <KAIAvatar size={30} />
           <div>
-            <p className="text-sm font-semibold text-white">KAI</p>
+            <p className="text-sm font-semibold text-white">KIRO</p>
             <div className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#34d399" }} />
               <p style={{ color: "#34d399", fontSize: "10px" }}>Active · Watching your store</p>
@@ -379,7 +379,7 @@ export default function KAIChat({ storeId, className }: { storeId?: string; clas
             value={input}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Ask KAI anything about your business..."
+            placeholder="Ask KIRO anything about your business..."
             rows={1}
             className="flex-1 bg-transparent outline-none resize-none"
             style={{ color: "rgba(255,255,255,0.85)", fontSize: "14px", lineHeight: "1.5", maxHeight: "120px" }}

@@ -208,7 +208,7 @@ export default function ImportPage() {
                       animate={{ scale: [1, 1.08, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
                       <Zap size={24} style={{ color: "#a78bfa" }} />
                     </motion.div>
-                    <p className="text-sm font-medium text-white mb-1">KAI is analysing the product</p>
+                    <p className="text-sm font-medium text-white mb-1">KIRO is analysing the product</p>
                     <div className="space-y-1 mt-3">
                       {["Scraping product data...", "Scoring for your market...", "Generating selling angles...", "Fetching supplier reviews..."].map((t, i) => (
                         <motion.p key={i} className="text-xs"

@@ -36,7 +36,7 @@ export function SuppliersPage() {
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-0.5">Supplier Finder</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Find alternative suppliers — or ask KAI "find me a supplier for hair bundles"
+            Find alternative suppliers — or Ask KIRO "find me a supplier for hair bundles"
           </p>
         </div>
 

@@ -5,7 +5,7 @@
 //
 // LEFT:   Settings panel — clean, grouped
 // CENTER: Live preview iframe — click to select section
-// RIGHT:  KAI chat — talk to your theme
+// RIGHT:  KIRO chat — talk to your theme
 // TOP:    Template picker, device toggle, undo/redo, save
 // ============================================================
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -123,8 +123,8 @@ function SectionRow({ section, onToggle, isActive, onClick }: any) {
 // ── KAI Theme Chat ────────────────────────────────────────────
 function KAIThemePanel({ storeId, settings, onApply }: { storeId: string; settings: any; onApply: (changes: any, explanation: string) => void }) {
   const [input, setInput]     = useState("");
-  const [history, setHistory] = useState<Array<{ role: "user" | "kai"; text: string }>>([
-    { role: "kai", text: "Tell me how to change your store. Say things like 'make it darker', 'use a serif font', 'make the buttons rounder', or 'change accent to gold'." }
+  const [history, setHistory] = useState<Array<{ role: "user" | "KIRO"; text: string }>>([
+    { role: "KIRO", text: "Tell me how to change your store. Say things like 'make it darker', 'use a serif font', 'make the buttons rounder', or 'change accent to gold'." }
   ]);
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -142,9 +142,9 @@ function KAIThemePanel({ storeId, settings, onApply }: { storeId: string; settin
       const res = await api.post(`/theme/${storeId}/kai`, { instruction: msg, current: settings });
       const { changes, explanation } = res.data.data;
       onApply(changes, explanation);
-      setHistory(h => [...h, { role: "kai", text: explanation }]);
+      setHistory(h => [...h, { role: "KIRO", text: explanation }]);
     } catch {
-      setHistory(h => [...h, { role: "kai", text: "I couldn't apply that. Try something like 'make the background darker' or 'change the accent colour to gold'." }]);
+      setHistory(h => [...h, { role: "KIRO", text: "I couldn't apply that. Try something like 'make the background darker' or 'change the accent colour to gold'." }]);
     } finally {
       setLoading(false);
     }
@@ -705,7 +705,7 @@ export default function CustomizePage() {
             </div>
           </div>
 
-          {/* RIGHT — KAI Chat */}
+          {/* RIGHT — KIRO chat */}
           <AnimatePresence>
             {showKAI && (
               <motion.div className="w-64 flex-shrink-0"

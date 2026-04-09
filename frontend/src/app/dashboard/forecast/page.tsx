@@ -87,7 +87,7 @@ export default function ForecastPage() {
                   <div className="flex items-center justify-center py-16">
                     <div className="text-center">
                       <Loader2 size={28} className="animate-spin mx-auto mb-3" style={{ color: "#7c3aed" }} />
-                      <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>KAI is analysing your revenue trends...</p>
+                      <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>KIRO is analysing your revenue trends...</p>
                     </div>
                   </div>
                 ) : forecast ? (

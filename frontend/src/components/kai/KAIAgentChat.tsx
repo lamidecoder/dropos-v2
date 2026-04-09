@@ -426,7 +426,7 @@ export function KAIAgentChat() {
             K
           </motion.div>
           <div>
-            <p className="text-white text-sm font-semibold leading-none">KAI</p>
+            <p className="text-white text-sm font-semibold leading-none">KIRO</p>
             <p className="leading-none mt-0.5" style={{ color: isStreaming ? "#a78bfa" : "#34d399", fontSize: "10px" }}>
               {isStreaming ? "Working..." : storedName ? `${storedName}` : "Online"}
             </p>

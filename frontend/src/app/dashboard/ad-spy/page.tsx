@@ -54,7 +54,7 @@ export default function AdSpyPage() {
           <div className="mb-6">
             <h1 className="text-xl font-semibold text-white mb-0.5">Ad Spy</h1>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Discover winning ads & hooks in your market right now — or ask KAI in chat
+              Discover winning ads & hooks in your market right now — or Ask KIRO in chat
             </p>
           </div>
 
@@ -186,7 +186,7 @@ export default function AdSpyPage() {
             <div className="text-center py-16">
               <Eye size={36} className="mx-auto mb-3" style={{ color: "rgba(255,255,255,0.08)" }} />
               <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>Search for any product or niche above</p>
-              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>Or ask KAI in chat: "Show me winning ads for hair products"</p>
+              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>Or Ask KIRO in chat: "Show me winning ads for hair products"</p>
             </div>
           )}
         </div>

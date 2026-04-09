@@ -196,7 +196,7 @@ export default function WaitlistPage() {
                 {/* Sub */}
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
                   style={{ fontSize: "17px", fontWeight: 300, lineHeight: 1.7, color: "rgba(255,255,255,0.45)", marginBottom: "36px", maxWidth: "460px", marginLeft: "auto", marginRight: "auto" }}>
-                  <strong style={{ color: "rgba(255,255,255,0.85)" }}>KAI</strong> — your built-in AI — builds your store, finds winning products, and fulfils every order automatically.{" "}
+                  <strong style={{ color: "rgba(255,255,255,0.85)" }}>KIRO</strong> — your built-in AI — builds your store, finds winning products, and fulfils every order automatically.{" "}
                   <strong style={{ color: "rgba(255,255,255,0.85)" }}>No experience needed. Just results.</strong>
                 </motion.p>
 

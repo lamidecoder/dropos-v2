@@ -51,7 +51,7 @@ export function KAIPulse() {
             <CheckCircle size={32} className="mb-3" style={{ color: "rgba(255,255,255,0.15)" }} />
             <p className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>All clear</p>
             <p className="text-xs mt-1 text-center max-w-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
-              KAI is watching your store. You'll be notified when something needs attention.
+              KIRO is watching your store. You'll be notified when something needs attention.
             </p>
           </div>
         )}
@@ -115,7 +115,7 @@ function AlertCard({ alert, onAction, onDismiss, dimmed }: any) {
               className="mt-2 text-xs px-2.5 py-1.5 rounded-lg transition-all"
               style={{ background: config.bg, border: `1px solid ${config.border}`, color: config.color }}
             >
-              Ask KAI about this →
+              Ask KIRO about this →
             </button>
           )}
         </div>

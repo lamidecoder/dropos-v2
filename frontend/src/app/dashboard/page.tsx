@@ -24,7 +24,7 @@ const OWNER_NAV = [
   {
     id: "top", label: null, alwaysOpen: true,
     items: [
-      { href: "/dashboard/kai",      icon: Zap,             label: "KAI",     ai: true },
+      { href: "/dashboard/kai",      icon: Zap,             label: "KIRO",     ai: true },
       { href: "/dashboard",          icon: LayoutDashboard, label: "Overview", exact: true },
     ],
   },

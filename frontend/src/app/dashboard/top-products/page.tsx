@@ -1,6 +1,6 @@
 // ============================================================
 // ALL REMAINING DASHBOARD PAGES
-// Each page = clean UI + KAI chat shortcut shown
+// Each page = clean UI + KIRO chat shortcut shown
 // ============================================================
 
 // ── Daily Top 10 ─────────────────────────────────────────────
@@ -62,7 +62,7 @@ export function DailyTop10Page() {
           <div className="flex items-center justify-center py-16">
             <div className="text-center">
               <Loader2 size={28} className="animate-spin mx-auto mb-3" style={{ color: "#7c3aed" }} />
-              <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>KAI is scanning your market...</p>
+              <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>KIRO is scanning your market...</p>
             </div>
           </div>
         ) : (

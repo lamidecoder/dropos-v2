@@ -16,7 +16,7 @@ export function ReviewImportPreview({ reviews, isLoading, onImport, imported }: 
         <Star size={16} style={{ color: "#fbbf24" }} />
       </motion.div>
       <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-        KAI is importing supplier reviews...
+        KIRO is importing supplier reviews...
       </p>
     </div>
   );

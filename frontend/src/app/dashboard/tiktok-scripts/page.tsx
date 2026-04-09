@@ -174,7 +174,7 @@ export default function TikTokScriptsPage() {
                   <div>
                     <Film size={36} className="mx-auto mb-3" style={{ color: "rgba(255,255,255,0.08)" }} />
                     <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>Your script appears here</p>
-                    <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>Or ask KAI: "Write TikTok script for my hair bundle"</p>
+                    <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>Or Ask KIRO: "Write TikTok script for my hair bundle"</p>
                   </div>
                 </div>
               )}

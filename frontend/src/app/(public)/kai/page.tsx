@@ -12,7 +12,7 @@ import {
 
 interface Msg {
   id:     string;
-  role:   "user" | "kai";
+  role:   "user" | "KIRO";
   text:   string;
   typing?: boolean;
 }
@@ -155,7 +155,7 @@ export default function PublicKAIPage() {
   useEffect(() => {
     setTimeout(async () => {
       const id = "welcome";
-      setMsgs([{ id, role: "kai", text: "", typing: true }]);
+      setMsgs([{ id, role: "KIRO", text: "", typing: true }]);
       await new Promise(r => setTimeout(r, 800));
       const full = WELCOME.join("\n\n");
       let built = "";
@@ -163,7 +163,7 @@ export default function PublicKAIPage() {
         await new Promise(r => setTimeout(r, 18));
         built += (built ? " " : "") + word;
         const snap = built;
-        setMsgs([{ id, role: "kai", text: snap, typing: false }]);
+        setMsgs([{ id, role: "KIRO", text: snap, typing: false }]);
       }
     }, 400);
   }, []);
@@ -175,7 +175,7 @@ export default function PublicKAIPage() {
 
     const uid = Date.now().toString();
     const kid = (Date.now()+1).toString();
-    setMsgs(prev => [...prev, { id: uid, role: "user", text: msg }, { id: kid, role: "kai", text: "", typing: true }]);
+    setMsgs(prev => [...prev, { id: uid, role: "user", text: msg }, { id: kid, role: "KIRO", text: "", typing: true }]);
     setLoad(true);
 
     await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
@@ -309,7 +309,7 @@ export default function PublicKAIPage() {
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", damping: 22 }}>
 
-            {m.role === "kai" && (
+            {m.role === "KIRO" && (
               <motion.div
                 className="w-8 h-8 rounded-2xl flex items-center justify-center font-black text-white text-sm flex-shrink-0 mt-0.5"
                 style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", boxShadow: "0 0 16px rgba(124,58,237,0.4)" }}
@@ -320,7 +320,7 @@ export default function PublicKAIPage() {
             )}
 
             <div className={`max-w-[80%] flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
-              {m.role === "kai" && m.typing && !m.text ? (
+              {m.role === "KIRO" && m.typing && !m.text ? (
                 <div className="flex items-center gap-1.5 px-4 py-3 rounded-2xl rounded-bl-sm"
                   style={{ background: "rgba(255,255,255,0.07)" }}>
                   {[0,1,2].map(i => (
@@ -374,7 +374,7 @@ export default function PublicKAIPage() {
             <input ref={inputRef} value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && send()}
-              placeholder={isEmpty ? "Tell KAI what you want to sell..." : "Ask KAI anything..."}
+              placeholder={isEmpty ? "Tell KAI what you want to sell..." : "Ask KIRO anything..."}
               className="flex-1 bg-transparent outline-none text-sm"
               style={{ color: "rgba(255,255,255,0.85)" }} />
             <motion.button onClick={() => send()}

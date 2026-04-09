@@ -195,7 +195,7 @@ export default function BroadcastsPage() {
                       className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all"
                       style={{ background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.3)", color: "#a78bfa" }}>
                       <Sparkles size={13} />
-                      {generateMutation.isLoading ? "KAI is writing..." : "KAI Write for Me"}
+                      {generateMutation.isLoading ? "KIRO is writing..." : "KAI Write for Me"}
                     </button>
                   </div>
 

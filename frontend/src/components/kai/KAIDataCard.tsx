@@ -2,7 +2,7 @@
 // ============================================================
 // KAI — Inline Data Cards
 // Path: frontend/src/components/kai/KAIDataCard.tsx
-// Beautiful cards rendered inside KAI chat messages
+// Beautiful cards rendered inside KIRO chat messages
 // ============================================================
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, ShoppingCart, Package, Users, Target, AlertTriangle } from "lucide-react";

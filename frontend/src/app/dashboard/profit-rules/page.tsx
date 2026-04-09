@@ -57,7 +57,7 @@ export function ProfitRulesPage() {
           <div>
             <h1 className="text-xl font-semibold text-white mb-0.5">Profit Protection</h1>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Automatic rules that protect your margins 24/7 — or set rules via KAI chat
+              Automatic rules that protect your margins 24/7 — or set rules via KIRO chat
             </p>
           </div>
           <div className="flex gap-2">

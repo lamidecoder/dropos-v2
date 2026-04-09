@@ -9,7 +9,7 @@ import { Send, Paperclip, Mic, MicOff, X } from "lucide-react";
 import { useKaiStore } from "@/store/kai.store";
 
 const PLACEHOLDERS = [
-  "Ask KAI anything about your business...",
+  "Ask KIRO anything about your business...",
   "What's trending to sell right now?",
   "Build me a store that sells sneakers...",
   "How are my sales this week?",

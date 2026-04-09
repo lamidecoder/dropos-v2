@@ -197,7 +197,7 @@ export default function KAIPowerPage() {
                       <Loader2 size={32} style={{ color: "#7c3aed" }} />
                     </motion.div>
                     <p className="mt-4 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      KAI is researching...
+                      KIRO is researching...
                     </p>
                   </motion.div>
                 )}

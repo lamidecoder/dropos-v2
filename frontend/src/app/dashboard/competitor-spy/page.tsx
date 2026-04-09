@@ -28,7 +28,7 @@ export function CompetitorSpyPage() {
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-0.5">Competitor Store Spy</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Paste any competitor store URL — or ask KAI "spy on this store: [URL]"
+            Paste any competitor store URL — or Ask KIRO "spy on this store: [URL]"
           </p>
         </div>
 
