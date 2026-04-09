@@ -243,7 +243,7 @@ export default function WaitlistPage() {
 
                 {/* Perks */}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center", marginBottom: "60px" }}>
-                  {[["⚡","Store live in 60s"],["🤖","KAI AI included"],["🌍","50+ countries"],["💳","All payments"],["📲","WhatsApp ready"],["🔒","Your data is safe"]].map(([em,lbl]) => (
+                  {[["⚡","Store live in 60s"],["🤖","KIRO AI included"],["🌍","50+ countries"],["💳","All payments"],["📲","WhatsApp ready"],["🔒","Your data is safe"]].map(([em,lbl]) => (
                     <div key={lbl} style={{ display: "flex", alignItems: "center", gap: "7px", padding: "9px 14px", borderRadius: "100px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", fontSize: "13px", color: "rgba(255,255,255,0.52)" }}>
                       <span>{em}</span><span>{lbl}</span>
                     </div>
@@ -256,10 +256,10 @@ export default function WaitlistPage() {
                 <p style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(255,255,255,0.25)", textAlign: "center", marginBottom: "24px" }}>How it works</p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   {[
-                    ["01","💬","Tell KAI what you sell","Chat with KAI like a person. Tell it your niche. It does the rest."],
-                    ["02","🏪","Your store is built","KAI creates your store, adds products, sets prices for max margin — 60 seconds."],
+                    ["01","💬","Tell KIRO what you sell","Chat with KIRO like a person. Tell it your niche. It does the rest."],
+                    ["02","🏪","Your store is built","KIRO creates your store, adds products, sets prices for max margin — 60 seconds."],
                     ["03","📦","Orders fulfil themselves","Every order sent to your supplier automatically. You don't lift a finger."],
-                    ["04","📈","KAI grows your revenue","Daily product alerts. Ad angles. Revenue reports. KAI never sleeps."],
+                    ["04","📈","KIRO grows your revenue","Daily product alerts. Ad angles. Revenue reports. KIRO never sleeps."],
                   ].map(([num,icon,title,desc]) => (
                     <motion.div key={num} whileHover={{ borderColor: "rgba(124,58,237,0.25)", background: "rgba(124,58,237,0.04)" }}
                       style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "20px", transition: "all 0.2s" }}>
