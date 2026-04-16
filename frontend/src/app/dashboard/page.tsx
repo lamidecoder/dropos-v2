@@ -1,382 +1,432 @@
 "use client";
-// Path: frontend/src/components/layout/DashboardLayout.tsx
-// All 37 nav items · Collapsible groups · Admin/User separation · Fixed logout
+// Path: frontend/src/app/dashboard/page.tsx
+// World-class Overview — light default, dark mode, app-like
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  Zap, LayoutDashboard, Package, ShoppingCart, Users,
-  BarChart2, Settings, Bell, LogOut, TrendingUp, Store,
-  Tag, Truck, Palette, Download, Eye, CreditCard, Key,
-  Flame, Globe, Layers, RefreshCw, RotateCcw, Repeat,
-  Gift, MessageSquare, Mail, Archive, Activity, TrendingDown,
-  FileText, Webhook, LifeBuoy, ChevronDown, Menu, X,
-  MessageCircle, Percent, Star, Shield,
+  TrendingUp, ShoppingCart, Users, Package,
+  Zap, ArrowUpRight, ArrowDownRight, MoreHorizontal,
+  Sparkles, ChevronRight, Clock, AlertCircle,
+  Store, Flame, Star, Activity, Eye,
 } from "lucide-react";
+import { useTheme } from "../../components/layout/DashboardLayout";
 import { useAuthStore } from "../../store/auth.store";
-import { notificationAPI } from "../../lib/api";
-import { useQuery } from "@tanstack/react-query";
 
-// ── OWNER NAV — all 37 items ──────────────────────────────────
-const OWNER_NAV = [
-  {
-    id: "top", label: null, alwaysOpen: true,
-    items: [
-      { href: "/dashboard/kai",      icon: Zap,             label: "KIRO",     ai: true },
-      { href: "/dashboard",          icon: LayoutDashboard, label: "Overview", exact: true },
-    ],
-  },
-  {
-    id: "store", label: "Store",
-    items: [
-      { href: "/dashboard/stores",              icon: Store,         label: "My Stores"            },
-      { href: "/dashboard/products",            icon: Package,       label: "Products"             },
-      { href: "/dashboard/orders",              icon: ShoppingCart,  label: "Orders"               },
-      { href: "/dashboard/customers",           icon: Users,         label: "Customers"            },
-      { href: "/dashboard/inventory",           icon: BarChart2,     label: "Inventory"            },
-      { href: "/dashboard/import",              icon: Download,      label: "Import Product"       },
-      { href: "/dashboard/customize",           icon: Palette,       label: "Store Design"         },
-      { href: "/dashboard/editor",              icon: Layers,        label: "Store Editor", special: true },
-      { href: "/dashboard/suppliers",           icon: Truck,         label: "Suppliers"            },
-      { href: "/dashboard/supplier-assignment", icon: Truck,         label: "Supplier Assignment"  },
-      { href: "/dashboard/currency",            icon: Globe,         label: "Currency"             },
-      { href: "/dashboard/chat",                icon: MessageCircle, label: "Chat & Contact"       },
-      { href: "/dashboard/backup",              icon: Archive,       label: "Backup & Export"      },
-    ],
-  },
-  {
-    id: "sales", label: "Sales",
-    items: [
-      { href: "/dashboard/shipping",      icon: Truck,       label: "Shipping"      },
-      { href: "/dashboard/refunds",       icon: RefreshCw,   label: "Refunds"       },
-      { href: "/dashboard/returns",       icon: RotateCcw,   label: "Returns"       },
-      { href: "/dashboard/subscriptions", icon: Repeat,      label: "Subscriptions" },
-    ],
-  },
-  {
-    id: "marketing", label: "Marketing",
-    items: [
-      { href: "/dashboard/coupons",         icon: Tag,          label: "Coupons"         },
-      { href: "/dashboard/discounts",       icon: Percent,      label: "Discounts"       },
-      { href: "/dashboard/flash-sales",     icon: Flame,        label: "Flash Sales"     },
-      { href: "/dashboard/gift-cards",      icon: Gift,         label: "Gift Cards"      },
-      { href: "/dashboard/group-buys",      icon: Users,        label: "Group Buying", special: true },
-      { href: "/dashboard/affiliates",      icon: Star,         label: "Affiliates"      },
-      { href: "/dashboard/reviews",         icon: MessageSquare,label: "Reviews"         },
-      { href: "/dashboard/emails",          icon: Mail,         label: "Emails"          },
-      { href: "/dashboard/abandoned-carts", icon: ShoppingCart, label: "Abandoned Carts" },
-    ],
-  },
-  {
-    id: "intelligence", label: "Intelligence",
-    items: [
-      { href: "/dashboard/analytics",    icon: Activity,     label: "Analytics"    },
-      { href: "/dashboard/top-products", icon: TrendingUp,   label: "Daily Top 10" },
-      { href: "/dashboard/ad-spy",       icon: Eye,          label: "Ad Spy"       },
-      { href: "/dashboard/funnel",       icon: TrendingDown, label: "Funnel & UTM" },
-      { href: "/dashboard/reports",      icon: FileText,     label: "Reports"      },
-    ],
-  },
-  {
-    id: "developers", label: "Developers",
-    items: [
-      { href: "/dashboard/api-keys", icon: Key,     label: "API Keys"  },
-      { href: "/dashboard/webhooks", icon: Webhook, label: "Webhooks"  },
-    ],
-  },
-  {
-    id: "account", label: "Account",
-    items: [
-      { href: "/dashboard/billing",       icon: CreditCard, label: "Billing"       },
-      { href: "/dashboard/notifications", icon: Bell,       label: "Notifications" },
-      { href: "/dashboard/support",       icon: LifeBuoy,   label: "Support"       },
-      { href: "/dashboard/settings",      icon: Settings,   label: "Settings"      },
-    ],
-  },
-];
+// ── STAT CARD ─────────────────────────────────────────────────
+function StatCard({
+  label, value, change, changeType, icon: Icon, color, delay = 0, theme
+}: {
+  label: string; value: string; change: string;
+  changeType: "up" | "down" | "neutral"; icon: any;
+  color: string; delay?: number; theme: "light" | "dark";
+}) {
+  const isLight = theme === "light";
+  const isUp = changeType === "up";
+  const isDown = changeType === "down";
 
-// ── ADMIN NAV — separate, different items ─────────────────────
-const ADMIN_NAV = [
-  {
-    id: "top", label: null, alwaysOpen: true,
-    items: [
-      { href: "/admin",           icon: LayoutDashboard, label: "Overview",  exact: true },
-      { href: "/admin/analytics", icon: Activity,        label: "Analytics"  },
-    ],
-  },
-  {
-    id: "management", label: "Management",
-    items: [
-      { href: "/admin/users",    icon: Users,      label: "All Users"  },
-      { href: "/admin/payments", icon: CreditCard, label: "Payments"   },
-      { href: "/admin/support",  icon: LifeBuoy,   label: "Support"    },
-    ],
-  },
-  {
-    id: "system", label: "System",
-    items: [
-      { href: "/admin/error-logs", icon: Shield,   label: "Error Logs"  },
-      { href: "/admin/audit-logs", icon: Shield,   label: "Audit Logs"  },
-      { href: "/admin/settings",   icon: Settings, label: "Settings"    },
-    ],
-  },
-];
-
-const PLAN_COLORS: Record<string, string> = {
-  FREE: "#6b7280", STARTER: "#60a5fa", GROWTH: "#34d399",
-  PRO: "#a78bfa",  ADVANCED: "#f59e0b",
-};
-
-// ── Nav item ──────────────────────────────────────────────────
-function NavItem({ item, isActive }: { item: any; isActive: boolean }) {
-  const Icon = item.icon;
   return (
-    <Link href={item.href}>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay, ease: "easeOut" }}
+      className="rounded-2xl p-5 relative overflow-hidden group cursor-pointer transition-all hover:-translate-y-0.5"
+      style={{
+        background: isLight ? "#fff" : "#1A1330",
+        border: `1px solid ${isLight ? "rgba(15,5,32,0.06)" : "rgba(255,255,255,0.06)"}`,
+        boxShadow: isLight ? "0 1px 3px rgba(15,5,32,0.04), 0 4px 20px rgba(15,5,32,0.03)" : "none",
+      }}
+    >
+      {/* Subtle gradient top */}
       <div
-        className="flex items-center gap-2.5 px-2.5 py-[7px] rounded-xl cursor-pointer transition-all relative"
-        style={{
-          background: isActive ? item.ai ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.08)" : "transparent",
-          border:     isActive ? item.ai ? "1px solid rgba(124,58,237,0.3)" : "1px solid rgba(255,255,255,0.08)" : "1px solid transparent",
-        }}>
-        {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full"
-            style={{ background: item.ai ? "#a78bfa" : "rgba(255,255,255,0.5)" }} />
-        )}
-        <div className="w-[26px] h-[26px] rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: isActive ? item.ai ? "rgba(124,58,237,0.32)" : "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)" }}>
-          <Icon size={12} style={{ color: isActive ? item.ai ? "#a78bfa" : "#fff" : "rgba(255,255,255,0.4)" }} />
+        className="absolute top-0 left-0 right-0 h-px opacity-50"
+        style={{ background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }}
+      />
+
+      <div className="flex items-start justify-between mb-4">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{ background: `${color}15` }}
+        >
+          <Icon size={18} style={{ color }} />
         </div>
-        <span className="text-[12.5px] flex-1 truncate"
-          style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.52)", fontWeight: isActive ? 500 : 400 }}>
-          {item.label}
-        </span>
-        {item.ai && (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
-            style={{ background: "rgba(124,58,237,0.28)", color: "#a78bfa" }}>AI</span>
-        )}
-        {item.special && !item.ai && (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
-            style={{ background: "rgba(52,211,153,0.15)", color: "#34d399" }}>NEW</span>
-        )}
+        <button className="opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 rounded-lg flex items-center justify-center"
+          style={{ background: isLight ? "rgba(15,5,32,0.04)" : "rgba(255,255,255,0.06)" }}>
+          <MoreHorizontal size={13} style={{ color: isLight ? "rgba(15,5,32,0.4)" : "rgba(255,255,255,0.4)" }} />
+        </button>
       </div>
-    </Link>
+
+      <div className="mb-1">
+        <div className="sora text-2xl font-bold tracking-tight"
+          style={{ color: isLight ? "#0F0520" : "#F0EEFF" }}>
+          {value}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <span className="text-[12px]" style={{ color: isLight ? "rgba(15,5,32,0.45)" : "rgba(255,255,255,0.4)" }}>
+          {label}
+        </span>
+        <div className="flex items-center gap-1">
+          {isUp && <ArrowUpRight size={11} className="text-emerald-500" />}
+          {isDown && <ArrowDownRight size={11} className="text-red-400" />}
+          <span className="text-[11px] font-semibold"
+            style={{ color: isUp ? "#10b981" : isDown ? "#f87171" : isLight ? "rgba(15,5,32,0.4)" : "rgba(255,255,255,0.3)" }}>
+            {change}
+          </span>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
-// ── Collapsible group ─────────────────────────────────────────
-function NavGroup({ group, pathname }: { group: any; pathname: string }) {
-  const isActive = (item: any) =>
-    item.exact ? pathname === item.href
-      : pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/dashboard" && item.href !== "/admin");
-
-  const groupActive = group.items.some(isActive);
-  const [open, setOpen] = useState(groupActive);
-  const GroupIcon = group.icon;
-
-  if (group.alwaysOpen) {
-    return (
-      <div className="space-y-0.5 mb-3">
-        {group.items.map((item: any) => (
-          <NavItem key={item.href} item={item} isActive={isActive(item)} />
-        ))}
-      </div>
-    );
-  }
+// ── ORDER ROW ─────────────────────────────────────────────────
+function OrderRow({ order, theme, delay = 0 }: { order: any; theme: "light" | "dark"; delay?: number }) {
+  const isLight = theme === "light";
+  const statusColors: Record<string, { bg: string; text: string }> = {
+    PAID:       { bg: "rgba(16,185,129,0.1)",  text: "#10b981" },
+    PENDING:    { bg: "rgba(245,158,11,0.1)",   text: "#f59e0b" },
+    SHIPPED:    { bg: "rgba(59,130,246,0.1)",   text: "#3b82f6" },
+    CANCELLED:  { bg: "rgba(239,68,68,0.1)",    text: "#ef4444" },
+    DELIVERED:  { bg: "rgba(124,58,237,0.1)",   text: "#7C3AED" },
+  };
+  const s = statusColors[order.status] || statusColors.PENDING;
 
   return (
-    <div className="mb-1">
-      <button onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl mb-0.5 transition-all"
-        style={{ color: groupActive ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.28)" }}>
-        <span className="text-[10px] font-semibold uppercase tracking-widest flex-1 text-left"
-          style={{ letterSpacing: "0.13em" }}>
-          {group.label}
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay, duration: 0.3 }}
+      className="flex items-center gap-4 py-3 group cursor-pointer transition-all hover:px-2 rounded-xl -mx-2"
+      style={{ borderBottom: `1px solid ${isLight ? "rgba(15,5,32,0.04)" : "rgba(255,255,255,0.04)"}` }}
+    >
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-[11px] font-bold"
+        style={{ background: isLight ? "rgba(15,5,32,0.05)" : "rgba(255,255,255,0.06)", color: isLight ? "rgba(15,5,32,0.5)" : "rgba(255,255,255,0.4)" }}>
+        #{order.id}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[13px] font-medium truncate" style={{ color: isLight ? "#0F0520" : "#F0EEFF" }}>
+          {order.customer}
+        </div>
+        <div className="text-[11px] truncate" style={{ color: isLight ? "rgba(15,5,32,0.4)" : "rgba(255,255,255,0.3)" }}>
+          {order.items} item{order.items !== 1 ? "s" : ""} · {order.time}
+        </div>
+      </div>
+      <div className="text-right flex-shrink-0">
+        <div className="text-[13px] font-semibold sora" style={{ color: isLight ? "#0F0520" : "#F0EEFF" }}>
+          {order.amount}
+        </div>
+        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+          style={{ background: s.bg, color: s.text }}>
+          {order.status}
         </span>
-        {!open && (
-          <span className="text-[9px] px-1.5 py-0.5 rounded-full"
-            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }}>
-            {group.items.length}
-          </span>
-        )}
-        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.18 }}>
-          <ChevronDown size={10} style={{ color: "rgba(255,255,255,0.25)" }} />
-        </motion.div>
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
+      </div>
+    </motion.div>
+  );
+}
+
+// ── KIRO INSIGHT CARD ─────────────────────────────────────────
+function KIROInsight({ text, type, theme }: { text: string; type: "tip" | "alert" | "win"; theme: "light" | "dark" }) {
+  const isLight = theme === "light";
+  const icons = { tip: Sparkles, alert: AlertCircle, win: Star };
+  const colors = { tip: "#7C3AED", alert: "#f59e0b", win: "#10b981" };
+  const Icon = icons[type];
+  const color = colors[type];
+
+  return (
+    <div
+      className="flex items-start gap-3 p-3 rounded-xl"
+      style={{
+        background: `${color}08`,
+        border: `1px solid ${color}20`,
+      }}
+    >
+      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ background: `${color}15` }}>
+        <Icon size={13} style={{ color }} />
+      </div>
+      <p className="text-[12px] leading-relaxed flex-1"
+        style={{ color: isLight ? "rgba(15,5,32,0.65)" : "rgba(255,255,255,0.6)" }}>
+        {text}
+      </p>
+    </div>
+  );
+}
+
+// ── MAIN PAGE ─────────────────────────────────────────────────
+export default function DashboardPage() {
+  const { theme } = useTheme();
+  const { user } = useAuthStore();
+  const isLight = theme === "light";
+  const firstName = user?.name?.split(" ")[0] || "there";
+
+  // Mock data — will be replaced with real API calls
+  const stats = [
+    { label: "Total Revenue", value: "₦0", change: "—", changeType: "neutral" as const, icon: TrendingUp, color: "#7C3AED" },
+    { label: "Total Orders",  value: "0",   change: "—", changeType: "neutral" as const, icon: ShoppingCart, color: "#3b82f6" },
+    { label: "Customers",     value: "0",   change: "—", changeType: "neutral" as const, icon: Users, color: "#10b981" },
+    { label: "Products",      value: "0",   change: "—", changeType: "neutral" as const, icon: Package, color: "#f59e0b" },
+  ];
+
+  const recentOrders: any[] = [];
+
+  const kiroInsights = [
+    { text: "Your store is ready. Ask KIRO to set up your first product collection.", type: "tip" as const },
+    { text: "Add a custom domain to build trust with customers and boost conversions.", type: "tip" as const },
+    { text: "Enable abandoned cart recovery — KIRO recovers up to 15% of lost sales automatically.", type: "win" as const },
+  ];
+
+  const quickActions = [
+    { label: "Add Product",    href: "/dashboard/products/new",  icon: Package,   color: "#7C3AED" },
+    { label: "View Store",     href: "#",                         icon: Store,     color: "#3b82f6" },
+    { label: "Flash Sale",     href: "/dashboard/flash-sales",    icon: Flame,     color: "#f59e0b" },
+    { label: "Analytics",      href: "/dashboard/analytics",      icon: Activity,  color: "#10b981" },
+  ];
+
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const update = () => {
+      const h = new Date().getHours();
+      setTime(h < 12 ? "morning" : h < 17 ? "afternoon" : "evening");
+    };
+    update();
+  }, []);
+
+  return (
+    <div className="max-w-[1400px] mx-auto space-y-6">
+      {/* ── HEADER ── */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-start justify-between gap-4"
+      >
+        <div>
+          <h1 className="sora font-bold text-2xl leading-tight"
+            style={{ color: isLight ? "#0F0520" : "#F0EEFF" }}>
+            Good {time}, {firstName} 👋
+          </h1>
+          <p className="text-sm mt-1" style={{ color: isLight ? "rgba(15,5,32,0.45)" : "rgba(255,255,255,0.4)" }}>
+            Here's what's happening with your store today.
+          </p>
+        </div>
+
+        <Link href="/dashboard/kai">
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            style={{ overflow: "hidden" }}>
-            <div className="space-y-0.5 pl-1 pb-1">
-              {group.items.map((item: any) => (
-                <NavItem key={item.href} item={item} isActive={isActive(item)} />
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl cursor-pointer"
+            style={{
+              background: "linear-gradient(135deg, #7C3AED, #5B21B6)",
+              boxShadow: "0 4px 20px rgba(124,58,237,0.3)",
+            }}
+          >
+            <Zap size={15} className="text-white" />
+            <span className="text-[13px] font-semibold text-white sora">Ask KIRO</span>
+            <ChevronRight size={13} className="text-white/60" />
+          </motion.div>
+        </Link>
+      </motion.div>
+
+      {/* ── STATS ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((s, i) => (
+          <StatCard key={s.label} {...s} delay={i * 0.08} theme={theme} />
+        ))}
+      </div>
+
+      {/* ── MAIN GRID ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Orders */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="lg:col-span-2 rounded-2xl p-5"
+          style={{
+            background: isLight ? "#fff" : "#1A1330",
+            border: `1px solid ${isLight ? "rgba(15,5,32,0.06)" : "rgba(255,255,255,0.06)"}`,
+            boxShadow: isLight ? "0 1px 3px rgba(15,5,32,0.04), 0 4px 20px rgba(15,5,32,0.03)" : "none",
+          }}
+        >
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="sora font-semibold text-[15px]" style={{ color: isLight ? "#0F0520" : "#F0EEFF" }}>
+              Recent Orders
+            </h2>
+            <Link href="/dashboard/orders">
+              <span className="text-[12px] font-medium flex items-center gap-1 transition-opacity hover:opacity-70"
+                style={{ color: "#7C3AED" }}>
+                View all <ArrowUpRight size={11} />
+              </span>
+            </Link>
+          </div>
+
+          {recentOrders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+                style={{ background: isLight ? "rgba(15,5,32,0.04)" : "rgba(255,255,255,0.05)" }}
+              >
+                <ShoppingCart size={22} style={{ color: isLight ? "rgba(15,5,32,0.2)" : "rgba(255,255,255,0.2)" }} />
+              </div>
+              <p className="text-[13px] font-medium mb-1" style={{ color: isLight ? "rgba(15,5,32,0.5)" : "rgba(255,255,255,0.4)" }}>
+                No orders yet
+              </p>
+              <p className="text-[12px]" style={{ color: isLight ? "rgba(15,5,32,0.3)" : "rgba(255,255,255,0.25)" }}>
+                Your first order will appear here
+              </p>
+              <Link href="/dashboard/kai">
+                <div
+                  className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-medium cursor-pointer transition-all hover:opacity-80"
+                  style={{ background: "rgba(124,58,237,0.1)", color: "#7C3AED" }}
+                >
+                  <Zap size={12} />
+                  Ask KIRO to help get first sales
+                </div>
+              </Link>
+            </div>
+          ) : (
+            <div>
+              {recentOrders.map((order, i) => (
+                <OrderRow key={order.id} order={order} theme={theme} delay={i * 0.06} />
               ))}
             </div>
+          )}
+        </motion.div>
+
+        {/* Right column */}
+        <div className="space-y-4">
+          {/* KIRO Insights */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.35 }}
+            className="rounded-2xl p-5"
+            style={{
+              background: isLight ? "#fff" : "#1A1330",
+              border: `1px solid ${isLight ? "rgba(15,5,32,0.06)" : "rgba(255,255,255,0.06)"}`,
+              boxShadow: isLight ? "0 1px 3px rgba(15,5,32,0.04), 0 4px 20px rgba(15,5,32,0.03)" : "none",
+            }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}>
+                <Zap size={13} className="text-white" />
+              </div>
+              <h2 className="sora font-semibold text-[14px]" style={{ color: isLight ? "#0F0520" : "#F0EEFF" }}>
+                KIRO Insights
+              </h2>
+            </div>
+            <div className="space-y-2">
+              {kiroInsights.map((insight, i) => (
+                <KIROInsight key={i} {...insight} theme={theme} />
+              ))}
+            </div>
+            <Link href="/dashboard/kai">
+              <div
+                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-semibold cursor-pointer transition-all hover:opacity-80"
+                style={{
+                  background: "linear-gradient(135deg, #7C3AED, #5B21B6)",
+                  color: "#fff",
+                }}
+              >
+                <Sparkles size={12} />
+                Chat with KIRO
+              </div>
+            </Link>
           </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
 
-// ── MAIN ──────────────────────────────────────────────────────
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const pathname   = usePathname();
-  const user       = useAuthStore(s => s.user);
-  const _logout    = useAuthStore(s => s.logout);
-  const [mob, setMob] = useState(false);
-
-  const logout = () => {
-    _logout();
-    if (typeof window !== "undefined") window.location.href = "/auth/login";
-  };
-
-  const isAdmin = user?.role === "SUPER_ADMIN";
-  const navGroups = isAdmin ? ADMIN_NAV : OWNER_NAV;
-
-  const { data: nc } = useQuery({
-    queryKey: ["nc"],
-    queryFn: async () => { const r = await notificationAPI.getCount(); return r.data.data?.count || 0; },
-    refetchInterval: 60000,
-  });
-
-  const plan      = user?.subscription?.plan || "FREE";
-  const planColor = PLAN_COLORS[plan] || PLAN_COLORS.FREE;
-
-  const Sidebar = ({ onClose }: { onClose?: () => void }) => (
-    <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="px-4 pt-5 pb-3.5 flex items-center justify-between flex-shrink-0"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-        <Link href={isAdmin ? "/admin" : "/dashboard"} onClick={onClose}
-          className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "linear-gradient(135deg,#7c3aed,#4c1d95)", boxShadow: "0 0 20px rgba(124,58,237,0.45)" }}>
-            <Zap size={16} fill="white" color="white" />
-          </div>
-          <span className="font-black text-[16px]">
-            <span className="text-white">Drop</span>
-            <span style={{ color: "#a78bfa" }}>OS</span>
-          </span>
-        </Link>
-        {isAdmin && (
-          <span className="text-[9px] font-bold px-2 py-1 rounded-full"
-            style={{ background: "rgba(248,113,113,0.15)", color: "#f87171", border: "1px solid rgba(248,113,113,0.25)" }}>
-            ADMIN
-          </span>
-        )}
-        {onClose && (
-          <button onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-xl"
-            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}>
-            <X size={12} />
-          </button>
-        )}
-      </div>
-
-      {/* Nav */}
-      <div className="flex-1 overflow-y-auto px-3 py-3" style={{ scrollbarWidth: "none" }}>
-        {navGroups.map(group => (
-          <NavGroup key={group.id} group={group} pathname={pathname} />
-        ))}
-      </div>
-
-      {/* Bottom */}
-      <div className="px-3 pb-4 pt-2 space-y-1.5 flex-shrink-0"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-        <Link href="/dashboard/notifications" onClick={onClose}>
-          <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-            <div className="w-[26px] h-[26px] rounded-lg flex items-center justify-center relative"
-              style={{ background: "rgba(255,255,255,0.06)" }}>
-              <Bell size={12} style={{ color: "rgba(255,255,255,0.45)" }} />
-              {(nc || 0) > 0 && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-white font-bold"
-                  style={{ background: "#f87171", fontSize: "8px" }}>
-                  {(nc || 0) > 9 ? "9+" : nc}
-                </div>
-              )}
+          {/* Quick Actions */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.4 }}
+            className="rounded-2xl p-5"
+            style={{
+              background: isLight ? "#fff" : "#1A1330",
+              border: `1px solid ${isLight ? "rgba(15,5,32,0.06)" : "rgba(255,255,255,0.06)"}`,
+              boxShadow: isLight ? "0 1px 3px rgba(15,5,32,0.04), 0 4px 20px rgba(15,5,32,0.03)" : "none",
+            }}
+          >
+            <h2 className="sora font-semibold text-[14px] mb-4" style={{ color: isLight ? "#0F0520" : "#F0EEFF" }}>
+              Quick Actions
+            </h2>
+            <div className="grid grid-cols-2 gap-2">
+              {quickActions.map((action, i) => {
+                const Icon = action.icon;
+                return (
+                  <Link href={action.href} key={action.label}>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="flex flex-col items-center gap-2 p-3 rounded-xl cursor-pointer transition-all"
+                      style={{
+                        background: isLight ? "rgba(15,5,32,0.03)" : "rgba(255,255,255,0.04)",
+                        border: `1px solid ${isLight ? "rgba(15,5,32,0.05)" : "rgba(255,255,255,0.05)"}`,
+                      }}
+                    >
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                        style={{ background: `${action.color}15` }}>
+                        <Icon size={15} style={{ color: action.color }} />
+                      </div>
+                      <span className="text-[11px] font-medium text-center"
+                        style={{ color: isLight ? "rgba(15,5,32,0.6)" : "rgba(255,255,255,0.5)" }}>
+                        {action.label}
+                      </span>
+                    </motion.div>
+                  </Link>
+                );
+              })}
             </div>
-            <span className="text-[12.5px] flex-1" style={{ color: "rgba(255,255,255,0.5)" }}>Notifications</span>
-          </div>
-        </Link>
+          </motion.div>
 
-        <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl"
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-          <div className="w-[26px] h-[26px] rounded-lg flex items-center justify-center font-bold text-white text-xs flex-shrink-0"
-            style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)" }}>
-            {user?.name?.[0]?.toUpperCase() || "U"}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-medium text-white truncate leading-tight">{user?.name}</p>
-            <p className="text-[10px]" style={{ color: planColor }}>{isAdmin ? "Super Admin" : plan}</p>
-          </div>
-          <button onClick={() => { logout(); onClose?.(); }}
-            className="w-6 h-6 flex items-center justify-center rounded-lg flex-shrink-0"
-            style={{ color: "rgba(255,255,255,0.25)" }}>
-            <LogOut size={11} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#07070e" }}>
-      <aside className="hidden md:flex flex-col w-[215px] flex-shrink-0 h-full"
-        style={{ background: "#0b0b18", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
-        <Sidebar />
-      </aside>
-
-      <AnimatePresence>
-        {mob && (
-          <>
-            <motion.div className="fixed inset-0 z-40 md:hidden"
-              style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setMob(false)} />
-            <motion.aside className="fixed left-0 top-0 bottom-0 z-50 w-[215px] flex flex-col md:hidden"
-              style={{ background: "#0b0b18", borderRight: "1px solid rgba(255,255,255,0.06)" }}
-              initial={{ x: -215 }} animate={{ x: 0 }} exit={{ x: -215 }}
-              transition={{ type: "spring", damping: 28, stiffness: 280 }}>
-              <Sidebar onClose={() => setMob(false)} />
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
-
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 md:hidden flex-shrink-0"
-          style={{ background: "#0b0b18", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-          <button onClick={() => setMob(true)}>
-            <Menu size={19} style={{ color: "rgba(255,255,255,0.5)" }} />
-          </button>
-          <span className="font-black text-[15px]">
-            <span className="text-white">Drop</span>
-            <span style={{ color: "#a78bfa" }}>OS</span>
-          </span>
-          <Link href="/dashboard/notifications">
-            <div className="relative">
-              <Bell size={18} style={{ color: "rgba(255,255,255,0.5)" }} />
-              {(nc || 0) > 0 && (
-                <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center text-white font-bold"
-                  style={{ background: "#f87171", fontSize: "8px" }}>{nc}</div>
-              )}
+          {/* Store health */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.45 }}
+            className="rounded-2xl p-5"
+            style={{
+              background: "linear-gradient(135deg, #7C3AED15, #5B21B610)",
+              border: "1px solid rgba(124,58,237,0.2)",
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[13px] font-semibold sora" style={{ color: isLight ? "#0F0520" : "#F0EEFF" }}>
+                Store Health
+              </span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold"
+                style={{ background: "rgba(124,58,237,0.15)", color: "#7C3AED" }}>
+                Setup needed
+              </span>
             </div>
-          </Link>
+
+            {/* Progress bar */}
+            <div className="w-full h-2 rounded-full mb-2"
+              style={{ background: isLight ? "rgba(15,5,32,0.08)" : "rgba(255,255,255,0.08)" }}>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: "15%" }}
+                transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+                className="h-full rounded-full"
+                style={{ background: "linear-gradient(90deg, #7C3AED, #9D6EFF)" }}
+              />
+            </div>
+
+            <p className="text-[11px]" style={{ color: isLight ? "rgba(15,5,32,0.5)" : "rgba(255,255,255,0.4)" }}>
+              Complete your store setup to unlock full potential
+            </p>
+
+            <Link href="/dashboard/kai">
+              <div className="mt-3 flex items-center gap-1.5 text-[12px] font-medium cursor-pointer hover:opacity-70 transition-opacity"
+                style={{ color: "#7C3AED" }}>
+                <Zap size={11} /> Ask KIRO to complete setup
+                <ChevronRight size={11} />
+              </div>
+            </Link>
+          </motion.div>
         </div>
-        <main className="flex-1 overflow-y-auto" style={{ background: "#07070e" }}>
-          <style>{`
-            .dash-page { padding: 32px 36px 48px; min-height: 100%; }
-            @media (max-width: 768px) { .dash-page { padding: 20px 16px 40px; } }
-          `}</style>
-          {children}
-        </main>
       </div>
     </div>
   );
