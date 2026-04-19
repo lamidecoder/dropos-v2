@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // Path: frontend/src/app/dashboard/grader/page.tsx
 import { useQuery } from "@tanstack/react-query";
@@ -23,7 +24,6 @@ export default function ProductGraderPage() {
   } : null;
 
   return (
-    <>
     
       <div className="p-6 max-w-4xl">
         <div className="mb-6">
@@ -89,6 +89,5 @@ export default function ProductGraderPage() {
         )}
       </div>
     
-    </>
   );
 }

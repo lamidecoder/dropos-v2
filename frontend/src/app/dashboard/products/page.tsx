@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // Path: frontend/src/app/dashboard/products/page.tsx
 
@@ -17,7 +18,6 @@ const MOCK_PRODUCTS: any[] = [];
 
 function EmptyState({ t, theme }: any) {
   return (
-    <>
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 24px", textAlign: "center" }}>
       <div style={{ width: 72, height: 72, borderRadius: 22, background: theme === "dark" ? "rgba(107,53,232,0.12)" : "rgba(107,53,232,0.07)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, border: "1px solid rgba(107,53,232,0.2)" }}>
         <Package size={30} color={V.v400} />
@@ -128,6 +128,5 @@ export default function ProductsPage() {
         )}
       </motion.div>
     </div>
-    </>
   );
 }

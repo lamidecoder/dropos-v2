@@ -42,7 +42,6 @@ export default function ForgotPasswordPage() {
 
         <div className="rounded-2xl p-7" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-xl)" }}>
           {!sent ? (
-            <>
               <div className="mb-6">
                 <h2 className="text-xl font-black mb-1" style={{ color: "var(--text-primary)" }}>Reset Password</h2>
                 <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
@@ -82,7 +81,6 @@ export default function ForgotPasswordPage() {
                   </p>
                 )}
               </form>
-            </>
           ) : (
             <div className="text-center py-4">
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"

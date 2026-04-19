@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "../../../../lib/api";
-import DashboardLayout from "../../../../components/layout/DashboardLayout";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -104,17 +103,13 @@ export default function UserDetailPage() {
   };
 
   if (isLoading) return (
-    <DashboardLayout isAdmin>
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
       </div>
-    </DashboardLayout>
   );
 
   if (!user) return (
-    <DashboardLayout isAdmin>
       <div className={`text-center py-20 ${sub}`}>User not found</div>
-    </DashboardLayout>
   );
 
   const TABS = [
@@ -125,7 +120,6 @@ export default function UserDetailPage() {
   ] as const;
 
   return (
-    <DashboardLayout isAdmin>
       <div className="max-w-4xl space-y-6">
         {/* Back */}
         <Link href="/admin/users" className={`inline-flex items-center gap-2 text-sm font-semibold ${sub} hover:text-violet-500 transition-all`}>
@@ -474,6 +468,5 @@ export default function UserDetailPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { paymentAPI } from "../../../lib/api";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { CreditCard, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 
@@ -37,7 +36,6 @@ export default function AdminPaymentsPage() {
   const totals     = data?.totals;
 
   return (
-    <DashboardLayout isAdmin>
       <div className="space-y-6">
         <div>
           <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Payments & Payouts</h1>
@@ -165,6 +163,5 @@ export default function AdminPaymentsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 }

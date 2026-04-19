@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { Shield, Search, ChevronLeft, ChevronRight, User, Zap } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -29,7 +28,6 @@ export default function AuditLogsPage() {
   const pagination = data?.pagination;
 
   return (
-    <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -120,6 +118,5 @@ export default function AuditLogsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 }

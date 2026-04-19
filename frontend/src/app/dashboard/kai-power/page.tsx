@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // ============================================================
 // KAI Power Tools — Complete UI
@@ -78,7 +79,6 @@ export default function KAIPowerPage() {
   };
 
   return (
-    <>
     
       <div className="min-h-screen" style={{ background: "#07070e" }}>
 
@@ -667,6 +667,5 @@ function BuyerMotivationResult({ data }: any) {
         </Card>
       )}
     </div>
-    </>
   );
 }

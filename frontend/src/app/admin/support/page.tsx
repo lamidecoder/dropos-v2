@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supportAPI } from "../../../lib/api";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { CheckCircle, MessageSquare, ChevronDown, X } from "lucide-react";
 import toast from "react-hot-toast";
@@ -52,7 +51,6 @@ export default function AdminSupportPage() {
   const tickets = data || [];
 
   return (
-    <DashboardLayout isAdmin>
       <div className="space-y-6 max-w-3xl">
         <div>
           <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Support Tickets</h1>
@@ -153,6 +151,5 @@ export default function AdminSupportPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 }

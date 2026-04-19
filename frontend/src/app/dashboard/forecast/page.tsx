@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // Path: frontend/src/app/dashboard/forecast/page.tsx
 import { useState } from "react";
@@ -54,7 +55,6 @@ export default function ForecastPage() {
   const trend = forecast?.historical?.trend;
 
   return (
-    <>
     
       <div className="min-h-screen" style={{ background: "#07070e" }}>
 
@@ -350,6 +350,5 @@ export default function ForecastPage() {
         </div>
       </div>
     
-    </>
   );
 }

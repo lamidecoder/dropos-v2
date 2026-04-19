@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // Path: frontend/src/app/dashboard/orders/page.tsx
 
@@ -37,7 +38,6 @@ export default function OrdersPage() {
   ];
 
   return (
-    <>
     <div style={{ maxWidth: 1400, margin: "0 auto" }}>
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
@@ -115,6 +115,5 @@ export default function OrdersPage() {
         </div>
       </motion.div>
     </div>
-    </>
   );
 }

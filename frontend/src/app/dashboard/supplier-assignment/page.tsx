@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -84,7 +85,6 @@ export default function SupplierAssignmentPage() {
   };
 
   return (
-    <>
     
       <div className="space-y-6">
         <div>
@@ -135,7 +135,6 @@ export default function SupplierAssignmentPage() {
                 <p className={`text-xs ${sub} mt-1`}>Choose a product to manage its suppliers and fallback order</p>
               </div>
             ) : (
-              <>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className={`font-black text-sm ${tx}`}>{selectedProduct.name}</p>
@@ -221,7 +220,6 @@ export default function SupplierAssignmentPage() {
                     ))}
                   </div>
                 )}
-              </>
             )}
           </div>
         </div>
@@ -299,6 +297,5 @@ export default function SupplierAssignmentPage() {
         )}
       </div>
     
-    </>
   );
 }

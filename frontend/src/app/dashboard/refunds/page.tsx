@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -54,7 +55,6 @@ export default function RefundsPage() {
   };
 
   return (
-    <>
     
       <div className="space-y-6">
         <div>
@@ -159,7 +159,6 @@ export default function RefundsPage() {
               )}
 
               {selected.status === "PENDING" && (
-                <>
                   <div>
                     <label className={`block text-xs font-semibold ${sub} mb-1.5`}>Admin Note (optional)</label>
                     <textarea value={adminNote} onChange={e => setAdminNote(e.target.value)} rows={2}
@@ -178,7 +177,6 @@ export default function RefundsPage() {
                       <XCircle size={14} /> Reject
                     </button>
                   </div>
-                </>
               )}
               {selected.status !== "PENDING" && (
                 <div className={`rounded-xl p-3 ${STATUS_COLORS[selected.status]}`}>
@@ -191,6 +189,5 @@ export default function RefundsPage() {
         </div>
       )}
     
-    </>
   );
 }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "../../../lib/api";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { Save, AlertTriangle, RefreshCcw, DollarSign, Package } from "lucide-react";
 import toast from "react-hot-toast";
@@ -47,7 +46,6 @@ export default function AdminSettingsPage() {
   ];
 
   return (
-    <DashboardLayout isAdmin>
       <div className="max-w-2xl space-y-6">
         <div>
           <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Platform Settings</h1>
@@ -130,14 +128,12 @@ export default function AdminSettingsPage() {
                         </button>
                       </div>
                     ) : (
-                      <>
                         <span className={`text-lg font-black ${tx}`}>${(settings as any)?.[plan.key] || 0}<span className={`text-xs font-normal ${sub}`}>/mo</span></span>
                         <button onClick={() => { setVal((settings as any)?.[plan.key] || 0); setEd(true); }}
                           className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all
                             border-slate-600 text-[var(--text-secondary)] hover:bg-[var(--bg-card)]`}>
                           Edit
                         </button>
-                      </>
                     )}
                   </div>
                 </div>
@@ -189,6 +185,5 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
   );
 }

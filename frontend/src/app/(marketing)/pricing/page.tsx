@@ -64,7 +64,6 @@ export default function PricingPage() {
   const [yearly, setYearly] = useState(false);
 
   return (
-    <>
       {/* Hero */}
       <section className="pt-40 pb-16 px-6 text-center relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
@@ -171,6 +170,5 @@ export default function PricingPage() {
           </FadeUp>
         </div>
       </section>
-    </>
   );
 }

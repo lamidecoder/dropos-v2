@@ -3,7 +3,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { adminAPI } from "../../lib/api";
-import DashboardLayout from "../../components/layout/DashboardLayout";
 import { AdminStatCards } from "../../components/dashboard/StatCards";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
@@ -55,7 +54,6 @@ export default function AdminDashboard() {
   const recentUsers = usersData?.data || [];
 
   return (
-    <DashboardLayout isAdmin>
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -211,6 +209,5 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
   );
 }

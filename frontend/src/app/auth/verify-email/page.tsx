@@ -33,17 +33,14 @@ function VerifyEmailPageInner() {
         <div className="[background:var(--bg-elevated)]/80 backdrop-blur rounded-3xl border [border-color:var(--border)]/50 p-10 shadow-2xl text-center">
 
           {status === "loading" && (
-            <>
               <div className="w-20 h-20 rounded-full bg-violet-500/10 flex items-center justify-center mx-auto mb-6">
                 <Loader2 size={36} className="text-violet-400 animate-spin" />
               </div>
               <h1 className="text-2xl font-black [color:var(--text-primary)] mb-3">Verifying Your Email</h1>
               <p className="text-slate-400">Please wait a moment…</p>
-            </>
           )}
 
           {status === "success" && (
-            <>
               <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 animate-bounce">
                 <CheckCircle size={40} className="text-emerald-400" />
               </div>
@@ -52,11 +49,9 @@ function VerifyEmailPageInner() {
               <div className="w-full [background:var(--bg-card)] rounded-full h-1.5 overflow-hidden">
                 <div className="h-full bg-violet-500 rounded-full animate-[grow_3s_linear_forwards]" />
               </div>
-            </>
           )}
 
           {status === "error" && (
-            <>
               <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-6">
                 <XCircle size={40} className="text-red-400" />
               </div>
@@ -67,11 +62,9 @@ function VerifyEmailPageInner() {
                 style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
                 Back to Login
               </Link>
-            </>
           )}
 
           {status === "notoken" && (
-            <>
               <div className="w-20 h-20 rounded-full bg-violet-500/10 flex items-center justify-center mx-auto mb-6">
                 <Mail size={40} className="text-violet-400" />
               </div>
@@ -86,7 +79,6 @@ function VerifyEmailPageInner() {
                 className="w-full inline-block py-3 rounded-xl text-slate-300 text-sm font-bold border [border-color:var(--border-strong)] hover:[background:var(--bg-card)] transition-all">
                 Back to Login
               </Link>
-            </>
           )}
         </div>
       </div>

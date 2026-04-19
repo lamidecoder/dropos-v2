@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // Path: frontend/src/app/dashboard/billing/page.tsx
 
@@ -44,7 +45,6 @@ export default function BillingPage() {
   const currentPlan = user?.subscription?.plan || "FREE";
 
   return (
-    <>
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
@@ -175,6 +175,5 @@ export default function BillingPage() {
         </button>
       </motion.div>
     </div>
-    </>
   );
 }

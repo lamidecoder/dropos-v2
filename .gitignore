@@ -9,3 +9,14 @@ prisma/migrations
 frontend.zip
 
 frontend.zip
+
+*.zip
+*.tar.gz
+*.mp4
+*.mov
+*.avi
+*.dmg
+*.exe
+*.iso
+*.rar
+.env.local

@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // Path: frontend/src/app/dashboard/tiktok-scripts/page.tsx
 import { useState } from "react";
@@ -43,7 +44,6 @@ export default function TikTokScriptsPage() {
   };
 
   return (
-    <>
     
       <div className="min-h-screen p-6" style={{ background: "#07070e" }}>
         <div className="max-w-4xl mx-auto">
@@ -183,6 +183,5 @@ export default function TikTokScriptsPage() {
         </div>
       </div>
     
-    </>
   );
 }

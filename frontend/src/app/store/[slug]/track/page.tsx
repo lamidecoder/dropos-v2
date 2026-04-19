@@ -133,7 +133,6 @@ function OrderTrackPageInner() {
 
         {/* Order details */}
         {order && (
-          <>
             {/* Status card */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
               <div className="flex items-start justify-between mb-6">
@@ -283,7 +282,6 @@ function OrderTrackPageInner() {
                 </div>
               </div>
             </div>
-          </>
         )}
       </div>
     </div>

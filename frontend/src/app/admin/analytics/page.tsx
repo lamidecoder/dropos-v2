@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { adminAPI } from "../../../lib/api";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
@@ -37,7 +36,6 @@ export default function AdminAnalyticsPage() {
   const monthly = stats?.monthlyRevenue?.length ? stats.monthlyRevenue : MOCK_MONTHLY;
 
   return (
-    <DashboardLayout isAdmin>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -143,6 +141,5 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
   );
 }

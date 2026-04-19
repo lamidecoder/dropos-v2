@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 
 import { useState } from "react";
@@ -149,7 +150,6 @@ export default function ImportPage() {
   };
 
   return (
-    <>
     
       <div className="max-w-4xl space-y-6">
 
@@ -471,6 +471,5 @@ export default function ImportPage() {
         )}
       </div>
     
-    </>
   );
 }

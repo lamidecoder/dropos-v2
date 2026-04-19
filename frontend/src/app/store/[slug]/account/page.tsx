@@ -127,7 +127,6 @@ export default function CustomerAccountPage() {
           {/* Forms */}
           <div className="space-y-4">
             {tab === "login" ? (
-              <>
                 <div className="relative">
                   <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" />
                   <input value={loginForm.email} onChange={e => setLoginForm(f => ({ ...f, email: e.target.value }))}
@@ -149,9 +148,7 @@ export default function CustomerAccountPage() {
                 <p className="text-center text-xs text-slate-600">
                   No account? <button onClick={() => setTab("register")} className="font-bold" style={{ color: brand }}>Create one free</button>
                 </p>
-              </>
             ) : (
-              <>
                 {[
                   { key: "name", icon: User, placeholder: "Full Name", type: "text" },
                   { key: "email", icon: Mail, placeholder: "Email address", type: "email" },
@@ -177,7 +174,6 @@ export default function CustomerAccountPage() {
                 <p className="text-center text-xs text-slate-600">
                   Already have an account? <button onClick={() => setTab("login")} className="font-bold" style={{ color: brand }}>Sign in</button>
                 </p>
-              </>
             )}
           </div>
 

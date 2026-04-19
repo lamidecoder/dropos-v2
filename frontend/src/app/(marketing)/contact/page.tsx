@@ -26,7 +26,6 @@ export default function ContactPage() {
   const inp = "w-full bg-[var(--bg-card)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-disabled)] outline-none focus:border-amber-400/40 focus:bg-[var(--bg-elevated)] transition-all text-sm";
 
   return (
-    <>
       <section className="pt-40 pb-24 px-6 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(196,168,76,0.05) 0%, transparent 70%)" }} />
@@ -113,6 +112,5 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-    </>
   );
 }

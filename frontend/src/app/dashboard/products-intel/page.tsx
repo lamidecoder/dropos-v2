@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // Path: frontend/src/app/dashboard/products-intel/page.tsx
 import { useState } from "react";
@@ -40,7 +41,6 @@ export default function ProductsIntelPage() {
   });
 
   return (
-    <>
     
       <div className="p-6 max-w-3xl">
         <div className="mb-6">
@@ -179,6 +179,5 @@ export default function ProductsIntelPage() {
         )}
       </div>
     
-    </>
   );
 }

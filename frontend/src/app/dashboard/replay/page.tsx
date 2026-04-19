@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // Path: frontend/src/app/dashboard/replay/page.tsx
 import { useQuery } from "@tanstack/react-query";
@@ -21,7 +22,6 @@ export default function ReplayPage() {
     : 1;
 
   return (
-    <>
     
       <div className="p-6 max-w-3xl">
         <div className="mb-6">
@@ -93,6 +93,5 @@ export default function ReplayPage() {
         )}
       </div>
     
-    </>
   );
 }

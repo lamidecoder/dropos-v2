@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // Path: frontend/src/app/dashboard/settings/page.tsx
 
@@ -25,7 +26,6 @@ const SECTIONS = [
 function Input({ label, value, onChange, type = "text", placeholder, t, disabled }: any) {
   const [show, setShow] = useState(false);
   return (
-    <>
     <div>
       <div style={{ fontSize: 12, fontWeight: 600, color: t.muted, marginBottom: 6, letterSpacing: "0.02em" }}>{label}</div>
       <div style={{ position: "relative" }}>
@@ -197,6 +197,5 @@ export default function SettingsPage() {
         </motion.div>
       </div>
     </div>
-    </>
   );
 }

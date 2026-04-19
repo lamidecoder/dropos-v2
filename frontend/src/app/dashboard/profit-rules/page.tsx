@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // ── Profit Protection Rules ───────────────────────────────────
 // Path: frontend/src/app/dashboard/profit-rules/page.tsx
@@ -50,7 +51,6 @@ export function ProfitRulesPage() {
   });
 
   return (
-    <>
     
       <div className="p-6 max-w-3xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="flex items-center justify-between mb-6">
@@ -165,7 +165,6 @@ export function ProfitRulesPage() {
         )}
       </div>
     
-    </>
   );
 }
 

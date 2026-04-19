@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -136,7 +137,6 @@ export default function ProductVariantsPage() {
   };
 
   return (
-    <>
       <div className="space-y-6 max-w-4xl mx-auto">
 
         {/* Header */}
@@ -184,13 +184,11 @@ export default function ProductVariantsPage() {
             <p className={`text-2xl font-black ${tx}`}>{Object.keys(grouped).length}</p>
           </div>
           {variants.some(v => v.inventory === 0) && (
-            <>
               <div className="w-px [background:var(--border)]" />
               <div>
                 <p className={`text-xs font-semibold text-amber-500`}>Out of Stock</p>
                 <p className="text-2xl font-black text-amber-400">{variants.filter(v => v.inventory === 0).length}</p>
               </div>
-            </>
           )}
         </div>
 
@@ -359,6 +357,5 @@ export default function ProductVariantsPage() {
           </div>
         )}
       </div>
-    </>
   );
 }

@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -109,13 +110,11 @@ export default function ChatSettingsPage() {
   const selectedProvider = PROVIDERS.find(p => p.id === liveChatProvider);
 
   if (isLoading) return (
-    <>
       <div className="py-16 text-center text-secondary">Loading…</div>
     
   );
 
   return (
-    <>
     
       <div className="space-y-6 max-w-2xl mx-auto">
 
@@ -275,7 +274,5 @@ export default function ChatSettingsPage() {
         )}
       </div>
     
-    </>
-    </>
   );
 }

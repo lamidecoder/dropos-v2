@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "../../../lib/api";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { CheckCircle, AlertCircle, ChevronDown, Shield, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
@@ -34,7 +33,6 @@ export default function ErrorLogsPage() {
   const pagination = data?.pagination;
 
   return (
-    <DashboardLayout isAdmin>
       <div className="space-y-6 max-w-4xl">
         <div>
           <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Error Logs</h1>
@@ -132,6 +130,5 @@ export default function ErrorLogsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 }

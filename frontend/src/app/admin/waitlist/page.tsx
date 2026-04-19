@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { Trash2, RefreshCw, Download, Search, Mail, Users, Clock } from "lucide-react";
 import toast from "react-hot-toast";
@@ -74,7 +73,7 @@ export default function AdminWaitlistPage() {
   const withWA = entries.filter(e => e.whatsapp).length;
 
   return (
-    <DashboardLayout>
+      <>
       <div className="dash-page">
         {/* Header */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:"28px"}}>
@@ -214,6 +213,6 @@ export default function AdminWaitlistPage() {
       </AnimatePresence>
 
       <style>{`input::placeholder{color:rgba(255,255,255,0.28);}button:disabled{opacity:0.6;cursor:not-allowed;}`}</style>
-    </DashboardLayout>
+      </>
   );
 }

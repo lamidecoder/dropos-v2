@@ -101,7 +101,6 @@ function ResetPasswordPageInner() {
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Redirecting you to login…</p>
             </div>
           ) : (
-            <>
               <div className="mb-5">
                 <h2 className="text-xl font-black mb-1" style={{ color: "var(--text-primary)" }}>New Password</h2>
                 <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Choose a strong password for your account</p>
@@ -157,7 +156,6 @@ function ResetPasswordPageInner() {
                   </p>
                 )}
               </form>
-            </>
           )}
         </div>
       </div>

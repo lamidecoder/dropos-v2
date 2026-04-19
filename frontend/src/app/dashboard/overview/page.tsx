@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 // ============================================================
 // Dashboard Overview — Premium Home Screen
@@ -19,7 +20,6 @@ import {
 function StatCard({ label, value, sub, trend, color, icon: Icon, delay = 0 }: any) {
   const isUp = trend >= 0;
   return (
-    <>
     <motion.div className="rounded-2xl p-4 relative overflow-hidden"
       style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
@@ -257,6 +257,5 @@ export default function OverviewPage() {
         </div>
       </div>
     
-    </>
   );
 }

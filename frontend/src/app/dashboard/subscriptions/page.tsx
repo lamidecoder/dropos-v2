@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
@@ -36,7 +37,6 @@ export default function SubscriptionsPage() {
   const card = "[background:var(--bg-secondary)] [border-color:var(--border)]";
 
   return (
-    <>
     
       <div className="space-y-6">
         <div>
@@ -113,6 +113,5 @@ export default function SubscriptionsPage() {
         </div>
       </div>
     
-    </>
   );
 }

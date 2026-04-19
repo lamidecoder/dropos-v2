@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 
 import { useState } from "react";
@@ -72,7 +73,6 @@ export default function ReportsPage() {
   };
 
   return (
-    <>
     
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -186,6 +186,5 @@ export default function ReportsPage() {
         </div>
       </div>
     
-    </>
   );
 }

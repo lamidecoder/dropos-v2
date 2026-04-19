@@ -1,3 +1,4 @@
+"use client";
 ﻿"use client";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -54,7 +55,6 @@ export default function FunnelPage() {
   const maxCount = Math.max(...funnel.map((f: any) => f.count));
 
   return (
-    <>
     
       <div className="space-y-6">
         <div className="flex items-start justify-between">
@@ -216,6 +216,5 @@ export default function FunnelPage() {
           )}
         </div>
     
-    </>
   );
 }
