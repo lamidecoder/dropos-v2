@@ -4,7 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, productAPI } from "../../../../../lib/api";
 import { useAuthStore } from "../../../../../store/auth.store";
-import DashboardLayout from "../../../../../components/layout/DashboardLayout";
 import {
   Plus, Trash2, Edit2, X, Save, ArrowLeft, Package,
   Tag, Layers, ChevronRight, AlertCircle, CheckCircle,
@@ -137,7 +136,6 @@ export default function ProductVariantsPage() {
   };
 
   return (
-    <DashboardLayout>
       <div className="space-y-6 max-w-4xl mx-auto">
 
         {/* Header */}
@@ -360,6 +358,5 @@ export default function ProductVariantsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 }
