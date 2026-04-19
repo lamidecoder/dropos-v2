@@ -5,3 +5,5 @@ build
 *.log
 prisma/migrations
 .vercel
+
+frontend.zip
