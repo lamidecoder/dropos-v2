@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
@@ -115,6 +115,7 @@ export default function ChatSettingsPage() {
   );
 
   return (
+    <>
     
       <div className="space-y-6 max-w-2xl mx-auto">
 
@@ -274,5 +275,6 @@ export default function ChatSettingsPage() {
         )}
       </div>
     
+    </>
   );
 }

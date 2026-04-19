@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // ============================================================
 // Autopilot Dashboard
 // Path: frontend/src/app/dashboard/autopilot/page.tsx
@@ -87,6 +87,7 @@ export default function AutopilotPage() {
   const isActive    = cjConnected;
 
   return (
+    <>
     
       <div className="min-h-screen p-6" style={{ background: "#07070e" }}>
         <div className="max-w-3xl mx-auto">
@@ -301,5 +302,6 @@ export default function AutopilotPage() {
         </div>
       </div>
     
+    </>
   );
 }

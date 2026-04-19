@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -136,6 +136,7 @@ export default function ProductVariantsPage() {
   };
 
   return (
+    <>
       <div className="space-y-6 max-w-4xl mx-auto">
 
         {/* Header */}
@@ -358,5 +359,6 @@ export default function ProductVariantsPage() {
           </div>
         )}
       </div>
+    </>
   );
 }

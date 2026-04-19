@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // ── BULK IMPORT PAGE ─────────────────────────────────────────
 // Path: frontend/src/app/dashboard/bulk-import/page.tsx
 import { useState } from "react";
@@ -49,6 +49,7 @@ export function BulkImportPage() {
   const selectGood   = () => setSelected(new Set(products.map((_, i) => i).filter(i => ["A","B"].includes(products[i].quickScore))));
 
   return (
+    <>
     
       <div className="p-6 max-w-4xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="mb-6">
@@ -164,6 +165,7 @@ export function BulkImportPage() {
         )}
       </div>
     
+    </>
   );
 }
 

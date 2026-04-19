@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Path: frontend/src/app/dashboard/notifications/page.tsx
 import { motion } from "framer-motion";
 import { useTheme } from "../../../components/layout/DashboardLayout";
@@ -17,6 +17,7 @@ export default function NotificationsPage() {
   };
 
   return (
+    <>
     <div style={{ maxWidth: 1400, margin: "0 auto" }}>
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.03em", color: t.text }}>
@@ -73,5 +74,6 @@ export default function NotificationsPage() {
         </Link>
       </motion.div>
     </div>
+    </>
   );
 }

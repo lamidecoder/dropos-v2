@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // ── PRICE SYNC ────────────────────────────────────────────────
 // Path: frontend/src/app/dashboard/price-sync/page.tsx
 import { useState } from "react";
@@ -21,6 +21,7 @@ export function PriceSyncPage() {
   });
 
   return (
+    <>
     
       <div className="p-6 max-w-3xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="mb-6">
@@ -90,6 +91,7 @@ export function PriceSyncPage() {
         )}
       </div>
     
+    </>
   );
 }
 export default PriceSyncPage;

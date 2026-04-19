@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Webhooks Page
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -51,6 +51,7 @@ export default function WebhooksPage() {
   const toggleEvent = (e: string) => setEvents(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
 
   return (
+    <>
     
       <div className="space-y-6">
         <div className="flex items-start justify-between">
@@ -154,5 +155,6 @@ export default function WebhooksPage() {
         </div>
       )}
     
+    </>
   );
 }

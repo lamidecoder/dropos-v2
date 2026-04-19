@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
@@ -76,6 +76,7 @@ export default function BackupPage() {
   };
 
   return (
+    <>
     
       <div className="space-y-6 max-w-3xl mx-auto">
 
@@ -190,5 +191,6 @@ export default function BackupPage() {
         </div>
       </div>
     
+    </>
   );
 }

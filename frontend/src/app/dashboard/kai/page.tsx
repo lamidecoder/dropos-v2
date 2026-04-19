@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Path: frontend/src/app/dashboard/kai/page.tsx
 
 import { useState, useRef, useEffect } from "react";
@@ -88,6 +88,7 @@ export default function KIROPage() {
   const isEmpty = messages.length === 0;
 
   return (
+    <>
     <div style={{ display: "flex", height: "calc(100vh - 60px - 56px)", gap: 16, maxWidth: 1400, margin: "0 auto" }}>
 
       {/* History Sidebar */}
@@ -277,5 +278,6 @@ export default function KIROPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

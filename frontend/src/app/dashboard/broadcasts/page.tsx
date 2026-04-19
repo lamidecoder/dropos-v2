@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Path: frontend/src/app/dashboard/broadcasts/page.tsx
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -87,6 +87,7 @@ export default function BroadcastsPage() {
   });
 
   return (
+    <>
     
       <div className="h-full flex flex-col" style={{ background: "#07070e" }}>
 
@@ -318,5 +319,6 @@ export default function BroadcastsPage() {
         </div>
       </div>
     
+    </>
   );
 }

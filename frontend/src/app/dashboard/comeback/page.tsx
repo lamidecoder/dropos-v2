@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Path: frontend/src/app/dashboard/comeback/page.tsx
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -32,6 +32,7 @@ export default function ComebackPage() {
   const riskColor = (level: string) => level === "high" ? "#f87171" : level === "medium" ? "#fbbf24" : "#60a5fa";
 
   return (
+    <>
     
       <div className="p-6 max-w-3xl">
         <div className="mb-6">
@@ -113,5 +114,6 @@ export default function ComebackPage() {
         )}
       </div>
     
+    </>
   );
 }

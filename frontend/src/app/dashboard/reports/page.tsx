@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -72,6 +72,7 @@ export default function ReportsPage() {
   };
 
   return (
+    <>
     
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -185,5 +186,6 @@ export default function ReportsPage() {
         </div>
       </div>
     
+    </>
   );
 }

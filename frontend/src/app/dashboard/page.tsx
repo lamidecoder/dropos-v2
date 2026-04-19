@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Path: frontend/src/app/dashboard/page.tsx
 
 import { useState, useEffect } from "react";
@@ -21,6 +21,7 @@ const T = {
 
 function StatCard({ label, value, color, icon: Icon, delay, t, theme }: any) {
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
@@ -231,5 +232,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

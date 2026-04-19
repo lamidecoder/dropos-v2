@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Path: frontend/src/app/dashboard/ad-spy/page.tsx
 // Also accessible via KAI: "Show me winning ads for hair products"
 import { useState } from "react";
@@ -46,6 +46,7 @@ export default function AdSpyPage() {
   const engagementColor = (e: string) => e === "viral" ? "#a78bfa" : e === "high" ? "#34d399" : e === "medium" ? "#fbbf24" : "#60a5fa";
 
   return (
+    <>
     
       <div className="min-h-screen p-6" style={{ background: "#07070e" }}>
         <div className="max-w-4xl mx-auto">
@@ -191,5 +192,6 @@ export default function AdSpyPage() {
         </div>
       </div>
     
+    </>
   );
 }

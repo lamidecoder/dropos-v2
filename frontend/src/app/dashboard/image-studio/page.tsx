@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Path: frontend/src/app/dashboard/image-studio/page.tsx
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -89,6 +89,7 @@ export default function ImageStudioPage() {
     : !!imageUrl;
 
   return (
+    <>
     
       <div className="min-h-screen" style={{ background: "#07070e" }}>
         <div className="px-6 pt-6 pb-4">
@@ -275,5 +276,6 @@ export default function ImageStudioPage() {
         </div>
       </div>
     
+    </>
   );
 }

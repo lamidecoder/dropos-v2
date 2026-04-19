@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -63,6 +63,7 @@ function StatusBadge({ status }: { status: string }) {
   }[status] || { bg: "var(--bg-secondary)", color: "var(--text-tertiary)", dot: "var(--text-tertiary)", label: status };
 
   return (
+    <>
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
       style={{ background: cfg.bg, color: cfg.color }}>
       <span className="w-1.5 h-1.5 rounded-full" style={{ background: cfg.dot }} />
@@ -629,5 +630,6 @@ export default function DiscountsPage() {
         )}
       </div>
     
+    </>
   );
 }

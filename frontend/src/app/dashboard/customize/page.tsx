@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // ============================================================
 // Visual Store Editor — Perfect UX
 // Path: frontend/src/app/dashboard/customize/page.tsx
@@ -63,6 +63,7 @@ const SECTION_LABELS: Record<string, { label: string; icon: string }> = {
 // ── Colour Swatch ─────────────────────────────────────────────
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
+    <>
     <div className="flex items-center justify-between py-2">
       <label className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{label}</label>
       <div className="flex items-center gap-2">
@@ -720,6 +721,7 @@ export default function CustomizePage() {
         </div>
       </div>
     
+    </>
   );
 }
 

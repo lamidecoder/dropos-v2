@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // ── COMPETITOR SPY ────────────────────────────────────────────
 // Path: frontend/src/app/dashboard/competitor-spy/page.tsx
 import { useState } from "react";
@@ -22,6 +22,7 @@ export function CompetitorSpyPage() {
   });
 
   return (
+    <>
     
       <div className="p-6 max-w-3xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="mb-6">
@@ -131,6 +132,7 @@ export function CompetitorSpyPage() {
         )}
       </div>
     
+    </>
   );
 }
 export default CompetitorSpyPage;
