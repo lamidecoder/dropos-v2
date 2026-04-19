@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { Download, TrendingUp, ShoppingCart, DollarSign, Users } from "lucide-react";
@@ -73,7 +72,7 @@ export default function ReportsPage() {
   };
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -185,6 +184,6 @@ export default function ReportsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }

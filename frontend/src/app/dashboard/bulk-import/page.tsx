@@ -4,7 +4,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { Link, Loader2, Package, Check, Download } from "lucide-react";
@@ -50,7 +49,7 @@ export function BulkImportPage() {
   const selectGood   = () => setSelected(new Set(products.map((_, i) => i).filter(i => ["A","B"].includes(products[i].quickScore))));
 
   return (
-    <DashboardLayout>
+    
       <div className="p-6 max-w-4xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-0.5">Bulk Import</h1>
@@ -164,7 +163,7 @@ export function BulkImportPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }
 

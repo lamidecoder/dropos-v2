@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { RefreshCw, Eye, X, CheckCircle, XCircle, Clock, DollarSign } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -55,7 +54,7 @@ export default function RefundsPage() {
   };
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6">
         <div>
           <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Refunds</h1>
@@ -190,6 +189,6 @@ export default function RefundsPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    
   );
 }

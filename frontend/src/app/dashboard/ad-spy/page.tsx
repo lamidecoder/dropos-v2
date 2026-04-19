@@ -4,7 +4,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { Search, Zap, TrendingUp, Eye, Lightbulb, AlertCircle, Loader2, Copy, Check } from "lucide-react";
@@ -47,7 +46,7 @@ export default function AdSpyPage() {
   const engagementColor = (e: string) => e === "viral" ? "#a78bfa" : e === "high" ? "#34d399" : e === "medium" ? "#fbbf24" : "#60a5fa";
 
   return (
-    <DashboardLayout>
+    
       <div className="min-h-screen p-6" style={{ background: "#07070e" }}>
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -191,6 +190,6 @@ export default function AdSpyPage() {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }

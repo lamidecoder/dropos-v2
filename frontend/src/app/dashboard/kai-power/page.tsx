@@ -6,7 +6,6 @@
 // ============================================================
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import {
   Zap, FileText, Image, Megaphone, TrendingUp,
@@ -79,7 +78,7 @@ export default function KAIPowerPage() {
   };
 
   return (
-    <DashboardLayout>
+    
       <div className="min-h-screen" style={{ background: "#07070e" }}>
 
         {/* Header */}
@@ -222,7 +221,7 @@ export default function KAIPowerPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }
 

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { Key, Plus, Trash2, Copy, Check, X, Shield, Zap } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -53,7 +52,7 @@ export default function ApiKeysPage() {
   const togglePerm = (p: string) => setPerms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
@@ -168,6 +167,6 @@ export default function ApiKeysPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    
   );
 }

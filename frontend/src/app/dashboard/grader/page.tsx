@@ -2,7 +2,6 @@
 // Path: frontend/src/app/dashboard/grader/page.tsx
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { BarChart2, TrendingUp, TrendingDown, Package } from "lucide-react";
@@ -24,7 +23,7 @@ export default function ProductGraderPage() {
   } : null;
 
   return (
-    <DashboardLayout>
+    
       <div className="p-6 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-1">Product Performance</h1>
@@ -88,6 +87,6 @@ export default function ProductGraderPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }

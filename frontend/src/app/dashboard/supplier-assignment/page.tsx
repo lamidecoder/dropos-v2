@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 import {
   Truck, Plus, X, Trash2, ChevronUp, ChevronDown,
   CheckCircle, AlertCircle, Package, Search, ArrowRightLeft,
@@ -85,7 +84,7 @@ export default function SupplierAssignmentPage() {
   };
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6">
         <div>
           <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Supplier Assignment</h1>
@@ -298,6 +297,6 @@ export default function SupplierAssignmentPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }

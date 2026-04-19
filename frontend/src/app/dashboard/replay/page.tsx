@@ -2,7 +2,6 @@
 // Path: frontend/src/app/dashboard/replay/page.tsx
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { TrendingUp, Award } from "lucide-react";
@@ -22,7 +21,7 @@ export default function ReplayPage() {
     : 1;
 
   return (
-    <DashboardLayout>
+    
       <div className="p-6 max-w-3xl">
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-1">Revenue Replay</h1>
@@ -92,6 +91,6 @@ export default function ReplayPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { Film, Clock, Copy, Check, Loader2, Music, Hash, Zap } from "lucide-react";
@@ -44,7 +43,7 @@ export default function TikTokScriptsPage() {
   };
 
   return (
-    <DashboardLayout>
+    
       <div className="min-h-screen p-6" style={{ background: "#07070e" }}>
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
@@ -182,6 +181,6 @@ export default function TikTokScriptsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }

@@ -6,7 +6,6 @@
 import { useState }      from "react";
 import { useQuery }      from "@tanstack/react-query";
 import { motion }        from "framer-motion";
-import DashboardLayout   from "@/components/layout/DashboardLayout";
 import { api }           from "@/lib/api";
 import { useAuthStore }  from "@/store/auth.store";
 import KAIChat           from "@/components/kai/KAIChat";
@@ -132,7 +131,7 @@ export default function OverviewPage() {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return (
-    <DashboardLayout>
+    
       <div className="min-h-screen" style={{ background: "#07070e" }}>
         <div className="max-w-2xl mx-auto px-5 pt-6 pb-10">
 
@@ -256,6 +255,6 @@ export default function OverviewPage() {
 
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { Send, AlertTriangle, Clock, TrendingDown } from "lucide-react";
@@ -33,7 +32,7 @@ export default function ComebackPage() {
   const riskColor = (level: string) => level === "high" ? "#f87171" : level === "medium" ? "#fbbf24" : "#60a5fa";
 
   return (
-    <DashboardLayout>
+    
       <div className="p-6 max-w-3xl">
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-1">Customer Comeback</h1>
@@ -113,6 +112,6 @@ export default function ComebackPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }

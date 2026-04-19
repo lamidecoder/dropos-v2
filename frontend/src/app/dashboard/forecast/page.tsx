@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { TrendingUp, TrendingDown, Minus, Zap, Search, Package, ExternalLink, ShoppingBag, Loader2, Check, AlertCircle, ArrowRight } from "lucide-react";
@@ -55,7 +54,7 @@ export default function ForecastPage() {
   const trend = forecast?.historical?.trend;
 
   return (
-    <DashboardLayout>
+    
       <div className="min-h-screen" style={{ background: "#07070e" }}>
 
         {/* Header + Tabs */}
@@ -349,6 +348,6 @@ export default function ForecastPage() {
           </AnimatePresence>
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }

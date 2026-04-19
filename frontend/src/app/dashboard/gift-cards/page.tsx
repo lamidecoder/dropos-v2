@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { Gift, Plus, X, Copy, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
@@ -49,7 +48,7 @@ export default function GiftCardsPage() {
   const totalIssued = giftCards.reduce((sum: number, g: any) => sum + g.initialAmount, 0);
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
@@ -157,6 +156,6 @@ export default function GiftCardsPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    
   );
 }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { Send, Sparkles, Users, Clock, CheckCircle, MessageSquare, Zap, Calendar, BarChart2, RefreshCw, AlertCircle } from "lucide-react";
@@ -88,7 +87,7 @@ export default function BroadcastsPage() {
   });
 
   return (
-    <DashboardLayout>
+    
       <div className="h-full flex flex-col" style={{ background: "#07070e" }}>
 
         {/* Header */}
@@ -318,6 +317,6 @@ export default function BroadcastsPage() {
           </AnimatePresence>
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }

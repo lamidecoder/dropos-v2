@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { Upload, Wand2, Image, Sparkles, Download, Copy, Loader2, X, Check } from "lucide-react";
@@ -90,7 +89,7 @@ export default function ImageStudioPage() {
     : !!imageUrl;
 
   return (
-    <DashboardLayout>
+    
       <div className="min-h-screen" style={{ background: "#07070e" }}>
         <div className="px-6 pt-6 pb-4">
           <h1 className="text-xl font-semibold text-white mb-0.5">AI Image Studio</h1>
@@ -275,6 +274,6 @@ export default function ImageStudioPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }

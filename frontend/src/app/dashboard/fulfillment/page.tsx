@@ -4,7 +4,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { Package, Check, Clock, ExternalLink, Truck } from "lucide-react";
@@ -33,7 +32,7 @@ export function FulfillmentPage() {
   });
 
   return (
-    <DashboardLayout>
+    
       <div className="p-6 max-w-3xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-0.5">Fulfillment Queue</h1>
@@ -97,7 +96,7 @@ export function FulfillmentPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }
 export default FulfillmentPage;

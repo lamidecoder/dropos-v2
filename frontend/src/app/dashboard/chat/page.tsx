@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 import {
   MessageCircle, Phone, Zap, Globe, Settings2, CheckCircle,
   Save, ExternalLink, AlertCircle, Eye, EyeOff, ToggleLeft, ToggleRight,
@@ -110,13 +109,13 @@ export default function ChatSettingsPage() {
   const selectedProvider = PROVIDERS.find(p => p.id === liveChatProvider);
 
   if (isLoading) return (
-    <DashboardLayout>
+    
       <div className="py-16 text-center text-secondary">Loading…</div>
-    </DashboardLayout>
+    
   );
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6 max-w-2xl mx-auto">
 
         {/* Header */}
@@ -274,6 +273,6 @@ export default function ChatSettingsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }

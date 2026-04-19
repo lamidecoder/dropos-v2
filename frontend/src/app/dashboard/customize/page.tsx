@@ -11,7 +11,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence }                  from "framer-motion";
 import { useQuery, useMutation }                    from "@tanstack/react-query";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api }         from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import {
@@ -333,7 +332,7 @@ export default function CustomizePage() {
 
   if (isLoading || !settings) {
     return (
-      <DashboardLayout>
+      
         <div className="flex items-center justify-center h-full" style={{ background: "#07070e" }}>
           <div className="text-center">
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}>
@@ -342,12 +341,12 @@ export default function CustomizePage() {
             <p className="text-sm mt-3" style={{ color: "rgba(255,255,255,0.4)" }}>Loading your store editor...</p>
           </div>
         </div>
-      </DashboardLayout>
+      
     );
   }
 
   return (
-    <DashboardLayout>
+    
       <div className="flex flex-col h-full overflow-hidden" style={{ background: "#09090f" }}>
 
         {/* ── TOP BAR ─────────────────────────────────────────── */}
@@ -720,7 +719,7 @@ export default function CustomizePage() {
           </AnimatePresence>
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }
 

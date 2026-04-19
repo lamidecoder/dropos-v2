@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { TrendingDown, Globe, BarChart3 } from "lucide-react";
 
 export default function FunnelPage() {
@@ -55,7 +54,7 @@ export default function FunnelPage() {
   const maxCount = Math.max(...funnel.map((f: any) => f.count));
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
@@ -215,6 +214,6 @@ export default function FunnelPage() {
             <p className={`text-sm ${sub}`}>No UTM campaign data yet. Add UTM parameters to your links.</p>
           )}
         </div>
-    </DashboardLayout>
+    
   );
 }

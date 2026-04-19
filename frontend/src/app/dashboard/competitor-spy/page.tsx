@@ -4,7 +4,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { Eye, Search, TrendingUp, Loader2, ChevronRight, AlertCircle, Zap } from "lucide-react";
@@ -23,7 +22,7 @@ export function CompetitorSpyPage() {
   });
 
   return (
-    <DashboardLayout>
+    
       <div className="p-6 max-w-3xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-0.5">Competitor Store Spy</h1>
@@ -131,7 +130,7 @@ export function CompetitorSpyPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }
 export default CompetitorSpyPage;

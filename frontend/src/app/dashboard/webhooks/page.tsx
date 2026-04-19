@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 import { Webhook, Plus, Trash2, X, Play, CheckCircle, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -52,7 +51,7 @@ export default function WebhooksPage() {
   const toggleEvent = (e: string) => setEvents(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
@@ -154,6 +153,6 @@ export default function WebhooksPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    
   );
 }

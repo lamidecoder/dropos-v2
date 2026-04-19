@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../../lib/api";
 import { useAuthStore } from "../../../../store/auth.store";
-import DashboardLayout from "../../../../components/layout/DashboardLayout";
 import {
   Link2, Search, ChevronRight, Package, ArrowLeft, Check,
   Image as ImageIcon, Tag, DollarSign, TrendingUp, Globe,
@@ -150,7 +149,7 @@ export default function ImportPage() {
   };
 
   return (
-    <DashboardLayout>
+    
       <div className="max-w-4xl space-y-6">
 
         {/* Header */}
@@ -470,6 +469,6 @@ export default function ImportPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }

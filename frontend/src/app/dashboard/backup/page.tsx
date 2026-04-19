@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
-import DashboardLayout from "../../../components/layout/DashboardLayout";
 import {
   Download, Package, Users, ShoppingCart, BarChart2,
   Archive, RefreshCw, CheckCircle, Clock, AlertCircle,
@@ -77,7 +76,7 @@ export default function BackupPage() {
   };
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6 max-w-3xl mx-auto">
 
         {/* Header */}
@@ -190,6 +189,6 @@ export default function BackupPage() {
           </p>
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }

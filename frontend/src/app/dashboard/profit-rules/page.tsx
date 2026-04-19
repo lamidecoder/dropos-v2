@@ -4,7 +4,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { Shield, Plus, Trash2, Play, Check, Zap } from "lucide-react";
@@ -51,7 +50,7 @@ export function ProfitRulesPage() {
   });
 
   return (
-    <DashboardLayout>
+    
       <div className="p-6 max-w-3xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -164,7 +163,7 @@ export function ProfitRulesPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }
 

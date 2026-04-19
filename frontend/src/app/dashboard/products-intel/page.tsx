@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { TrendingUp, Zap, FlaskConical } from "lucide-react";
@@ -41,7 +40,7 @@ export default function ProductsIntelPage() {
   });
 
   return (
-    <DashboardLayout>
+    
       <div className="p-6 max-w-3xl">
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-1">Product Intelligence</h1>
@@ -178,6 +177,6 @@ export default function ProductsIntelPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 }

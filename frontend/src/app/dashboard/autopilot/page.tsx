@@ -9,7 +9,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence }               from "framer-motion";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { api }         from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import {
@@ -88,7 +87,7 @@ export default function AutopilotPage() {
   const isActive    = cjConnected;
 
   return (
-    <DashboardLayout>
+    
       <div className="min-h-screen p-6" style={{ background: "#07070e" }}>
         <div className="max-w-3xl mx-auto">
 
@@ -301,6 +300,6 @@ export default function AutopilotPage() {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    
   );
 }
