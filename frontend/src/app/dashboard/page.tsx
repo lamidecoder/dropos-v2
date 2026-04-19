@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 // Path: frontend/src/app/dashboard/page.tsx
 
 import { useState, useEffect } from "react";
@@ -21,7 +21,6 @@ const T = {
 
 function StatCard({ label, value, color, icon: Icon, delay, t, theme }: any) {
   return (
-    <>
     <motion.div
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
@@ -47,7 +46,7 @@ function StatCard({ label, value, color, icon: Icon, delay, t, theme }: any) {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: 12, color: t.muted }}>{label}</span>
-        <span style={{ fontFamily: "'Syncopate', sans-serif", fontSize: 9, color: t.faint, letterSpacing: "0.06em" }}>— No data</span>
+        <span style={{ fontFamily: "'Syncopate', sans-serif", fontSize: 9, color: t.faint, letterSpacing: "0.06em" }}>� No data</span>
       </div>
     </motion.div>
   );
@@ -84,7 +83,7 @@ export default function DashboardPage() {
   }, []);
 
   const stats = [
-    { label: "Total Revenue", value: "₦0",   color: V.v400,    icon: TrendingUp   },
+    { label: "Total Revenue", value: "?0",   color: V.v400,    icon: TrendingUp   },
     { label: "Total Orders",  value: "0",     color: V.cyan,    icon: ShoppingCart },
     { label: "Customers",     value: "0",     color: "#10B981", icon: Users        },
     { label: "Products",      value: "0",     color: V.fuchsia, icon: Package      },
@@ -92,7 +91,7 @@ export default function DashboardPage() {
 
   const insights = [
     { text: "Your store is ready. Ask KIRO to set up your first product collection.", type: "tip" as const },
-    { text: "Enable abandoned cart recovery — KIRO recovers up to 15% of lost sales automatically.", type: "win" as const },
+    { text: "Enable abandoned cart recovery � KIRO recovers up to 15% of lost sales automatically.", type: "win" as const },
     { text: "Add a custom domain to build trust with customers and boost conversions.", type: "alert" as const },
   ];
 
@@ -117,7 +116,7 @@ export default function DashboardPage() {
         style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 28 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.2, color: t.text }}>
-            Good {greeting}, {firstName} 👋
+            Good {greeting}, {firstName} ??
           </h1>
           <p style={{ fontSize: 13, marginTop: 4, color: t.muted }}>
             Here's what's happening with your store today.
@@ -232,6 +231,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
-    </>
   );
 }
