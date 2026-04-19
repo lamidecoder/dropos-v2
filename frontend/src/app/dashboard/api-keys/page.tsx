@@ -52,7 +52,7 @@ export default function ApiKeysPage() {
   const togglePerm = (p: string) => setPerms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
 
   return (
-    
+    <>
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
@@ -167,6 +167,8 @@ export default function ApiKeysPage() {
           </div>
         </div>
       )}
+    
+  </>
     
   );
 }

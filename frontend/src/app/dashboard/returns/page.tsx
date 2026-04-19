@@ -40,7 +40,7 @@ export default function ReturnsPage() {
   const returns = data?.data || [];
 
   return (
-    
+    <>
       <div className="space-y-6">
         <div>
           <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Returns & RMA</h1>
@@ -126,6 +126,8 @@ export default function ReturnsPage() {
           </div>
         </div>
       )}
+    
+  </>
     
   );
 }
