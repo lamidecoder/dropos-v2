@@ -55,6 +55,7 @@ export default function RefundsPage() {
   };
 
   return (
+      <>
     
       <div className="space-y-6">
         <div>
@@ -189,5 +190,6 @@ export default function RefundsPage() {
         </div>
       )}
     
+      </>
   );
 }

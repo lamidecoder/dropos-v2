@@ -49,6 +49,7 @@ export default function GiftCardsPage() {
   const totalIssued = giftCards.reduce((sum: number, g: any) => sum + g.initialAmount, 0);
 
   return (
+      <>
     
       <div className="space-y-6">
         <div className="flex items-start justify-between">
@@ -158,5 +159,6 @@ export default function GiftCardsPage() {
         </div>
       )}
     
+      </>
   );
 }

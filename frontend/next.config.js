@@ -2,9 +2,6 @@
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
   images: {
     remotePatterns: [
       { protocol: "http",  hostname: "localhost" },
