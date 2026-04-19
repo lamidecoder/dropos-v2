@@ -109,7 +109,7 @@ export default function ChatSettingsPage() {
   const selectedProvider = PROVIDERS.find(p => p.id === liveChatProvider);
 
   if (isLoading) return (
-    
+    <>
       <div className="py-16 text-center text-secondary">Loading…</div>
     
   );
@@ -275,6 +275,7 @@ export default function ChatSettingsPage() {
         )}
       </div>
     
+    </>
     </>
   );
 }
