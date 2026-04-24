@@ -1,171 +1,60 @@
 "use client";
-import { useRef } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { motion, useInView } from "framer-motion";
-import { Package, Globe, CreditCard, Truck, BarChart2, Palette, Shield, TrendingUp,
-  Users, Bell, Tag, FileText, Star, Zap, ArrowRight, CheckCircle } from "lucide-react";
+import { Zap, BarChart3, Globe, ShoppingCart, Shield, Truck, Tag, Users } from "lucide-react";
 
-function FadeUp({ children, delay = 0, className = "" }: any) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  return (
-    <motion.div ref={ref} initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }} className={className}>
-      {children}
-    </motion.div>
-  );
-}
-
-const categories = [
-  {
-    title: "Store Management",
-    desc: "Everything to run your store like a pro.",
-    icon: Globe,
-    color: "#c9a84c",
-    features: [
-      "Custom storefront with your own domain",
-      "Multiple store templates (2 free, 8 Pro, 12 Advanced)",
-      "Store branding — colors, fonts, layout",
-      "SEO settings per store",
-      "Mobile-optimized by default",
-      "Store onboarding wizard",
-    ],
-  },
-  {
-    title: "Products",
-    desc: "Manage your catalog with ease.",
-    icon: Package,
-    color: "#7c3aed",
-    features: [
-      "Unlimited products on paid plans",
-      "Product variants (size, color, etc.)",
-      "Inventory tracking with low-stock alerts",
-      "Bulk CSV import",
-      "Image gallery with drag & drop reorder",
-      "Product categories and tags",
-    ],
-  },
-  {
-    title: "Payments",
-    desc: "Get paid, no matter where your customers are.",
-    icon: CreditCard,
-    color: "#10b981",
-    features: [
-      "Stripe (global cards)",
-      "Paystack (Nigeria, Ghana, Kenya, South Africa)",
-      "Flutterwave (pan-Africa)",
-      "Automatic currency detection",
-      "Payment confirmation emails",
-      "Webhook support for all gateways",
-    ],
-  },
-  {
-    title: "Orders & Shipping",
-    desc: "From checkout to doorstep.",
-    icon: Truck,
-    color: "#3b82f6",
-    features: [
-      "Order management dashboard",
-      "Status updates with customer notifications",
-      "Shipping zones by country/region",
-      "Free shipping thresholds",
-      "Delivery time estimates",
-      "Invoice PDF download",
-    ],
-  },
-  {
-    title: "Marketing & Discounts",
-    desc: "Drive more sales with smart tools.",
-    icon: Tag,
-    color: "#ef4444",
-    features: [
-      "Coupon codes (% or fixed amount)",
-      "Expiry dates and usage limits",
-      "Minimum order requirements",
-      "Customer reviews with star ratings",
-      "Review approval system",
-      "Referral system (coming soon)",
-    ],
-  },
-  {
-    title: "Analytics & Reports",
-    desc: "Know your numbers, grow your business.",
-    icon: BarChart2,
-    color: "#f59e0b",
-    features: [
-      "Revenue charts (daily, weekly, monthly)",
-      "Top products by sales",
-      "Customer growth tracking",
-      "Orders by status breakdown",
-      "CSV export for all reports",
-      "Platform-wide admin analytics",
-    ],
-  },
+const FEATURES = [
+  { icon: Zap,          title: "KIRO AI Co-pilot",      desc: "Your AI business partner that builds your store, finds products, fulfils orders, and grows revenue automatically." },
+  { icon: ShoppingCart, title: "One-click store setup",  desc: "Tell KIRO what you want to sell. Your store is live in 60 seconds. No design skills required." },
+  { icon: BarChart3,    title: "Real-time analytics",    desc: "Revenue charts, conversion funnels, and product performance updated live as orders come in." },
+  { icon: Globe,        title: "Global payments",        desc: "Paystack for Nigeria and Africa. Stripe for the world. Accept any currency, from anywhere." },
+  { icon: Truck,        title: "Automated fulfilment",   desc: "Connect AliExpress and CJDropshipping. KIRO places orders with suppliers the moment a customer pays." },
+  { icon: Tag,          title: "Smart promotions",       desc: "Flash sales, coupons, abandoned cart recovery, and volume discounts. KIRO runs them for you." },
+  { icon: Shield,       title: "Enterprise security",    desc: "End-to-end encryption, rate limiting, 2FA, and automatic fraud detection on every transaction." },
+  { icon: Users,        title: "Affiliate programme",    desc: "Turn your customers into a sales team. KIRO tracks referrals and pays commissions automatically." },
 ];
 
 export default function FeaturesPage() {
   return (
-      <>
-      {/* Hero */}
+    <div className="min-h-screen" style={{ background: "var(--bg-base)" }}>
       <section className="pt-40 pb-24 px-6 text-center relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(196,168,76,0.05) 0%, transparent 70%)" }} />
+          style={{ background: "radial-gradient(circle, rgba(107,53,232,0.08) 0%, transparent 70%)" }} />
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="relative z-10 max-w-3xl mx-auto">
-          <span className="text-amber-400 text-xs font-bold tracking-widest uppercase">Features</span>
-          <h1 className="text-5xl md:text-7xl font-black text-[var(--text-primary)] tracking-tight leading-tight mt-4 mb-6">
-            Everything you need.{" "}
-            <span style={{ background: "linear-gradient(135deg,#c9a84c,#f0c040)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Nothing you don't.
-            </span>
+          <span className="inline-block text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-6"
+            style={{ background: "rgba(107,53,232,0.12)", color: "var(--violet-400)", border: "1px solid rgba(107,53,232,0.2)" }}>
+            Everything you need
+          </span>
+          <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>
+            Every tool your store needs. Run by AI.
           </h1>
-          <p className="text-[var(--text-secondary)] text-xl leading-relaxed">A complete platform built for dropshippers who want results, not complexity.</p>
+          <p className="text-xl leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            Stop stitching together 10 different apps. DropOS gives you everything in one place, powered by KIRO.
+          </p>
         </motion.div>
       </section>
-
-      {/* Feature categories */}
-      <section className="pb-24 border-t border-[var(--border)]">
-        <div className="max-w-7xl mx-auto px-6 pt-24 space-y-6">
-          {categories.map((cat, i) => (
-            <FadeUp key={i} delay={0.05}>
-              <div className="p-8 md:p-10 rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] hover:border-[var(--border)] transition-all">
-                <div className="grid md:grid-cols-3 gap-8 items-start">
-                  <div>
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
-                      style={{ background: `${cat.color}15`, border: `1px solid ${cat.color}30` }}>
-                      <cat.icon size={22} style={{ color: cat.color }} />
-                    </div>
-                    <h3 className="text-[var(--text-primary)] text-2xl font-black mb-2 tracking-tight">{cat.title}</h3>
-                    <p className="text-[var(--text-tertiary)] text-sm leading-relaxed">{cat.desc}</p>
-                  </div>
-                  <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {cat.features.map((f, j) => (
-                      <div key={j} className="flex items-start gap-3">
-                        <CheckCircle size={14} className="flex-shrink-0 mt-0.5" style={{ color: cat.color }} />
-                        <span className="text-[var(--text-secondary)] text-sm">{f}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+      <section className="py-24 px-6">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {FEATURES.map((f, i) => (
+            <motion.div key={f.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+              className="rounded-2xl p-6" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(107,53,232,0.12)" }}>
+                <f.icon size={18} style={{ color: "var(--violet-400)" }} />
               </div>
-            </FadeUp>
+              <h3 className="font-bold mb-2 text-sm" style={{ color: "var(--text-primary)" }}>{f.title}</h3>
+              <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>{f.desc}</p>
+            </motion.div>
           ))}
         </div>
       </section>
-
-      {/* CTA */}
-      <section className="py-24 border-t border-[var(--border)]">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <FadeUp>
-            <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight mb-4">Ready to launch?</h2>
-            <p className="text-[var(--text-tertiary)] mb-8">Everything above is ready for you right now. Free to start.</p>
-            <Link href="/auth/register"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-black bg-amber-400 hover:bg-amber-300 transition-all shadow-lg shadow-amber-400/20">
-              Start for free <ArrowRight size={16} />
-            </Link>
-          </FadeUp>
+      <section className="py-24 px-6">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-3xl font-black tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>Start building your store today</h2>
+          <Link href="/auth/register" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-white transition-all hover:opacity-90" style={{ background: "var(--violet-500)" }}>
+            Get started free
+          </Link>
         </div>
       </section>
-  </>
-
+    </div>
   );
 }
