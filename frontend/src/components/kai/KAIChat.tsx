@@ -138,7 +138,6 @@ function MessageBubble({ msg, onCopy }: { msg: Message; onCopy: (text: string) =
             {msg.timestamp.toLocaleTimeString("en-NG", { hour:"2-digit", minute:"2-digit" })}
           </span>
           {isKai && (
-            <>
               <button onClick={copyMsg} className="w-5 h-5 flex items-center justify-center rounded"
                 style={{ color: "rgba(255,255,255,0.3)" }}>
                 {copied ? <Check size={10} /> : <Copy size={10} />}
@@ -147,7 +146,6 @@ function MessageBubble({ msg, onCopy }: { msg: Message; onCopy: (text: string) =
                 style={{ color: liked ? "#fbbf24" : "rgba(255,255,255,0.3)" }}>
                 <ThumbsUp size={10} />
               </button>
-            </>
           )}
         </div>
       </div>
@@ -339,7 +337,6 @@ export default function KAIChat({ storeId, className }: { storeId?: string; clas
         {isEmpty ? (
           <KAIEmptyState onChip={(prompt) => send(prompt)} />
         ) : (
-          <>
             {messages.map(msg => (
               <MessageBubble key={msg.id} msg={msg}
                 onCopy={text => { navigator.clipboard.writeText(text); toast.success("Copied!"); }} />
@@ -350,7 +347,6 @@ export default function KAIChat({ storeId, className }: { storeId?: string; clas
                 <TypingIndicator />
               </div>
             )}
-          </>
         )}
         <div ref={bottomRef} />
       </div>

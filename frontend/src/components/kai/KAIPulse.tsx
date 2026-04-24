@@ -57,25 +57,21 @@ export function KAIPulse() {
         )}
 
         {unread.length > 0 && (
-          <>
             <p className="text-xs font-medium px-1 mb-2" style={{ color: "rgba(255,255,255,0.3)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase" }}>
               New alerts
             </p>
             {unread.map(alert => (
               <AlertCard key={alert.id} alert={alert} onAction={handleAction} onDismiss={() => markAlertRead.mutate(alert.id)} />
             ))}
-          </>
         )}
 
         {read.length > 0 && (
-          <>
             <p className="text-xs font-medium px-1 mt-4 mb-2" style={{ color: "rgba(255,255,255,0.2)", fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase" }}>
               Recent
             </p>
             {read.map(alert => (
               <AlertCard key={alert.id} alert={alert} dimmed />
             ))}
-          </>
         )}
       </div>
     </div>

@@ -149,7 +149,7 @@ export default function AbandonedCartTracker({
   const cartTotal = total();
 
   return (
-    <>
+      <>
       {/* Backdrop */}
       <div
         className="fixed inset-0 z-[9998]"
@@ -185,7 +185,6 @@ export default function AbandonedCartTracker({
 
           <div className="p-8">
             {!submitted ? (
-              <>
                 {/* Icon + heading */}
                 <div className="text-center mb-6">
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
@@ -250,7 +249,6 @@ export default function AbandonedCartTracker({
                   style={{ color: "var(--text-tertiary)" }}>
                   <ShoppingBag size={14} /> Continue shopping
                 </button>
-              </>
             ) : (
               /* Success state */
               <div className="text-center py-4">
@@ -302,6 +300,6 @@ export default function AbandonedCartTracker({
           )}
         </div>
       </div>
-    </>
+      </>
   );
 }

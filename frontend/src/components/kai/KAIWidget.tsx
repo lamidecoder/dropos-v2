@@ -183,7 +183,6 @@ export function KAIWidget() {
   };
 
   return (
-    <>
       {/* Floating button */}
       <div className="fixed bottom-6 right-6 z-50">
         <AnimatePresence>
@@ -319,6 +318,5 @@ export function KAIWidget() {
           )}
         </AnimatePresence>
       </div>
-    </>
   );
 }

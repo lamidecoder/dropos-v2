@@ -50,7 +50,7 @@ export default function CartDrawer({ storeSlug, storeId, brand, currency = "USD"
   const afterDiscount = Math.max(0, subtotal - discountAmt);
 
   return (
-    <>
+      <>
       {/* Backdrop */}
       {isOpen && (
         <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
@@ -236,6 +236,6 @@ export default function CartDrawer({ storeSlug, storeId, brand, currency = "USD"
           </div>
         )}
       </div>
-    </>
+      </>
   );
 }

@@ -124,7 +124,6 @@ function ThinkingDots() {
 function MessageContent({ content }: { content: string }) {
   const paragraphs = content.split("\n\n").filter(Boolean);
   return (
-    <>
       {paragraphs.map((para, i) => (
         <p key={i} style={{ marginTop: i > 0 ? "12px" : "0" }}>
           {para.split("\n").map((line, j, arr) => (
@@ -132,7 +131,6 @@ function MessageContent({ content }: { content: string }) {
           ))}
         </p>
       ))}
-    </>
   );
 }
 
