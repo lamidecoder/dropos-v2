@@ -56,11 +56,11 @@ export default function StorefrontPage() {
       products={products}
       slug={slug}
       search={search}
-      setSearch={setSearch}
+      onSearch={setSearch}
       category={category}
-      setCategory={setCategory}
+      onCategory={setCategory}
       sort={sort}
-      setSort={setSort}
+      onSort={setSort}
       categories={categories}
       isLoading={productsLoading}
     />
