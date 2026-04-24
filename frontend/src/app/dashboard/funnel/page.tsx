@@ -177,10 +177,8 @@ export default function FunnelPage() {
             <p className={`text-xs ${sub} mt-3`}>% of original cohort that made a repeat purchase</p>
           </div>
         </div>
-      </div>
-
-        {/* UTM Campaign Performance */}
-        <div className={`rounded-2xl border p-5 ${card}`}>
+      {/* UTM Campaign Performance */}
+      <div className={`rounded-2xl border p-5 ${card}`}>
           <h3 className={`font-bold mb-4 ${tx}`}>UTM Campaigns</h3>
           {campaigns.length > 0 ? (
             <div className="overflow-x-auto">
@@ -215,6 +213,6 @@ export default function FunnelPage() {
             <p className={`text-sm ${sub}`}>No UTM campaign data yet. Add UTM parameters to your links.</p>
           )}
         </div>
-    
+      </div>
   );
 }

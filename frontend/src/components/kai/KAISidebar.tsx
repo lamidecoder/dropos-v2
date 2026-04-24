@@ -130,6 +130,7 @@ export function KAISidebar() {
   );
 
   return (
+    <>
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
@@ -206,5 +207,6 @@ export function KAISidebar() {
           </motion.aside>
         )}
       </AnimatePresence>
+    </>
   );
 }

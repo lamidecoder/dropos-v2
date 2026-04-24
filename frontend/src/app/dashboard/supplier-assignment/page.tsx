@@ -135,6 +135,7 @@ export default function SupplierAssignmentPage() {
                 <p className={`text-xs ${sub} mt-1`}>Choose a product to manage its suppliers and fallback order</p>
               </div>
             ) : (
+              <>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className={`font-black text-sm ${tx}`}>{selectedProduct.name}</p>
@@ -220,6 +221,7 @@ export default function SupplierAssignmentPage() {
                     ))}
                   </div>
                 )}
+              </>
             )}
           </div>
         </div>

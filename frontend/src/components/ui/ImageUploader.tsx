@@ -114,8 +114,10 @@ export default function ImageUploader({ images, onChange, maxImages = 8 }: Props
               {isUploading ? (
                 <Loader2 size={18} className="animate-spin text-violet-500" />
               ) : (
+                <>
                   <Upload size={18} />
                   <span className="text-xs font-semibold">Add</span>
+                </>
               )}
             </button>
           )}
