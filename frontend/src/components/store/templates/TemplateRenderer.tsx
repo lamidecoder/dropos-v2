@@ -786,7 +786,9 @@ export function TemplateRenderer(props: TemplateProps) {
   const theme     = props.store?.theme || "classic";
   const Component = TEMPLATE_MAP[theme] || ClassicTemplate;
   return (
+      <>
       <Component {...props} />
       <AbandonedCartTracker store={props.store} exitDiscount={10} idleMinutes={30} />
+  </>
   );
 }

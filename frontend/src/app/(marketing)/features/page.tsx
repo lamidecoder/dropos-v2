@@ -105,6 +105,7 @@ const categories = [
 
 export default function FeaturesPage() {
   return (
+      <>
       {/* Hero */}
       <section className="pt-40 pb-24 px-6 text-center relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
@@ -164,5 +165,7 @@ export default function FeaturesPage() {
           </FadeUp>
         </div>
       </section>
+  </>
+
   );
 }

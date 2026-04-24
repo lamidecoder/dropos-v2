@@ -46,6 +46,7 @@ export default function AdminSettingsPage() {
   ];
 
   return (
+      <>
       <div className="max-w-2xl space-y-6">
         <div>
           <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Platform Settings</h1>
@@ -108,6 +109,7 @@ export default function AdminSettingsPage() {
               const [val, setVal] = useState<number>((settings as any)?.[plan.key] || 0);
               const [editing, setEd] = useState(false);
               return (
+                <>
                 <div key={plan.key} className={`flex items-center justify-between p-4 rounded-xl border ${"border-[var(--border)]"}`}>
                   <div>
                     <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${plan.color}`}>{plan.name}</span>
@@ -185,5 +187,6 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       </div>
+  </>
   );
 }
