@@ -1,132 +1,266 @@
 "use client";
-﻿"use client";
-// Path: frontend/src/app/dashboard/products/page.tsx
-
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../../components/layout/DashboardLayout";
-import { Package, Plus, Search, Filter, MoreHorizontal, ArrowUpRight, TrendingUp, Eye, Star, ChevronDown, Grid, List, Zap, Upload, Tag } from "lucide-react";
+import { useAuthStore } from "../../../store/auth.store";
+import { api } from "../../../lib/api";
+import { Package, Plus, Search, Edit2, Trash2, Zap, Upload, X, AlertCircle, Loader2, Image as ImageIcon } from "lucide-react";
+import toast from "react-hot-toast";
+import Link from "next/link";
 
-const V = { v500: "#6B35E8", v700: "#3D1C8A", v400: "#8B5CF6", v300: "#A78BFA", v200: "#C4B5FD", fuchsia: "#C026D3", cyan: "#06B6D4" };
+const V = { v500: "#6B35E8", v400: "#8B5CF6", v300: "#A78BFA", cyan: "#06B6D4" };
 const T = {
-  dark:  { bg: "#06040D", card: "#181230", border: "rgba(255,255,255,0.06)", text: "#fff", muted: "rgba(255,255,255,0.38)", faint: "rgba(255,255,255,0.05)", hover: "rgba(255,255,255,0.04)" },
-  light: { bg: "#F4F2FF", card: "#fff",    border: "rgba(15,5,32,0.07)",    text: "#0D0918", muted: "rgba(13,9,24,0.45)", faint: "rgba(15,5,32,0.03)", hover: "rgba(15,5,32,0.04)" },
+  dark:  { card: "#181230", border: "rgba(255,255,255,0.06)", text: "#fff", muted: "rgba(255,255,255,0.38)", faint: "rgba(255,255,255,0.04)" },
+  light: { card: "#fff",    border: "rgba(15,5,32,0.07)",    text: "#0D0918", muted: "rgba(13,9,24,0.45)", faint: "rgba(15,5,32,0.03)" },
 };
 
-const FILTERS = ["All", "Active", "Draft", "Out of Stock", "Archived"];
-const MOCK_PRODUCTS: any[] = [];
+const STATUS_COLORS: Record<string, { color: string; bg: string }> = {
+  ACTIVE:   { color: "#10B981", bg: "rgba(16,185,129,0.12)"  },
+  DRAFT:    { color: "#F59E0B", bg: "rgba(245,158,11,0.12)"  },
+  ARCHIVED: { color: "#6B7280", bg: "rgba(107,114,128,0.12)" },
+};
 
-function EmptyState({ t, theme }: any) {
+function fmt(n: number) {
+  return new Intl.NumberFormat("en", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(n || 0);
+}
+
+function ProductModal({ storeId, product, onClose, t, isDark }: any) {
+  const qc = useQueryClient();
+  const isEdit = !!product;
+  const [form, setForm] = useState({
+    name: product?.name || "", description: product?.description || "",
+    price: product?.price?.toString() || "", comparePrice: product?.comparePrice?.toString() || "",
+    inventory: product?.inventory?.toString() || "0", category: product?.category || "",
+    status: product?.status || "ACTIVE",
+  });
+
+  const inp = { padding: "10px 14px", borderRadius: 10, border: `1px solid ${t.border}`, background: isDark ? "rgba(255,255,255,0.04)" : "#f9fafb", color: t.text, fontSize: 13, outline: "none", width: "100%", fontFamily: "inherit" } as any;
+
+  const mut = useMutation({
+    mutationFn: async () => {
+      const payload = { name: form.name, description: form.description, price: parseFloat(form.price), comparePrice: form.comparePrice ? parseFloat(form.comparePrice) : null, inventory: parseInt(form.inventory), category: form.category, status: form.status };
+      if (isEdit) return api.put(`/products/${storeId}/${product.id}`, payload);
+      return api.post(`/products/${storeId}`, payload);
+    },
+    onSuccess: () => { toast.success(isEdit ? "Product updated" : "Product created"); qc.invalidateQueries({ queryKey: ["products"] }); onClose(); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
+  });
+
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 24px", textAlign: "center" }}>
-      <div style={{ width: 72, height: 72, borderRadius: 22, background: theme === "dark" ? "rgba(107,53,232,0.12)" : "rgba(107,53,232,0.07)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, border: "1px solid rgba(107,53,232,0.2)" }}>
-        <Package size={30} color={V.v400} />
-      </div>
-      <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.03em", color: t.text, marginBottom: 8 }}>No products yet</h3>
-      <p style={{ fontSize: 13, color: t.muted, marginBottom: 28, maxWidth: 360, lineHeight: 1.6 }}>
-        Add your first product or let KIRO find winning products for your store automatically.
-      </p>
-      <div style={{ display: "flex", gap: 10 }}>
-        <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 12, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${V.v500}, ${V.v700})`, color: "#fff", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 16px rgba(107,53,232,0.35)" }}>
-          <Plus size={14} /> Add Product
-        </button>
-        <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 12, border: "1px solid rgba(107,53,232,0.3)", cursor: "pointer", background: "rgba(107,53,232,0.08)", color: V.v300, fontSize: 13, fontWeight: 600 }}>
-          <Zap size={14} /> Ask KIRO to find products
-        </button>
-      </div>
-    </motion.div>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)" }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
+        className="w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden"
+        style={{ background: isDark ? "#181230" : "#fff", border: `1px solid ${t.border}`, maxHeight: "90vh" }}>
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${t.border}` }}>
+          {/* Drag handle on mobile */}
+          <div className="sm:hidden absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full" style={{ background: t.border }} />
+          <h2 className="font-black text-base" style={{ color: t.text }}>{isEdit ? "Edit Product" : "Add Product"}</h2>
+          <button onClick={onClose} style={{ color: t.muted }}><X size={18} /></button>
+        </div>
+        <div className="p-5 space-y-3 overflow-y-auto" style={{ maxHeight: "70vh" }}>
+          <div>
+            <label className="block text-xs font-semibold mb-1.5" style={{ color: t.muted }}>Product Name *</label>
+            <input style={inp} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Premium Hair Bundle" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold mb-1.5" style={{ color: t.muted }}>Description</label>
+            <textarea style={{ ...inp, resize: "none" } as any} rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Describe your product..." />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: t.muted }}>Price (₦) *</label>
+              <input style={inp} type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="25000" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: t.muted }}>Compare At (₦)</label>
+              <input style={inp} type="number" value={form.comparePrice} onChange={e => setForm(f => ({ ...f, comparePrice: e.target.value }))} placeholder="35000" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: t.muted }}>Stock</label>
+              <input style={inp} type="number" value={form.inventory} onChange={e => setForm(f => ({ ...f, inventory: e.target.value }))} placeholder="0" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: t.muted }}>Category</label>
+              <input style={inp} value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} placeholder="e.g. Beauty" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold mb-1.5" style={{ color: t.muted }}>Status</label>
+            <select style={{ ...inp, cursor: "pointer" } as any} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
+              <option value="ACTIVE">Active — visible in store</option>
+              <option value="DRAFT">Draft — hidden from store</option>
+              <option value="ARCHIVED">Archived</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex gap-3 px-5 py-4" style={{ borderTop: `1px solid ${t.border}` }}>
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ border: `1px solid ${t.border}`, color: t.muted }}>Cancel</button>
+          <button onClick={() => mut.mutate()} disabled={!form.name || !form.price || mut.isPending}
+            className="flex-[2] py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+            {mut.isPending ? <><Loader2 size={14} className="animate-spin" /> Saving…</> : isEdit ? "Save Changes" : "Add Product"}
+          </button>
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
 export default function ProductsPage() {
   const { theme } = useTheme();
-  const t = theme === "dark" ? T.dark : T.light;
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
-  const [search, setSearch] = useState("");
+  const isDark = theme === "dark";
+  const t = isDark ? T.dark : T.light;
+  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
+  const qc = useQueryClient();
+
+  const [search, setSearch]   = useState("");
+  const [filter, setFilter]   = useState("All");
+  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["products", storeId],
+    queryFn: () => api.get(`/products/${storeId}`).then(r => r.data.data),
+    enabled: !!storeId,
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => api.delete(`/products/${storeId}/${id}`),
+    onSuccess: () => { toast.success("Product deleted"); qc.invalidateQueries({ queryKey: ["products"] }); },
+  });
+
+  const products: any[] = data || [];
+  const filtered = products.filter(p =>
+    (!search || p.name?.toLowerCase().includes(search.toLowerCase())) &&
+    (filter === "All" ? true : filter === "Active" ? p.status === "ACTIVE" : filter === "Draft" ? p.status === "DRAFT" : p.inventory === 0)
+  );
+
+  const openAdd  = () => { setEditing(null); setShowModal(true); };
+  const openEdit = (p: any) => { setEditing(p); setShowModal(true); };
 
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+    <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-        style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 24 }}>
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+        className="flex items-start justify-between gap-3 mb-5">
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.03em", color: t.text, lineHeight: 1.2 }}>Products</h1>
-          <p style={{ fontSize: 13, color: t.muted, marginTop: 4 }}>Manage your product catalogue</p>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{ color: t.text }}>Products</h1>
+          <p className="text-xs sm:text-sm mt-1" style={{ color: t.muted }}>{products.length} product{products.length !== 1 ? "s" : ""}</p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 11, border: `1px solid ${t.border}`, background: "transparent", cursor: "pointer", fontSize: 13, color: t.muted }}>
-            <Upload size={13} /> Import
-          </button>
-          <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 11, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${V.v500}, ${V.v700})`, color: "#fff", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(107,53,232,0.35)" }}>
-            <Plus size={14} /> Add Product
+        <div className="flex gap-2 flex-shrink-0">
+          <Link href="/dashboard/import">
+            <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold" style={{ border: `1px solid ${t.border}`, color: t.muted }}>
+              <Upload size={12} /> <span className="hidden sm:inline">Import</span>
+            </button>
+          </Link>
+          <button onClick={openAdd}
+            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white"
+            style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+            <Plus size={14} /> <span className="hidden sm:inline">Add Product</span><span className="sm:hidden">Add</span>
           </button>
         </div>
       </motion.div>
 
-      {/* Stats row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
-        {[
-          { label: "Total Products", value: "0", color: V.v400 },
-          { label: "Active",         value: "0", color: "#10B981" },
-          { label: "Out of Stock",   value: "0", color: "#F59E0B" },
-          { label: "Draft",          value: "0", color: t.muted },
-        ].map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-            style={{ padding: "14px 16px", borderRadius: 14, background: t.card, border: `1px solid ${t.border}`, boxShadow: theme === "light" ? "0 1px 3px rgba(15,5,32,0.04)" : "none" }}>
-            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.04em", color: s.color, marginBottom: 4 }}>{s.value}</div>
-            <div style={{ fontSize: 11, color: t.muted }}>{s.label}</div>
-          </motion.div>
+      {/* Filters + search */}
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl flex-shrink-0" style={{ background: t.card, border: `1px solid ${t.border}` }}>
+          <Search size={12} style={{ color: t.muted }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..."
+            className="bg-transparent border-none outline-none text-xs w-28 sm:w-40"
+            style={{ color: t.text, fontFamily: "inherit" }} />
+        </div>
+        {["All", "Active", "Draft", "Out of Stock"].map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            className="px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex-shrink-0"
+            style={{ background: filter === f ? V.v500 : t.card, color: filter === f ? "#fff" : t.muted, border: `1px solid ${filter === f ? V.v500 : t.border}` }}>
+            {f}
+          </button>
         ))}
       </div>
 
-      {/* Toolbar */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-        style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, padding: "14px 16px", borderRadius: 14, background: t.card, border: `1px solid ${t.border}` }}>
-
-        {/* Search */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, maxWidth: 320, padding: "8px 12px", borderRadius: 10, background: t.faint, border: `1px solid ${t.border}` }}>
-          <Search size={13} color={t.muted} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 13, color: t.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }} />
-        </div>
-
-        {/* Filter tabs */}
-        <div style={{ display: "flex", gap: 2, background: t.faint, borderRadius: 10, padding: 3 }}>
-          {FILTERS.map(f => (
-            <button key={f} onClick={() => setActiveFilter(f)}
-              style={{ padding: "6px 12px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: activeFilter === f ? 600 : 400, background: activeFilter === f ? (theme === "dark" ? "rgba(255,255,255,0.08)" : "#fff") : "transparent", color: activeFilter === f ? t.text : t.muted, transition: "all 0.15s", boxShadow: activeFilter === f ? "0 1px 3px rgba(0,0,0,0.1)" : "none" }}>
-              {f}
-            </button>
+      {/* Products — card grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="rounded-2xl overflow-hidden animate-pulse" style={{ background: t.card }}>
+              <div className="aspect-square" style={{ background: t.faint }} />
+              <div className="p-3 space-y-2">
+                <div className="h-3 rounded-full w-3/4" style={{ background: t.faint }} />
+                <div className="h-3 rounded-full w-1/2" style={{ background: t.faint }} />
+              </div>
+            </div>
           ))}
         </div>
-
-        <div style={{ flex: 1 }} />
-
-        <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, border: `1px solid ${t.border}`, background: "transparent", cursor: "pointer", fontSize: 12, color: t.muted }}>
-          <Filter size={12} /> Filter
-        </button>
-
-        {/* View toggle */}
-        <div style={{ display: "flex", gap: 2, background: t.faint, borderRadius: 9, padding: 3 }}>
-          {([["list", List], ["grid", Grid]] as any[]).map(([mode, Icon]) => (
-            <button key={mode} onClick={() => setViewMode(mode)}
-              style={{ width: 30, height: 30, borderRadius: 7, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: viewMode === mode ? (theme === "dark" ? "rgba(255,255,255,0.08)" : "#fff") : "transparent", color: viewMode === mode ? t.text : t.muted }}>
-              <Icon size={13} />
+      ) : filtered.length === 0 ? (
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl flex flex-col items-center justify-center py-20 text-center"
+          style={{ background: t.card, border: `1px solid ${t.border}` }}>
+          <Package size={40} style={{ color: t.muted, opacity: 0.3, marginBottom: 16 }} />
+          <h3 className="font-bold text-sm mb-2" style={{ color: t.text }}>{search ? "No products found" : "No products yet"}</h3>
+          <p className="text-xs mb-5" style={{ color: t.muted, maxWidth: 280, lineHeight: 1.6 }}>
+            {search ? "Try a different search" : "Add your first product or use KIRO to import products from AliExpress in seconds."}
+          </p>
+          <div className="flex gap-2">
+            <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+              <Plus size={12} /> Add Product
             </button>
-          ))}
+            <Link href="/dashboard/kai">
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold" style={{ border: `1px solid ${t.border}`, color: t.muted }}>
+                <Zap size={12} /> Ask KIRO
+              </button>
+            </Link>
+          </div>
+        </motion.div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {filtered.map((p, i) => {
+            const st = STATUS_COLORS[p.status] || STATUS_COLORS.DRAFT;
+            const img = p.images?.[0];
+            return (
+              <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                className="group rounded-2xl overflow-hidden flex flex-col"
+                style={{ background: t.card, border: `1px solid ${t.border}` }}>
+                {/* Image */}
+                <div className="relative aspect-square overflow-hidden" style={{ background: t.faint }}>
+                  {img
+                    ? <img src={img} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    : <div className="w-full h-full flex items-center justify-center"><Package size={28} style={{ color: t.muted, opacity: 0.4 }} /></div>
+                  }
+                  {/* Actions overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "rgba(0,0,0,0.4)" }}>
+                    <button onClick={() => openEdit(p)} className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ background: "rgba(255,255,255,0.15)" }}>
+                      <Edit2 size={13} />
+                    </button>
+                    <button onClick={() => deleteMut.mutate(p.id)} className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ background: "rgba(239,68,68,0.5)" }}>
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                  <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: st.bg, color: st.color }}>{p.status}</span>
+                </div>
+                {/* Info */}
+                <div className="p-3 flex-1 flex flex-col">
+                  <p className="text-xs font-semibold line-clamp-2 flex-1 mb-2" style={{ color: t.text }}>{p.name}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-black" style={{ color: t.text }}>{fmt(p.price)}</p>
+                    <p className="text-[10px]" style={{ color: p.inventory === 0 ? "#EF4444" : t.muted }}>
+                      {p.inventory === 0 ? "Out" : `${p.inventory} left`}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
-      </motion.div>
+      )}
 
-      {/* Content */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-        style={{ borderRadius: 16, background: t.card, border: `1px solid ${t.border}`, overflow: "hidden", boxShadow: theme === "light" ? "0 1px 3px rgba(15,5,32,0.04), 0 4px 20px rgba(15,5,32,0.03)" : "none" }}>
-
-        {MOCK_PRODUCTS.length === 0 ? (
-          <EmptyState t={t} theme={theme} />
-        ) : (
-          <div style={{ padding: 16 }}>Products list here</div>
-        )}
-      </motion.div>
+      <AnimatePresence>
+        {showModal && <ProductModal storeId={storeId} product={editing} onClose={() => { setShowModal(false); setEditing(null); }} t={t} isDark={isDark} />}
+      </AnimatePresence>
     </div>
   );
 }
