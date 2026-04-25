@@ -66,7 +66,7 @@ export default function DashboardPage() {
 
   const insights = [
     { text: "Your store is ready. Ask KIRO to set up your first product collection.", color: V.v400, icon: Sparkles },
-    { text: "Enable abandoned cart recovery — KIRO recovers up to 15% of lost sales.", color: "#10B981", icon: TrendingUp },
+    { text: "Enable abandoned cart recovery - KIRO recovers up to 15% of lost sales.", color: "#10B981", icon: TrendingUp },
     { text: "Add a custom domain to build trust with customers.", color: "#F59E0B", icon: AlertCircle },
   ];
 
@@ -83,7 +83,7 @@ export default function DashboardPage() {
             Here's what's happening with your store today.
           </p>
         </div>
-        <Link href="/dashboard/kai" className="flex-shrink-0">
+        <Link href="/dashboard/kiro" className="flex-shrink-0">
           <motion.button whileTap={{ scale: 0.97 }}
             className="flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white"
             style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", boxShadow: "0 4px 16px rgba(107,53,232,0.35)" }}>
@@ -92,7 +92,7 @@ export default function DashboardPage() {
         </Link>
       </motion.div>
 
-      {/* Stats grid — 2 col mobile, 4 col desktop */}
+      {/* Stats grid - 2 col mobile, 4 col desktop */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         {stats.map((s, i) => {
           const Icon = s.icon;
@@ -112,10 +112,10 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Main 2-col — stacks on mobile */}
+      {/* Main 2-col - stacks on mobile */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-        {/* Recent orders — takes 2/3 on desktop */}
+        {/* Recent orders - takes 2/3 on desktop */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
           className="lg:col-span-2 rounded-2xl overflow-hidden"
           style={{ background: t.card, border: `1px solid ${t.border}` }}>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
               </div>
               <p className="text-sm font-semibold mb-1" style={{ color: t.muted }}>No orders yet</p>
               <p className="text-xs mb-4" style={{ color: t.muted, opacity: 0.7 }}>Your first order will appear here</p>
-              <Link href="/dashboard/kai">
+              <Link href="/dashboard/kiro">
                 <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer"
                   style={{ background: "rgba(107,53,232,0.1)", color: V.v300 }}>
                   <Zap size={11} /> Ask KIRO to get first sales
@@ -186,7 +186,7 @@ export default function DashboardPage() {
                 );
               })}
             </div>
-            <Link href="/dashboard/kai">
+            <Link href="/dashboard/kiro">
               <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white"
                 style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
                 <Zap size={11} /> Chat with KIRO

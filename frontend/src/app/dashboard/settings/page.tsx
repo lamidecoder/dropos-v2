@@ -107,7 +107,7 @@ export default function SettingsPage() {
       </motion.div>
 
       <div className="flex flex-col sm:flex-row gap-4">
-        {/* Section sidebar — horizontal scroll on mobile, vertical on desktop */}
+        {/* Section sidebar - horizontal scroll on mobile, vertical on desktop */}
         <div className="sm:w-44 flex-shrink-0">
           <div className="flex sm:flex-col gap-1 overflow-x-auto pb-1 sm:pb-0" style={{ scrollbarWidth: "none" }}>
             {SECTIONS.map(s => {

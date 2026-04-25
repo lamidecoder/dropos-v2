@@ -92,8 +92,8 @@ function ProductModal({ storeId, product, onClose, t, isDark }: any) {
           <div>
             <label className="block text-xs font-semibold mb-1.5" style={{ color: t.muted }}>Status</label>
             <select style={{ ...inp, cursor: "pointer" } as any} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
-              <option value="ACTIVE">Active — visible in store</option>
-              <option value="DRAFT">Draft — hidden from store</option>
+              <option value="ACTIVE">Active - visible in store</option>
+              <option value="DRAFT">Draft - hidden from store</option>
               <option value="ARCHIVED">Archived</option>
             </select>
           </div>
@@ -183,7 +183,7 @@ export default function ProductsPage() {
         ))}
       </div>
 
-      {/* Products — card grid */}
+      {/* Products - card grid */}
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -209,7 +209,7 @@ export default function ProductsPage() {
             <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
               <Plus size={12} /> Add Product
             </button>
-            <Link href="/dashboard/kai">
+            <Link href="/dashboard/kiro">
               <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold" style={{ border: `1px solid ${t.border}`, color: t.muted }}>
                 <Zap size={12} /> Ask KIRO
               </button>

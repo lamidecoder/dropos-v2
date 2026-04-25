@@ -54,7 +54,7 @@ const V = {
 // ── NAV DATA ──────────────────────────────────────────────────────────────────
 const OWNER_NAV = [
   { id: "top", label: null, alwaysOpen: true, items: [
-    { href: "/dashboard/kai",  icon: Zap,            label: "KIRO",    ai: true },
+    { href: "/dashboard/kiro",  icon: Zap,            label: "KIRO",    ai: true },
     { href: "/dashboard",      icon: LayoutDashboard, label: "Overview", exact: true },
   ]},
   { id: "store", label: "Store", items: [
@@ -104,7 +104,7 @@ const OWNER_NAV = [
 const BOTTOM_NAV = [
   { href: "/dashboard",          icon: LayoutDashboard, label: "Home",     exact: true },
   { href: "/dashboard/products", icon: Package,         label: "Products"  },
-  { href: "/dashboard/kai",      icon: Zap,             label: "KIRO",     ai: true },
+  { href: "/dashboard/kiro",      icon: Zap,             label: "KIRO",     ai: true },
   { href: "/dashboard/orders",   icon: ShoppingCart,    label: "Orders"    },
   { href: "/dashboard/settings", icon: Settings,        label: "More"      },
 ];
@@ -291,6 +291,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               .mobile-bottom-nav { display: none !important; }
               .mobile-menu-btn { display: none !important; }
             }
+            /* Global dashboard page responsiveness */
+            .dash-page { width: 100%; max-width: 100%; overflow-x: hidden; }
+            .dash-page h1 { font-size: clamp(18px, 4vw, 22px) !important; }
+            @media (max-width: 640px) {
+              /* Tables that can't collapse - make them scroll */
+              .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+              /* Stat grids - 2 cols max on mobile */
+              .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+              /* Page padding */
+              .dash-content { padding: 16px 12px !important; }
+            }
           `}</style>
 
           <div style={{ display: "flex", height: "100vh", width: "100vw", overflow: "hidden", background: t.bg, color: t.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -335,7 +346,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Menu size={16} color={t.textMuted} />
                 </button>
 
-                {/* Logo — mobile only */}
+                {/* Logo - mobile only */}
                 <div className="mobile-menu-btn" style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
                   <div style={{ width: 26, height: 26, borderRadius: 7, background: `linear-gradient(145deg, ${V.v500}, ${V.v900})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <Zap size={11} color="white" />
@@ -343,7 +354,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <span style={{ fontWeight: 700, fontSize: 14, color: t.text }}>Drop<span style={{ fontFamily: "'Syncopate',sans-serif", color: V.v400 }}>OS</span></span>
                 </div>
 
-                {/* Search — desktop */}
+                {/* Search - desktop */}
                 <div className="header-search" style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 12px", borderRadius: 12, flex: 1, maxWidth: 280, cursor: "pointer", background: theme === "dark" ? "rgba(255,255,255,0.04)" : "rgba(15,5,32,0.04)", border: `1px solid ${t.border}` }}>
                   <Search size={13} color={t.textMuted} />
                   <span style={{ fontSize: 13, flex: 1, color: t.textMuted }}>Search anything...</span>
@@ -366,8 +377,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </button>
                   </Link>
 
-                  {/* KIRO — desktop only */}
-                  <Link href="/dashboard/kai" className="header-search">
+                  {/* KIRO - desktop only */}
+                  <Link href="/dashboard/kiro" className="header-search">
                     <div className="kiro-pulse" style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 14px", borderRadius: 12, cursor: "pointer", background: `linear-gradient(135deg, ${V.v500}, ${V.v700})`, color: "#fff" }}>
                       <Zap size={13} color="white" />
                       <span style={{ fontFamily: "'Syncopate',sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em" }}>KIRO</span>
@@ -377,7 +388,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </header>
 
               {/* ── PAGE CONTENT ── */}
-              <main className="thin-scroll main-content" style={{ flex: 1, overflowY: "auto", padding: "20px 16px", paddingBottom: 20 }}>
+              <main className="thin-scroll main-content" style={{ flex: 1, overflowY: "auto", padding: "16px 12px", paddingBottom: 20 }}>
                 <AnimatePresence mode="wait">
                   <motion.div key={pathname} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15 }}>
                     {children}
