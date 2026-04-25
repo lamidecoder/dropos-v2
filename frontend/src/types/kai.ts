@@ -1,5 +1,5 @@
 // ============================================================
-// KAI — Complete TypeScript Types (10/10 Vision)
+// KAI - Complete TypeScript Types (10/10 Vision)
 // Path: frontend/src/types/kai.ts
 // ============================================================
 

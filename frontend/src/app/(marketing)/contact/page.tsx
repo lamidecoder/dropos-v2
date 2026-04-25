@@ -38,7 +38,7 @@ export default function ContactPage() {
                 talk
               </span>
             </h1>
-            <p className="text-[var(--text-secondary)] text-lg max-w-xl mx-auto">Questions, feedback, partnership — we read everything and respond fast.</p>
+            <p className="text-[var(--text-secondary)] text-lg max-w-xl mx-auto">Questions, feedback, partnership - we read everything and respond fast.</p>
           </motion.div>
 
           <div className="grid md:grid-cols-5 gap-8 items-start">
@@ -46,7 +46,7 @@ export default function ContactPage() {
             <FadeUp className="md:col-span-2 space-y-4">
               {[
                 { icon: Mail,          title: "Email us",        value: "hello@dropos.io",       sub: "We reply within 24 hours" },
-                { icon: MessageSquare, title: "Live chat",        value: "Available in dashboard", sub: "Mon–Fri, 9am–6pm WAT" },
+                { icon: MessageSquare, title: "Live chat",        value: "Available in dashboard", sub: "Mon-Fri, 9am-6pm WAT" },
                 { icon: Twitter,       title: "Twitter / X",     value: "@DropOS_app",            sub: "Fastest for quick questions" },
               ].map((c, i) => (
                 <div key={i} className="flex items-start gap-4 p-6 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] hover:border-amber-400/20 transition-all">

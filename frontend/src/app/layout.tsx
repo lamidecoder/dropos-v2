@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     locale:      "en_US",
     url:         process.env.NEXT_PUBLIC_APP_URL,
     siteName:    "DropOS",
-    title:       "DropOS — Build Your Dropshipping Empire",
+    title:       "DropOS - Build Your Dropshipping Empire",
     description: "The complete SaaS dropshipping platform.",
     images:      [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
   },

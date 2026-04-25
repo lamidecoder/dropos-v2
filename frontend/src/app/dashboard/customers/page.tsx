@@ -44,7 +44,7 @@ function CustomerRow({ customer, t, isDark, i }: any) {
         <p className="text-xs truncate" style={{ color: t.muted }}>{customer.email}</p>
       </div>
       {/* Phone */}
-      <p className="text-xs truncate" style={{ color: t.muted }}>{customer.phone || "—"}</p>
+      <p className="text-xs truncate" style={{ color: t.muted }}>{customer.phone || "-"}</p>
       {/* Orders */}
       <div className="flex items-center gap-1">
         <ShoppingBag size={11} style={{ color: V.cyan }} />
@@ -114,7 +114,7 @@ export default function CustomersPage() {
             style={{ border: `1px solid ${t.border}`, color: t.muted, background: t.card }}>
             <Download size={12} /> Export
           </button>
-          <Link href="/dashboard/kai"
+          <Link href="/dashboard/kiro"
             className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold"
             style={{ background: "rgba(107,53,232,0.1)", color: V.v300, border: "1px solid rgba(107,53,232,0.2)" }}>
             <Zap size={12} /> KIRO Insights
@@ -191,7 +191,7 @@ export default function CustomersPage() {
                   : "Customers appear here once they make a purchase through your store. KIRO can help you get your first customer."}
               </p>
               {!search && (
-                <Link href="/dashboard/kai"
+                <Link href="/dashboard/kiro"
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white"
                   style={{ background: `linear-gradient(135deg, ${V.v500}, #3D1C8A)` }}>
                   <Zap size={12} /> Ask KIRO to get first customers

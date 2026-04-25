@@ -50,7 +50,7 @@ export default function TikTokScriptsPage() {
           <div className="mb-6">
             <h1 className="text-xl font-semibold text-white mb-0.5">TikTok Script Generator</h1>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              KAI writes video scripts built for your market — or ask in chat
+              KAI writes video scripts built for your market - or ask in chat
             </p>
           </div>
 
@@ -116,7 +116,7 @@ export default function TikTokScriptsPage() {
                     {/* Hook */}
                     <div className="rounded-2xl p-4" style={{ background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.2)" }}>
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-semibold" style={{ color: "#a78bfa" }}>⚡ HOOK — first 2 seconds</p>
+                        <p className="text-xs font-semibold" style={{ color: "#a78bfa" }}>⚡ HOOK - first 2 seconds</p>
                         <button onClick={() => copy(script.hook, "hook")} className="w-6 h-6 flex items-center justify-center rounded">
                           {copied === "hook" ? <Check size={11} style={{ color: "#34d399" }} /> : <Copy size={11} style={{ color: "rgba(255,255,255,0.3)" }} />}
                         </button>

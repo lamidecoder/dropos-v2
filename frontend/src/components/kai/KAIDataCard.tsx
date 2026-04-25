@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI — Inline Data Cards
+// KAI - Inline Data Cards
 // Path: frontend/src/components/kai/KAIDataCard.tsx
 // Beautiful cards rendered inside KIRO chat messages
 // ============================================================

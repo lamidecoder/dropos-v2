@@ -82,7 +82,7 @@ export default function BroadcastsPage() {
       if (err.response?.status === 503) {
         toast.error("Connect WhatsApp first in Settings → Integrations");
       } else {
-        toast.error("Send failed — check WhatsApp setup");
+        toast.error("Send failed - check WhatsApp setup");
       }
     },
   });
@@ -121,7 +121,7 @@ export default function BroadcastsPage() {
               <motion.div key="compose" className="grid grid-cols-3 gap-5 h-full"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
 
-                {/* Left — Settings */}
+                {/* Left - Settings */}
                 <div className="space-y-4">
                   {/* Audience */}
                   <div className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
@@ -159,7 +159,7 @@ export default function BroadcastsPage() {
                   </div>
                 </div>
 
-                {/* Middle — Message */}
+                {/* Middle - Message */}
                 <div className="space-y-4">
                   {/* Type */}
                   <div className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
@@ -212,7 +212,7 @@ export default function BroadcastsPage() {
                   </div>
                 </div>
 
-                {/* Right — Preview + Send */}
+                {/* Right - Preview + Send */}
                 <div className="space-y-4">
                   {/* Phone preview */}
                   <div className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>

@@ -1,4 +1,4 @@
-// DropOS Logo Component — matches the generated brand assets
+// DropOS Logo Component - matches the generated brand assets
 // Dark variant: white text (for dark navbar/dashboard)
 // Light variant: purple text (for light backgrounds/storefront)
 

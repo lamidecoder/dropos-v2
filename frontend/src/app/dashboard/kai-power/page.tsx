@@ -1,7 +1,7 @@
 "use client";
 ﻿"use client";
 // ============================================================
-// KAI Power Tools — Complete UI
+// KAI Power Tools - Complete UI
 // Path: frontend/src/app/dashboard/kai-power/page.tsx
 // Route: /dashboard/kai-power
 // ============================================================
@@ -90,7 +90,7 @@ export default function KAIPowerPage() {
             <h1 className="text-xl font-semibold text-white">KAI Power Tools</h1>
           </div>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Replaces PagePilot + droship.io + Minea — all free in DropOS Pro
+            Replaces PagePilot + droship.io + Minea - all free in DropOS Pro
           </p>
         </div>
 
@@ -328,7 +328,7 @@ function ProductPageResult({ data }: any) {
           {data.socialProof.testimonials?.map((t: any, i: number) => (
             <div key={i} className="mb-2 p-2 rounded-lg" style={{ background: "rgba(255,255,255,0.03)" }}>
               <p className="text-xs text-white mb-0.5">"{t.text}"</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>— {t.name}, {t.location}</p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>- {t.name}, {t.location}</p>
             </div>
           ))}
         </Card>

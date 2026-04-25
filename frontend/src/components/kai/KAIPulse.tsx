@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI — Pulse Panel (Proactive Alerts)
+// KAI - Pulse Panel (Proactive Alerts)
 // Path: frontend/src/components/kai/KAIPulse.tsx
 // ============================================================
 import { motion, AnimatePresence } from "framer-motion";

@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI — Complete Hook (10/10)
+// KAI - Complete Hook (10/10)
 // Path: frontend/src/hooks/useKai.ts
 // ============================================================
 import { useCallback, useRef } from "react";

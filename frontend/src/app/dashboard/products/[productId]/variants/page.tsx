@@ -354,7 +354,7 @@ export default function ProductVariantsPage() {
             <CheckCircle size={14} className="text-emerald-400 mt-0.5 flex-shrink-0" />
             <p className={`text-xs ${sub}`}>
               Variants are live on your storefront. Customers see option selectors on the product page.
-              Price overrides apply only to specific variants — others use the base product price.
+              Price overrides apply only to specific variants - others use the base product price.
             </p>
           </div>
         )}

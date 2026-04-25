@@ -226,7 +226,7 @@ export default function UserDetailPage() {
                     <input {...register(field as any)}
                       className={`w-full rounded-lg px-3 py-2 text-sm border outline-none focus:border-violet-500 transition-all ${inp}`} />
                   ) : (
-                    <span className={`text-sm font-semibold ${tx}`}>{(user as any)[field] || "—"}</span>
+                    <span className={`text-sm font-semibold ${tx}`}>{(user as any)[field] || "-"}</span>
                   )}
                 </div>
               ))}
@@ -244,7 +244,7 @@ export default function UserDetailPage() {
                 </span>
               </div>
               <div className="flex flex-col gap-2 items-end">
-                <span className={`text-xs ${sub}`}>Expires {user.subscription?.currentPeriodEnd ? new Date(user.subscription.currentPeriodEnd).toLocaleDateString() : "—"}</span>
+                <span className={`text-xs ${sub}`}>Expires {user.subscription?.currentPeriodEnd ? new Date(user.subscription.currentPeriodEnd).toLocaleDateString() : "-"}</span>
                 {editing && (
                   <select onChange={(e) => updateSub.mutate({ plan: e.target.value })}
                     defaultValue={user.subscription?.plan}
@@ -376,7 +376,7 @@ export default function UserDetailPage() {
               <div key={store.id}>
                 {store.payments?.length > 0 && (
                   <div className={`rounded-xl border p-4 bg-[var(--bg-card)]/60 border-[var(--border)]/50`}>
-                    <div className={`text-xs font-semibold ${sub} mb-3`}>{store.name} — Recent Payments</div>
+                    <div className={`text-xs font-semibold ${sub} mb-3`}>{store.name} - Recent Payments</div>
                     <div className="space-y-2">
                       {store.payments.slice(0, 5).map((p: any, i: number) => (
                         <div key={i} className="flex items-center justify-between text-sm">

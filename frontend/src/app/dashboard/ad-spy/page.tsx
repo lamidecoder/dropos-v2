@@ -34,7 +34,7 @@ export default function AdSpyPage() {
   const spy = useMutation({
     mutationFn: async () => api.post("/intel/ad-spy", { query, platform, storeId }),
     onSuccess: r => setResult(r.data.data),
-    onError:   () => toast.error("Ad spy failed — try a different query"),
+    onError:   () => toast.error("Ad spy failed - try a different query"),
   });
 
   const copyHook = (hook: string) => {
@@ -54,7 +54,7 @@ export default function AdSpyPage() {
           <div className="mb-6">
             <h1 className="text-xl font-semibold text-white mb-0.5">Ad Spy</h1>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Discover winning ads & hooks in your market right now — or Ask KIRO in chat
+              Discover winning ads & hooks in your market right now - or Ask KIRO in chat
             </p>
           </div>
 
@@ -118,7 +118,7 @@ export default function AdSpyPage() {
                 <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
                   <div className="px-5 py-4" style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                     <p className="text-sm font-semibold text-white">Winning Hooks</p>
-                    <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Copy these — they're proven to work</p>
+                    <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Copy these - they're proven to work</p>
                   </div>
                   <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
                     {(result.topHooks || []).map((hook: any, i: number) => (

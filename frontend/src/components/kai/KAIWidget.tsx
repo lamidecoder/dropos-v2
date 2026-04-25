@@ -3,7 +3,7 @@
 // Public KAI Widget
 // Path: frontend/src/components/kai/KAIWidget.tsx
 //
-// Works EVERYWHERE — landing page, store pages, any route.
+// Works EVERYWHERE - landing page, store pages, any route.
 // If user is logged in: full KAI experience
 // If not logged in: shows login/signup popup on first message
 // ============================================================
@@ -96,7 +96,7 @@ export function KAIWidget() {
       setMessages([{
         id:      "welcome",
         role:    "assistant",
-        content: `Hi ${user?.name?.split(" ")[0] || "there"} 👋 I'm KAI — your business partner. What can I help with today?`,
+        content: `Hi ${user?.name?.split(" ")[0] || "there"} 👋 I'm KAI - your business partner. What can I help with today?`,
       }]);
     }
   };

@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI — Floating Input
+// KAI - Floating Input
 // Path: frontend/src/components/kai/KAIInput.tsx
 // ============================================================
 import { useState, useRef, useEffect, useCallback } from "react";

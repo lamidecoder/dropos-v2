@@ -55,7 +55,7 @@ export function BulkImportPage() {
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-0.5">Bulk Import</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Paste any supplier store URL — KAI fetches all products and scores them
+            Paste any supplier store URL - KAI fetches all products and scores them
           </p>
         </div>
 

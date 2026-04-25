@@ -43,7 +43,7 @@ export default function ImageUploader({ images, onChange, maxImages = 8 }: Props
         const url = res.data.data.url;
         onChange([...images, url]);
       } catch {
-        setError("Upload failed — please try again");
+        setError("Upload failed - please try again");
       } finally {
         setUploading((prev) => prev.filter((n) => n !== file.name));
       }

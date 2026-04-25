@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI — Sidebar
+// KAI - Sidebar
 // Path: frontend/src/components/kai/KAISidebar.tsx
 // ============================================================
 import { useState, useRef, useEffect } from "react";

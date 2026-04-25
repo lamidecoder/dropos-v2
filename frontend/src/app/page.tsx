@@ -196,7 +196,7 @@ export default function WaitlistPage() {
                 {/* Sub */}
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
                   style={{ fontSize: "17px", fontWeight: 300, lineHeight: 1.7, color: "rgba(255,255,255,0.45)", marginBottom: "36px", maxWidth: "460px", marginLeft: "auto", marginRight: "auto" }}>
-                  <strong style={{ color: "rgba(255,255,255,0.85)" }}>KIRO</strong> — your built-in AI — builds your store, finds winning products, and fulfils every order automatically.{" "}
+                  <strong style={{ color: "rgba(255,255,255,0.85)" }}>KIRO</strong> - your built-in AI - builds your store, finds winning products, and fulfils every order automatically.{" "}
                   <strong style={{ color: "rgba(255,255,255,0.85)" }}>No experience needed. Just results.</strong>
                 </motion.p>
 
@@ -208,7 +208,7 @@ export default function WaitlistPage() {
                 <motion.div id="form" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
                   style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "20px", padding: "28px", marginBottom: "24px" }}>
                   <p style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.38)", textAlign: "center", marginBottom: "18px", letterSpacing: "0.04em" }}>
-                    Secure your free spot — takes 20 seconds
+                    Secure your free spot - takes 20 seconds
                   </p>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "14px" }}>
@@ -233,7 +233,7 @@ export default function WaitlistPage() {
                     style={{ width: "100%", padding: "17px", background: "linear-gradient(135deg,#7c3aed,#5b21b6)", border: "none", borderRadius: "13px", color: "#fff", fontSize: "16px", fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: "-0.2px", boxShadow: "0 8px 32px rgba(124,58,237,0.45)" }}
                     whileHover={{ scale: 1.02, boxShadow: "0 16px 48px rgba(124,58,237,0.65)" }}
                     whileTap={{ scale: 0.98 }}>
-                    {status === "loading" ? "Securing your spot..." : "Get Early Access — It's Free →"}
+                    {status === "loading" ? "Securing your spot..." : "Get Early Access - It's Free →"}
                   </motion.button>
 
                   <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.2)", textAlign: "center", marginTop: "12px" }}>
@@ -257,7 +257,7 @@ export default function WaitlistPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   {[
                     ["01","💬","Tell KIRO what you sell","Chat with KIRO like a person. Tell it your niche. It does the rest."],
-                    ["02","🏪","Your store is built","KIRO creates your store, adds products, sets prices for max margin — 60 seconds."],
+                    ["02","🏪","Your store is built","KIRO creates your store, adds products, sets prices for max margin - 60 seconds."],
                     ["03","📦","Orders fulfil themselves","Every order sent to your supplier automatically. You don't lift a finger."],
                     ["04","📈","KIRO grows your revenue","Daily product alerts. Ad angles. Revenue reports. KIRO never sleeps."],
                   ].map(([num,icon,title,desc]) => (
@@ -295,7 +295,7 @@ export default function WaitlistPage() {
 
               {/* Referral */}
               <div style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.25)", borderRadius: "18px", padding: "26px", marginBottom: "14px", textAlign: "left" }}>
-                <p style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#a78bfa", marginBottom: "10px" }}>🎁 Unlock 3 months Growth plan — free</p>
+                <p style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#a78bfa", marginBottom: "10px" }}>🎁 Unlock 3 months Growth plan - free</p>
                 <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.65)", lineHeight: 1.65, marginBottom: "20px" }}>
                   Share DropOS with <strong style={{ color: "#fff" }}>3 friends who join</strong> and get{" "}
                   <strong style={{ color: "#fff" }}>3 months Growth plan completely free</strong> when we launch.

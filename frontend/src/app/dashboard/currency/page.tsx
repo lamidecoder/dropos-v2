@@ -302,7 +302,7 @@ export default function CurrencyPage() {
                               : rate >= 1
                               ? rate.toFixed(2)
                               : rate.toFixed(4)
-                            : "—"
+                            : "-"
                           }
                         </span>
                         <span className={`text-[10px] ${sub}`}>{meta?.symbol}</span>

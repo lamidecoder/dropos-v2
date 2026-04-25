@@ -19,7 +19,7 @@ export function useSessionRestore() {
     didRestore.current = true;
 
     const restore = async () => {
-      // Already have a valid access token in memory — no need to restore
+      // Already have a valid access token in memory - no need to restore
       if (accessToken) {
         setHydrated(true);
         return;
@@ -36,8 +36,8 @@ export function useSessionRestore() {
           setUser(restoredUser);
         }
       } catch {
-        // No valid session — user needs to log in
-        // Don't redirect — let each page decide what to do
+        // No valid session - user needs to log in
+        // Don't redirect - let each page decide what to do
       } finally {
         setLoading(false);
         setHydrated(true);
@@ -48,7 +48,7 @@ export function useSessionRestore() {
   }, []);
 }
 
-// ── Provider component — wrap in root layout ──────────────────
+// ── Provider component - wrap in root layout ──────────────────
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   useSessionRestore();
   return <>{children}</>;

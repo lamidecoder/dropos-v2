@@ -207,8 +207,8 @@ export default function StoresPage() {
               {/* Stats */}
               <div className="grid grid-cols-2" style={{ padding: "12px 20px", gap: 12 }}>
                 {[
-                  { label: "Products", value: store._count?.products ?? store.productCount ?? "—" },
-                  { label: "Orders", value: store._count?.orders ?? store.orderCount ?? "—" },
+                  { label: "Products", value: store._count?.products ?? store.productCount ?? "-" },
+                  { label: "Orders", value: store._count?.orders ?? store.orderCount ?? "-" },
                 ].map(s => (
                   <div key={s.label}>
                     <p style={{ fontSize: 11, color: t.muted }}>{s.label}</p>

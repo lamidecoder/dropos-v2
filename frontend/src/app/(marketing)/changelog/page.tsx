@@ -20,8 +20,8 @@ const changelog = [
     icon: Zap, color: "#c9a84c",
     updates: [
       { type: "new",  text: "Inventory management page with low-stock alerts" },
-      { type: "new",  text: "Order invoice PDF — download from any order" },
-      { type: "new",  text: "Customer reviews dashboard — approve or reject" },
+      { type: "new",  text: "Order invoice PDF - download from any order" },
+      { type: "new",  text: "Customer reviews dashboard - approve or reject" },
       { type: "new",  text: "Deployment configs for Railway, Render and Vercel" },
       { type: "fix",  text: "Fixed duplicate ShippingZone model in Prisma schema" },
       { type: "fix",  text: "Fixed broken import causing backend crash on startup" },
@@ -31,7 +31,7 @@ const changelog = [
     version: "v1.2.0", date: "February 2025", badge: "Stable",
     icon: Package, color: "#7c3aed",
     updates: [
-      { type: "new",  text: "Store customization — fonts, colors, border radius" },
+      { type: "new",  text: "Store customization - fonts, colors, border radius" },
       { type: "new",  text: "Coupon engine with % and fixed discount types" },
       { type: "new",  text: "Shipping zones by country with free thresholds" },
       { type: "new",  text: "Sales reports with CSV export" },
@@ -86,7 +86,7 @@ export default function ChangelogPage() {
                 new
               </span>
             </h1>
-            <p className="text-[var(--text-secondary)] text-lg">Every update, improvement and fix — in one place.</p>
+            <p className="text-[var(--text-secondary)] text-lg">Every update, improvement and fix - in one place.</p>
           </motion.div>
 
           <div className="relative">

@@ -1,6 +1,6 @@
 "use client";
 
-// Mobile bottom navigation bar — visible on screens < 640px
+// Mobile bottom navigation bar - visible on screens < 640px
 // Shows the 5 most important nav items with active state
 
 import Link from "next/link";

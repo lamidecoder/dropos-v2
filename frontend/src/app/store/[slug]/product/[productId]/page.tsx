@@ -206,7 +206,7 @@ export default function ProductPage() {
               <div className="mb-6">
                 <p className="text-sm font-bold text-slate-700 mb-2">
                   {product.variants[0]?.name || "Options"}
-                  {selectedVariant && <span className="text-slate-400 font-normal ml-2">— {selectedVariant.value}</span>}
+                  {selectedVariant && <span className="text-slate-400 font-normal ml-2">- {selectedVariant.value}</span>}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {product.variants.map((v: any) => (

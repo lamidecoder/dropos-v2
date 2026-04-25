@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI — Memory Panel
+// KAI - Memory Panel
 // Path: frontend/src/components/kai/KAIMemory.tsx
 // ============================================================
 import { motion } from "framer-motion";
@@ -40,7 +40,7 @@ export function KAIMemory() {
           <h2 className="text-sm font-semibold text-white">KAI Memory</h2>
         </div>
         <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-          What KAI remembers about your business — forever
+          What KAI remembers about your business - forever
         </p>
       </div>
 

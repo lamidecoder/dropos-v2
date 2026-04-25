@@ -34,7 +34,7 @@ export default function OfflinePage() {
         You're offline
       </h1>
       <p style={{ fontSize: 15, color: "#94A3B8", marginBottom: 32, maxWidth: 320, lineHeight: 1.6 }}>
-        No internet connection. Your recent pages are still available — go back and browse what's been cached.
+        No internet connection. Your recent pages are still available - go back and browse what's been cached.
       </p>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>

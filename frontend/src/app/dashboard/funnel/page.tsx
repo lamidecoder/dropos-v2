@@ -60,7 +60,7 @@ export default function FunnelPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Funnel & Attribution</h1>
-            <p className={`text-sm mt-0.5 ${sub}`}>See exactly where customers drop off — and fix it.</p>
+            <p className={`text-sm mt-0.5 ${sub}`}>See exactly where customers drop off - and fix it.</p>
           </div>
           <div className="flex gap-2">
             {["7d","30d","90d"].map(p => (
@@ -108,7 +108,7 @@ export default function FunnelPage() {
           </div>
           <div className={`mt-4 pt-4 border-t [border-color:var(--border)] text-xs ${sub}`}>
             Overall conversion rate: <span className="font-bold [color:var(--accent)]">{funnel[3]?.rate || 0}%</span>
-            {" "}· Industry average: <span className="font-semibold">2.5–3%</span>
+            {" "}· Industry average: <span className="font-semibold">2.5-3%</span>
           </div>
         </div>
 

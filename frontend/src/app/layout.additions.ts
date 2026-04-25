@@ -1,5 +1,5 @@
 // ============================================================
-// Root Layout — Add These
+// Root Layout - Add These
 // Path: frontend/src/app/layout.tsx (additions only)
 //
 // This shows how to add:
@@ -18,9 +18,9 @@ export default function RootLayout({ children }) {
     <html>
       <body>
         <Providers>             // your existing providers
-          <SessionProvider>     // ADD THIS — restores session on load
+          <SessionProvider>     // ADD THIS - restores session on load
             {children}
-            <KAIWidget />       // ADD THIS — floating KAI on every page
+            <KAIWidget />       // ADD THIS - floating KAI on every page
           </SessionProvider>
         </Providers>
       </body>
@@ -38,13 +38,13 @@ export default function RootLayout({ children }) {
 // /register
 // /login
 // /store/[slug] (customer-facing stores)
-// /dashboard/** (owner dashboard — full KAI page)
+// /dashboard/** (owner dashboard - full KAI page)
 //
 // KAI Widget behaviour by page:
 // Landing/pricing/features: "Sign up to chat with KAI" gating
 // Register/login: "Create account to use KAI" prompt
 // Dashboard: Full KAI experience (already has /dashboard/kai)
-// Store pages: Customer-facing (no business KAI — different widget)
+// Store pages: Customer-facing (no business KAI - different widget)
 // ============================================================
 
 export const LAYOUT_ADDITIONS = true;

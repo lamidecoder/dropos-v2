@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI — Complete State Store (10/10)
+// KAI - Complete State Store (10/10)
 // Path: frontend/src/store/kai.store.ts
 // ============================================================
 import { create } from "zustand";

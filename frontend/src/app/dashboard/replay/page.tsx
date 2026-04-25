@@ -27,7 +27,7 @@ export default function ReplayPage() {
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-1">Revenue Replay</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Your business story — every sale that got you here
+            Your business story - every sale that got you here
           </p>
         </div>
 
@@ -73,7 +73,7 @@ export default function ReplayPage() {
                   initial={{ height: 0 }}
                   animate={{ height: `${(t.cumulative / maxCumulative) * 100}%` }}
                   transition={{ delay: i * 0.02, duration: 0.4 }}
-                  title={`₦${t.amount.toLocaleString()} — ${new Date(t.date).toLocaleDateString()}`}
+                  title={`₦${t.amount.toLocaleString()} - ${new Date(t.date).toLocaleDateString()}`}
                 />
               ))}
             </div>

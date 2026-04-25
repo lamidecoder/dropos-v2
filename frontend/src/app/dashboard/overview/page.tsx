@@ -1,7 +1,7 @@
 "use client";
 ﻿"use client";
 // ============================================================
-// Dashboard Overview — Premium Home Screen
+// Dashboard Overview - Premium Home Screen
 // Path: frontend/src/app/dashboard/overview/page.tsx
 // ============================================================
 import { useState }      from "react";

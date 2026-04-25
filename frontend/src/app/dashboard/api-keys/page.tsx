@@ -71,7 +71,7 @@ export default function ApiKeysPage() {
           <div className="rounded-2xl border p-5" style={{ background: "rgba(16,185,129,0.05)", borderColor: "rgba(16,185,129,0.2)" }}>
             <div className="flex items-center gap-2 mb-2">
               <Shield size={14} className="text-emerald-400" />
-              <p className="text-sm font-bold text-emerald-400">Your new API key — copy it now, it won't be shown again.</p>
+              <p className="text-sm font-bold text-emerald-400">Your new API key - copy it now, it won't be shown again.</p>
             </div>
             <div className="flex items-center gap-3">
               <code className={`flex-1 text-xs font-mono p-3 rounded-xl [background:var(--bg-card)] ${tx} break-all`}>{newKey}</code>

@@ -157,7 +157,7 @@ export default function KIROPage() {
                 What can I help you with?
               </h2>
               <p style={{ fontSize: 14, color: t.muted, marginBottom: 32, maxWidth: 420, lineHeight: 1.6 }}>
-                I'm KIRO — your AI commerce co-pilot. Ask me anything about your store, products, orders, or strategy.
+                I'm KIRO - your AI commerce co-pilot. Ask me anything about your store, products, orders, or strategy.
               </p>
 
               {/* Suggestions */}

@@ -54,7 +54,7 @@ export default function ReportsPage() {
       URL.revokeObjectURL(url);
       toast.success(`${type} exported!`);
     } catch {
-      // Fallback — generate CSV from demo data
+      // Fallback - generate CSV from demo data
       const headers = type === "orders"
         ? "Order Number,Date,Customer,Total,Status"
         : type === "products"

@@ -57,7 +57,7 @@ export function PWAInstallBanner() {
             Install DropOS App
           </div>
           <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-            Manage your store from your home screen — works offline too.
+            Manage your store from your home screen - works offline too.
           </div>
         </div>
       </div>

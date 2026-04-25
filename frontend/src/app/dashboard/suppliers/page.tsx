@@ -15,10 +15,10 @@ const T = {
 };
 
 const FEATURED = [
-  { name: "AliExpress", logo: "🛒", desc: "200M+ products, worldwide shipping, 7-day delivery to Nigeria", shipping: "7–30 days", category: "General", color: "#FF4747" },
-  { name: "CJDropshipping", logo: "📦", desc: "Fast fulfilment, Nigerian warehouse option, white-label packaging", shipping: "5–15 days", category: "General", color: "#06B6D4" },
-  { name: "Printful", logo: "👕", desc: "Print-on-demand for fashion, merch, and custom products", shipping: "3–10 days", category: "Fashion", color: "#7C3AED" },
-  { name: "Zendrop", logo: "⚡", desc: "Auto-fulfilment, US/EU suppliers, fast African shipping", shipping: "5–20 days", category: "General", color: "#F59E0B" },
+  { name: "AliExpress", logo: "🛒", desc: "200M+ products, worldwide shipping, 7-day delivery to Nigeria", shipping: "7-30 days", category: "General", color: "#FF4747" },
+  { name: "CJDropshipping", logo: "📦", desc: "Fast fulfilment, Nigerian warehouse option, white-label packaging", shipping: "5-15 days", category: "General", color: "#06B6D4" },
+  { name: "Printful", logo: "👕", desc: "Print-on-demand for fashion, merch, and custom products", shipping: "3-10 days", category: "Fashion", color: "#7C3AED" },
+  { name: "Zendrop", logo: "⚡", desc: "Auto-fulfilment, US/EU suppliers, fast African shipping", shipping: "5-20 days", category: "General", color: "#F59E0B" },
 ];
 
 export default function SuppliersPage() {
@@ -37,7 +37,7 @@ export default function SuppliersPage() {
   const connectMut = useMutation({
     mutationFn: (name: string) => api.post(`/suppliers/${storeId}/connect`, { name }),
     onSuccess: () => { toast.success("Supplier connected!"); setConnecting(null); },
-    onError: () => toast.error("Backend offline — connect backend to link suppliers"),
+    onError: () => toast.error("Backend offline - connect backend to link suppliers"),
   });
 
   const connected: any[] = data?.connected || [];

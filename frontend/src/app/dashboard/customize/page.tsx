@@ -1,12 +1,12 @@
 "use client";
 ﻿"use client";
 // ============================================================
-// Visual Store Editor — Perfect UX
+// Visual Store Editor - Perfect UX
 // Path: frontend/src/app/dashboard/customize/page.tsx
 //
-// LEFT:   Settings panel — clean, grouped
-// CENTER: Live preview iframe — click to select section
-// RIGHT:  KIRO chat — talk to your theme
+// LEFT:   Settings panel - clean, grouped
+// CENTER: Live preview iframe - click to select section
+// RIGHT:  KIRO chat - talk to your theme
 // TOP:    Template picker, device toggle, undo/redo, save
 // ============================================================
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -464,7 +464,7 @@ export default function CustomizePage() {
         {/* ── MAIN LAYOUT ─────────────────────────────────────── */}
         <div className="flex flex-1 min-h-0 overflow-hidden">
 
-          {/* LEFT PANEL — Settings */}
+          {/* LEFT PANEL - Settings */}
           <div className="w-64 flex-shrink-0 flex flex-col" style={{ background: "#0d0d18", borderRight: "1px solid rgba(255,255,255,0.06)" }}>
 
             {/* Panel tabs */}
@@ -663,7 +663,7 @@ export default function CustomizePage() {
             </AnimatePresence>
           </div>
 
-          {/* CENTER — Live Preview */}
+          {/* CENTER - Live Preview */}
           <div className="flex-1 flex flex-col min-w-0" style={{ background: "#111116" }}>
             {/* Preview container */}
             <div className="flex-1 flex items-center justify-center p-6 overflow-hidden">
@@ -696,7 +696,7 @@ export default function CustomizePage() {
             <div className="flex items-center justify-center gap-4 py-2 flex-shrink-0"
               style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
-                {device === "desktop" ? "Desktop view" : device === "tablet" ? "Tablet — 768px" : "Mobile — 390px"}
+                {device === "desktop" ? "Desktop view" : device === "tablet" ? "Tablet - 768px" : "Mobile - 390px"}
               </p>
               <span style={{ color: "rgba(255,255,255,0.1)" }}>·</span>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
@@ -705,7 +705,7 @@ export default function CustomizePage() {
             </div>
           </div>
 
-          {/* RIGHT — KIRO chat */}
+          {/* RIGHT - KIRO chat */}
           <AnimatePresence>
             {showKAI && (
               <motion.div className="w-64 flex-shrink-0"

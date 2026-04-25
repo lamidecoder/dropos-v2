@@ -102,7 +102,7 @@ export default function WebhooksPage() {
               {wh.deliveries?.length > 0 && (
                 <div className="flex gap-1.5 mt-2">
                   {wh.deliveries.slice(0,5).map((d: any, i: number) => (
-                    <div key={i} title={`${d.event} — ${d.success ? "✓" : "✗"} ${d.statusCode || ""}`}
+                    <div key={i} title={`${d.event} - ${d.success ? "✓" : "✗"} ${d.statusCode || ""}`}
                       className={`w-5 h-5 rounded-full flex items-center justify-center ${d.success ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"}`}>
                       {d.success ? <CheckCircle size={10} className="text-emerald-700 dark:text-emerald-400" /> : <XCircle size={10} className="text-red-600 dark:text-red-400" />}
                     </div>
@@ -111,7 +111,7 @@ export default function WebhooksPage() {
                 </div>
               )}
               {wh.failCount > 2 && (
-                <p className="text-xs text-red-600 dark:text-red-400 mt-2">⚠️ {wh.failCount} consecutive failures — check your endpoint</p>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-2">⚠️ {wh.failCount} consecutive failures - check your endpoint</p>
               )}
             </div>
           ))}

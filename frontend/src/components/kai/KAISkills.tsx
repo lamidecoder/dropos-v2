@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI — Skills Panel (Saved Prompts)
+// KAI - Skills Panel (Saved Prompts)
 // Path: frontend/src/components/kai/KAISkills.tsx
 // ============================================================
 import { useState } from "react";

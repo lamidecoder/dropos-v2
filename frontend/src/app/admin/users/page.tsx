@@ -116,7 +116,7 @@ export default function AdminUsersPage() {
                       </div>
                     </div>
                   </td>
-                  <td className={`px-5 py-4 text-xs ${sub}`}>{u.city || u.country || "—"}</td>
+                  <td className={`px-5 py-4 text-xs ${sub}`}>{u.city || u.country || "-"}</td>
                   <td className="px-5 py-4">
                     <span className={`text-xs font-bold px-2.5 py-1 rounded-full
                       ${u.subscription?.plan === "ADVANCED" ? "bg-violet-400/10 text-violet-700 dark:text-violet-400"
@@ -132,7 +132,7 @@ export default function AdminUsersPage() {
                   <td className="px-5 py-4">
                     {u.flags?.length > 0
                       ? <span className="flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400"><Flag size={11} />{u.flags.length}</span>
-                      : <span className={`text-xs ${sub}`}>—</span>}
+                      : <span className={`text-xs ${sub}`}>-</span>}
                   </td>
                   <td className={`px-5 py-4 text-xs ${sub}`}>
                     {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : "Never"}
@@ -182,7 +182,7 @@ export default function AdminUsersPage() {
         {pagination && pagination.pages > 1 && (
           <div className="flex items-center justify-between">
             <p className={`text-sm ${sub}`}>
-              Showing {((page - 1) * LIMIT) + 1}–{Math.min(page * LIMIT, pagination.total)} of {pagination.total}
+              Showing {((page - 1) * LIMIT) + 1}-{Math.min(page * LIMIT, pagination.total)} of {pagination.total}
             </p>
             <div className="flex gap-2">
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}

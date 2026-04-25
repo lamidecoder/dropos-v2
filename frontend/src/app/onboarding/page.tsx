@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// 5-Minute Store Setup — KAI Guided Onboarding
+// 5-Minute Store Setup - KAI Guided Onboarding
 // Path: frontend/src/app/onboarding/page.tsx
 // Route: /onboarding (shown to new users after signup)
 // ============================================================
@@ -106,7 +106,7 @@ export default function OnboardingPage() {
 
       setStep("done");
     } catch (err) {
-      addLog("⚠️ Almost done — redirecting to dashboard...");
+      addLog("⚠️ Almost done - redirecting to dashboard...");
       await new Promise(r => setTimeout(r, 1000));
       setStep("done");
     }
@@ -127,12 +127,12 @@ export default function OnboardingPage() {
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
             {step === "done" ? "KAI has everything set up for you"
               : step === "building" ? "KIRO is setting everything up..."
-              : "3 quick questions — 5 minutes total"}
+              : "3 quick questions - 5 minutes total"}
           </p>
         </div>
 
         <AnimatePresence mode="wait">
-          {/* Step 1 — Niche */}
+          {/* Step 1 - Niche */}
           {step === "niche" && (
             <StepCard key="niche" icon={Store} title="What do you want to sell?">
               <div className="grid grid-cols-2 gap-2">
@@ -154,7 +154,7 @@ export default function OnboardingPage() {
             </StepCard>
           )}
 
-          {/* Step 2 — Audience */}
+          {/* Step 2 - Audience */}
           {step === "audience" && (
             <StepCard key="audience" icon={Users} title="Who are your customers?">
               <div className="grid grid-cols-2 gap-2">
@@ -179,7 +179,7 @@ export default function OnboardingPage() {
             </StepCard>
           )}
 
-          {/* Step 3 — Budget */}
+          {/* Step 3 - Budget */}
           {step === "budget" && (
             <StepCard key="budget" icon={DollarSign} title="What's your starting budget?">
               <div className="space-y-2">

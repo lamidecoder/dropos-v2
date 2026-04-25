@@ -154,7 +154,7 @@ export default function CartDrawer({ storeSlug, storeId, brand, currency = "USD"
           )}
         </div>
 
-        {/* Footer — only show when items exist */}
+        {/* Footer - only show when items exist */}
         {items.length > 0 && (
           <div className="border-t border-slate-100 bg-white">
             {/* Coupon field */}
@@ -190,7 +190,7 @@ export default function CartDrawer({ storeSlug, storeId, brand, currency = "USD"
               {couponError && <p className="text-[11px] text-red-500 mt-1.5">{couponError}</p>}
               {couponApplied && (
                 <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-emerald-600 font-semibold">
-                  <CheckCircle size={11} /> {couponApplied.code} — {couponApplied.label} applied!
+                  <CheckCircle size={11} /> {couponApplied.code} - {couponApplied.label} applied!
                 </div>
               )}
             </div>

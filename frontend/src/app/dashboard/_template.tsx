@@ -31,7 +31,7 @@ export default function GenericPage({ title, description, icon: Icon, color }: {
         <p style={{ fontSize: 13, color: t.muted, maxWidth: 360, lineHeight: 1.6, marginBottom: 24 }}>
           {description}. Ask KIRO for help getting started with this feature.
         </p>
-        <Link href="/dashboard/kai">
+        <Link href="/dashboard/kiro">
           <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 12, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${V.v500}, ${V.v700})`, color: "#fff", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 16px rgba(107,53,232,0.35)" }}>
             <Zap size={13} /> Ask KIRO <ChevronRight size={13} />
           </button>

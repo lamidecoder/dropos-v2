@@ -171,7 +171,7 @@ export default function ImportPage() {
             {/* URL input */}
             <div className={`rounded-2xl border p-6 ${card}`}>
               <h2 className={`font-black mb-1 ${tx}`}>Product URL</h2>
-              <p className={`text-sm mb-5 ${sub}`}>Paste any product URL — AliExpress, Alibaba, Amazon, DHgate, Temu, or any store.</p>
+              <p className={`text-sm mb-5 ${sub}`}>Paste any product URL - AliExpress, Alibaba, Amazon, DHgate, Temu, or any store.</p>
 
               <div className="flex gap-3">
                 <div className="flex-1 relative">
@@ -230,7 +230,7 @@ export default function ImportPage() {
                   "Copy the URL directly from your browser address bar",
                   "For AliExpress, use the product detail page URL (not search results)",
                   "Product images, title, price, and description are auto-imported",
-                  "You set your own selling price — we suggest a 2.5× markup",
+                  "You set your own selling price - we suggest a 2.5× markup",
                 ].map((tip, i) => (
                   <li key={i} className={`flex items-start gap-2 text-xs ${sub}`}>
                     <span className="text-violet-400 mt-0.5 flex-shrink-0">→</span>
@@ -399,7 +399,7 @@ export default function ImportPage() {
                     <label className={`block text-xs font-bold mb-1.5 ${sub}`}>LINK TO SUPPLIER (optional)</label>
                     <select value={supplierId} onChange={e => setSupplierId(e.target.value)}
                       className={`${inp} cursor-pointer`}>
-                      <option value="">— No supplier link —</option>
+                      <option value="">- No supplier link -</option>
                       {suppliers.map((s: any) => (
                         <option key={s.id} value={s.id}>{s.name}</option>
                       ))}
@@ -453,7 +453,7 @@ export default function ImportPage() {
             </p>
             {savedProduct.status === "DRAFT" && (
               <p className={`text-xs mb-8 ${sub}`}>
-                It's saved as a Draft — visit your Products page to publish it.
+                It's saved as a Draft - visit your Products page to publish it.
               </p>
             )}
             <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">

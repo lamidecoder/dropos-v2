@@ -49,7 +49,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
           setDetected(true);
         }
       } catch {
-        // Silent fail — storefront still works with store's base currency
+        // Silent fail - storefront still works with store's base currency
       }
     };
 

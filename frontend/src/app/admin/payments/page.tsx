@@ -101,7 +101,7 @@ export default function AdminPaymentsPage() {
                 : payments.map((p: any) => (
                     <tr key={p.id} className={`border-b transition-colors ${tRow}`}>
                       <td className="px-4 py-4 font-mono text-xs font-bold text-violet-500">
-                        {p.order?.orderNumber || "—"}
+                        {p.order?.orderNumber || "-"}
                       </td>
                       <td className="px-4 py-4">
                         <div className={`font-semibold text-xs ${tx}`}>{p.order?.customerName}</div>

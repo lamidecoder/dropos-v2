@@ -24,7 +24,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ── Refresh lock — prevents race condition ────────────────────
+// ── Refresh lock - prevents race condition ────────────────────
 // Only ONE refresh call happens at a time.
 // All other 401s queue up and wait for it.
 let isRefreshing = false;
@@ -104,7 +104,7 @@ api.interceptors.response.use(
       return api(original);
 
     } catch (refreshError) {
-      // Refresh failed — clear everything and redirect
+      // Refresh failed - clear everything and redirect
       refreshQueue = [];
       if (typeof window !== "undefined") {
         localStorage.removeItem("dropos-refresh-token");

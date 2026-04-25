@@ -27,7 +27,7 @@ export default function ImportPage() {
   const importUrlMut = useMutation({
     mutationFn: () => api.post(`/products/${storeId}/import-url`, { url }),
     onSuccess: () => { toast.success("Product imported!"); setUrl(""); },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Import failed — backend offline"),
+    onError: (e: any) => toast.error(e.response?.data?.message || "Import failed - backend offline"),
   });
 
   const importCsvMut = useMutation({
@@ -109,7 +109,7 @@ export default function ImportPage() {
             </div>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: t.text, marginBottom: 8 }}>KIRO AliExpress Integration</h3>
             <p style={{ fontSize: 13, color: t.muted, maxWidth: 360, margin: "0 auto 20px", lineHeight: 1.6 }}>Tell KIRO what niche or product category you want to sell. KIRO searches AliExpress, finds winning products by margin, and imports them directly into your store.</p>
-            <a href="/dashboard/kai" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: `linear-gradient(135deg, ${V.v500}, #3D1C8A)` }}>
+            <a href="/dashboard/kiro" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: `linear-gradient(135deg, ${V.v500}, #3D1C8A)` }}>
               <Zap size={13} /> Ask KIRO to find products
             </a>
           </div>

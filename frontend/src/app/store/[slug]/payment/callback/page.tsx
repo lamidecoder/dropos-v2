@@ -117,7 +117,7 @@ function CallbackInner() {
       return;
     }
 
-    // Build verify URL — pass all params the backend might need
+    // Build verify URL - pass all params the backend might need
     const params = new URLSearchParams({ orderId });
     if (reference)      params.set("reference",      reference);
     if (transaction_id) params.set("transaction_id", transaction_id);

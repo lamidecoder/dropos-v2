@@ -95,13 +95,13 @@ export default function ImageStudioPage() {
         <div className="px-6 pt-6 pb-4">
           <h1 className="text-xl font-semibold text-white mb-0.5">AI Image Studio</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Professional product images in seconds — no photographer needed
+            Professional product images in seconds - no photographer needed
           </p>
         </div>
 
         <div className="px-6 pb-6 grid grid-cols-2 gap-6">
 
-          {/* Left — Controls */}
+          {/* Left - Controls */}
           <div className="space-y-4">
             {/* Tool selector */}
             <div className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
@@ -140,7 +140,7 @@ export default function ImageStudioPage() {
                     <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
                       {uploading ? "Uploading..." : "Click to upload product photo"}
                     </p>
-                    <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "11px" }}>JPG, PNG — max 10MB</p>
+                    <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "11px" }}>JPG, PNG - max 10MB</p>
                   </button>
                 ) : (
                   <div className="relative">
@@ -210,7 +210,7 @@ export default function ImageStudioPage() {
             </button>
           </div>
 
-          {/* Right — Result */}
+          {/* Right - Result */}
           <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
             <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.3)", fontSize: "10px" }}>Result</p>

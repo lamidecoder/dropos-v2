@@ -208,7 +208,7 @@ export default function SupplierAssignmentPage() {
                           <div className="flex items-center gap-2">
                             <button onClick={() => updateMut.mutate({ id: a.id, data: { isActive: !a.isActive } })}
                               className={`transition-colors text-sm ${a.isActive ? "text-emerald-400" : sub}`}
-                              title={a.isActive ? "Active — click to disable" : "Inactive — click to enable"}>
+                              title={a.isActive ? "Active - click to disable" : "Inactive - click to enable"}>
                               {a.isActive ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
                             </button>
                             <button onClick={() => { if (confirm("Remove supplier?")) removeMut.mutate(a.id); }}

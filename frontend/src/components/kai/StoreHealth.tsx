@@ -70,7 +70,7 @@ export function StoreHealth({ storeId }: { storeId: string }) {
       {score === 100 && (
         <div className="flex items-center gap-2 text-sm" style={{ color: "#34d399" }}>
           <CheckCircle size={14} />
-          Perfect score — your store is optimised 🔥
+          Perfect score - your store is optimised 🔥
         </div>
       )}
     </div>

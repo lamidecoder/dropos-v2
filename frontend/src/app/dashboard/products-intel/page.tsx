@@ -22,7 +22,7 @@ export default function ProductsIntelPage() {
     try {
       const r = await api.get(`/kai/power/winning-products?count=10&storeId=${storeId}`);
       setWinners(r.data.data || []);
-    } catch { toast.error("Failed to fetch — try again"); }
+    } catch { toast.error("Failed to fetch - try again"); }
     finally { setLoadingWinners(false); }
   };
 

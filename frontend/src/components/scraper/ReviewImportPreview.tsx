@@ -47,7 +47,7 @@ export function ReviewImportPreview({ reviews, isLoading, onImport, imported }: 
             </span>
           </div>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Real supplier reviews — builds instant trust with customers
+            Real supplier reviews - builds instant trust with customers
           </p>
         </div>
         <button onClick={onImport} disabled={imported}

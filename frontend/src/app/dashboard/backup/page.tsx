@@ -104,9 +104,9 @@ export default function BackupPage() {
           </div>
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: "Total Orders",    value: stats?.totalOrders   ?? "—", icon: ShoppingCart },
-              { label: "Total Products",  value: stats?.totalProducts ?? "—", icon: Package      },
-              { label: "Total Customers", value: stats?.totalCustomers ?? "—", icon: Users        },
+              { label: "Total Orders",    value: stats?.totalOrders   ?? "-", icon: ShoppingCart },
+              { label: "Total Products",  value: stats?.totalProducts ?? "-", icon: Package      },
+              { label: "Total Customers", value: stats?.totalCustomers ?? "-", icon: Users        },
             ].map(({ label, value, icon: Icon }) => (
               <div key={label} className="[background:var(--bg-card)] rounded-xl p-3 text-center">
                 <p className={`text-2xl font-black ${tx}`}>{value}</p>
@@ -122,7 +122,7 @@ export default function BackupPage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className={`font-black text-base ${tx}`}>Full Store Backup</h3>
-              <p className={`text-sm ${sub} mt-0.5`}>Download all 3 data files at once — orders, products, customers</p>
+              <p className={`text-sm ${sub} mt-0.5`}>Download all 3 data files at once - orders, products, customers</p>
             </div>
             <button onClick={handleFullBackup} disabled={!!downloading}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-[var(--text-primary)] disabled:opacity-50 flex-shrink-0"

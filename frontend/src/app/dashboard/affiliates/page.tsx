@@ -56,7 +56,7 @@ export default function AffiliatesPage() {
           Manage your affiliate and referral program. KIRO can help you get started with this right now.
         </p>
 
-        <Link href="/dashboard/kai">
+        <Link href="/dashboard/kiro">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}

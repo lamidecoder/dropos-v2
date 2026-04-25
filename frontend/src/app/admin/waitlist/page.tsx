@@ -129,7 +129,7 @@ export default function AdminWaitlistPage() {
           ) : filtered.length === 0 ? (
             <div style={{padding:"70px",textAlign:"center"}}>
               <p style={{color:"rgba(255,255,255,0.22)",fontSize:"14px"}}>
-                {search ? "No results found" : "No signups yet — post those flyers! 🚀"}
+                {search ? "No results found" : "No signups yet - post those flyers! 🚀"}
               </p>
             </div>
           ) : (

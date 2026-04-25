@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI Agent Chat — Dashboard In Chat
+// KAI Agent Chat - Dashboard In Chat
 // Path: frontend/src/components/kai/KAIAgentChat.tsx
 //
 // EVERY dashboard action available through conversation.
@@ -376,7 +376,7 @@ export function KAIAgentChat() {
         updated[msgIndex] = {
           ...updated[msgIndex],
           type:    "action_result",
-          content: `✅ Done — ${res.data.message}`,
+          content: `✅ Done - ${res.data.message}`,
           data:    { result: res.data.data, action, resultType: action },
         };
         return updated;
@@ -389,7 +389,7 @@ export function KAIAgentChat() {
       const errMsg = err.response?.data?.message || "Action failed";
       setMessages(m => {
         const updated = [...m];
-        updated[msgIndex] = { ...updated[msgIndex], type: "text", content: `I couldn't do that — ${errMsg}` };
+        updated[msgIndex] = { ...updated[msgIndex], type: "text", content: `I couldn't do that - ${errMsg}` };
         return updated;
       });
       toast.error(errMsg);
@@ -399,7 +399,7 @@ export function KAIAgentChat() {
   const rejectAction = (msgIndex: number) => {
     setMessages(m => {
       const updated = [...m];
-      updated[msgIndex] = { ...updated[msgIndex], type: "text", content: "No problem — cancelled." };
+      updated[msgIndex] = { ...updated[msgIndex], type: "text", content: "No problem - cancelled." };
       return updated;
     });
   };
@@ -460,7 +460,7 @@ export function KAIAgentChat() {
             <h2 className="text-2xl font-semibold text-white mb-2">{greeting}</h2>
             <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>{contextLine}</p>
             <p className="text-xs mb-7 max-w-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.25)" }}>
-              Just tell me what you need — I can add products, update prices, check orders, create coupons, change your template, and everything else in your dashboard.
+              Just tell me what you need - I can add products, update prices, check orders, create coupons, change your template, and everything else in your dashboard.
             </p>
 
             {/* Quick action chips */}

@@ -17,8 +17,8 @@ export function PriceSyncPage() {
 
   const syncMutation = useMutation({
     mutationFn: async () => api.post(`/intel/price-sync/${storeId}`),
-    onSuccess: r => { setResult(r.data.data); toast.success(`Sync complete — ${r.data.data.checked} products checked`); },
-    onError:   () => toast.error("Sync failed — try again"),
+    onSuccess: r => { setResult(r.data.data); toast.success(`Sync complete - ${r.data.data.checked} products checked`); },
+    onError:   () => toast.error("Sync failed - try again"),
   });
 
   return (
@@ -26,7 +26,7 @@ export function PriceSyncPage() {
       <div className="p-6 max-w-3xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-0.5">Price & Stock Sync</h1>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Check if supplier prices changed — or Ask KIRO "sync my prices"</p>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Check if supplier prices changed - or Ask KIRO "sync my prices"</p>
         </div>
 
         <button onClick={() => syncMutation.mutate()} disabled={syncMutation.isLoading}
@@ -76,7 +76,7 @@ export function PriceSyncPage() {
             {result.priceChanges.length === 0 && result.stockChanges.length === 0 && (
               <div className="text-center py-8">
                 <Check size={28} className="mx-auto mb-2" style={{ color: "#34d399" }} />
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>All prices match — no changes needed</p>
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>All prices match - no changes needed</p>
               </div>
             )}
           </div>

@@ -63,7 +63,7 @@ export default function AutopilotPage() {
         toast.error(r.data.message);
       }
     },
-    onError: () => toast.error("Connection failed — check credentials"),
+    onError: () => toast.error("Connection failed - check credentials"),
   });
 
   const disconnectCJ = useMutation({
@@ -106,7 +106,7 @@ export default function AutopilotPage() {
               )}
             </div>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Connect your supplier once — KAI handles everything automatically
+              Connect your supplier once - KAI handles everything automatically
             </p>
           </div>
 
@@ -201,7 +201,7 @@ export default function AutopilotPage() {
                   {!showCJForm ? (
                     <div>
                       <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>
-                        Connect your free CJDropshipping account to activate full autopilot. Orders will be fulfilled automatically — you just focus on getting customers.
+                        Connect your free CJDropshipping account to activate full autopilot. Orders will be fulfilled automatically - you just focus on getting customers.
                       </p>
                       <div className="flex gap-3">
                         <button onClick={() => setShowCJForm(true)}
@@ -284,8 +284,8 @@ export default function AutopilotPage() {
               </p>
               <div className="space-y-2">
                 {[
-                  "Get customers — TikTok, Instagram, WhatsApp",
-                  "Add winning products — KAI finds them daily",
+                  "Get customers - TikTok, Instagram, WhatsApp",
+                  "Add winning products - KAI finds them daily",
                   "Set your prices and let profit rules protect them",
                 ].map((task, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
@@ -295,7 +295,7 @@ export default function AutopilotPage() {
                 ))}
               </div>
               <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.3)" }}>
-                Everything else — fulfillment, tracking, stock sync, reviews — KAI handles it.
+                Everything else - fulfillment, tracking, stock sync, reviews - KAI handles it.
               </p>
             </motion.div>
           )}

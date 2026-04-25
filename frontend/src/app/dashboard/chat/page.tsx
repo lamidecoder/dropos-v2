@@ -266,7 +266,7 @@ export default function ChatSettingsPage() {
             <div className={`text-xs ${sub} space-y-1`}>
               <p className="font-bold [color:var(--text-primary)]">How it works</p>
               {selectedProvider.id === "whatsapp" && <p>A floating WhatsApp button appears bottom-right. Clicking opens wa.me/{liveChatId || "your-number"} in WhatsApp.</p>}
-              {selectedProvider.id === "tawk"     && <p>Tawk.to script is injected into your storefront. The chat bubble handles everything — agents log in at tawk.to/chat.</p>}
+              {selectedProvider.id === "tawk"     && <p>Tawk.to script is injected into your storefront. The chat bubble handles everything - agents log in at tawk.to/chat.</p>}
               {selectedProvider.id === "crisp"    && <p>Crisp widget script is injected. Manage chats from your Crisp inbox at app.crisp.chat.</p>}
               {selectedProvider.id === "tidio"    && <p>Tidio loads your chatbot + live chat automatically. Manage from app.tidio.com.</p>}
             </div>

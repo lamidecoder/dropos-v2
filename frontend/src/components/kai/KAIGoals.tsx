@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI — Goals Panel
+// KAI - Goals Panel
 // Path: frontend/src/components/kai/KAIGoals.tsx
 // ============================================================
 import { useState } from "react";

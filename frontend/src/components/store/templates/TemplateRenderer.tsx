@@ -149,7 +149,7 @@ function StoreHeader({ store, search, onSearch, dark, brand }: {
         }
       </Link>
 
-      {/* Search — desktop */}
+      {/* Search - desktop */}
       {onSearch && (
         <div className="flex-1 max-w-md relative hidden sm:block">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: dark ? "rgba(255,255,255,0.3)" : "#94a3b8" }} />

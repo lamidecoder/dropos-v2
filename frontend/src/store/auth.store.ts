@@ -1,10 +1,10 @@
 "use client";
 // ============================================================
-// Auth Store — Bulletproof Session Persistence
+// Auth Store - Bulletproof Session Persistence
 // Path: frontend/src/store/auth.store.ts
 // REPLACES existing auth.store.ts
 //
-// Access token: memory only (never in localStorage — XSS safe)
+// Access token: memory only (never in localStorage - XSS safe)
 // User profile: localStorage (can rebuild from server)
 // Refresh token: httpOnly cookie (set by server, invisible to JS)
 // ============================================================
@@ -26,7 +26,7 @@ interface User {
 
 interface AuthState {
   user:          User | null;
-  accessToken:   string | null; // MEMORY ONLY — never persisted
+  accessToken:   string | null; // MEMORY ONLY - never persisted
   isLoading:     boolean;
   isHydrated:    boolean;
   lastRefresh:   number | null; // timestamp of last successful refresh
@@ -76,7 +76,7 @@ export const useAuthStore = create<AuthState>()(
     {
       name:    "dropos-auth-v2",
       storage: createJSONStorage(() => localStorage),
-      // ONLY persist user profile — never accessToken
+      // ONLY persist user profile - never accessToken
       partialize: (s) => ({
         user:        s.user,
         lastRefresh: s.lastRefresh,

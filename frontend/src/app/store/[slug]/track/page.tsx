@@ -279,7 +279,7 @@ function OrderTrackPageInner() {
                 <div className="text-sm text-slate-500">
                   {order.status === "COMPLETED" || order.status === "DELIVERED"
                     ? "Your order has been delivered!"
-                    : "3–7 business days from shipping date"}
+                    : "3-7 business days from shipping date"}
                 </div>
               </div>
             </div>

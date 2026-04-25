@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KIRO chat — Premium UI, Smooth UX
+// KIRO chat - Premium UI, Smooth UX
 // Path: frontend/src/components/kai/KAIChat.tsx
 //
 // Every detail matters:
@@ -292,7 +292,7 @@ export default function KAIChat({ storeId, className }: { storeId?: string; clas
       if (err.name === "AbortError") return;
       setMessages(prev => prev.map(m =>
         m.id === kaiPlaceholder.id
-          ? { ...m, content: "Something went wrong — please try again.", isStreaming: false }
+          ? { ...m, content: "Something went wrong - please try again.", isStreaming: false }
           : m
       ));
     } finally {

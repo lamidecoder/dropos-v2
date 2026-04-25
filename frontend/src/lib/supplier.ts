@@ -2,7 +2,7 @@
 // Universal Supplier Engine
 // Path: frontend/src/lib/supplier.ts
 //
-// Every supplier type Nigerian sellers use — handled perfectly
+// Every supplier type Nigerian sellers use - handled perfectly
 // ============================================================
 
 export type SupplierType =

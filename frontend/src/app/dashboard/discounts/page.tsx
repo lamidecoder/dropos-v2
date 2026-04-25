@@ -326,7 +326,7 @@ export default function DiscountsPage() {
           <div>
             <h1 className="text-xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>Discount Engine</h1>
             <p className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
-              BOGO, flash sales, volume tiers, automatic discounts — all in one place
+              BOGO, flash sales, volume tiers, automatic discounts - all in one place
             </p>
           </div>
           <button onClick={() => { setModal(true); setSelType(null); }}

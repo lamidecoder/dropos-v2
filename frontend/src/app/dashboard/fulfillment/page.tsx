@@ -38,7 +38,7 @@ export function FulfillmentPage() {
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-0.5">Fulfillment Queue</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Orders waiting to be fulfilled — or tell KAI "show me unfulfilled orders"
+            Orders waiting to be fulfilled - or tell KAI "show me unfulfilled orders"
           </p>
         </div>
 
@@ -47,7 +47,7 @@ export function FulfillmentPage() {
         ) : !(orders || []).length ? (
           <div className="text-center py-16">
             <Check size={32} className="mx-auto mb-3" style={{ color: "#34d399", opacity: 0.5 }} />
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>All caught up — no pending orders 🎉</p>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>All caught up - no pending orders 🎉</p>
           </div>
         ) : (
           <div className="space-y-3">

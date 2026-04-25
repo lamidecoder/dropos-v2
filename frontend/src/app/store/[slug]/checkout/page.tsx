@@ -34,9 +34,9 @@ type CheckoutForm = z.infer<typeof schema>;
 
 // ── Shipping options ─────────────────────────────────────────────────────────
 const SHIPPING_OPTIONS = [
-  { id: "standard", label: "Standard Shipping",  desc: "5–10 business days", price: 5.99, icon: Truck },
-  { id: "express",  label: "Express Shipping",   desc: "2–3 business days",  price: 14.99,icon: Zap   },
-  { id: "free",     label: "Free Shipping",       desc: "7–14 business days", price: 0,    icon: Globe },
+  { id: "standard", label: "Standard Shipping",  desc: "5-10 business days", price: 5.99, icon: Truck },
+  { id: "express",  label: "Express Shipping",   desc: "2-3 business days",  price: 14.99,icon: Zap   },
+  { id: "free",     label: "Free Shipping",       desc: "7-14 business days", price: 0,    icon: Globe },
 ];
 
 // ── Trust badges ─────────────────────────────────────────────────────────────
@@ -186,7 +186,7 @@ export default function CheckoutPage() {
       return { order, payment: payRes.data.data };
     },
     onSuccess: ({ order, payment }) => {
-      // Stripe: don't clear cart yet — user may abandon the Stripe page
+      // Stripe: don't clear cart yet - user may abandon the Stripe page
       if (payment?.clientSecret) {
         router.push(`/store/${slug}/payment?clientSecret=${payment.clientSecret}&orderId=${order.id}`);
         return;
@@ -476,7 +476,7 @@ export default function CheckoutPage() {
                   {couponError && <p className="text-xs text-red-500 mt-1.5">{couponError}</p>}
                   {couponApplied && (
                     <p className="text-xs text-emerald-600 mt-1.5 font-semibold">
-                      ✓ {couponApplied.code} — {couponApplied.label} applied
+                      ✓ {couponApplied.code} - {couponApplied.label} applied
                     </p>
                   )}
                 </div>

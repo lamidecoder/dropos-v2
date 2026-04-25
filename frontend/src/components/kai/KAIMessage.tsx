@@ -1,6 +1,6 @@
 "use client";
 // ============================================================
-// KAI — Message Bubble
+// KAI - Message Bubble
 // Path: frontend/src/components/kai/KAIMessage.tsx
 // ============================================================
 import { useState } from "react";

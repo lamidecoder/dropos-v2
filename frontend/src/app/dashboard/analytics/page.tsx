@@ -22,7 +22,7 @@ const T = {
 
 const PERIODS = ["7 days", "30 days", "90 days", "1 year"];
 
-// Demo data — replaced by real API data when backend is up
+// Demo data - replaced by real API data when backend is up
 function generateDemoData(days: number) {
   const data = [];
   const now = new Date();
@@ -116,7 +116,7 @@ export default function AnalyticsPage() {
           <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.03em", color: t.text }}>Analytics</h1>
           <p style={{ fontSize: 13, color: t.muted, marginTop: 4 }}>
             Track your store performance
-            {isDemo && <span style={{ color: V.v400 }}> · Demo data — connect backend to see real stats</span>}
+            {isDemo && <span style={{ color: V.v400 }}> · Demo data - connect backend to see real stats</span>}
           </p>
         </div>
         <div className="flex items-center gap-2">

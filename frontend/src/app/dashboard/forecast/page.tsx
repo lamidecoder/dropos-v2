@@ -34,7 +34,7 @@ export default function ForecastPage() {
       setScraped(res.data.data);
       setSellingPrice(res.data.data.suggestedLocalPrice?.replace(/[^\d]/g, "") || "");
     },
-    onError: () => toast.error("Could not extract product — try a different URL"),
+    onError: () => toast.error("Could not extract product - try a different URL"),
   });
 
   const handleImport = async () => {
@@ -104,7 +104,7 @@ export default function ForecastPage() {
                             <p className="text-sm mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>projected</p>
                           </div>
                           <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
-                            Range: {sym}{Math.round(forecast.forecast.next30DaysLow).toLocaleString()} — {sym}{Math.round(forecast.forecast.next30DaysHigh).toLocaleString()}
+                            Range: {sym}{Math.round(forecast.forecast.next30DaysLow).toLocaleString()} - {sym}{Math.round(forecast.forecast.next30DaysHigh).toLocaleString()}
                           </p>
                         </div>
                         <div className="text-right">

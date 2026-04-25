@@ -54,7 +54,7 @@ export default function BillingPage() {
       if (url) { window.location.href = url; }
       else { toast.success("Plan updated!"); }
     },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Upgrade failed — backend offline"),
+    onError: (e: any) => toast.error(e.response?.data?.message || "Upgrade failed - backend offline"),
   });
 
   const handleUpgrade = (planId: string) => {
