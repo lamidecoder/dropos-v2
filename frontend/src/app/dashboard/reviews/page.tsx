@@ -56,7 +56,7 @@ export default function ReviewsPage() {
           Manage customer reviews and ratings. KIRO can help you get started with this right now.
         </p>
 
-        <Link href="/dashboard/kiro">
+        <Link href="/dashboard/kai">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}

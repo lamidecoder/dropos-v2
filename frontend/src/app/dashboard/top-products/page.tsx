@@ -56,7 +56,7 @@ export default function TopProductsPage() {
           Trending products spotted by KIRO today. KIRO can help you get started with this right now.
         </p>
 
-        <Link href="/dashboard/kiro">
+        <Link href="/dashboard/kai">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}

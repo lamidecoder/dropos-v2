@@ -54,7 +54,7 @@ export default function BillingPage() {
       if (url) { window.location.href = url; }
       else { toast.success("Plan updated!"); }
     },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Upgrade failed - backend offline"),
+    onError: (e: any) => toast.error(e.response?.data?.message || "Upgrade failed — backend offline"),
   });
 
   const handleUpgrade = (planId: string) => {
@@ -95,7 +95,7 @@ export default function BillingPage() {
       </motion.div>
 
       {/* Billing toggle + currency */}
-      <div className="flex flex-wrap items-center justify-center gap-3 mb-7" style={{}}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: 28 }}>
         <div style={{ display: "flex", padding: 3, borderRadius: 12, background: t.card, border: `1px solid ${t.border}` }}>
           {(["monthly", "annual"] as const).map(b => (
             <button key={b} onClick={() => setBilling(b)}
@@ -115,7 +115,7 @@ export default function BillingPage() {
       </div>
 
       {/* Plan cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" style={{}}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 32 }}>
         {PLANS.map((plan, i) => {
           const Icon = plan.icon;
           const isCurrent = currentPlan === plan.id;
