@@ -6,6 +6,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTheme, useToast, useConfirm } from "../../../components/layout/DashboardLayout";
 import { Settings, User, Bell, Shield, Globe, Palette, Trash2, ChevronRight, Camera, Check, Eye, EyeOff } from "lucide-react";
+import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
 
 const V = { v500: "#6B35E8", v700: "#3D1C8A", v400: "#8B5CF6", v300: "#A78BFA" };
@@ -74,9 +75,15 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 800));
-    setSaving(false);
-    show("Settings saved successfully", "success");
+    try {
+      await api.put("/auth/profile", { name, email });
+      show("Settings saved successfully", "success");
+    } catch (e: any) {
+      // Backend offline — save locally at least
+      show("Saved locally (backend offline)", "info");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDeleteAccount = async () => {

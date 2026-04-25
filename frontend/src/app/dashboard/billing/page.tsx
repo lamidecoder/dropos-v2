@@ -7,6 +7,9 @@ import { motion } from "framer-motion";
 import { useTheme } from "../../../components/layout/DashboardLayout";
 import { Check, Zap, Crown, ArrowUpRight, CreditCard, Receipt, ChevronRight, Shield, Sparkles } from "lucide-react";
 import { useAuthStore } from "../../../store/auth.store";
+import { useMutation } from "@tanstack/react-query";
+import { api } from "../../../lib/api";
+import toast from "react-hot-toast";
 
 const V = { v900: "#1A0D3D", v700: "#3D1C8A", v600: "#5428C8", v500: "#6B35E8", v400: "#8B5CF6", v300: "#A78BFA", v200: "#C4B5FD", fuchsia: "#C026D3" };
 const T = {
@@ -43,6 +46,21 @@ export default function BillingPage() {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
   const [currency, setCurrency] = useState<"ngn" | "gbp" | "usd">("ngn");
   const currentPlan = user?.subscription?.plan || "FREE";
+
+  const upgradeMut = useMutation({
+    mutationFn: (planId: string) => api.post("/billing/upgrade", { plan: planId, currency, billing }),
+    onSuccess: (res) => {
+      const url = res.data?.data?.authorizationUrl || res.data?.data?.url;
+      if (url) { window.location.href = url; }
+      else { toast.success("Plan updated!"); }
+    },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Upgrade failed — backend offline"),
+  });
+
+  const handleUpgrade = (planId: string) => {
+    if (planId === "FREE") return; // downgrade handled separately
+    upgradeMut.mutate(planId);
+  };
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
@@ -139,9 +157,10 @@ export default function BillingPage() {
 
               {/* CTA */}
               <button
-                disabled={isCurrent}
-                style={{ width: "100%", padding: "11px", borderRadius: 12, border: isCurrent ? `1px solid ${t.border}` : "none", cursor: isCurrent ? "default" : "pointer", fontSize: 13, fontWeight: 700, marginBottom: 20, background: isCurrent ? "transparent" : isPopular ? `linear-gradient(135deg, ${V.v500}, ${V.v700})` : `${plan.color}15`, color: isCurrent ? t.muted : isPopular ? "white" : plan.color, boxShadow: isPopular && !isCurrent ? "0 4px 16px rgba(107,53,232,0.35)" : "none", transition: "all 0.15s" }}>
-                {isCurrent ? "Current Plan" : plan.id === "FREE" ? "Downgrade" : `Upgrade to ${plan.name}`}
+                disabled={isCurrent || upgradeMut.isPending}
+                onClick={() => !isCurrent && handleUpgrade(plan.id)}
+                style={{ width: "100%", padding: "11px", borderRadius: 12, border: isCurrent ? `1px solid ${t.border}` : "none", cursor: isCurrent ? "default" : "pointer", fontSize: 13, fontWeight: 700, marginBottom: 20, background: isCurrent ? "transparent" : isPopular ? `linear-gradient(135deg, ${V.v500}, ${V.v700})` : `${plan.color}15`, color: isCurrent ? t.muted : isPopular ? "white" : plan.color, boxShadow: isPopular && !isCurrent ? "0 4px 16px rgba(107,53,232,0.35)" : "none", transition: "all 0.15s", opacity: upgradeMut.isPending ? 0.7 : 1 }}>
+                {upgradeMut.isPending && upgradeMut.variables === plan.id ? "Opening Paystack..." : isCurrent ? "Current Plan" : plan.id === "FREE" ? "Downgrade" : `Upgrade to ${plan.name}`}
               </button>
 
               {/* Features */}
