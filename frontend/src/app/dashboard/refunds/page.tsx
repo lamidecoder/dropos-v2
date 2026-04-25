@@ -1,197 +1,58 @@
 "use client";
-﻿"use client";
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "../../../lib/api";
-import { useAuthStore } from "../../../store/auth.store";
-import { RefreshCw, Eye, X, CheckCircle, XCircle, Clock, DollarSign } from "lucide-react";
-import toast from "react-hot-toast";
+import{useState}from"react";
+import{useQuery,useMutation,useQueryClient}from"@tanstack/react-query";
+import{motion,AnimatePresence}from"framer-motion";
+import{useTheme}from"../../../components/layout/DashboardLayout";
+import{useAuthStore}from"../../../store/auth.store";
+import{api}from"../../../lib/api";
+import toast from"react-hot-toast";
+import Link from"next/link";
+import{RefreshCw,X,ChevronRight,DollarSign,Check}from"lucide-react";
+const V={v500:"#6B35E8",v400:"#8B5CF6",v300:"#A78BFA",cyan:"#06B6D4",green:"#10B981",amber:"#F59E0B",red:"#EF4444"};
+const TM={dark:{card:"#181230",border:"rgba(255,255,255,0.06)",text:"#fff",muted:"rgba(255,255,255,0.38)",faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:"#0D0918",muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
+const inp=(t,err)=>({padding:"10px 14px",borderRadius:10,border:`1px solid ${err?"rgba(239,68,68,0.5)":t.border}`,background:"rgba(255,255,255,0.04)",color:t.text,fontSize:13,outline:"none",width:"100%",fontFamily:"inherit"});
 
-const STATUS_COLORS: Record<string, string> = {
-  PENDING:   "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
-  APPROVED:  "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
-  REJECTED:  "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
-  PROCESSED: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-};
-
-const REASON_LABELS: Record<string, string> = {
-  DAMAGED: "Item Damaged", NOT_RECEIVED: "Not Received", WRONG_ITEM: "Wrong Item",
-  NOT_AS_DESCRIBED: "Not as Described", CHANGED_MIND: "Changed Mind", OTHER: "Other",
-};
-
-export default function RefundsPage() {
-  const qc = useQueryClient();
-  const user = useAuthStore(s => s.user);
-  const storeId = user?.stores?.[0]?.id;
-  const [selected, setSelected] = useState<any>(null);
-  const [adminNote, setAdminNote] = useState("");
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["refunds", storeId],
-    queryFn: () => api.get(`/refunds/${storeId}`).then(r => r.data),
-    enabled: !!storeId,
-  });
-
-  const processMut = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      api.patch(`/refunds/${storeId}/${id}/process`, { status, adminNote }),
-    onSuccess: () => {
-      toast.success("Refund updated");
-      qc.invalidateQueries({ queryKey: ["refunds"] });
-      setSelected(null);
-    },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
-  });
-
-  const refunds = data?.data || [];
-  const tx = "[color:var(--text-primary)]";
-  const sub = "text-secondary";
-  const card = "[background:var(--bg-secondary)] [border-color:var(--border)]";
-
-  const stats = {
-    total: refunds.length,
-    pending: refunds.filter((r: any) => r.status === "PENDING").length,
-    totalValue: refunds.reduce((sum: number, r: any) => sum + r.amount, 0),
-  };
-
-  return (
-      <>
-    
-      <div className="space-y-6">
-        <div>
-          <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Refunds</h1>
-          <p className={`text-sm mt-0.5 ${sub}`}>{stats.pending} pending review · ${stats.totalValue.toFixed(2)} total requested</p>
-        </div>
-
-        {/* Summary cards */}
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: "Total Requests", val: stats.total, icon: RefreshCw, color: "var(--accent)" },
-            { label: "Pending Review", val: stats.pending, icon: Clock, color: "#f59e0b" },
-            { label: "Total Requested", val: `$${stats.totalValue.toFixed(2)}`, icon: DollarSign, color: "#10b981" },
-          ].map(({ label, val, icon: Icon, color }) => (
-            <div key={label} className={`rounded-2xl border p-4 ${card}`}>
-              <div className="flex items-center gap-2 mb-2">
-                <Icon size={14} style={{ color }} />
-                <span className={`text-xs font-semibold ${sub}`}>{label}</span>
-              </div>
-              <div className={`text-2xl font-black ${tx}`}>{val}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Refunds list */}
-        <div className={`rounded-2xl border overflow-hidden ${card}`}>
-          {isLoading ? (
-            <div className="py-16 text-center text-secondary">Loading refunds…</div>
-          ) : refunds.length === 0 ? (
-            <div className="py-16 text-center">
-              <RefreshCw size={36} className="mx-auto mb-3 opacity-20" />
-              <p className={`text-sm ${sub}`}>No refund requests yet</p>
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className={`border-b border-inherit text-xs ${sub}`}>
-                  {["Order", "Customer", "Amount", "Reason", "Date", "Status", ""].map(h => (
-                    <th key={h} className="text-left font-semibold px-5 py-3.5">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {refunds.map((r: any) => (
-                  <tr key={r.id} className="border-b [border-color:var(--border)]/50 hover:[background:var(--bg-secondary)]/40">
-                    <td className="px-5 py-4 font-mono text-xs font-bold [color:var(--accent)]">{r.order?.orderNumber}</td>
-                    <td className="px-5 py-4">
-                      <div className={`font-semibold text-sm ${tx}`}>{r.order?.customerName}</div>
-                      <div className={`text-xs ${sub}`}>{r.order?.customerEmail}</div>
-                    </td>
-                    <td className={`px-5 py-4 font-bold ${tx}`}>${r.amount.toFixed(2)}</td>
-                    <td className={`px-5 py-4 text-xs ${sub}`}>{REASON_LABELS[r.reason] || r.reason}</td>
-                    <td className={`px-5 py-4 text-xs ${sub}`}>{new Date(r.createdAt).toLocaleDateString()}</td>
-                    <td className="px-5 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[r.status] || ""}`}>{r.status}</span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <button onClick={() => { setSelected(r); setAdminNote(""); }}
-                        className="p-1.5 rounded-lg [color:var(--accent)] hover:[background:var(--accent-dim)]">
-                        <Eye size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-
-      {/* Detail modal */}
-      {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,.75)", backdropFilter: "blur(8px)" }}>
-          <div className="w-full max-w-lg rounded-3xl border shadow-2xl [background:var(--bg-secondary)] [border-color:var(--border)]">
-            <div className="flex items-center justify-between px-6 py-4 border-b [border-color:var(--border)]">
-              <h2 className={`font-black text-lg ${tx}`}>Refund Request</h2>
-              <button onClick={() => setSelected(null)} className="p-2 rounded-xl hover:[background:var(--bg-secondary)]"><X size={16} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className={`rounded-xl border p-4 [background:var(--bg-card)] [border-color:var(--border)]`}>
-                <p className={`text-xs font-semibold ${sub} mb-1`}>Order</p>
-                <p className={`font-bold ${tx}`}>{selected.order?.orderNumber}</p>
-                <p className={`text-sm ${sub}`}>{selected.order?.customerName} · {selected.order?.customerEmail}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className={`rounded-xl border p-3 [border-color:var(--border)]`}>
-                  <p className={`text-xs ${sub}`}>Refund Amount</p>
-                  <p className={`text-xl font-black [color:var(--accent)]`}>${selected.amount.toFixed(2)}</p>
-                </div>
-                <div className={`rounded-xl border p-3 [border-color:var(--border)]`}>
-                  <p className={`text-xs ${sub}`}>Reason</p>
-                  <p className={`text-sm font-semibold ${tx}`}>{REASON_LABELS[selected.reason]}</p>
-                </div>
-              </div>
-
-              {selected.description && (
-                <div className={`rounded-xl border p-3 [border-color:var(--border)]`}>
-                  <p className={`text-xs ${sub} mb-1`}>Customer Note</p>
-                  <p className={`text-sm ${tx}`}>{selected.description}</p>
-                </div>
-              )}
-
-              {selected.status === "PENDING" && (
-                <>
-                  <div>
-                    <label className={`block text-xs font-semibold ${sub} mb-1.5`}>Admin Note (optional)</label>
-                    <textarea value={adminNote} onChange={e => setAdminNote(e.target.value)} rows={2}
-                      className={`w-full rounded-xl px-3 py-2 text-sm outline-none resize-none [background:var(--bg-card)] [border:1px_solid_var(--border)] ${tx}`}
-                      placeholder="Reason for approval/rejection…" />
-                  </div>
-                  <div className="flex gap-3">
-                    <button onClick={() => processMut.mutate({ id: selected.id, status: "APPROVED" })}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-[var(--text-primary)]"
-                      style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}>
-                      <CheckCircle size={14} /> Approve Refund
-                    </button>
-                    <button onClick={() => processMut.mutate({ id: selected.id, status: "REJECTED" })}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-[var(--text-primary)]"
-                      style={{ background: "linear-gradient(135deg,#ef4444,#dc2626)" }}>
-                      <XCircle size={14} /> Reject
-                    </button>
-                  </div>
-                </>
-              )}
-              {selected.status !== "PENDING" && (
-                <div className={`rounded-xl p-3 ${STATUS_COLORS[selected.status]}`}>
-                  <p className="text-sm font-bold">Status: {selected.status}</p>
-                  {selected.adminNote && <p className="text-xs mt-1 opacity-80">{selected.adminNote}</p>}
-                </div>
-              )}
-            </div>
+const ST={PENDING:{label:"Pending",color:V.amber,bg:"rgba(245,158,11,0.12)"},APPROVED:{label:"Approved",color:V.green,bg:"rgba(16,185,129,0.12)"},REJECTED:{label:"Rejected",color:V.red,bg:"rgba(239,68,68,0.12)"},PROCESSED:{label:"Processed",color:V.cyan,bg:"rgba(6,182,212,0.12)"}};
+const RR={DAMAGED:"Item Damaged",NOT_RECEIVED:"Not Received",WRONG_ITEM:"Wrong Item",NOT_AS_DESCRIBED:"Not as Described",CHANGED_MIND:"Changed Mind",OTHER:"Other"};
+const fmt=n=>new Intl.NumberFormat("en",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(n||0);
+export default function RefundsPage(){
+  const{theme}=useTheme();const isDark=theme==="dark";const t=isDark?TM.dark:TM.light;
+  const storeId=useAuthStore(s=>s.user?.stores?.[0]?.id);const qc=useQueryClient();
+  const[sel,setSel]=useState(null);const[tab,setTab]=useState("PENDING");
+  const{data}=useQuery({queryKey:["refunds",storeId,tab],queryFn:()=>api.get(`/refunds/${storeId}?status=${tab}`).then(r=>r.data.data),enabled:!!storeId});
+  const upd=useMutation({mutationFn:({id,status})=>api.patch(`/refunds/${storeId}/${id}`,{status}),onSuccess:()=>{toast.success("Refund updated");qc.invalidateQueries({queryKey:["refunds"]});setSel(null);},onError:()=>toast.error("Backend offline")});
+  const refunds=data||[];
+  return(<div className="max-w-5xl mx-auto">
+    <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} className="flex items-center justify-between mb-6">
+      <div><h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{color:t.text}}>Refunds</h1><p className="text-xs sm:text-sm mt-1" style={{color:t.muted}}>Review and process refund requests</p></div>
+      <div className="px-3 py-2 rounded-xl text-xs font-semibold" style={{background:"rgba(245,158,11,0.1)",color:V.amber,border:"1px solid rgba(245,158,11,0.2)"}}>{refunds.filter(r=>r.status==="PENDING").length} pending</div>
+    </motion.div>
+    <div className="flex gap-1 mb-5 p-1 rounded-xl overflow-x-auto" style={{background:t.faint,border:`1px solid ${t.border}`,width:"fit-content",scrollbarWidth:"none"}}>
+      {Object.entries(ST).map(([k,s])=>(<button key={k} onClick={()=>setTab(k)} className="px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap" style={{background:tab===k?t.card:"transparent",color:tab===k?t.text:t.muted,boxShadow:tab===k?"0 1px 3px rgba(0,0,0,0.1)":"none"}}>{s.label}</button>))}
+    </div>
+    <div className="rounded-2xl overflow-hidden" style={{background:t.card,border:`1px solid ${t.border}`}}>
+      {refunds.length===0?(
+        <div className="flex flex-col items-center justify-center py-20 text-center"><RefreshCw size={36} style={{color:t.muted,opacity:0.3,marginBottom:14}}/><p className="font-bold text-sm mb-1" style={{color:t.text}}>No {ST[tab].label.toLowerCase()} refunds</p><p className="text-xs" style={{color:t.muted}}>Refund requests will appear here</p></div>
+      ):(<div className="divide-y" style={{borderColor:t.border}}>{refunds.map((r,i)=>{const s=ST[r.status]||ST.PENDING;return(<button key={r.id} onClick={()=>setSel(r)} className="w-full flex items-center gap-3 px-4 py-3.5 hover:opacity-80 transition-opacity text-left">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:s.bg}}><RefreshCw size={14} style={{color:s.color}}/></div>
+        <div className="flex-1 min-w-0"><p className="text-sm font-semibold" style={{color:t.text}}>{r.customerName||r.customer?.name||"Customer"}</p><p className="text-xs" style={{color:t.muted}}>{RR[r.reason]||r.reason||"Refund"} · {new Date(r.createdAt).toLocaleDateString("en",{day:"numeric",month:"short"})}</p></div>
+        <p className="text-sm font-black flex-shrink-0" style={{color:V.red}}>{fmt(r.amount)}</p>
+        <ChevronRight size={14} style={{color:t.muted}}/>
+      </button>);})}</div>)}
+    </div>
+    <AnimatePresence>{sel&&(<div className="fixed inset-0 z-50 flex items-center justify-end" style={{background:"rgba(0,0,0,0.6)",backdropFilter:"blur(8px)"}} onClick={e=>e.target===e.currentTarget&&setSel(null)}>
+      <motion.div initial={{x:"100%"}} animate={{x:0}} exit={{x:"100%"}} transition={{type:"spring",damping:28}} className="h-full w-full max-w-sm overflow-y-auto" style={{background:isDark?"#181230":"#fff",borderLeft:`1px solid ${t.border}`}}>
+        <div className="flex items-center justify-between px-5 py-4" style={{borderBottom:`1px solid ${t.border}`}}><div><h2 className="font-bold text-sm" style={{color:t.text}}>#{sel.id?.slice(-8)?.toUpperCase()}</h2><p className="text-xs mt-0.5" style={{color:t.muted}}>{fmt(sel.amount)}</p></div><button onClick={()=>setSel(null)} style={{color:t.muted}}><X size={17}/></button></div>
+        <div className="p-5 space-y-4">
+          <div className="p-4 rounded-2xl space-y-2" style={{background:t.faint,border:`1px solid ${t.border}`}}>
+            <div className="flex justify-between text-xs"><span style={{color:t.muted}}>Customer</span><span style={{color:t.text,fontWeight:600}}>{sel.customerName||"Customer"}</span></div>
+            <div className="flex justify-between text-xs"><span style={{color:t.muted}}>Reason</span><span style={{color:t.text,fontWeight:600}}>{RR[sel.reason]||sel.reason||"N/A"}</span></div>
+            <div className="flex justify-between text-xs"><span style={{color:t.muted}}>Amount</span><span style={{color:V.red,fontWeight:700}}>{fmt(sel.amount)}</span></div>
           </div>
+          {sel.status==="PENDING"&&(<div className="flex gap-2"><button onClick={()=>upd.mutate({id:sel.id,status:"APPROVED"})} disabled={upd.isPending} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50" style={{background:V.green}}>Approve</button><button onClick={()=>upd.mutate({id:sel.id,status:"REJECTED"})} disabled={upd.isPending} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50" style={{background:V.red}}>Reject</button></div>)}
+          {sel.status==="APPROVED"&&(<button onClick={()=>upd.mutate({id:sel.id,status:"PROCESSED"})} disabled={upd.isPending} className="w-full py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50" style={{background:V.cyan}}>Mark Processed</button>)}
         </div>
-      )}
-    
-      </>
-  );
+      </motion.div>
+    </div>)}</AnimatePresence>
+  </div>);
 }

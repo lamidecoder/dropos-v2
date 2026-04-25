@@ -1,171 +1,51 @@
 "use client";
-﻿"use client";
-// ── Profit Protection Rules ───────────────────────────────────
-// Path: frontend/src/app/dashboard/profit-rules/page.tsx
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
-import { Shield, Plus, Trash2, Play, Check, Zap } from "lucide-react";
-import toast from "react-hot-toast";
+import{useState}from"react";
+import{useQuery,useMutation,useQueryClient}from"@tanstack/react-query";
+import{motion,AnimatePresence}from"framer-motion";
+import{useTheme}from"../../../components/layout/DashboardLayout";
+import{useAuthStore}from"../../../store/auth.store";
+import{api}from"../../../lib/api";
+import toast from"react-hot-toast";
+import Link from"next/link";
+import{Zap,Plus,Trash2,X,Check}from"lucide-react";
+const V={v500:"#6B35E8",v400:"#8B5CF6",v300:"#A78BFA",cyan:"#06B6D4",green:"#10B981",amber:"#F59E0B",red:"#EF4444"};
+const TM={dark:{card:"#181230",border:"rgba(255,255,255,0.06)",text:"#fff",muted:"rgba(255,255,255,0.38)",faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:"#0D0918",muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
+const inp=(t,err)=>({padding:"10px 14px",borderRadius:10,border:`1px solid ${err?"rgba(239,68,68,0.5)":t.border}`,background:"rgba(255,255,255,0.04)",color:t.text,fontSize:13,outline:"none",width:"100%",fontFamily:"inherit"});
 
-const TRIGGERS = [
-  { id: "margin_below",  label: "Margin drops below",  suffix: "%",  actionOptions: ["alert","auto_reprice","hide_product"] },
-  { id: "out_of_stock",  label: "Product goes out of stock", suffix: "", actionOptions: ["alert","hide_product"] },
-  { id: "price_rise",    label: "Supplier price rises above", suffix: "%", actionOptions: ["alert","auto_reprice"] },
-  { id: "price_drop",    label: "Supplier price drops by", suffix: "%",  actionOptions: ["alert"] },
-];
-const ACTION_LABELS: Record<string,string> = {
-  alert: "Alert me in KAI", auto_reprice: "Auto-adjust my price",
-  hide_product: "Auto-hide product", auto_reorder: "Alert to reorder",
-};
-
-export function ProfitRulesPage() {
-  const user    = useAuthStore(s => s.user);
-  const storeId = user?.stores?.[0]?.id || "";
-  const qc      = useQueryClient();
-  const [showAdd, setShowAdd]    = useState(false);
-  const [newRule, setNewRule]    = useState({ name: "", trigger: "margin_below", threshold: 30, action: "alert" });
-  const [runResult, setRunResult] = useState<any>(null);
-
-  const { data: rules } = useQuery({
-    queryKey: ["profit-rules", storeId],
-    queryFn:  async () => { const r = await api.get(`/intel/profit-rules/${storeId}`); return r.data.data; },
-    enabled: !!storeId,
-  });
-
-  const addMutation = useMutation({
-    mutationFn: async () => api.post("/intel/profit-rules", { storeId, ...newRule }),
-    onSuccess: () => { qc.invalidateQueries(["profit-rules", storeId]); setShowAdd(false); toast.success("Rule added!"); },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => api.delete(`/intel/profit-rules/${id}`),
-    onSuccess: () => { qc.invalidateQueries(["profit-rules", storeId]); toast.success("Rule removed"); },
-  });
-
-  const runMutation = useMutation({
-    mutationFn: async () => api.post(`/intel/profit-rules/${storeId}/run`),
-    onSuccess: (r) => { setRunResult(r.data.data); toast.success(`Checked ${r.data.data?.triggered?.length || 0} issues found`); },
-  });
-
-  return (
-    
-      <div className="p-6 max-w-3xl" style={{ minHeight: "100vh", background: "#07070e" }}>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-xl font-semibold text-white mb-0.5">Profit Protection</h1>
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Automatic rules that protect your margins 24/7 - or set rules via KIRO chat
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => runMutation.mutate()} disabled={runMutation.isLoading}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs"
-              style={{ background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)", color: "#34d399" }}>
-              <Play size={11} />{runMutation.isLoading ? "Checking..." : "Run Check Now"}
-            </button>
-            <button onClick={() => setShowAdd(!showAdd)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium"
-              style={{ background: "#7c3aed", color: "#fff" }}>
-              <Plus size={12} />Add Rule
-            </button>
-          </div>
+const TRIGGERS=[{id:"margin_below",l:"Margin drops below",s:"%",actions:["alert","auto_reprice","hide_product"]},{id:"out_of_stock",l:"Product goes out of stock",s:"",actions:["alert","hide_product"]},{id:"price_rise",l:"Supplier price rises",s:"%",actions:["alert","auto_reprice"]},{id:"price_drop",l:"Supplier price drops by",s:"%",actions:["alert"]}];
+const AL={alert:"Alert me in KIRO",auto_reprice:"Auto-adjust price",hide_product:"Hide from store"};
+export default function ProfitRulesPage(){
+  const{theme}=useTheme();const isDark=theme==="dark";const t=isDark?TM.dark:TM.light;
+  const storeId=useAuthStore(s=>s.user?.stores?.[0]?.id);const qc=useQueryClient();
+  const[showCreate,setShowCreate]=useState(false);const[trigger,setTrigger]=useState(TRIGGERS[0].id);const[threshold,setThreshold]=useState("20");const[action,setAction]=useState("alert");
+  const{data}=useQuery({queryKey:["profit-rules",storeId],queryFn:()=>api.get(`/profit-rules/${storeId}`).then(r=>r.data.data),enabled:!!storeId});
+  const createMut=useMutation({mutationFn:()=>api.post(`/profit-rules/${storeId}`,{trigger,threshold:parseFloat(threshold),action}),onSuccess:()=>{toast.success("Rule created");qc.invalidateQueries({queryKey:["profit-rules"]});setShowCreate(false);},onError:(e)=>toast.error(e.response?.data?.message||"Backend offline")});
+  const delMut=useMutation({mutationFn:(id)=>api.delete(`/profit-rules/${storeId}/${id}`),onSuccess:()=>{toast.success("Deleted");qc.invalidateQueries({queryKey:["profit-rules"]});}});
+  const toggleMut=useMutation({mutationFn:({id,active})=>api.patch(`/profit-rules/${storeId}/${id}`,{active}),onSuccess:()=>qc.invalidateQueries({queryKey:["profit-rules"]})});
+  const rules=data||[];const selTrig=TRIGGERS.find(t=>t.id===trigger)||TRIGGERS[0];
+  return(<div className="max-w-4xl mx-auto">
+    <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} className="flex items-center justify-between mb-6">
+      <div><h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{color:t.text}}>Profit Rules</h1><p className="text-xs sm:text-sm mt-1" style={{color:t.muted}}>Automate pricing decisions to protect your margins</p></div>
+      <button onClick={()=>setShowCreate(!showCreate)} className="flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{background:`linear-gradient(135deg,${V.v500},#3D1C8A)`}}><Plus size={14}/>Add Rule</button>
+    </motion.div>
+    <AnimatePresence>{showCreate&&(<motion.div initial={{opacity:0,y:-8,height:0}} animate={{opacity:1,y:0,height:"auto"}} exit={{opacity:0,y:-8,height:0}} className="overflow-hidden mb-5">
+      <div className="p-5 rounded-2xl" style={{background:t.card,border:`1px solid ${V.v500}40`}}>
+        <h3 className="font-bold text-sm mb-4" style={{color:t.text}}>New Rule</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div><label className="block text-xs font-semibold mb-1.5" style={{color:t.muted}}>When</label><select style={{...inp(t),cursor:"pointer"}} value={trigger} onChange={e=>setTrigger(e.target.value)}>{TRIGGERS.map(tr=>(<option key={tr.id} value={tr.id}>{tr.l}</option>))}</select></div>
+          {selTrig.s&&<div><label className="block text-xs font-semibold mb-1.5" style={{color:t.muted}}>Threshold {selTrig.s}</label><input style={inp(t)} type="number" value={threshold} onChange={e=>setThreshold(e.target.value)}/></div>}
+          <div><label className="block text-xs font-semibold mb-1.5" style={{color:t.muted}}>Then</label><select style={{...inp(t),cursor:"pointer"}} value={action} onChange={e=>setAction(e.target.value)}>{selTrig.actions.map(a=>(<option key={a} value={a}>{AL[a]}</option>))}</select></div>
         </div>
-
-        {/* Add rule form */}
-        {showAdd && (
-          <motion.div className="rounded-2xl p-5 mb-5"
-            style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)" }}
-            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="text-sm font-semibold text-white mb-4">New Protection Rule</p>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div>
-                <label className="text-xs mb-1.5 block" style={{ color: "rgba(255,255,255,0.45)" }}>Rule name</label>
-                <input value={newRule.name} onChange={e => setNewRule(r => ({ ...r, name: e.target.value }))}
-                  placeholder="e.g. Protect margins"
-                  className="w-full rounded-xl px-3 py-2 text-sm outline-none"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }} />
-              </div>
-              <div>
-                <label className="text-xs mb-1.5 block" style={{ color: "rgba(255,255,255,0.45)" }}>Threshold</label>
-                <input type="number" value={newRule.threshold} onChange={e => setNewRule(r => ({ ...r, threshold: Number(e.target.value) }))}
-                  className="w-full rounded-xl px-3 py-2 text-sm outline-none"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }} />
-              </div>
-              <div>
-                <label className="text-xs mb-1.5 block" style={{ color: "rgba(255,255,255,0.45)" }}>Trigger when...</label>
-                <select value={newRule.trigger} onChange={e => setNewRule(r => ({ ...r, trigger: e.target.value }))}
-                  className="w-full rounded-xl px-3 py-2 text-sm outline-none"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}>
-                  {TRIGGERS.map(t => <option key={t.id} value={t.id} style={{ background: "#0d0d1a" }}>{t.label}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs mb-1.5 block" style={{ color: "rgba(255,255,255,0.45)" }}>Then...</label>
-                <select value={newRule.action} onChange={e => setNewRule(r => ({ ...r, action: e.target.value }))}
-                  className="w-full rounded-xl px-3 py-2 text-sm outline-none"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}>
-                  {Object.entries(ACTION_LABELS).map(([k,v]) => <option key={k} value={k} style={{ background: "#0d0d1a" }}>{v}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => addMutation.mutate()} disabled={!newRule.name}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium"
-                style={{ background: "#7c3aed", color: "#fff" }}>
-                <Check size={13} />Save Rule
-              </button>
-              <button onClick={() => setShowAdd(false)} className="px-4 py-2 rounded-xl text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Cancel</button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Run result */}
-        {runResult && runResult.triggered?.length > 0 && (
-          <div className="rounded-2xl p-4 mb-5" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
-            <p className="text-sm font-medium" style={{ color: "#fbbf24" }}>⚠️ {runResult.triggered.length} issues found</p>
-            {runResult.triggered.map((t: any, i: number) => (
-              <p key={i} className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>• {t.message}</p>
-            ))}
-          </div>
-        )}
-
-        {/* Rules list */}
-        {!(rules || []).length ? (
-          <div className="text-center py-12">
-            <Shield size={32} className="mx-auto mb-3" style={{ color: "rgba(255,255,255,0.1)" }} />
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>No protection rules yet</p>
-            <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>Or tell KAI: "Alert me if margin drops below 30%"</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {(rules || []).map((rule: any, i: number) => (
-              <motion.div key={rule.id} className="flex items-center gap-4 px-4 py-3 rounded-xl"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
-                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}>
-                <Shield size={14} style={{ color: "#34d399" }} className="flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-white">{rule.name}</p>
-                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                    When {TRIGGERS.find(t => t.id === rule.trigger)?.label?.toLowerCase()} {rule.threshold}{TRIGGERS.find(t => t.id === rule.trigger)?.suffix} → {ACTION_LABELS[rule.action]}
-                  </p>
-                </div>
-                <div className="w-2 h-2 rounded-full" style={{ background: "#34d399" }} />
-                <button onClick={() => deleteMutation.mutate(rule.id)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg"
-                  style={{ color: "rgba(255,255,255,0.3)" }}>
-                  <Trash2 size={13} />
-                </button>
-              </motion.div>
-            ))}
-          </div>
-        )}
+        <div className="flex gap-2"><button onClick={()=>setShowCreate(false)} className="px-4 py-2 rounded-xl text-sm" style={{border:`1px solid ${t.border}`,color:t.muted}}>Cancel</button><button onClick={()=>createMut.mutate()} disabled={createMut.isPending} className="px-6 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-50" style={{background:`linear-gradient(135deg,${V.v500},#3D1C8A)`}}>{createMut.isPending?"Creating...":"Create Rule"}</button></div>
       </div>
-    
-  );
+    </motion.div>)}</AnimatePresence>
+    {rules.length===0?(<div className="rounded-2xl flex flex-col items-center justify-center py-20 text-center" style={{background:t.card,border:`1px solid ${t.border}`}}><Zap size={36} style={{color:t.muted,opacity:0.3,marginBottom:14}}/><p className="font-bold text-sm mb-2" style={{color:t.text}}>No rules yet</p><p className="text-xs mb-5" style={{color:t.muted,maxWidth:300,lineHeight:1.6}}>Set rules to automatically protect your margins. Example: if margin drops below 20%, alert me in KIRO and auto-adjust price.</p></div>):(
+      <div className="space-y-3">{rules.map((rule,i)=>(<motion.div key={rule.id} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.05}} className="flex items-center gap-3 p-4 rounded-2xl" style={{background:t.card,border:`1px solid ${t.border}`}}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:rule.active?"rgba(107,53,232,0.1)":t.faint}}><Zap size={14} style={{color:rule.active?V.v400:t.muted}}/></div>
+        <div className="flex-1 min-w-0"><p className="text-sm font-semibold" style={{color:t.text}}>{TRIGGERS.find(tr=>tr.id===rule.trigger)?.l} {rule.threshold}{TRIGGERS.find(tr=>tr.id===rule.trigger)?.s}</p><p className="text-xs mt-0.5" style={{color:t.muted}}>{AL[rule.action]}</p></div>
+        <button onClick={()=>toggleMut.mutate({id:rule.id,active:!rule.active})} style={{width:36,height:20,borderRadius:10,border:"none",cursor:"pointer",background:rule.active?V.v500:"rgba(128,128,128,0.2)",flexShrink:0,position:"relative"}}><div style={{position:"absolute",top:2,left:rule.active?18:2,width:16,height:16,borderRadius:"50%",background:"white",transition:"left 0.2s"}}/></button>
+        <button onClick={()=>delMut.mutate(rule.id)} className="p-2 rounded-lg flex-shrink-0" style={{border:`1px solid ${t.border}`,color:V.red}}><Trash2 size={12}/></button>
+      </motion.div>))}</div>
+    )}
+  </div>);
 }
-
-export default ProfitRulesPage;

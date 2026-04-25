@@ -1,133 +1,54 @@
 "use client";
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "../../../lib/api";
-import { useAuthStore } from "../../../store/auth.store";
-import { RotateCcw, Eye, X } from "lucide-react";
-import toast from "react-hot-toast";
+import{useState}from"react";
+import{useQuery,useMutation,useQueryClient}from"@tanstack/react-query";
+import{motion,AnimatePresence}from"framer-motion";
+import{useTheme}from"../../../components/layout/DashboardLayout";
+import{useAuthStore}from"../../../store/auth.store";
+import{api}from"../../../lib/api";
+import toast from"react-hot-toast";
+import Link from"next/link";
+import{RotateCcw,X,Check,ChevronRight,AlertCircle}from"lucide-react";
+const V={v500:"#6B35E8",v400:"#8B5CF6",v300:"#A78BFA",cyan:"#06B6D4",green:"#10B981",amber:"#F59E0B",red:"#EF4444"};
+const TM={dark:{card:"#181230",border:"rgba(255,255,255,0.06)",text:"#fff",muted:"rgba(255,255,255,0.38)",faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:"#0D0918",muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
+const inp=(t,err)=>({padding:"10px 14px",borderRadius:10,border:`1px solid ${err?"rgba(239,68,68,0.5)":t.border}`,background:"rgba(255,255,255,0.04)",color:t.text,fontSize:13,outline:"none",width:"100%",fontFamily:"inherit"});
 
-const STATUS_COLORS: Record<string, string> = {
-  REQUESTED: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
-  APPROVED:  "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
-  REJECTED:  "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
-  RECEIVED:  "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-  REFUNDED:  "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
-};
-
-export default function ReturnsPage() {
-  const qc = useQueryClient();
-  const user = useAuthStore(s => s.user);
-  const storeId = user?.stores?.[0]?.id;
-  const [selected, setSelected] = useState<any>(null);
-  const [adminNote, setAdminNote] = useState("");
-  const [newStatus, setNewStatus] = useState("");
-  const tx = "[color:var(--text-primary)]";
-  const sub = "text-secondary";
-  const card = "[background:var(--bg-secondary)] [border-color:var(--border)]";
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["returns", storeId],
-    queryFn: () => api.get(`/ops/returns/${storeId}`).then(r => r.data),
-    enabled: !!storeId,
-  });
-
-  const updateMut = useMutation({
-    mutationFn: ({ id, status }: any) => api.patch(`/ops/returns/${storeId}/${id}`, { status, adminNote }),
-    onSuccess: () => { toast.success("Return updated"); qc.invalidateQueries({ queryKey: ["returns"] }); setSelected(null); },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
-  });
-
-  const returns = data?.data || [];
-
-  return (
-      <>
-      <div className="space-y-6">
-        <div>
-          <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Returns & RMA</h1>
-          <p className={`text-sm mt-0.5 ${sub}`}>{returns.filter((r: any) => r.status === "REQUESTED").length} pending returns</p>
+const ST={REQUESTED:{label:"Requested",color:V.amber,bg:"rgba(245,158,11,0.12)"},APPROVED:{label:"Approved",color:V.green,bg:"rgba(16,185,129,0.12)"},REJECTED:{label:"Rejected",color:V.red,bg:"rgba(239,68,68,0.12)"},RECEIVED:{label:"Received",color:V.cyan,bg:"rgba(6,182,212,0.12)"},REFUNDED:{label:"Refunded",color:V.v400,bg:"rgba(107,53,232,0.12)"}};
+export default function ReturnsPage(){
+  const{theme}=useTheme();const isDark=theme==="dark";const t=isDark?TM.dark:TM.light;
+  const storeId=useAuthStore(s=>s.user?.stores?.[0]?.id);const qc=useQueryClient();
+  const[sel,setSel]=useState(null);const[note,setNote]=useState("");const[status,setStatus]=useState("");
+  const{data,isLoading}=useQuery({queryKey:["returns",storeId],queryFn:()=>api.get(`/ops/returns/${storeId}`).then(r=>r.data.data),enabled:!!storeId});
+  const upd=useMutation({mutationFn:()=>api.patch(`/ops/returns/${storeId}/${sel.id}`,{status,adminNote:note}),onSuccess:()=>{toast.success("Return updated");qc.invalidateQueries({queryKey:["returns"]});setSel(null);},onError:(e)=>toast.error(e.response?.data?.message||"Failed")});
+  const returns=data||[];
+  return(<div className="max-w-5xl mx-auto">
+    <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} className="mb-6">
+      <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{color:t.text}}>Returns</h1>
+      <p className="text-xs sm:text-sm mt-1" style={{color:t.muted}}>Manage customer return requests</p>
+    </motion.div>
+    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-5">
+      {Object.entries(ST).map(([k,s])=>(<div key={k} className="p-3 rounded-2xl" style={{background:t.card,border:`1px solid ${t.border}`}}><p className="text-xl font-black mb-0.5" style={{color:t.text}}>{returns.filter(r=>r.status===k).length}</p><p className="text-[11px]" style={{color:s.color}}>{s.label}</p></div>))}
+    </div>
+    <div className="rounded-2xl overflow-hidden" style={{background:t.card,border:`1px solid ${t.border}`}}>
+      {isLoading?Array.from({length:3}).map((_,i)=><div key={i} className="h-16 animate-pulse m-3 rounded-xl" style={{background:t.faint}}/>):returns.length===0?(
+        <div className="flex flex-col items-center justify-center py-20 text-center"><RotateCcw size={36} style={{color:t.muted,opacity:0.3,marginBottom:14}}/><p className="font-bold text-sm mb-1" style={{color:t.text}}>No return requests</p><p className="text-xs" style={{color:t.muted}}>Customer return requests will appear here</p></div>
+      ):(<div className="divide-y" style={{borderColor:t.border}}>{returns.map((r,i)=>{const s=ST[r.status]||ST.REQUESTED;return(<button key={r.id} onClick={()=>{setSel(r);setStatus(r.status);setNote(r.adminNote||"");}} className="w-full flex items-center gap-3 px-4 py-3.5 hover:opacity-80 transition-opacity text-left">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:s.bg}}><RotateCcw size={14} style={{color:s.color}}/></div>
+        <div className="flex-1 min-w-0"><p className="text-sm font-semibold" style={{color:t.text}}>{r.customerName||r.customer?.name||"Customer"}</p><p className="text-xs" style={{color:t.muted}}>{r.reason||"Return requested"} · {new Date(r.createdAt).toLocaleDateString("en",{day:"numeric",month:"short"})}</p></div>
+        <span className="text-xs px-2.5 py-1 rounded-full font-semibold flex-shrink-0" style={{background:s.bg,color:s.color}}>{s.label}</span>
+        <ChevronRight size={14} style={{color:t.muted}}/>
+      </button>);})}
+      </div>)}
+    </div>
+    <AnimatePresence>{sel&&(<div className="fixed inset-0 z-50 flex items-center justify-end" style={{background:"rgba(0,0,0,0.6)",backdropFilter:"blur(8px)"}} onClick={e=>e.target===e.currentTarget&&setSel(null)}>
+      <motion.div initial={{x:"100%"}} animate={{x:0}} exit={{x:"100%"}} transition={{type:"spring",damping:28}} className="h-full w-full max-w-sm overflow-y-auto" style={{background:isDark?"#181230":"#fff",borderLeft:`1px solid ${t.border}`}}>
+        <div className="flex items-center justify-between px-5 py-4" style={{borderBottom:`1px solid ${t.border}`}}><h2 className="font-bold text-sm" style={{color:t.text}}>Return #{sel.id?.slice(-8)?.toUpperCase()}</h2><button onClick={()=>setSel(null)} style={{color:t.muted}}><X size={17}/></button></div>
+        <div className="p-5 space-y-4">
+          <div className="p-4 rounded-2xl" style={{background:t.faint,border:`1px solid ${t.border}`}}><p className="text-xs font-semibold mb-2" style={{color:t.muted}}>Reason</p><p className="text-sm" style={{color:t.text}}>{sel.reason||"Not specified"}</p></div>
+          <div><p className="text-xs font-semibold mb-2" style={{color:t.muted}}>Update Status</p><div className="grid grid-cols-2 gap-2">{Object.entries(ST).map(([k,s])=>(<button key={k} onClick={()=>setStatus(k)} className="px-3 py-2 rounded-xl text-xs font-semibold transition-all" style={{background:status===k?s.bg:t.faint,border:`1px solid ${status===k?s.color:t.border}`,color:status===k?s.color:t.muted}}>{s.label}</button>))}</div></div>
+          <div><p className="text-xs font-semibold mb-2" style={{color:t.muted}}>Admin Note</p><textarea style={{...inp(t),resize:"none"}} rows={3} value={note} onChange={e=>setNote(e.target.value)} placeholder="Internal note..."/></div>
+          <button onClick={()=>upd.mutate()} disabled={upd.isPending} className="w-full py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50" style={{background:`linear-gradient(135deg,${V.v500},#3D1C8A)`}}>{upd.isPending?"Saving...":"Save Changes"}</button>
         </div>
-
-        <div className={`rounded-2xl border overflow-hidden ${card}`}>
-          {isLoading ? <div className="py-16 text-center text-secondary">Loading…</div>
-          : returns.length === 0 ? (
-            <div className="py-16 text-center">
-              <RotateCcw size={36} className="mx-auto mb-3 opacity-20" />
-              <p className={`text-sm ${sub}`}>No return requests yet</p>
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className={`border-b border-inherit text-xs ${sub}`}>
-                  {["Order", "Customer", "Reason", "Date", "Status", ""].map(h => (
-                    <th key={h} className="text-left font-semibold px-5 py-3.5">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {returns.map((r: any) => (
-                  <tr key={r.id} className="border-b [border-color:var(--border)]/50 hover:[background:var(--bg-secondary)]/40">
-                    <td className="px-5 py-4 font-mono text-xs font-bold [color:var(--accent)]">{r.order?.orderNumber}</td>
-                    <td className="px-5 py-4"><div className={`font-semibold text-sm ${tx}`}>{r.order?.customerName}</div><div className={`text-xs ${sub}`}>{r.customerEmail}</div></td>
-                    <td className={`px-5 py-4 text-xs ${sub}`}>{r.reason}</td>
-                    <td className={`px-5 py-4 text-xs ${sub}`}>{new Date(r.createdAt).toLocaleDateString()}</td>
-                    <td className="px-5 py-4"><span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[r.status] || ""}`}>{r.status}</span></td>
-                    <td className="px-5 py-4">
-                      <button onClick={() => { setSelected(r); setNewStatus(r.status); setAdminNote(""); }}
-                        className="p-1.5 rounded-lg [color:var(--accent)] hover:[background:var(--accent-dim)]">
-                        <Eye size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-
-      {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,.75)", backdropFilter: "blur(8px)" }}>
-          <div className="w-full max-w-lg rounded-3xl border shadow-2xl [background:var(--bg-secondary)] [border-color:var(--border)]">
-            <div className="flex items-center justify-between px-6 py-4 border-b [border-color:var(--border)]">
-              <h2 className={`font-black text-lg ${tx}`}>Return Request</h2>
-              <button onClick={() => setSelected(null)} className="p-2 rounded-xl hover:[background:var(--bg-card)]"><X size={16} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className={`rounded-xl border p-3 [border-color:var(--border)]`}>
-                <p className={`text-xs ${sub} mb-1`}>Reason</p>
-                <p className={`text-sm ${tx}`}>{selected.reason}</p>
-                {selected.description && <p className={`text-xs ${sub} mt-1`}>{selected.description}</p>}
-              </div>
-              <div>
-                <label className={`block text-xs font-semibold ${sub} mb-2`}>Update Status</label>
-                <div className="flex flex-wrap gap-2">
-                  {["APPROVED","REJECTED","RECEIVED","REFUNDED"].map(s => (
-                    <button key={s} onClick={() => setNewStatus(s)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${newStatus === s ? "text-[var(--text-primary)]" : `${sub}`}`}
-                      style={newStatus === s ? { background: "linear-gradient(135deg,#7c3aed,#a855f7)" } : {}}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className={`block text-xs font-semibold ${sub} mb-1.5`}>Admin Note</label>
-                <textarea value={adminNote} onChange={e => setAdminNote(e.target.value)} rows={2}
-                  className={`w-full rounded-xl px-3 py-2 text-sm border outline-none resize-none [background:var(--bg-card)] [border-color:var(--border)] ${tx}`}
-                  placeholder="Note to customer…" />
-              </div>
-              <button onClick={() => updateMut.mutate({ id: selected.id, status: newStatus })}
-                disabled={updateMut.isPending || newStatus === selected.status}
-                className="w-full py-2.5 rounded-xl text-sm font-bold text-[var(--text-primary)] disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
-                {updateMut.isPending ? "Updating…" : "Update Return"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    
-    
-      </>
-  );
+      </motion.div>
+    </div>)}</AnimatePresence>
+  </div>);
 }
