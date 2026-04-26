@@ -33,14 +33,14 @@ const T = {
   dark: {
     bg: "#06040D", surface: "#0D0918", card: "#181230",
     border: "rgba(255,255,255,0.06)", borderHi: "rgba(255,255,255,0.12)",
-    text: "#fff", textMuted: "rgba(255,255,255,0.38)", textFaint: "rgba(255,255,255,0.18)",
+    text: "#fff", textMuted: "rgba(255,255,255,0.62)", textFaint: "rgba(255,255,255,0.35)",
     navHover: "rgba(255,255,255,0.04)", headerBg: "rgba(6,4,13,0.92)",
     sidebarBg: "#0D0918",
   },
   light: {
     bg: "#F4F2FF", surface: "#fff", card: "#fff",
     border: "rgba(15,5,32,0.07)", borderHi: "rgba(15,5,32,0.12)",
-    text: "#0D0918", textMuted: "rgba(13,9,24,0.45)", textFaint: "rgba(13,9,24,0.22)",
+    text: "#0D0918", textMuted: "rgba(13,9,24,0.65)", textFaint: "rgba(13,9,24,0.45)",
     navHover: "rgba(15,5,32,0.04)", headerBg: "rgba(244,242,255,0.92)",
     sidebarBg: "#fff",
   },
@@ -126,7 +126,7 @@ function NavItem({ item, isActive, t, onClick }: { item: any; isActive: boolean;
         <div style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: isActive ? (item.ai ? "rgba(107,53,232,0.25)" : "rgba(107,53,232,0.18)") : "transparent" }}>
           <Icon size={13} color={isActive ? (item.ai ? V.v300 : V.v400) : t.textMuted} />
         </div>
-        <span style={{ fontSize: 12.5, flex: 1, color: isActive ? (item.ai ? V.v200 : "#fff") : t.textMuted, fontWeight: isActive ? 600 : 400, letterSpacing: "-0.01em" }}>
+        <span style={{ fontSize: 12.5, flex: 1, color: isActive ? (item.ai ? V.v200 : "#fff") : t.textMuted, fontWeight: isActive ? 700 : 500, letterSpacing: "-0.01em" }}>
           {item.label}
         </span>
         {item.ai && <span style={{ fontFamily: "'Syncopate',sans-serif", fontSize: 7.5, fontWeight: 700, letterSpacing: "0.08em", padding: "2px 6px", borderRadius: 99, background: "rgba(107,53,232,0.2)", color: V.v300, border: "1px solid rgba(107,53,232,0.3)", flexShrink: 0 }}>AI</span>}
@@ -150,7 +150,7 @@ function NavGroup({ group, pathname, t, onNavClick }: { group: any; pathname: st
 
   return (
     <div style={{ marginBottom: 4 }}>
-      <button onClick={() => setOpen(!open)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "6px 12px 4px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", color: hasActive ? t.textMuted : t.textFaint, marginBottom: 2 }}>
+      <button onClick={() => setOpen(!open)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "6px 12px 4px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", color: hasActive ? t.text : t.textMuted, marginBottom: 2 }}>
         <span style={{ fontFamily: "'Syncopate',sans-serif", fontSize: 8.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", flex: 1, textAlign: "left" }}>{group.label}</span>
         <motion.div animate={{ rotate: open ? 90 : 0 }} transition={{ duration: 0.18 }}><ChevronRight size={10} /></motion.div>
       </button>
