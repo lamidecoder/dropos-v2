@@ -61,8 +61,10 @@ const PROVIDERS = [
 
 // WhatsApp notification settings (uses existing store fields)
 export default function ChatSettingsPage() {
-  const user    = useAuthStore(s => s.user);
-  const storeId = user?.stores?.[0]?.id;
+  const tx = "text-white";
+  const sub = "text-white/50";
+  const card = "bg-[#181230] border-[rgba(255,255,255,0.06)]";
+    const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const qc      = useQueryClient();
 
   const [liveChatProvider, setLiveChatProvider] = useState("");

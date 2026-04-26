@@ -7,8 +7,10 @@ import { useAuthStore } from "../../../store/auth.store";
 import { TrendingDown, Globe, BarChart3 } from "lucide-react";
 
 export default function FunnelPage() {
-  const user = useAuthStore(s => s.user);
-  const storeId = user?.stores?.[0]?.id;
+  const tx = "text-white";
+  const sub = "text-white/50";
+  const card = "bg-[#181230] border-[rgba(255,255,255,0.06)]";
+    const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const [period, setPeriod] = useState("30d");
         const { data: funnelData , isLoading } = useQuery({
     queryKey: ["funnel", storeId, period],

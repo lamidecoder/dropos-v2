@@ -227,8 +227,8 @@ function KAIThemePanel({ storeId, settings, onApply }: { storeId: string; settin
 
 // ── MAIN EDITOR ───────────────────────────────────────────────
 export default function CustomizePage() {
-  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
-  const storeSlug = user?.stores?.[0]?.slug || "";
+  const storeId = useAuthStore(s => s.useAuthStore(s => s.user?.stores?.[0]?.id));
+  const storeSlug = useAuthStore(s => s.user?.stores?.[0]?.slug) || "";
 
   const [device, setDevice]           = useState<Device>("desktop");
   const [activePanel, setActivePanel] = useState<Panel>("sections");

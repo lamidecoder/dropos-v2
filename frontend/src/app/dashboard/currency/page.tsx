@@ -42,9 +42,11 @@ const ALL_CURRENCIES = [
 ];
 
 export default function CurrencyPage() {
+  const tx = "text-white";
+  const sub = "text-white/50";
+  const card = "bg-[#181230] border-[rgba(255,255,255,0.06)]";
   const qc      = useQueryClient();
-  const user    = useAuthStore(s => s.user);
-  const storeId = user?.stores?.[0]?.id;
+    const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
 
         const inp  = "[background:#181230] [border-color:rgba(255,255,255,0.06)] [color:#ffffff]";
 
