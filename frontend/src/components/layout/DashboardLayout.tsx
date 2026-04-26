@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Zap, LayoutDashboard, Package, ShoppingCart, Users,
+  Zap, LayoutDashboard, Package, ShoppingCart, ShoppingBag, Users,
   BarChart2, Settings, Bell, LogOut, TrendingUp, Store,
   Tag, Truck, Palette, Download, Eye, CreditCard, Key,
   Flame, Globe, Layers, RefreshCw, RotateCcw, Repeat,
