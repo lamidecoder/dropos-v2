@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { paymentAPI } from "../../../lib/api";
+import { api } from "../../../lib/api";
 
 import { CreditCard, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 
@@ -28,7 +28,7 @@ export default function AdminPaymentsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-payments", page, status, gateway],
-    queryFn:  () => paymentAPI.getAll({ page, limit: 15, status, gateway }).then((r) => r.data),
+    queryFn:  () => api.getAll({ page, limit: 15, status, gateway }).then((r) => r.data),
   });
 
   const payments   = data?.data || [];

@@ -32,7 +32,8 @@ export default function BroadcastsPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:"rgba(255,255,255,0.38)", faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)" };
-  const storeId = useAuthStore(s => s.useAuthStore(s => s.user?.stores?.[0]?.id));
+  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
+  const storeName = useAuthStore(s => s.user?.stores?.[0]?.name);
   const qc      = useQueryClient();
 
   const [segment, setSegment]   = useState("all");
@@ -233,7 +234,7 @@ export default function BroadcastsPage() {
                       <div className="px-3 py-2 flex items-center gap-2" style={{ background: "#128C7E" }}>
                         <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "rgba(255,255,255,0.2)" }}>S</div>
                         <div>
-                          <p style={{ color: "#fff", fontSize: "11px", fontWeight: 600 }}>{useAuthStore(s => s.user?.stores?.[0]?.name) || "Your Store"}</p>
+                          <p style={{ color: "#fff", fontSize: "11px", fontWeight: 600 }}>{storeName || "Your Store"}</p>
                           <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "9px" }}>Business Account</p>
                         </div>
                       </div>
