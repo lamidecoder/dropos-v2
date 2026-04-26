@@ -81,6 +81,7 @@ const OWNER_NAV = [
     { href: "/dashboard/coupons",         icon: Tag,           label: "Coupons"         },
     { href: "/dashboard/flash-sales",     icon: Flame,         label: "Flash Sales"     },
     { href: "/dashboard/gift-cards",      icon: Gift,          label: "Gift Cards"      },
+    { href: "/dashboard/referral",        icon: Gift,       label: "Referral"      },
     { href: "/dashboard/loyalty",         icon: Star,       label: "Loyalty"       },
     { href: "/dashboard/affiliates",      icon: Star,          label: "Affiliates"      },
     { href: "/dashboard/reviews",         icon: MessageSquare, label: "Reviews"         },
