@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import SetupChecklist from "../../components/ui/SetupChecklist";
 import {
   TrendingUp, ShoppingCart, Users, Package,
   Zap, Sparkles, ChevronRight, AlertCircle,
@@ -91,6 +92,8 @@ export default function DashboardPage() {
           </motion.button>
         </Link>
       </motion.div>
+
+      <SetupChecklist />
 
       {/* Stats grid - 2 col mobile, 4 col desktop */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
