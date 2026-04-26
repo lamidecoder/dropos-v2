@@ -1,11 +1,11 @@
 "use client";
-﻿"use client";
 // Path: frontend/src/app/dashboard/broadcasts/page.tsx
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
+import { api } from "../../../lib/api";
+import { useTheme } from "../../../components/layout/DashboardLayout";
+import { useAuthStore } from "../../../store/auth.store";
 import { Send, Sparkles, Users, Clock, CheckCircle, MessageSquare, Zap, Calendar, BarChart2, RefreshCw, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -29,8 +29,10 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function BroadcastsPage() {
-  const user    = useAuthStore(s => s.user);
-  const storeId = user?.stores?.[0]?.id || "";
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:"rgba(255,255,255,0.38)", faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)" };
+  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const qc      = useQueryClient();
 
   const [segment, setSegment]   = useState("all");
@@ -66,7 +68,7 @@ export default function BroadcastsPage() {
     onSuccess: (res) => {
       const { data } = res.data;
       if (!schedTime) sendMutation.mutate(data.broadcast.id);
-      else { toast.success(`Broadcast scheduled for ${new Date(schedTime).toLocaleString()}`); qc.invalidateQueries(["broadcasts", storeId]); }
+      else { toast.success(`Broadcast scheduled for ${new Date(schedTime).toLocaleString()}`); qc.invalidateQueries({queryKey:["broadcasts", storeId]}); }
     },
   });
 
@@ -76,7 +78,7 @@ export default function BroadcastsPage() {
       const { sent, failed } = res.data.data;
       toast.success(`Sent to ${sent} customers! ${failed > 0 ? `(${failed} failed)` : ""}`);
       setMessage(""); setProduct(""); setDiscount("");
-      qc.invalidateQueries(["broadcasts", storeId]);
+      qc.invalidateQueries({queryKey:["broadcasts", storeId]});
     },
     onError: (err: any) => {
       if (err.response?.status === 503) {

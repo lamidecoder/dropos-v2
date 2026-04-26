@@ -1,11 +1,10 @@
 "use client";
-﻿"use client";
 // Path: frontend/src/app/dashboard/image-studio/page.tsx
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
 import { Upload, Wand2, Image, Sparkles, Download, Copy, Loader2, X, Check } from "lucide-react";
 import toast from "react-hot-toast";
 

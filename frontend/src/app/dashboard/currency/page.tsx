@@ -1,9 +1,9 @@
 "use client";
-﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
+import { useTheme } from "../../../components/layout/DashboardLayout";
 import { useAuthStore } from "../../../store/auth.store";
 import { Globe, CheckCircle, TrendingUp, RefreshCw, ToggleLeft, ToggleRight, Info } from "lucide-react";
 import toast from "react-hot-toast";
@@ -46,10 +46,7 @@ export default function CurrencyPage() {
   const user    = useAuthStore(s => s.user);
   const storeId = user?.stores?.[0]?.id;
 
-  const tx   = "[color:var(--text-primary)]";
-  const sub  = "text-secondary";
-  const card = "[background:var(--bg-secondary)] [border-color:var(--border)]";
-  const inp  = "[background:var(--bg-secondary)] [border-color:var(--border)] [color:var(--text-primary)]";
+        const inp  = "[background:#181230] [border-color:rgba(255,255,255,0.06)] [color:#ffffff]";
 
   // Fetch store data
   const { data: store } = useQuery({
@@ -121,7 +118,7 @@ export default function CurrencyPage() {
           <button
             onClick={() => saveMut.mutate()}
             disabled={saveMut.isPending}
-            className="px-6 py-2.5 rounded-xl text-sm font-bold [color:var(--text-primary)] disabled:opacity-60 transition-all hover:opacity-90"
+            className="px-6 py-2.5 rounded-xl text-sm font-bold [color:#ffffff] disabled:opacity-60 transition-all hover:opacity-90"
             style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)" }}
           >
             {saveMut.isPending ? "Saving…" : "Save Settings"}
@@ -129,7 +126,7 @@ export default function CurrencyPage() {
         </div>
 
         {/* Info banner */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl border [background:var(--accent-dim)] border-violet-500/20">
+        <div className="flex items-start gap-3 p-4 rounded-2xl border [background:rgba(107,53,232,0.12)] border-violet-500/20">
           <Info size={15} className="text-violet-400 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-violet-300">
             Prices are automatically converted using live exchange rates (updated hourly).
@@ -158,12 +155,12 @@ export default function CurrencyPage() {
                   }}
                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all"
                   style={{
-                    borderColor: active ? "#f59e0b" : "var(--border)",
+                    borderColor: active ? "#f59e0b" : "rgba(255,255,255,0.06)",
                     background:  active ? "rgba(245,158,11,0.08)" : "transparent",
                   }}
                 >
                   <span className="text-xl">{meta?.flag ?? "🌐"}</span>
-                  <span className={`text-xs font-black ${active ? "[color:var(--accent)]" : sub}`}>{code}</span>
+                  <span className={`text-xs font-black ${active ? "[color:#6B35E8]" : sub}`}>{code}</span>
                   <span className={`text-[10px] ${sub}`}>{meta?.symbol}</span>
                 </button>
               );
@@ -201,7 +198,7 @@ export default function CurrencyPage() {
                 {selectedCurrencies.length} selected · These appear in the currency picker on your storefront.
               </p>
             </div>
-            <span className={`text-xs font-bold px-3 py-1.5 rounded-full [background:var(--accent-dim)] [color:var(--accent)]`}>
+            <span className={`text-xs font-bold px-3 py-1.5 rounded-full [background:rgba(107,53,232,0.12)] [color:#6B35E8]`}>
               {selectedCurrencies.length} active
             </span>
           </div>
@@ -223,18 +220,18 @@ export default function CurrencyPage() {
                   disabled={isBase}
                   className="flex items-center gap-3 p-3 rounded-xl border transition-all text-left disabled:cursor-default"
                   style={{
-                    borderColor: isActive ? (isBase ? "#f59e0b" : "rgba(124,58,237,0.4)") : "var(--bg-card)",
+                    borderColor: isActive ? (isBase ? "#f59e0b" : "rgba(124,58,237,0.4)") : "#181230",
                     background:  isActive ? (isBase ? "rgba(245,158,11,0.06)" : "rgba(124,58,237,0.06)") : "transparent",
                   }}
                 >
                   <span className="text-xl flex-shrink-0">{flag}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-xs font-black ${isActive ? (isBase ? "[color:var(--accent)]" : "text-violet-400") : sub}`}>
+                      <span className={`text-xs font-black ${isActive ? (isBase ? "[color:#6B35E8]" : "text-violet-400") : sub}`}>
                         {code}
                       </span>
                       {isBase && (
-                        <span className="text-[9px] font-black [color:var(--accent)] [background:var(--accent-dim)] px-1.5 py-0.5 rounded-full">BASE</span>
+                        <span className="text-[9px] font-black [color:#6B35E8] [background:rgba(107,53,232,0.12)] px-1.5 py-0.5 rounded-full">BASE</span>
                       )}
                     </div>
                     <div className={`text-[10px] truncate ${sub}`}>{name}</div>
@@ -266,7 +263,7 @@ export default function CurrencyPage() {
             <button
               onClick={() => refetchRates()}
               disabled={ratesLoading}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${sub} [border-color:var(--border)] hover:[background:var(--bg-secondary)]`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${sub} [border-color:rgba(255,255,255,0.06)] hover:[background:#181230]`}
             >
               <RefreshCw size={11} className={ratesLoading ? "animate-spin" : ""} />
               Refresh
@@ -276,7 +273,7 @@ export default function CurrencyPage() {
           {ratesLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-14 rounded-xl animate-pulse [background:var(--bg-secondary)]" />
+                <div key={i} className="h-14 rounded-xl animate-pulse [background:#181230]" />
               ))}
             </div>
           ) : (
@@ -289,7 +286,7 @@ export default function CurrencyPage() {
                     ? (rates[code] / baseRate)
                     : null;
                   return (
-                    <div key={code} className="rounded-xl border [border-color:var(--border)] p-3">
+                    <div key={code} className="rounded-xl border [border-color:rgba(255,255,255,0.06)] p-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="text-base">{meta?.flag ?? "🌐"}</span>
                         <span className={`text-xs font-black ${tx}`}>{code}</span>
@@ -352,7 +349,7 @@ export default function CurrencyPage() {
               },
             ].map(({ step, title, desc, icon }) => (
               <div key={step} className="flex gap-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0 [background:var(--accent-dim)]">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0 [background:rgba(107,53,232,0.12)]">
                   {icon}
                 </div>
                 <div>

@@ -1,5 +1,4 @@
 "use client";
-﻿"use client";
 // ============================================================
 // Visual Store Editor - Perfect UX
 // Path: frontend/src/app/dashboard/customize/page.tsx
@@ -12,8 +11,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence }                  from "framer-motion";
 import { useQuery, useMutation }                    from "@tanstack/react-query";
-import { api }         from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
+import { api }         from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
 import {
   Monitor, Tablet, Smartphone, Undo2, Redo2, Save, Eye,
   Palette, Type, Layout, Settings, Sparkles, Send, Check,
@@ -228,8 +227,7 @@ function KAIThemePanel({ storeId, settings, onApply }: { storeId: string; settin
 
 // ── MAIN EDITOR ───────────────────────────────────────────────
 export default function CustomizePage() {
-  const user    = useAuthStore(s => s.user);
-  const storeId = user?.stores?.[0]?.id || "";
+  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const storeSlug = user?.stores?.[0]?.slug || "";
 
   const [device, setDevice]           = useState<Device>("desktop");

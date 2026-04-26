@@ -1,8 +1,8 @@
 "use client";
-﻿"use client";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
+import { useTheme } from "../../../components/layout/DashboardLayout";
 import { useAuthStore } from "../../../store/auth.store";
 import {
   MessageCircle, Phone, Zap, Globe, Settings2, CheckCircle,
@@ -10,10 +10,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-const tx   = "[color:var(--text-primary)]";
-const sub  = "text-secondary";
-const card = "[background:var(--bg-secondary)] [border-color:var(--border)]";
-const inp  = "[background:var(--bg-card)] [border-color:var(--border)] [color:var(--text-primary)] border rounded-xl px-3 py-2.5 text-sm outline-none w-full focus:[border-color:var(--accent)] transition-colors";
+const inp  = "[background:#181230] [border-color:rgba(255,255,255,0.06)] [color:#ffffff] border rounded-xl px-3 py-2.5 text-sm outline-none w-full focus:[border-color:#6B35E8] transition-colors";
 
 const PROVIDERS = [
   {
@@ -125,7 +122,7 @@ export default function ChatSettingsPage() {
             <p className={`text-sm mt-1 ${sub}`}>Add a live chat widget or WhatsApp button to your storefront</p>
           </div>
           <button onClick={() => saveMut.mutate()} disabled={saveMut.isPending}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-[var(--text-primary)] disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-[#ffffff] disabled:opacity-50"
             style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
             <Save size={14} /> {saveMut.isPending ? "Saving…" : "Save Changes"}
           </button>
@@ -163,7 +160,7 @@ export default function ChatSettingsPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#7c3aed18" }}>
-                <Phone size={16} className="[color:var(--accent)]" />
+                <Phone size={16} className="[color:#6B35E8]" />
               </div>
               <div>
                 <p className={`font-bold text-sm ${tx}`}>SMS Order Alerts</p>
@@ -189,7 +186,7 @@ export default function ChatSettingsPage() {
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
-                <MessageCircle size={16} className="text-[var(--text-primary)]" />
+                <MessageCircle size={16} className="text-[#ffffff]" />
               </div>
               <div>
                 <p className={`font-bold text-sm ${tx}`}>Live Chat Widget</p>
@@ -212,8 +209,8 @@ export default function ChatSettingsPage() {
                     <button key={p.id} onClick={() => setLiveChatProvider(p.id)}
                       className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all ${liveChatProvider === p.id ? "border-2" : ""}`}
                       style={{
-                        borderColor: liveChatProvider === p.id ? p.color : "var(--border)",
-                        background:  liveChatProvider === p.id ? `${p.color}10` : "var(--bg-card)",
+                        borderColor: liveChatProvider === p.id ? p.color : "rgba(255,255,255,0.06)",
+                        background:  liveChatProvider === p.id ? `${p.color}10` : "#181230",
                       }}>
                       <span className="text-xl">{p.icon}</span>
                       <div>
@@ -233,7 +230,7 @@ export default function ChatSettingsPage() {
                     <label className={`text-xs font-semibold ${sub}`}>{selectedProvider.idLabel}</label>
                     {selectedProvider.setupUrl && (
                       <a href={selectedProvider.setupUrl} target="_blank" rel="noopener noreferrer"
-                        className="text-xs [color:var(--accent)] flex items-center gap-1 hover:opacity-80">
+                        className="text-xs [color:#6B35E8] flex items-center gap-1 hover:opacity-80">
                         Get account <ExternalLink size={10} />
                       </a>
                     )}
@@ -262,9 +259,9 @@ export default function ChatSettingsPage() {
         {/* How the widget works */}
         {liveChatEnabled && selectedProvider && (
           <div className={`rounded-xl border p-4 ${card} flex items-start gap-3`}>
-            <AlertCircle size={14} className="[color:var(--accent)] mt-0.5 flex-shrink-0" />
+            <AlertCircle size={14} className="[color:#6B35E8] mt-0.5 flex-shrink-0" />
             <div className={`text-xs ${sub} space-y-1`}>
-              <p className="font-bold [color:var(--text-primary)]">How it works</p>
+              <p className="font-bold [color:#ffffff]">How it works</p>
               {selectedProvider.id === "whatsapp" && <p>A floating WhatsApp button appears bottom-right. Clicking opens wa.me/{liveChatId || "your-number"} in WhatsApp.</p>}
               {selectedProvider.id === "tawk"     && <p>Tawk.to script is injected into your storefront. The chat bubble handles everything - agents log in at tawk.to/chat.</p>}
               {selectedProvider.id === "crisp"    && <p>Crisp widget script is injected. Manage chats from your Crisp inbox at app.crisp.chat.</p>}

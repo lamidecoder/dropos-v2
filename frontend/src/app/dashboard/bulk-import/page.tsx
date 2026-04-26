@@ -1,12 +1,12 @@
 "use client";
-﻿"use client";
 // ── BULK IMPORT PAGE ─────────────────────────────────────────
 // Path: frontend/src/app/dashboard/bulk-import/page.tsx
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
+import { api } from "../../../lib/api";
+import { useTheme } from "../../../components/layout/DashboardLayout";
+import { useAuthStore } from "../../../store/auth.store";
 import { Link, Loader2, Package, Check, Download } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -18,9 +18,11 @@ const PRICING_RULES = [
 
 const GRADE_COLORS: Record<string, string> = { A: "#34d399", B: "#60a5fa", C: "#fbbf24", D: "#fb923c", F: "#f87171" };
 
-export function BulkImportPage() {
-  const user    = useAuthStore(s => s.user);
-  const storeId = user?.stores?.[0]?.id || "";
+export default function BulkImportPage() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:"rgba(255,255,255,0.38)", faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)" };
+  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const [storeUrl, setStoreUrl]   = useState("");
   const [products, setProducts]   = useState<any[]>([]);
   const [selected, setSelected]   = useState<Set<number>>(new Set());

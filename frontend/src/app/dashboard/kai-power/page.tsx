@@ -1,5 +1,4 @@
 "use client";
-﻿"use client";
 // ============================================================
 // KAI Power Tools - Complete UI
 // Path: frontend/src/app/dashboard/kai-power/page.tsx
@@ -7,7 +6,8 @@
 // ============================================================
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { api } from "@/lib/api";
+import { api } from "../../../lib/api";
+import { useTheme } from "../../../components/layout/DashboardLayout";
 import {
   Zap, FileText, Image, Megaphone, TrendingUp,
   Calculator, Search, Target, ChevronRight,

@@ -1,8 +1,8 @@
 "use client";
-﻿"use client";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
+import { useTheme } from "../../../components/layout/DashboardLayout";
 import { useAuthStore } from "../../../store/auth.store";
 import { TrendingDown, Globe, BarChart3 } from "lucide-react";
 
@@ -10,11 +10,7 @@ export default function FunnelPage() {
   const user = useAuthStore(s => s.user);
   const storeId = user?.stores?.[0]?.id;
   const [period, setPeriod] = useState("30d");
-  const tx = "[color:var(--text-primary)]";
-  const sub = "text-secondary";
-  const card = "[background:var(--bg-secondary)] [border-color:var(--border)]";
-
-  const { data: funnelData , isLoading } = useQuery({
+        const { data: funnelData , isLoading } = useQuery({
     queryKey: ["funnel", storeId, period],
     queryFn: () => api.get(`/funnel/${storeId}?period=${period}`).then(r => r.data.data),
     enabled: !!storeId,
@@ -65,7 +61,7 @@ export default function FunnelPage() {
           <div className="flex gap-2">
             {["7d","30d","90d"].map(p => (
               <button key={p} onClick={() => setPeriod(p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${period === p ? "text-[var(--text-primary)]" : `${sub} hover:[background:var(--bg-secondary)]`}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${period === p ? "text-[#ffffff]" : `${sub} hover:[background:#181230]`}`}
                 style={period === p ? { background: "linear-gradient(135deg,#7c3aed,#a855f7)" } : {}}>
                 {p}
               </button>
@@ -88,12 +84,12 @@ export default function FunnelPage() {
                       </span>
                     )}
                     <span className={`text-sm font-bold ${tx}`}>{stage.count.toLocaleString()}</span>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${i === 0 ? "[color:var(--accent)] [background:var(--accent-dim)]" : "text-secondary [background:var(--bg-card)]"}`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${i === 0 ? "[color:#6B35E8] [background:rgba(107,53,232,0.12)]" : "text-secondary [background:#181230]"}`}>
                       {stage.rate}%
                     </span>
                   </div>
                 </div>
-                <div className="h-8 rounded-xl overflow-hidden [background:var(--bg-card)]">
+                <div className="h-8 rounded-xl overflow-hidden [background:#181230]">
                   <div className="h-full rounded-xl transition-all duration-700"
                     style={{
                       width: `${(stage.count / maxCount) * 100}%`,
@@ -106,8 +102,8 @@ export default function FunnelPage() {
               </div>
             ))}
           </div>
-          <div className={`mt-4 pt-4 border-t [border-color:var(--border)] text-xs ${sub}`}>
-            Overall conversion rate: <span className="font-bold [color:var(--accent)]">{funnel[3]?.rate || 0}%</span>
+          <div className={`mt-4 pt-4 border-t [border-color:rgba(255,255,255,0.06)] text-xs ${sub}`}>
+            Overall conversion rate: <span className="font-bold [color:#6B35E8]">{funnel[3]?.rate || 0}%</span>
             {" "}· Industry average: <span className="font-semibold">2.5-3%</span>
           </div>
         </div>
@@ -131,7 +127,7 @@ export default function FunnelPage() {
                       <span className={`text-sm font-semibold capitalize ${tx}`}>{s.source || "Direct"}</span>
                       <span className={`text-sm font-bold ${tx}`}>{s.count.toLocaleString()}</span>
                     </div>
-                    <div className="h-2 rounded-full [background:var(--bg-card)]">
+                    <div className="h-2 rounded-full [background:#181230]">
                       <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "linear-gradient(90deg,#7c3aed,#a855f7)" }} />
                     </div>
                   </div>
@@ -159,7 +155,7 @@ export default function FunnelPage() {
                 </thead>
                 <tbody>
                   {cohorts.map((c: any) => (
-                    <tr key={c.month} className="border-t [border-color:var(--border)]">
+                    <tr key={c.month} className="border-t [border-color:rgba(255,255,255,0.06)]">
                       <td className={`py-2 font-semibold ${tx}`}>{c.month}</td>
                       <td className={`py-2 text-center ${sub}`}>{c.totalCustomers}</td>
                       {[c.day30Rate, c.day60Rate, c.day90Rate].map((rate, i) => (
@@ -192,7 +188,7 @@ export default function FunnelPage() {
                 </thead>
                 <tbody>
                   {campaigns.map((c: any) => (
-                    <tr key={c.campaign} className="border-b [border-color:var(--border)] hover:[background:var(--bg-card)] transition-colors">
+                    <tr key={c.campaign} className="border-b [border-color:rgba(255,255,255,0.06)] hover:[background:#181230] transition-colors">
                       <td className={`px-4 py-3 font-mono text-xs font-semibold ${tx}`}>{c.campaign}</td>
                       <td className={`px-4 py-3 text-xs ${sub}`}>{c.clicks?.toLocaleString()}</td>
                       <td className={`px-4 py-3 text-xs ${sub}`}>{c.conversions}</td>

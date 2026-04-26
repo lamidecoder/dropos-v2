@@ -1,5 +1,4 @@
 "use client";
-﻿"use client";
 // ============================================================
 // Autopilot Dashboard
 // Path: frontend/src/app/dashboard/autopilot/page.tsx
@@ -10,8 +9,9 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence }               from "framer-motion";
-import { api }         from "@/lib/api";
-import { useAuthStore } from "@/store/auth.store";
+import { api }         from "../../../lib/api";
+import { useTheme } from "../../../components/layout/DashboardLayout";
+import { useAuthStore } from "../../../store/auth.store";
 import {
   Zap, Check, AlertCircle, ChevronRight,
   Eye, EyeOff, Loader2, ExternalLink,
@@ -31,8 +31,10 @@ const AUTOPILOT_TASKS = [
 ];
 
 export default function AutopilotPage() {
-  const user    = useAuthStore(s => s.user);
-  const storeId = user?.stores?.[0]?.id || "";
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:"rgba(255,255,255,0.38)", faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)" };
+  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const qc      = useQueryClient();
 
   const [showCJForm, setShowCJForm]   = useState(false);
@@ -55,7 +57,7 @@ export default function AutopilotPage() {
     onSuccess: (r) => {
       if (r.data.success) {
         toast.success("CJDropshipping connected! Autopilot is now active.");
-        qc.invalidateQueries(["autopilot-status", storeId]);
+        qc.invalidateQueries({queryKey:["autopilot-status", storeId]});
         setShowCJForm(false);
         setCJEmail("");
         setCJPass("");
@@ -70,7 +72,7 @@ export default function AutopilotPage() {
     mutationFn: async () => api.post("/fulfillment/disconnect", { storeId, provider: "cjdropshipping" }),
     onSuccess: () => {
       toast.success("CJ disconnected");
-      qc.invalidateQueries(["autopilot-status", storeId]);
+      qc.invalidateQueries({queryKey:["autopilot-status", storeId]});
     },
   });
 
