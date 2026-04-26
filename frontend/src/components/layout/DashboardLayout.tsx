@@ -16,6 +16,7 @@ import {
 import { useAuthStore } from "../../store/auth.store";
 import CreditWallet, { CreditBadge } from "../ui/CreditWallet";
 import KIROPulse from "../ui/KIROPulse";
+import CommandPalette from "../ui/CommandPalette";
 import PushNotificationPrompt from "../ui/PushNotificationPrompt";
 
 // ── CONTEXTS ──────────────────────────────────────────────────────────────────
@@ -80,6 +81,7 @@ const OWNER_NAV = [
     { href: "/dashboard/coupons",         icon: Tag,           label: "Coupons"         },
     { href: "/dashboard/flash-sales",     icon: Flame,         label: "Flash Sales"     },
     { href: "/dashboard/gift-cards",      icon: Gift,          label: "Gift Cards"      },
+    { href: "/dashboard/loyalty",         icon: Star,       label: "Loyalty"       },
     { href: "/dashboard/affiliates",      icon: Star,          label: "Affiliates"      },
     { href: "/dashboard/reviews",         icon: MessageSquare, label: "Reviews"         },
     { href: "/dashboard/emails",          icon: Mail,          label: "Emails"          },

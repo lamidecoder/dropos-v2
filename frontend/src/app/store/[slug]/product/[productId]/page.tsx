@@ -7,6 +7,7 @@ import { publicApi } from "../../../../../lib/api";
 import { useCartStore } from "../../../../../store/cart.store";
 import CartDrawer from "../../../../../components/store/CartDrawer";
 import { SocialProofPopup, StockUrgency, WhatsAppButton } from "../../../../../components/store/SocialProof";
+import UpsellSection from "../../../../../components/store/UpsellSection";
 import Link from "next/link";
 import {
   ShoppingBag, ArrowLeft, Minus, Plus, Package,
