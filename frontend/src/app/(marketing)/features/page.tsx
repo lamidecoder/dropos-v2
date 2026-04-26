@@ -1,60 +1,183 @@
-"use client";
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { Zap, BarChart3, Globe, ShoppingCart, Shield, Truck, Tag, Users } from "lucide-react";
+import { Zap, Globe, ShoppingCart, BarChart2, Package, Cpu, Shield, Truck, Image, Video, Users, ArrowRight, Check } from "lucide-react";
 
-const FEATURES = [
-  { icon: Zap,          title: "KIRO AI Co-pilot",      desc: "Your AI business partner that builds your store, finds products, fulfils orders, and grows revenue automatically." },
-  { icon: ShoppingCart, title: "One-click store setup",  desc: "Tell KIRO what you want to sell. Your store is live in 60 seconds. No design skills required." },
-  { icon: BarChart3,    title: "Real-time analytics",    desc: "Revenue charts, conversion funnels, and product performance updated live as orders come in." },
-  { icon: Globe,        title: "Global payments",        desc: "Paystack for Nigeria and Africa. Stripe for the world. Accept any currency, from anywhere." },
-  { icon: Truck,        title: "Automated fulfilment",   desc: "Connect AliExpress and CJDropshipping. KIRO places orders with suppliers the moment a customer pays." },
-  { icon: Tag,          title: "Smart promotions",       desc: "Flash sales, coupons, abandoned cart recovery, and volume discounts. KIRO runs them for you." },
-  { icon: Shield,       title: "Enterprise security",    desc: "End-to-end encryption, rate limiting, 2FA, and automatic fraud detection on every transaction." },
-  { icon: Users,        title: "Affiliate programme",    desc: "Turn your customers into a sales team. KIRO tracks referrals and pays commissions automatically." },
+export const metadata = { title: "Features — DropOS", description: "Everything you need to build and run a successful online store." };
+
+const SECTIONS = [
+  {
+    tag: "AI POWERED",
+    title: "KIRO — Your AI Business Partner",
+    desc: "Not a chatbot. A full business operator that builds, manages, and grows your store.",
+    color: "#8B5CF6",
+    features: [
+      "Build a complete store from one sentence",
+      "Write product descriptions and ad copy",
+      "Find trending products before they peak",
+      "Manage orders and customer messages",
+      "Monitor competitor prices and alert you",
+      "Generate TikTok scripts for any product",
+      "Revenue forecasting and anomaly detection",
+      "Morning briefings with actionable insights",
+    ],
+  },
+  {
+    tag: "COMMERCE",
+    title: "Everything built in. Nothing to install.",
+    desc: "Shopify charges extra for every feature. DropOS includes it all.",
+    color: "#06B6D4",
+    features: [
+      "Unlimited products and variants",
+      "20+ professional store templates",
+      "Custom domain connection",
+      "Coupons, flash sales, gift cards",
+      "Loyalty points programme",
+      "Abandoned cart recovery",
+      "Customer reviews and ratings",
+      "Affiliate programme for your store",
+    ],
+  },
+  {
+    tag: "PAYMENTS",
+    title: "Accept payment anywhere in the world.",
+    desc: "Every major payment method. No friction. No lost sales.",
+    color: "#10B981",
+    features: [
+      "Paystack (Nigeria, Ghana, South Africa)",
+      "Stripe (Global, 135+ currencies)",
+      "Flutterwave (Africa-wide)",
+      "Apple Pay and Google Pay",
+      "Pay on Delivery",
+      "Buy now, pay later (Klarna, Carbon)",
+      "Cryptocurrency (USDT, USDC)",
+      "Automatic currency conversion",
+    ],
+  },
+  {
+    tag: "FULFILMENT",
+    title: "Orders fulfilled automatically.",
+    desc: "KIRO connects to suppliers, places orders, and tracks shipments. You do nothing.",
+    color: "#F59E0B",
+    features: [
+      "AliExpress auto-import and order",
+      "CJDropshipping integration",
+      "Zendrop and Spocket connect",
+      "Auto tracking number import",
+      "Customer shipping notifications",
+      "Delay detection and alerts",
+      "DHL, FedEx, UPS, Royal Mail",
+      "GIG Logistics, Sendbox (Nigeria)",
+    ],
+  },
+  {
+    tag: "CONTENT STUDIO",
+    title: "Professional content. No team needed.",
+    desc: "AI-generated images, videos, and ads that actually convert.",
+    color: "#EC4899",
+    features: [
+      "Background removal in one click",
+      "Lifestyle scene generation",
+      "TikTok and Reels video scripts",
+      "AI-generated ad creatives",
+      "Auto-caption for all platforms",
+      "Smart crop for every format",
+      "Social media scheduling",
+      "30-day content calendar",
+    ],
+  },
+  {
+    tag: "ANALYTICS",
+    title: "Know exactly what drives your sales.",
+    desc: "Real data. Plain English. KIRO overlaid on every chart.",
+    color: "#6B35E8",
+    features: [
+      "Revenue, orders, and customer LTV",
+      "Cohort and retention analysis",
+      "Geographic heat map",
+      "Revenue attribution by source",
+      "Product return rate tracking",
+      "Ad spend ROI tracking",
+      "Funnel analysis",
+      "KIRO insights on every chart",
+    ],
+  },
 ];
 
 export default function FeaturesPage() {
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg-base)" }}>
-      <section className="pt-40 pb-24 px-6 text-center relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(107,53,232,0.08) 0%, transparent 70%)" }} />
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="relative z-10 max-w-3xl mx-auto">
-          <span className="inline-block text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-6"
-            style={{ background: "rgba(107,53,232,0.12)", color: "var(--violet-400)", border: "1px solid rgba(107,53,232,0.2)" }}>
-            Everything you need
-          </span>
-          <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>
-            Every tool your store needs. Run by AI.
-          </h1>
-          <p className="text-xl leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-            Stop stitching together 10 different apps. DropOS gives you everything in one place, powered by KIRO.
-          </p>
-        </motion.div>
-      </section>
-      <section className="py-24 px-6">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {FEATURES.map((f, i) => (
-            <motion.div key={f.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-              className="rounded-2xl p-6" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(107,53,232,0.12)" }}>
-                <f.icon size={18} style={{ color: "var(--violet-400)" }} />
+    <div style={{ background: "#07050F", color: "#fff", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');`}</style>
+
+      {/* Nav */}
+      <nav className="sticky top-0 z-50 px-6 h-16 flex items-center justify-between" style={{ background: "rgba(7,5,15,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+            <Zap size={13} color="white" />
+          </div>
+          <span className="font-black text-white">Drop<span style={{ color: "#8B5CF6" }}>OS</span></span>
+        </Link>
+        <Link href="/auth/register">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+            Start free <ArrowRight size={13} />
+          </button>
+        </Link>
+      </nav>
+
+      {/* Hero */}
+      <div className="text-center px-6 py-24">
+        <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#8B5CF6" }}>Features</p>
+        <h1 className="font-black mb-4" style={{ fontSize: "clamp(36px,5vw,64px)", letterSpacing: "-2px" }}>
+          One platform.<br />Everything included.
+        </h1>
+        <p className="text-base max-w-xl mx-auto mb-8" style={{ color: "rgba(255,255,255,0.45)" }}>
+          Shopify charges $79/month then nickels and dimes you for every feature. DropOS includes everything — powered by KIRO so it actually runs itself.
+        </p>
+        <Link href="/auth/register">
+          <button className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", boxShadow: "0 8px 32px rgba(107,53,232,0.4)" }}>
+            Start free — no credit card <ArrowRight size={14} />
+          </button>
+        </Link>
+      </div>
+
+      {/* Feature sections */}
+      <div className="max-w-5xl mx-auto px-6 space-y-20 pb-24">
+        {SECTIONS.map((section, i) => (
+          <div key={section.tag} className={`grid md:grid-cols-2 gap-12 items-center ${i % 2 === 1 ? "md:[direction:rtl]" : ""}`}>
+            <div style={{ direction: "ltr" }}>
+              <span className="text-xs font-black tracking-widest uppercase mb-3 block" style={{ color: section.color }}>{section.tag}</span>
+              <h2 className="font-black text-2xl sm:text-3xl mb-4 text-white" style={{ letterSpacing: "-1px" }}>{section.title}</h2>
+              <p className="text-sm mb-6 leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>{section.desc}</p>
+              <Link href="/auth/register">
+                <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: `linear-gradient(135deg,${section.color},${section.color}99)` }}>
+                  Get started <ArrowRight size={13} />
+                </button>
+              </Link>
+            </div>
+            <div className="p-6 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${section.color}25`, direction: "ltr" }}>
+              <div className="grid grid-cols-1 gap-2.5">
+                {section.features.map(f => (
+                  <div key={f} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${section.color}20` }}>
+                      <Check size={10} style={{ color: section.color }} strokeWidth={3} />
+                    </div>
+                    <span className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>{f}</span>
+                  </div>
+                ))}
               </div>
-              <h3 className="font-bold mb-2 text-sm" style={{ color: "var(--text-primary)" }}>{f.title}</h3>
-              <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>{f.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-      <section className="py-24 px-6">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-black tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>Start building your store today</h2>
-          <Link href="/auth/register" className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-white transition-all hover:opacity-90" style={{ background: "var(--violet-500)" }}>
-            Get started free
-          </Link>
-        </div>
-      </section>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div className="text-center px-6 py-20" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <h2 className="font-black text-3xl sm:text-5xl mb-4" style={{ letterSpacing: "-2px" }}>Ready to start?</h2>
+        <p className="text-base mb-8" style={{ color: "rgba(255,255,255,0.4)" }}>Free forever. No credit card. Launch in 60 seconds.</p>
+        <Link href="/auth/register">
+          <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white text-base" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", boxShadow: "0 12px 40px rgba(107,53,232,0.4)" }}>
+            Launch your store <ArrowRight size={16} />
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }

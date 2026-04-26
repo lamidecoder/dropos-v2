@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import SetupChecklist from "../../components/ui/SetupChecklist";
+import StoreHealthScore from "../../components/ui/StoreHealthScore";
 import {
   TrendingUp, ShoppingCart, Users, Package,
   Zap, Sparkles, ChevronRight, AlertCircle,
@@ -93,6 +94,7 @@ export default function DashboardPage() {
         </Link>
       </motion.div>
 
+      <StoreHealthScore />
       <SetupChecklist />
 
       {/* Stats grid - 2 col mobile, 4 col desktop */}

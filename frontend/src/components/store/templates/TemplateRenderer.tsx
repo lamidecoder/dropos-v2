@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShoppingCart, Search, Heart, Package, ChevronDown, Star, Truck, Shield, RotateCcw, ArrowRight, Menu, X } from "lucide-react";
 import { useCartStore } from "../../../store/cart.store";
 import { useCurrencyStore } from "../../../store/currency.store";
 import dynamic from "next/dynamic";
 import CartDrawer from "../CartDrawer";
+import FlashSaleBanner from "../FlashSaleBanner";
 
 const AbandonedCartTracker = dynamic(() => import("../AbandonedCartTracker"), { ssr: false });
 
@@ -31,6 +32,7 @@ export type TemplateProps = {
   onSort?:           (s: string) => void;
   setSort?:          (s: string) => void;
   isLoading?:        boolean;
+  flashSales?:       any[];
   [key: string]:     any;
 };
 
@@ -378,6 +380,9 @@ function ClassicTemplate(raw: TemplateProps) {
 
   return (
     <div className="min-h-screen" style={{ background: "#fafafa", fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif" }}>
+      {(props.flashSales || []).filter((s:any) => s.active && new Date(s.endsAt) > new Date()).slice(0,1).map((sale:any) => (
+        <FlashSaleBanner key={sale.id} sale={sale} brand={brand} />
+      ))}
       <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand}
         onCategory={onCategory} categories={categories} category={category} />
 
@@ -431,6 +436,12 @@ function DarkLuxeTemplate(raw: TemplateProps) {
 
   return (
     <div className="min-h-screen" style={{ background: "#07050F", fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif" }}>
+      {(props.flashSales || []).filter((s:any) => s.active && new Date(s.endsAt) > new Date()).slice(0,1).map((sale:any) => (
+        <FlashSaleBanner key={sale.id} sale={sale} brand={brand} />
+      ))}
+      {(props.flashSales || []).filter((s:any) => s.active && new Date(s.endsAt) > new Date()).slice(0,1).map((sale:any) => (
+        <FlashSaleBanner key={sale.id} sale={sale} brand={brand} />
+      ))}
       <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand} dark
         onCategory={onCategory} categories={categories} category={category} />
 
@@ -486,6 +497,9 @@ function MinimalTemplate(raw: TemplateProps) {
 
   return (
     <div className="min-h-screen" style={{ background: "#fff", fontFamily: "'Inter', system-ui, sans-serif" }}>
+      {(props.flashSales || []).filter((s:any) => s.active && new Date(s.endsAt) > new Date()).slice(0,1).map((sale:any) => (
+        <FlashSaleBanner key={sale.id} sale={sale} brand={brand} />
+      ))}
       <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand}
         onCategory={onCategory} categories={categories} category={category} />
 

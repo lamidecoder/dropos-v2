@@ -1,116 +1,122 @@
 "use client";
-import { useState, useRef } from "react";
-import { motion, useInView } from "framer-motion";
-import { Mail, MessageSquare, Twitter, Send, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import Link from "next/link";
+import { Zap, Mail, MessageSquare, ArrowRight, Check, Loader2 } from "lucide-react";
 
-function FadeUp({ children, delay = 0, className = "" }: any) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  return (
-    <motion.div ref={ref} initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }} className={className}>
-      {children}
-    </motion.div>
-  );
-}
+const API = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
 
 export default function ContactPage() {
-  const [sent, setSent] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [form, setForm]   = useState({ name: "", email: "", subject: "general", message: "" });
+  const [status, setStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setTimeout(() => setSent(true), 600);
+  const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
+
+  const submit = async () => {
+    if (!form.name || !form.email || !form.message) return;
+    setStatus("loading");
+    try {
+      await fetch(`${API}/contact`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
   };
 
-  const inp = "w-full bg-[var(--bg-card)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-disabled)] outline-none focus:border-amber-400/40 focus:bg-[var(--bg-elevated)] transition-all text-sm";
+  const inp = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-violet-500/60 transition-all";
 
   return (
-      <section className="pt-40 pb-24 px-6 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(196,168,76,0.05) 0%, transparent 70%)" }} />
-        <div className="max-w-6xl mx-auto relative z-10">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center mb-16">
-            <span className="text-amber-400 text-xs font-bold tracking-widest uppercase">Contact</span>
-            <h1 className="text-5xl md:text-6xl font-black text-[var(--text-primary)] tracking-tight mt-4 mb-4">
-              Let's{" "}
-              <span style={{ background: "linear-gradient(135deg,#c9a84c,#f0c040)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                talk
-              </span>
-            </h1>
-            <p className="text-[var(--text-secondary)] text-lg max-w-xl mx-auto">Questions, feedback, partnership - we read everything and respond fast.</p>
-          </motion.div>
+    <div style={{ background: "#07050F", color: "#fff", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');`}</style>
 
-          <div className="grid md:grid-cols-5 gap-8 items-start">
-            {/* Info */}
-            <FadeUp className="md:col-span-2 space-y-4">
-              {[
-                { icon: Mail,          title: "Email us",        value: "hello@dropos.io",       sub: "We reply within 24 hours" },
-                { icon: MessageSquare, title: "Live chat",        value: "Available in dashboard", sub: "Mon-Fri, 9am-6pm WAT" },
-                { icon: Twitter,       title: "Twitter / X",     value: "@DropOS_app",            sub: "Fastest for quick questions" },
-              ].map((c, i) => (
-                <div key={i} className="flex items-start gap-4 p-6 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] hover:border-amber-400/20 transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-amber-400/10 flex items-center justify-center flex-shrink-0">
-                    <c.icon size={16} className="text-amber-400" />
+      <nav className="sticky top-0 z-50 px-6 h-16 flex items-center justify-between" style={{ background: "rgba(7,5,15,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+            <Zap size={13} color="white" />
+          </div>
+          <span className="font-black text-white">Drop<span style={{ color: "#8B5CF6" }}>OS</span></span>
+        </Link>
+      </nav>
+
+      <div className="max-w-4xl mx-auto px-6 py-20">
+        <div className="text-center mb-14">
+          <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#8B5CF6" }}>Contact</p>
+          <h1 className="font-black text-4xl sm:text-5xl mb-4" style={{ letterSpacing: "-2px" }}>Get in touch</h1>
+          <p className="text-base" style={{ color: "rgba(255,255,255,0.4)" }}>We reply within 24 hours. For urgent issues, message KIRO in your dashboard.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-10">
+          {/* Contact options */}
+          <div className="space-y-4">
+            {[
+              { icon: MessageSquare, label: "General questions", desc: "Product, pricing, plans", color: "#8B5CF6" },
+              { icon: Zap,           label: "Technical support", desc: "Bugs, errors, help",       color: "#06B6D4" },
+              { icon: Mail,          label: "Enterprise",        desc: "Custom plans, API access", color: "#10B981" },
+            ].map(c => (
+              <div key={c.label} className="p-4 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: `${c.color}15` }}>
+                  <c.icon size={16} style={{ color: c.color }} />
+                </div>
+                <h3 className="font-bold text-sm text-white mb-1">{c.label}</h3>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{c.desc}</p>
+              </div>
+            ))}
+            <div className="p-4 rounded-2xl" style={{ background: "rgba(107,53,232,0.08)", border: "1px solid rgba(107,53,232,0.2)" }}>
+              <p className="text-xs font-semibold mb-1" style={{ color: "#A78BFA" }}>Fastest response</p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>Message KIRO in your dashboard. It knows every feature and can fix most issues instantly.</p>
+              <Link href="/auth/login" className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold" style={{ color: "#A78BFA" }}>
+                Open KIRO <ArrowRight size={10} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Form */}
+          <div className="md:col-span-2">
+            {status === "success" ? (
+              <div className="p-8 rounded-2xl text-center" style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.25)" }}>
+                <Check size={40} className="mx-auto mb-4" style={{ color: "#10B981" }} />
+                <h3 className="font-bold text-lg text-white mb-2">Message sent</h3>
+                <p style={{ color: "rgba(255,255,255,0.5)" }}>We'll reply within 24 hours.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Name</label>
+                    <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Your name" className={inp} />
                   </div>
                   <div>
-                    <div className="text-[var(--text-tertiary)] text-xs font-semibold uppercase tracking-wider mb-0.5">{c.title}</div>
-                    <div className="text-[var(--text-primary)] font-semibold text-sm">{c.value}</div>
-                    <div className="text-[var(--text-tertiary)] text-xs mt-0.5">{c.sub}</div>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Email</label>
+                    <input value={form.email} onChange={e => set("email", e.target.value)} type="email" placeholder="you@example.com" className={inp} />
                   </div>
                 </div>
-              ))}
-            </FadeUp>
-
-            {/* Form */}
-            <FadeUp delay={0.1} className="md:col-span-3">
-              <div className="p-8 rounded-3xl border border-[var(--border)] bg-[var(--bg-card)]">
-                {sent ? (
-                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-8">
-                    <div className="w-16 h-16 rounded-full bg-amber-400/10 flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle size={28} className="text-amber-400" />
-                    </div>
-                    <h3 className="text-[var(--text-primary)] text-xl font-black mb-2">Message sent!</h3>
-                    <p className="text-[var(--text-tertiary)] text-sm">We'll get back to you within 24 hours.</p>
-                    <button onClick={() => { setSent(false); setForm({ name: "", email: "", subject: "", message: "" }); }}
-                      className="mt-6 text-amber-400 hover:text-amber-300 text-sm font-semibold transition-colors">
-                      Send another message
-                    </button>
-                  </motion.div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-[var(--text-tertiary)] text-xs font-semibold uppercase tracking-wider block mb-1.5">Name</label>
-                        <input required value={form.name} onChange={e => setForm({...form, name: e.target.value})}
-                          placeholder="Your name" className={inp} />
-                      </div>
-                      <div>
-                        <label className="text-[var(--text-tertiary)] text-xs font-semibold uppercase tracking-wider block mb-1.5">Email</label>
-                        <input required type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})}
-                          placeholder="you@example.com" className={inp} />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[var(--text-tertiary)] text-xs font-semibold uppercase tracking-wider block mb-1.5">Subject</label>
-                      <input required value={form.subject} onChange={e => setForm({...form, subject: e.target.value})}
-                        placeholder="How can we help?" className={inp} />
-                    </div>
-                    <div>
-                      <label className="text-[var(--text-tertiary)] text-xs font-semibold uppercase tracking-wider block mb-1.5">Message</label>
-                      <textarea required rows={5} value={form.message} onChange={e => setForm({...form, message: e.target.value})}
-                        placeholder="Tell us everything…" className={`${inp} resize-none`} />
-                    </div>
-                    <button type="submit"
-                      className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-black bg-amber-400 hover:bg-amber-300 transition-all shadow-lg shadow-amber-400/20">
-                      Send message <Send size={14} />
-                    </button>
-                  </form>
-                )}
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Subject</label>
+                  <select value={form.subject} onChange={e => set("subject", e.target.value)} className={inp} style={{ cursor: "pointer" }}>
+                    <option value="general">General question</option>
+                    <option value="support">Technical support</option>
+                    <option value="billing">Billing issue</option>
+                    <option value="enterprise">Enterprise enquiry</option>
+                    <option value="partnership">Partnership</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Message</label>
+                  <textarea value={form.message} onChange={e => set("message", e.target.value)} rows={5} placeholder="How can we help?" className={inp} style={{ resize: "none" }} />
+                </div>
+                <button onClick={submit} disabled={!form.name||!form.email||!form.message||status==="loading"}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+                  {status==="loading" ? <><Loader2 size={14} className="animate-spin" />Sending</> : "Send message"}
+                </button>
+                {status==="error" && <p className="text-xs text-center text-red-400">Something went wrong. Try again or email hello@droposhq.com</p>}
               </div>
-            </FadeUp>
+            )}
           </div>
         </div>
-      </section>
+      </div>
+    </div>
   );
 }

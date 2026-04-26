@@ -91,12 +91,29 @@ export default function CheckoutPage() {
 
   const [summaryOpen,   setSummaryOpen]   = useState(false);
   const [couponCode,    setCouponCode]    = useState("");
+  const [giftCardCode,  setGiftCardCode]  = useState("");
+  const [giftCardBalance, setGiftCardBalance] = useState(0);
+  const [giftCardLoading, setGiftCardLoading] = useState(false);
   const [couponApplied, setCouponApplied] = useState<{ code: string; discount: number; label: string } | null>(null);
   const [couponError,   setCouponError]   = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
   const [shipping,      setShipping]      = useState(SHIPPING_OPTIONS_PLACEHOLDER[0]);
   const [paymentMethod, setPaymentMethod] = useState<"paystack" | "cod">("paystack");
   const [step,          setStep]          = useState<1|2>(1); // 1=info, 2=review
+
+
+  const applyGiftCard = async () => {
+    if (!giftCardCode.trim()) return;
+    setGiftCardLoading(true);
+    try {
+      const res = await publicApi.post(`/stores/public/${slug}/gift-cards/validate`, { code: giftCardCode.trim().toUpperCase() });
+      const { balance } = res.data.data;
+      setGiftCardBalance(balance);
+      toast.success(`Gift card applied! Balance: ${fmt(balance)}`);
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || "Invalid gift card code");
+    } finally { setGiftCardLoading(false); }
+  };
 
   const { data: store } = useQuery({
     queryKey: ["public-store", slug],
@@ -118,7 +135,7 @@ export default function CheckoutPage() {
   const shipCost   = freeShip ? 0 : shipping.price;
   const tax        = subtotal * taxRate;
   const discount   = couponApplied?.discount ?? 0;
-  const grandTotal = Math.max(0, subtotal + shipCost + tax - discount);
+  const grandTotal = Math.max(0, subtotal + shipCost + tax - discount - giftCardBalance);
 
   const { register, handleSubmit, getValues, formState: { errors } } = useForm<CheckoutForm>({
     resolver: zodResolver(schema),
