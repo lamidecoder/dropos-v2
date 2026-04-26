@@ -515,7 +515,7 @@ export default function LandingPage() {
             <span className="font-black text-white">Drop<span style={{ color: "#8B5CF6" }}>OS</span></span>
           </div>
           <div className="flex items-center gap-6 text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
-            {[["Features","#features"],["Pricing","#pricing"],["Privacy","/privacy"],["Terms","/terms"]].map(([l,h]) => (
+            {[["Features","#features"],["Pricing","#pricing"],["About","/about"],["Contact","/contact"],["Privacy","/privacy"],["Terms","/terms"]].map(([l,h]) => (
               <a key={l} href={h} className="hover:text-white transition-colors">{l}</a>
             ))}
           </div>

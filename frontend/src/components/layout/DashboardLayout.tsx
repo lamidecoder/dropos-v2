@@ -79,6 +79,7 @@ const OWNER_NAV = [
   ]},
   { id: "marketing", label: "Marketing", items: [
     { href: "/dashboard/coupons",         icon: Tag,           label: "Coupons"         },
+    { href: "/dashboard/bundle-builder",    icon: ShoppingBag,  label: "Bundle Builder" },
     { href: "/dashboard/flash-sales",     icon: Flame,         label: "Flash Sales"     },
     { href: "/dashboard/gift-cards",      icon: Gift,          label: "Gift Cards"      },
     { href: "/dashboard/referral",        icon: Gift,       label: "Referral"      },
@@ -86,6 +87,7 @@ const OWNER_NAV = [
     { href: "/dashboard/affiliates",      icon: Star,          label: "Affiliates"      },
     { href: "/dashboard/reviews",         icon: MessageSquare, label: "Reviews"         },
     { href: "/dashboard/emails",          icon: Mail,          label: "Emails"          },
+    { href: "/dashboard/comeback",          icon: RotateCcw,    label: "Win-Back"       },
     { href: "/dashboard/abandoned-carts", icon: ShoppingCart,  label: "Abandoned Carts" },
   ]},
   { id: "intelligence", label: "Intelligence", items: [
