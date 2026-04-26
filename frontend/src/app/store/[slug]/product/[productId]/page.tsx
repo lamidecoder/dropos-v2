@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { publicApi } from "../../../../../lib/api";
 import { useCartStore } from "../../../../../store/cart.store";
 import CartDrawer from "../../../../../components/store/CartDrawer";
+import { SocialProofPopup, StockUrgency, WhatsAppButton } from "../../../../../components/store/SocialProof";
 import Link from "next/link";
 import {
   ShoppingBag, ArrowLeft, Minus, Plus, Package,
@@ -26,6 +27,7 @@ export default function ProductPage() {
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [viewerCount] = useState(Math.floor(Math.random() * 12) + 3);
   const addItem = useCartStore(s => s.addItem);
   const cartCount = useCartStore(s => s.count);
   const toggleCart = useCartStore(s => s.toggleCart);
@@ -51,6 +53,7 @@ export default function ProductPage() {
   const discount = compare ? Math.round(((compare - price) / compare) * 100) : 0;
   const currency = store?.currency || "NGN";
 
+  // Wire social proof
   const handleAdd = () => {
     if (!product || !store) return;
     addItem({
