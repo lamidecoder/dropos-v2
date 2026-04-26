@@ -1,299 +1,288 @@
 "use client";
-// ============================================================
-// KIRO chat - Premium UI, Smooth UX
-// Path: frontend/src/components/kai/KAIChat.tsx
-//
-// Every detail matters:
-// - Smooth streaming text animation
-// - Beautiful message bubbles
-// - Quick chips for common actions
-// - Consent flow: SUGGEST → SHOW → EXPLAIN → ASK → WAIT → ACT
-// - Typing indicator that feels alive
-// - Empty state that makes seller want to talk to KAI
-// ============================================================
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence }                  from "framer-motion";
-import { useAuthStore }                             from "@/store/auth.store";
-import { api }                                      from "@/lib/api";
+import { useAuthStore }                             from "../../../store/auth.store";
+import { api }                                      from "../../../lib/api";
 import {
-  Send, Sparkles, ChevronRight, Copy,
-  Check, ThumbsUp, RotateCcw, Loader2,
-  Mic, Plus, X, TrendingUp, Package,
-  Zap, BarChart2, ShoppingCart,
+  Send, Sparkles, Copy, Check, ThumbsUp, RotateCcw,
+  Loader2, Plus, X, Zap, BarChart2, ShoppingCart,
+  Package, TrendingUp, Image, Paperclip, Mic,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-// ── Types ─────────────────────────────────────────────────────
 interface Message {
-  id:        string;
-  role:      "user" | "KIRO";
-  content:   string;
-  timestamp: Date;
+  id:          string;
+  role:        "user" | "KIRO";
+  content:     string;
+  timestamp:   Date;
   isStreaming?: boolean;
-  actions?:  Array<{ label: string; value: string }>;
-  dataCard?: any;
+  actions?:    Array<{ label: string; action: string; payload?: any }>;
+  dataCard?:   any;
+  type?:       "text" | "action_result" | "error";
 }
 
-// ── Quick suggestions by context ─────────────────────────────
 const QUICK_CHIPS = [
-  { icon: "📊", label: "My sales today",          prompt: "What are my sales today?" },
-  { icon: "📦", label: "Unfulfilled orders",       prompt: "Show me orders that need fulfillment" },
-  { icon: "🔥", label: "Trending products",        prompt: "What products are trending in my country right now?" },
-  { icon: "✍️", label: "Write TikTok script",      prompt: "Write me a TikTok script for my best-selling product" },
-  { icon: "🎯", label: "Winning ads",              prompt: "Show me winning ads for my niche" },
-  { icon: "💰", label: "Protect margins",          prompt: "Alert me if any product margin drops below 30%" },
-  { icon: "🔍", label: "Find supplier",            prompt: "Find me a better supplier for my products" },
-  { icon: "📈", label: "Revenue forecast",         prompt: "Forecast my revenue for the next 30 days" },
+  { icon: "📊", label: "Sales today",           prompt: "What are my sales today?" },
+  { icon: "📦", label: "Unfulfilled orders",     prompt: "Show me orders that need fulfillment" },
+  { icon: "🔥", label: "Trending products",      prompt: "What products are trending right now in Nigeria?" },
+  { icon: "✍️",  label: "TikTok script",          prompt: "Write a TikTok script for my best-selling product" },
+  { icon: "💰", label: "Protect margins",        prompt: "Alert me if any product margin drops below 30%" },
+  { icon: "📈", label: "Revenue forecast",       prompt: "Forecast my revenue for the next 30 days" },
+  { icon: "🎯", label: "Improve store score",   prompt: "How can I improve my store health score?" },
+  { icon: "🔍", label: "Find better supplier",   prompt: "Find me a better supplier for my top products" },
 ];
 
-// ── Typing indicator ──────────────────────────────────────────
+function KIROAvatar({ size = 32 }: { size?: number }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: size * 0.3, background: "linear-gradient(145deg,#6B35E8,#1A0D3D)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 12px rgba(107,53,232,0.4)" }}>
+      <Zap size={size * 0.45} color="white" />
+    </div>
+  );
+}
+
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1.5 px-4 py-3 rounded-2xl rounded-bl-sm self-start"
-      style={{ background: "rgba(255,255,255,0.06)", maxWidth: "80px" }}>
-      {[0,1,2].map(i => (
-        <motion.div key={i} className="w-1.5 h-1.5 rounded-full"
-          style={{ background: "#a78bfa" }}
-          animate={{ scale: [1,1.4,1], opacity: [0.4,1,0.4] }}
-          transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.18 }} />
+    <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "10px 14px", background: "rgba(255,255,255,0.04)", borderRadius: 14, width: "fit-content" }}>
+      {[0, 1, 2].map(i => (
+        <motion.div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: "#8B5CF6" }}
+          animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 0.9, delay: i * 0.18, repeat: Infinity }} />
       ))}
     </div>
   );
 }
 
-// ── KAI Avatar ────────────────────────────────────────────────
-function KAIAvatar({ size = 28 }: { size?: number }) {
+function ActionButtons({ actions, onAction }: { actions: Array<{ label: string; action: string; payload?: any }>; onAction: (a: any) => void }) {
+  if (!actions?.length) return null;
   return (
-    <motion.div
-      className="rounded-xl flex items-center justify-center font-black text-white flex-shrink-0"
-      style={{ width: size, height: size, background: "linear-gradient(135deg,#7c3aed,#5b21b6)", fontSize: size * 0.4 }}
-      animate={{ boxShadow: ["0 0 0px #7c3aed40","0 0 12px #7c3aed60","0 0 0px #7c3aed40"] }}
-      transition={{ duration: 3, repeat: Infinity }}>
-      K
-    </motion.div>
-  );
-}
-
-// ── Message Bubble ────────────────────────────────────────────
-function MessageBubble({ msg, onCopy }: { msg: Message; onCopy: (text: string) => void }) {
-  const isKai    = msg.role === "KIRO";
-  const [liked, setLiked] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const copyMsg = () => {
-    onCopy(msg.content);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <motion.div
-      className={`flex gap-2.5 ${isKai ? "justify-start" : "justify-end"}`}
-      initial={{ opacity: 0, y: 8, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", damping: 22, stiffness: 350 }}>
-
-      {isKai && <KAIAvatar size={26} />}
-
-      <div className={`group max-w-[82%] ${isKai ? "" : "items-end flex flex-col"}`}>
-        {/* Bubble */}
-        <div className="px-4 py-3 rounded-2xl text-sm leading-relaxed"
-          style={{
-            background:   isKai ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg,#7c3aed,#5b21b6)",
-            color:        "rgba(255,255,255,0.88)",
-            borderRadius: isKai ? "4px 18px 18px 18px" : "18px 4px 18px 18px",
-            boxShadow:    isKai ? "none" : "0 4px 16px rgba(124,58,237,0.3)",
-          }}>
-          <p className="whitespace-pre-wrap">{msg.content}</p>
-          {msg.isStreaming && (
-            <motion.span className="inline-block w-0.5 h-3.5 rounded-full ml-0.5 align-middle"
-              style={{ background: isKai ? "#a78bfa" : "rgba(255,255,255,0.6)" }}
-              animate={{ opacity: [1,0,1] }}
-              transition={{ duration: 0.8, repeat: Infinity }} />
-          )}
-        </div>
-
-        {/* KAI action buttons */}
-        {isKai && msg.actions && msg.actions.length > 0 && !msg.isStreaming && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {msg.actions.map((action, i) => (
-              <motion.button key={i}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium"
-                style={{ background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.3)", color: "#a78bfa" }}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.08 }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}>
-                <ChevronRight size={10} />
-                {action.label}
-              </motion.button>
-            ))}
-          </div>
-        )}
-
-        {/* Timestamp + micro actions */}
-        <div className={`flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isKai ? "" : "justify-end"}`}>
-          <span className="text-xs" style={{ color: "rgba(255,255,255,0.25)", fontSize: "10px" }}>
-            {msg.timestamp.toLocaleTimeString("en-NG", { hour:"2-digit", minute:"2-digit" })}
-          </span>
-          {isKai && (
-            <>
-              <button onClick={copyMsg} className="w-5 h-5 flex items-center justify-center rounded"
-                style={{ color: "rgba(255,255,255,0.3)" }}>
-                {copied ? <Check size={10} /> : <Copy size={10} />}
-              </button>
-              <button onClick={() => setLiked(!liked)}
-                style={{ color: liked ? "#fbbf24" : "rgba(255,255,255,0.3)" }}>
-                <ThumbsUp size={10} />
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ── Empty State ───────────────────────────────────────────────
-function KAIEmptyState({ onChip }: { onChip: (prompt: string) => void }) {
-  const store = useAuthStore(s => s.user?.stores?.[0] as any);
-  const name  = useAuthStore(s => s.user?.name?.split(" ")[0] || "there");
-
-  return (
-    <div className="flex flex-col items-center justify-center h-full px-4 text-center">
-      {/* KAI avatar large */}
-      <motion.div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black text-white mb-5"
-        style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)" }}
-        animate={{
-          boxShadow: ["0 0 0px #7c3aed30","0 0 32px #7c3aed50","0 0 0px #7c3aed30"],
-          scale: [1, 1.02, 1],
-        }}
-        transition={{ duration: 3, repeat: Infinity }}>
-        K
-      </motion.div>
-
-      <p className="text-lg font-semibold text-white mb-1">
-        Hi {name}, I'm KAI 👋
-      </p>
-      <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
-        Your AI business partner. I know your store,<br />
-        your orders, your products, and your market.
-      </p>
-
-      {/* Chips */}
-      <div className="w-full max-w-sm grid grid-cols-2 gap-2">
-        {QUICK_CHIPS.slice(0,6).map((chip, i) => (
-          <motion.button key={i}
-            onClick={() => onChip(chip.prompt)}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-left transition-all"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.65)" }}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.07 }}
-            whileHover={{ background: "rgba(124,58,237,0.12)", borderColor: "rgba(124,58,237,0.25)", color: "#a78bfa" }}
-            whileTap={{ scale: 0.97 }}>
-            <span className="text-base flex-shrink-0">{chip.icon}</span>
-            <span className="leading-tight">{chip.label}</span>
-          </motion.button>
-        ))}
-      </div>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+      {actions.map((a, i) => (
+        <button key={i} onClick={() => onAction(a)}
+          style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(107,53,232,0.35)", background: "rgba(107,53,232,0.1)", color: "#A78BFA", transition: "all 0.15s" }}>
+          {a.label}
+        </button>
+      ))}
     </div>
   );
 }
 
-// ── MAIN KIRO chat ─────────────────────────────────────────────
-export default function KAIChat({ storeId, className }: { storeId?: string; className?: string }) {
-  const user         = useAuthStore(s => s.user);
-  const effectiveStoreId = storeId || user?.stores?.[0]?.id || "";
+function MessageBubble({ msg, onAction, onCopy }: { msg: Message; onAction: (a: any) => void; onCopy: (t: string) => void }) {
+  const isKIRO = msg.role === "KIRO";
+  const [copied, setCopied] = useState(false);
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(msg.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    onCopy(msg.id);
+  };
+
+  if (isKIRO) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", gap: 10, alignItems: "flex-start", maxWidth: "100%" }}>
+        <KIROAvatar size={28} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {msg.isStreaming && msg.content === "" ? <TypingIndicator /> : (
+            <div>
+              {/* Render markdown-ish content cleanly */}
+              <div style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,0.88)", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                {msg.content.split("\n").map((line, i) => {
+                  if (line.startsWith("## ")) return <p key={i} style={{ fontWeight: 800, fontSize: 15, color: "#fff", margin: "12px 0 4px" }}>{line.slice(3)}</p>;
+                  if (line.startsWith("# ")) return <p key={i} style={{ fontWeight: 900, fontSize: 16, color: "#fff", margin: "14px 0 6px" }}>{line.slice(2)}</p>;
+                  if (line.startsWith("**") && line.endsWith("**")) return <p key={i} style={{ fontWeight: 700, color: "#fff" }}>{line.slice(2, -2)}</p>;
+                  if (line.startsWith("- ") || line.startsWith("• ")) return <p key={i} style={{ paddingLeft: 16, position: "relative", color: "rgba(255,255,255,0.75)" }}><span style={{ position: "absolute", left: 4, color: "#8B5CF6" }}>•</span>{line.slice(2)}</p>;
+                  if (/^\d+\./.test(line)) return <p key={i} style={{ paddingLeft: 20, color: "rgba(255,255,255,0.75)" }}>{line}</p>;
+                  if (line === "") return <br key={i} />;
+                  return <span key={i}>{line}{i < msg.content.split("\n").length - 1 ? "\n" : ""}</span>;
+                })}
+                {msg.isStreaming && <motion.span animate={{ opacity: [0, 1] }} transition={{ duration: 0.5, repeat: Infinity }} style={{ display: "inline-block", width: 2, height: 14, background: "#8B5CF6", marginLeft: 2, verticalAlign: "middle" }} />}
+              </div>
+              {!msg.isStreaming && msg.content && (
+                <button onClick={handleCopy} style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "rgba(255,255,255,0.25)", background: "none", border: "none", cursor: "pointer", padding: "2px 0" }}>
+                  {copied ? <><Check size={10} /> Copied</> : <><Copy size={10} /> Copy</>}
+                </button>
+              )}
+              {!msg.isStreaming && msg.actions && <ActionButtons actions={msg.actions} onAction={onAction} />}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", justifyContent: "flex-end" }}>
+      <div style={{ maxWidth: "75%", padding: "10px 14px", borderRadius: "18px 18px 4px 18px", background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", fontSize: 14, lineHeight: 1.6, color: "#fff", wordBreak: "break-word" }}>
+        {msg.content}
+      </div>
+    </motion.div>
+  );
+}
+
+interface KIROChatProps {
+  className?:        string;
+  storeId?:          string;
+  initialMessage?:   string;
+  compact?:          boolean;
+}
+
+export default function KIROChat({ className, storeId: propStoreId, initialMessage, compact }: KIROChatProps) {
+  const { user }           = useAuthStore();
+  const effectiveStoreId   = propStoreId || user?.stores?.[0]?.id || "";
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput]       = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [sessionId, setSessionId] = useState<string>("");
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef  = useRef<HTMLTextAreaElement>(null);
-  const abortRef  = useRef<AbortController | null>(null);
+  const [input,    setInput]    = useState(initialMessage || "");
+  const [loading,  setLoading]  = useState(false);
+  const [sessionId, setSessionId] = useState("");
+  const bottomRef  = useRef<HTMLDivElement>(null);
+  const inputRef   = useRef<HTMLTextAreaElement>(null);
+  const abortRef   = useRef<AbortController | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Auto-resize textarea
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-    e.target.style.height = "auto";
-    e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
-  };
+  useEffect(() => {
+    if (initialMessage) { setInput(initialMessage); inputRef.current?.focus(); }
+  }, [initialMessage]);
 
-  const send = useCallback(async (overrideInput?: string) => {
-    const text = (overrideInput || input).trim();
-    if (!text || loading) return;
+  // ── Execute KIRO action ────────────────────────────────────
+  const executeAction = useCallback(async (action: { action: string; payload?: any; label: string }) => {
+    const confirmMsg: Message = {
+      id: Date.now().toString(), role: "user",
+      content: `Execute: ${action.label}`, timestamp: new Date(),
+    };
+    const resultPlaceholder: Message = {
+      id: (Date.now() + 1).toString(), role: "KIRO",
+      content: "", timestamp: new Date(), isStreaming: true,
+    };
+    setMessages(prev => [...prev, confirmMsg, resultPlaceholder]);
+    setLoading(true);
 
-    setInput("");
-    if (inputRef.current) {
-      inputRef.current.style.height = "auto";
+    try {
+      const res = await api.post("/kiro/action", {
+        action:  action.action,
+        payload: action.payload || {},
+        storeId: effectiveStoreId,
+      });
+      const result = res.data?.data?.result || res.data?.result || "Done.";
+      setMessages(prev => prev.map(m =>
+        m.id === resultPlaceholder.id ? { ...m, content: result, isStreaming: false } : m
+      ));
+      toast.success(`KIRO: ${action.label} complete`);
+    } catch (err: any) {
+      setMessages(prev => prev.map(m =>
+        m.id === resultPlaceholder.id ? { ...m, content: "I could not complete that action - the backend may be offline.", isStreaming: false } : m
+      ));
+    } finally {
+      setLoading(false);
     }
+  }, [effectiveStoreId]);
+
+  // ── Send message with real SSE streaming ──────────────────
+  const send = useCallback(async (overrideText?: string) => {
+    const text = (overrideText || input).trim();
+    if (!text || loading) return;
+    setInput("");
 
     const userMsg: Message = {
-      id:        Date.now().toString(),
-      role:      "user",
-      content:   text,
-      timestamp: new Date(),
+      id: Date.now().toString(), role: "user",
+      content: text, timestamp: new Date(),
+    };
+    const kiroPlaceholder: Message = {
+      id: (Date.now() + 1).toString(), role: "KIRO",
+      content: "", timestamp: new Date(), isStreaming: true,
     };
 
-    const kaiPlaceholder: Message = {
-      id:          (Date.now() + 1).toString(),
-      role:        "KIRO",
-      content:     "",
-      timestamp:   new Date(),
-      isStreaming: true,
-    };
-
-    setMessages(prev => [...prev, userMsg, kaiPlaceholder]);
+    setMessages(prev => [...prev, userMsg, kiroPlaceholder]);
     setLoading(true);
 
     try {
       abortRef.current = new AbortController();
 
-      const res = await api.post("/kai/chat", {
-        message:   text,
-        storeId:   effectiveStoreId,
-        sessionId: sessionId || undefined,
-      });
+      // Try real SSE streaming first
+      const streamRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api"}/kiro/smart-chat`,
+        {
+          method:  "POST",
+          headers: {
+            "Content-Type":  "application/json",
+            "Authorization": `Bearer ${useAuthStore.getState().accessToken || ""}`,
+            "Accept":        "text/event-stream",
+          },
+          body:   JSON.stringify({ message: text, storeId: effectiveStoreId, sessionId: sessionId || undefined }),
+          signal: abortRef.current.signal,
+        }
+      );
 
-      const { reply, session_id, actions } = res.data.data || res.data;
+      if (streamRes.ok && streamRes.headers.get("content-type")?.includes("text/event-stream")) {
+        // Real SSE streaming
+        const reader  = streamRes.body!.getReader();
+        const decoder = new TextDecoder();
+        let fullText  = "";
+        let actions: any[] = [];
 
-      if (session_id && !sessionId) setSessionId(session_id);
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-      // Simulate smooth streaming
-      let displayed = "";
-      const words   = (reply || "I'm here! How can I help?").split(" ");
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n");
 
-      for (let i = 0; i < words.length; i++) {
-        await new Promise(r => setTimeout(r, 18 + Math.random() * 10));
-        displayed += (i === 0 ? "" : " ") + words[i];
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6).trim();
+              if (data === "[DONE]") {
+                setMessages(prev => prev.map(m =>
+                  m.id === kiroPlaceholder.id ? { ...m, content: fullText, isStreaming: false, actions } : m
+                ));
+                break;
+              }
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.type === "text_delta" && parsed.delta) {
+                  fullText += parsed.delta;
+                  setMessages(prev => prev.map(m =>
+                    m.id === kiroPlaceholder.id ? { ...m, content: fullText, isStreaming: true } : m
+                  ));
+                  bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+                } else if (parsed.type === "actions") {
+                  actions = parsed.actions || [];
+                } else if (parsed.session_id && !sessionId) {
+                  setSessionId(parsed.session_id);
+                }
+              } catch (_) {
+                // Non-JSON line, skip
+              }
+            }
+          }
+        }
+      } else {
+        // Fallback: non-streaming endpoint
+        const res = await api.post("/kiro/smart-chat", {
+          message: text, storeId: effectiveStoreId, sessionId: sessionId || undefined,
+        });
+        const { reply, session_id, actions = [] } = res.data.data || res.data;
+        if (session_id && !sessionId) setSessionId(session_id);
+
+        // Animate word-by-word for non-streaming fallback
+        const words = (reply || "I am here. How can I help?").split(" ");
+        let displayed = "";
+        for (let i = 0; i < words.length; i++) {
+          await new Promise(r => setTimeout(r, 15 + Math.random() * 8));
+          displayed += (i === 0 ? "" : " ") + words[i];
+          setMessages(prev => prev.map(m =>
+            m.id === kiroPlaceholder.id ? { ...m, content: displayed, isStreaming: true } : m
+          ));
+          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
         setMessages(prev => prev.map(m =>
-          m.id === kaiPlaceholder.id
-            ? { ...m, content: displayed, isStreaming: true }
-            : m
+          m.id === kiroPlaceholder.id ? { ...m, content: reply || "I am here. How can I help?", isStreaming: false, actions } : m
         ));
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
       }
-
-      // Mark streaming done
-      setMessages(prev => prev.map(m =>
-        m.id === kaiPlaceholder.id
-          ? { ...m, content: reply || "I'm here! How can I help?", isStreaming: false, actions }
-          : m
-      ));
     } catch (err: any) {
       if (err.name === "AbortError") return;
       setMessages(prev => prev.map(m =>
-        m.id === kaiPlaceholder.id
-          ? { ...m, content: "Something went wrong - please try again.", isStreaming: false }
-          : m
+        m.id === kiroPlaceholder.id ? { ...m, content: "Something went wrong. Please check your connection and try again.", isStreaming: false } : m
       ));
     } finally {
       setLoading(false);
@@ -305,104 +294,97 @@ export default function KAIChat({ storeId, className }: { storeId?: string; clas
   };
 
   const clear = () => { setMessages([]); setSessionId(""); };
-
   const isEmpty = messages.length === 0;
 
   return (
     <div className={`flex flex-col ${className || "h-full"}`}
-      style={{ background: "#0a0a14" }}>
+      style={{ background: "#0a0a14", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
 
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="flex items-center gap-2.5">
-          <KAIAvatar size={30} />
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <KIROAvatar size={30} />
           <div>
-            <p className="text-sm font-semibold text-white">KIRO</p>
-            <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#34d399" }} />
-              <p style={{ color: "#34d399", fontSize: "10px" }}>Active · Watching your store</p>
+            <p style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>KIRO</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <motion.div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981" }}
+                animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2, repeat: Infinity }} />
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>Your AI business partner</p>
             </div>
           </div>
         </div>
-        {!isEmpty && (
-          <button onClick={clear}
-            className="w-7 h-7 flex items-center justify-center rounded-xl text-xs"
-            style={{ color: "rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.05)" }}>
-            <RotateCcw size={12} />
+        {messages.length > 0 && (
+          <button onClick={clear} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "rgba(255,255,255,0.35)", fontSize: 11, cursor: "pointer" }}>
+            Clear
           </button>
         )}
       </div>
 
-      {/* ── Messages ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      {/* Messages */}
+      <div className="hide-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 16 }}>
         {isEmpty ? (
-          <KAIEmptyState onChip={(prompt) => send(prompt)} />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "24px 16px" }}>
+            <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              style={{ width: 64, height: 64, borderRadius: 20, background: "linear-gradient(145deg,#6B35E8,#1A0D3D)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, boxShadow: "0 8px 32px rgba(107,53,232,0.4)" }}>
+              <Zap size={28} color="white" />
+            </motion.div>
+            <p style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8, letterSpacing: "-0.03em" }}>
+              Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"} 👋
+            </p>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.38)", marginBottom: 24, maxWidth: 300, lineHeight: 1.6 }}>
+              I am KIRO. I run your store, find winning products, write your ads, and grow your revenue. What do you need?
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 380 }}>
+              {QUICK_CHIPS.map(chip => (
+                <button key={chip.label} onClick={() => send(chip.prompt)}
+                  style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)", cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(107,53,232,0.4)")}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}>
+                  <span style={{ fontSize: 16, display: "block", marginBottom: 2 }}>{chip.icon}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>{chip.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         ) : (
-          <>
-            {messages.map(msg => (
-              <MessageBubble key={msg.id} msg={msg}
-                onCopy={text => { navigator.clipboard.writeText(text); toast.success("Copied!"); }} />
-            ))}
-            {loading && messages[messages.length - 1]?.isStreaming === false && (
-              <div className="flex gap-2.5 justify-start">
-                <KAIAvatar size={26} />
-                <TypingIndicator />
-              </div>
-            )}
-          </>
+          messages.map(msg => (
+            <MessageBubble key={msg.id} msg={msg} onAction={executeAction} onCopy={() => {}} />
+          ))
         )}
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Quick chips (scrollable) ── */}
-      {!isEmpty && (
-        <div className="px-3 pb-2 flex-shrink-0">
-          <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-            {QUICK_CHIPS.map((chip, i) => (
-              <button key={i} onClick={() => send(chip.prompt)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs flex-shrink-0 transition-all"
-                style={{ background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.2)", color: "#a78bfa" }}>
-                {chip.icon} {chip.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Input ── */}
-      <div className="px-3 pb-4 flex-shrink-0">
-        <div className="flex items-end gap-2 px-3.5 py-2.5 rounded-2xl"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+      {/* Input */}
+      <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, padding: "8px 8px 8px 14px", transition: "border-color 0.15s" }}>
           <textarea
             ref={inputRef}
             value={input}
-            onChange={handleInputChange}
+            onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask KIRO anything about your business..."
+            placeholder="Ask KIRO anything about your store..."
             rows={1}
-            className="flex-1 bg-transparent outline-none resize-none"
-            style={{ color: "rgba(255,255,255,0.85)", fontSize: "14px", lineHeight: "1.5", maxHeight: "120px" }}
             disabled={loading}
+            style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: 14, lineHeight: 1.6, resize: "none", maxHeight: 120, fontFamily: "inherit" }}
+            onInput={e => {
+              const t = e.target as HTMLTextAreaElement;
+              t.style.height = "auto";
+              t.style.height = Math.min(t.scrollHeight, 120) + "px";
+            }}
           />
           <motion.button
             onClick={() => send()}
             disabled={!input.trim() || loading}
-            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{
-              background: input.trim() ? "linear-gradient(135deg,#7c3aed,#5b21b6)" : "rgba(255,255,255,0.05)",
-              boxShadow:  input.trim() ? "0 4px 12px rgba(124,58,237,0.4)" : "none",
-            }}
-            whileHover={input.trim() ? { scale: 1.05 } : {}}
-            whileTap={input.trim() ? { scale: 0.95 } : {}}>
+            whileTap={{ scale: 0.92 }}
+            style={{ width: 34, height: 34, borderRadius: 10, border: "none", cursor: input.trim() && !loading ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: input.trim() && !loading ? "linear-gradient(135deg,#6B35E8,#3D1C8A)" : "rgba(255,255,255,0.06)", transition: "all 0.15s" }}>
             {loading
-              ? <Loader2 size={14} className="animate-spin" style={{ color: "#a78bfa" }} />
-              : <Send size={14} style={{ color: input.trim() ? "#fff" : "rgba(255,255,255,0.25)" }} />
+              ? <Loader2 size={15} color="rgba(255,255,255,0.5)" style={{ animation: "spin 1s linear infinite" }} />
+              : <Send size={14} color={input.trim() ? "white" : "rgba(255,255,255,0.25)"} />
             }
           </motion.button>
         </div>
-        <p className="text-center mt-1.5" style={{ color: "rgba(255,255,255,0.2)", fontSize: "10px" }}>
-          Enter to send · Shift+Enter for new line
+        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.15)", textAlign: "center", marginTop: 8 }}>
+          KIRO can make mistakes. Always verify important decisions.
         </p>
       </div>
     </div>

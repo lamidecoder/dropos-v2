@@ -33,10 +33,29 @@ const schema = z.object({
 type CheckoutForm = z.infer<typeof schema>;
 
 // ── Shipping options ─────────────────────────────────────────────────────────
-const SHIPPING_OPTIONS = [
-  { id: "standard", label: "Standard Shipping",  desc: "5-10 business days", price: 5.99, icon: Truck },
-  { id: "express",  label: "Express Shipping",   desc: "2-3 business days",  price: 14.99,icon: Zap   },
-  { id: "free",     label: "Free Shipping",       desc: "7-14 business days", price: 0,    icon: Globe },
+// Shipping options built from store's zone config or sensible NG defaults
+const getShippingOptions = (store: any) => {
+  if (store?.shippingZones?.length) {
+    return store.shippingZones.map((z: any) => ({
+      id:    z.id,
+      label: z.name === "express" ? "Express Delivery" : z.name === "cod" ? "Pay on Delivery" : "Standard Delivery",
+      desc:  z.estimatedDays ? `${z.estimatedDays} business days` : "3-7 business days",
+      price: z.rate || 0,
+      icon:  z.name === "express" ? Zap : z.name === "cod" ? Package : Truck,
+      cod:   z.name === "cod" || z.cashOnDelivery,
+    }));
+  }
+  // Nigerian defaults
+  return [
+    { id: "standard", label: "Standard Delivery",  desc: "3-7 business days",  price: 2500, icon: Truck,   cod: false },
+    { id: "express",  label: "Express Delivery",   desc: "1-2 business days",  price: 5000, icon: Zap,     cod: false },
+    { id: "cod",      label: "Pay on Delivery",    desc: "3-7 business days",  price: 2500, icon: Package, cod: true  },
+  ];
+};
+const SHIPPING_OPTIONS_PLACEHOLDER = [
+  { id: "standard", label: "Standard Delivery",  desc: "3-7 business days",  price: 2500, icon: Truck,   cod: false },
+  { id: "express",  label: "Express Delivery",   desc: "1-2 business days",  price: 5000, icon: Zap,     cod: false },
+  { id: "cod",      label: "Pay on Delivery",    desc: "3-7 business days",  price: 2500, icon: Package, cod: true  },
 ];
 
 // ── Trust badges ─────────────────────────────────────────────────────────────
@@ -75,7 +94,8 @@ export default function CheckoutPage() {
   const [couponApplied, setCouponApplied] = useState<{ code: string; discount: number; label: string } | null>(null);
   const [couponError,   setCouponError]   = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
-  const [shipping,      setShipping]      = useState(SHIPPING_OPTIONS[0]);
+  const [shipping,      setShipping]      = useState(SHIPPING_OPTIONS_PLACEHOLDER[0]);
+  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "cod">("paystack");
   const [step,          setStep]          = useState<1|2>(1); // 1=info, 2=review
 
   const { data: store } = useQuery({
@@ -83,6 +103,8 @@ export default function CheckoutPage() {
     queryFn:  () => publicApi.get(`/stores/public/${slug}`).then(r => r.data.data),
   });
 
+  const shippingOptions = store ? getShippingOptions(store) : SHIPPING_OPTIONS_PLACEHOLDER;
+  useEffect(() => { if (store) setShipping(shippingOptions[0]); }, [store?.id]);
   const brand    = store?.primaryColor || "#7c3aed";
   const currency = store?.currency     || "USD";
   const { format: fmtCurrency, displayCurrency, setBaseCurrency } = useCurrencyStore();
@@ -317,7 +339,7 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <StepBadge n={3} label="Shipping Method" brand={brand} />
                 <div className="space-y-2">
-                  {SHIPPING_OPTIONS.map(opt => {
+                  {shippingOptions.map(opt => {
                     const isActive = shipping.id === opt.id;
                     const isFreeByStore = freeShip && opt.id === "free";
                     return (
