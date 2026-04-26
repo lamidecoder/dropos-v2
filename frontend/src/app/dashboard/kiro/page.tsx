@@ -1,280 +1,230 @@
 "use client";
-﻿"use client";
-// Path: frontend/src/app/dashboard/kiro/page.tsx
-
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
 import { useTheme } from "../../../components/layout/DashboardLayout";
+import KIROChat from "../../../components/kai/KAIChat";
 import {
-  Zap, Send, Paperclip, Mic, MoreHorizontal,
-  ChevronRight, Sparkles, TrendingUp, Package,
-  ShoppingCart, BarChart2, Trash2, Copy, RefreshCw,
-  MessageSquare, Clock, Star, ChevronDown,
+  Plus, MessageSquare, Trash2, Pin, Search,
+  MoreHorizontal, ChevronLeft, Zap, Edit2
 } from "lucide-react";
 
-const V = { v900: "#1A0D3D", v700: "#3D1C8A", v600: "#5428C8", v500: "#6B35E8", v400: "#8B5CF6", v300: "#A78BFA", v200: "#C4B5FD", fuchsia: "#C026D3", cyan: "#06B6D4" };
+const V = { v500: "#6B35E8", v400: "#8B5CF6", v300: "#A78BFA" };
 
-const T = {
-  dark:  { bg: "#06040D", surface: "#0D0918", card: "#181230", border: "rgba(255,255,255,0.06)", text: "#fff", muted: "rgba(255,255,255,0.38)", faint: "rgba(255,255,255,0.12)" },
-  light: { bg: "#F4F2FF", surface: "#fff",    card: "#fff",    border: "rgba(15,5,32,0.07)",    text: "#0D0918", muted: "rgba(13,9,24,0.45)", faint: "rgba(13,9,24,0.08)" },
-};
+function groupByDate(conversations: any[]) {
+  const now   = new Date();
+  const today = now.toDateString();
+  const yest  = new Date(now.setDate(now.getDate() - 1)).toDateString();
+  const groups: Record<string, any[]> = { Today: [], Yesterday: [], "This week": [], Older: [] };
 
-const SUGGESTIONS = [
-  { icon: TrendingUp,   label: "Analyse my store performance" },
-  { icon: Package,      label: "Find winning products to sell" },
-  { icon: ShoppingCart, label: "Help me recover abandoned carts" },
-  { icon: BarChart2,    label: "Generate a sales forecast" },
-  { icon: Sparkles,     label: "Write product descriptions" },
-  { icon: TrendingUp,   label: "Suggest pricing strategy" },
-];
+  conversations.forEach(c => {
+    const d = new Date(c.updatedAt || c.createdAt).toDateString();
+    if (d === today)      groups["Today"].push(c);
+    else if (d === yest)  groups["Yesterday"].push(c);
+    else if (Date.now() - new Date(c.updatedAt || c.createdAt).getTime() < 7 * 86400000)
+                          groups["This week"].push(c);
+    else                  groups["Older"].push(c);
+  });
 
-const HISTORY = [
-  { id: "1", title: "Product research for sneakers", time: "2h ago" },
-  { id: "2", title: "Store SEO optimisation tips",   time: "Yesterday" },
-  { id: "3", title: "Supplier comparison analysis",  time: "2 days ago" },
-];
-
-interface Message {
-  id: string;
-  role: "user" | "kiro";
-  content: string;
-  time: string;
+  return groups;
 }
 
 export default function KIROPage() {
   const { theme } = useTheme();
-  const t = theme === "dark" ? T.dark : T.light;
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const isDark    = theme === "dark";
+  const t = isDark
+    ? { card: "#181230", border: "rgba(255,255,255,0.06)", text: "#fff", muted: "rgba(255,255,255,0.38)", faint: "rgba(255,255,255,0.04)", sidebar: "#0D0918" }
+    : { card: "#fff",    border: "rgba(15,5,32,0.07)",    text: "#0D0918", muted: "rgba(13,9,24,0.45)", faint: "rgba(15,5,32,0.03)", sidebar: "#f8f7ff" };
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const user    = useAuthStore(s => s.user);
+  const storeId = user?.stores?.[0]?.id;
+  const qc      = useQueryClient();
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content: input.trim(), time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) };
-    setMessages(prev => [...prev, userMsg]);
-    setInput("");
-    setLoading(true);
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
+  const [activeId,    setActiveId]    = useState<string | null>(null);
+  const [showSidebar, setShowSidebar] = useState(false); // mobile
+  const [search,      setSearch]      = useState("");
+  const [editingId,   setEditingId]   = useState<string | null>(null);
+  const [editTitle,   setEditTitle]   = useState("");
 
-    setTimeout(() => {
-      const kiroMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "kiro",
-        content: "I'm analysing your store data now. Give me a moment to pull together the insights you need. Once the Anthropic API key is fully connected, I'll be able to give you detailed, real-time analysis of your store performance, product trends, and actionable recommendations.",
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMessages(prev => [...prev, kiroMsg]);
-      setLoading(false);
-    }, 1500);
-  };
+  const { data: conversations = [] } = useQuery({
+    queryKey: ["kiro-conversations"],
+    queryFn:  () => api.get("/kai/conversations").then(r => r.data.data || []),
+    enabled:  !!user?.id,
+    staleTime: 30000,
+  });
 
-  const handleKey = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
-  };
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => api.delete(`/kai/conversation/${id}`),
+    onSuccess:  (_, id) => {
+      qc.invalidateQueries({ queryKey: ["kiro-conversations"] });
+      if (activeId === id) setActiveId(null);
+    },
+  });
 
-  const autoResize = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 160) + "px";
+  const updateMut = useMutation({
+    mutationFn: ({ id, title, pinned }: any) => api.patch(`/kai/conversation/${id}`, { title, pinned }),
+    onSuccess:  () => { qc.invalidateQueries({ queryKey: ["kiro-conversations"] }); setEditingId(null); },
+  });
+
+  const filtered = conversations.filter((c: any) =>
+    !search || c.title?.toLowerCase().includes(search.toLowerCase())
+  );
+  const pinned    = filtered.filter((c: any) => c.pinned);
+  const unpinned  = filtered.filter((c: any) => !c.pinned);
+  const groups    = groupByDate(unpinned);
+
+  function ConversationItem({ c }: { c: any }) {
+    const active = activeId === c.id;
+    const [menu, setMenu] = useState(false);
+
+    if (editingId === c.id) {
+      return (
+        <div className="px-2 py-1">
+          <input
+            autoFocus value={editTitle}
+            onChange={e => setEditTitle(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter") updateMut.mutate({ id: c.id, title: editTitle });
+              if (e.key === "Escape") setEditingId(null);
+            }}
+            className="w-full px-2 py-1.5 rounded-lg text-xs outline-none"
+            style={{ background: t.faint, border: `1px solid ${V.v400}`, color: t.text, fontFamily: "inherit" }}
+          />
+        </div>
+      );
     }
-  };
 
-  const isEmpty = messages.length === 0;
+    return (
+      <div
+        onClick={() => { setActiveId(c.id); setShowSidebar(false); }}
+        className="group relative flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all mx-1"
+        style={{ background: active ? "rgba(107,53,232,0.12)" : "transparent", border: `1px solid ${active ? "rgba(107,53,232,0.25)" : "transparent"}` }}>
+        {c.pinned && <Pin size={9} style={{ color: V.v400, flexShrink: 0 }} />}
+        <p className="flex-1 text-xs font-medium truncate" style={{ color: active ? V.v300 : t.muted }}>
+          {c.title || "New conversation"}
+        </p>
+
+        {/* Actions */}
+        <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 flex-shrink-0">
+          <button onClick={e => { e.stopPropagation(); setEditingId(c.id); setEditTitle(c.title || ""); }}
+            className="p-1 rounded" style={{ color: t.muted, background: "none", border: "none", cursor: "pointer" }}>
+            <Edit2 size={10} />
+          </button>
+          <button onClick={e => { e.stopPropagation(); updateMut.mutate({ id: c.id, pinned: !c.pinned }); }}
+            className="p-1 rounded" style={{ color: t.muted, background: "none", border: "none", cursor: "pointer" }}>
+            <Pin size={10} />
+          </button>
+          <button onClick={e => { e.stopPropagation(); deleteMut.mutate(c.id); }}
+            className="p-1 rounded" style={{ color: "#EF4444", background: "none", border: "none", cursor: "pointer" }}>
+            <Trash2 size={10} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  function Sidebar() {
+    return (
+      <div className="flex flex-col h-full" style={{ background: t.sidebar }}>
+        {/* Sidebar header */}
+        <div className="flex items-center justify-between px-3 py-3" style={{ borderBottom: `1px solid ${t.border}` }}>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+              <Zap size={11} color="white" />
+            </div>
+            <span className="text-sm font-black" style={{ color: t.text }}>KIRO</span>
+          </div>
+          <button onClick={() => setActiveId(null)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold"
+            style={{ background: "rgba(107,53,232,0.1)", color: V.v300, border: "none", cursor: "pointer" }}>
+            <Plus size={11} /> New
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="px-2 py-2">
+          <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg" style={{ background: t.faint, border: `1px solid ${t.border}` }}>
+            <Search size={11} style={{ color: t.muted }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search conversations"
+              className="flex-1 text-xs bg-transparent border-none outline-none"
+              style={{ color: t.text, fontFamily: "inherit" }} />
+          </div>
+        </div>
+
+        {/* Conversation list */}
+        <div className="flex-1 overflow-y-auto py-1" style={{ scrollbarWidth: "none" }}>
+          {pinned.length > 0 && (
+            <div className="mb-2">
+              <p className="px-4 py-1 text-[9px] font-bold uppercase tracking-widest" style={{ color: t.muted }}>Pinned</p>
+              {pinned.map((c: any) => <ConversationItem key={c.id} c={c} />)}
+            </div>
+          )}
+
+          {Object.entries(groups).map(([label, convs]) =>
+            convs.length > 0 ? (
+              <div key={label} className="mb-2">
+                <p className="px-4 py-1 text-[9px] font-bold uppercase tracking-widest" style={{ color: t.muted }}>{label}</p>
+                {convs.map((c: any) => <ConversationItem key={c.id} c={c} />)}
+              </div>
+            ) : null
+          )}
+
+          {filtered.length === 0 && (
+            <div className="text-center py-8 px-4">
+              <MessageSquare size={24} style={{ color: t.muted, opacity: 0.3, margin: "0 auto 8px" }} />
+              <p className="text-xs" style={{ color: t.muted }}>No conversations yet</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ display: "flex", height: "calc(100vh - 60px - 56px)", gap: 16, maxWidth: 1400, margin: "0 auto" }}>
+    <div className="flex h-full -m-5 overflow-hidden" style={{ height: "calc(100vh - 56px)" }}>
+      {/* Sidebar — desktop */}
+      <div className="hidden md:block flex-shrink-0 border-r" style={{ width: 220, borderColor: t.border }}>
+        <Sidebar />
+      </div>
 
-      {/* History Sidebar */}
-      <motion.aside
-        animate={{ width: showHistory ? 260 : 0, opacity: showHistory ? 1 : 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        style={{ overflow: "hidden", flexShrink: 0 }}
-      >
-        <div style={{ width: 260, height: "100%", borderRadius: 16, background: t.card, border: `1px solid ${t.border}`, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <div style={{ padding: "16px 16px 12px", borderBottom: `1px solid ${t.border}` }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: t.text, letterSpacing: "-0.01em" }}>Conversation History</span>
-          </div>
-          <div style={{ flex: 1, overflowY: "auto", padding: 8 }}>
-            {HISTORY.map(h => (
-              <div key={h.id} style={{ padding: "10px 12px", borderRadius: 10, cursor: "pointer", marginBottom: 2, transition: "background 0.15s" }}
-                onMouseEnter={e => (e.currentTarget.style.background = t.faint)}
-                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: t.text, marginBottom: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{h.title}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: t.muted }}>
-                  <Clock size={9} />{h.time}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div style={{ padding: 12, borderTop: `1px solid ${t.border}` }}>
-            <button style={{ width: "100%", padding: "8px", borderRadius: 10, border: `1px solid ${t.border}`, background: "transparent", cursor: "pointer", fontSize: 12, color: t.muted, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-              <Trash2 size={11} /> Clear all history
-            </button>
-          </div>
-        </div>
-      </motion.aside>
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {showSidebar && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowSidebar(false)}
+              className="fixed inset-0 z-40 md:hidden" style={{ background: "rgba(0,0,0,0.6)" }} />
+            <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 28 }}
+              className="fixed left-0 top-0 bottom-0 z-50 md:hidden" style={{ width: 240 }}>
+              <Sidebar />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
-      {/* Main chat */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", borderRadius: 16, background: t.card, border: `1px solid ${t.border}`, overflow: "hidden", minWidth: 0 }}>
-
-        {/* Chat header */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 20px", borderBottom: `1px solid ${t.border}`, flexShrink: 0 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(145deg, ${V.v500}, ${V.v900})`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 4px 16px rgba(107,53,232,0.35)` }}>
-            <Zap size={15} color="white" />
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: t.text, letterSpacing: "-0.02em" }}>KIRO</div>
-            <div style={{ fontSize: 11, color: V.v400, display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
-              Online · Your AI co-pilot
-            </div>
-          </div>
-          <button onClick={() => setShowHistory(!showHistory)} style={{ padding: "7px 12px", borderRadius: 10, border: `1px solid ${t.border}`, background: showHistory ? "rgba(107,53,232,0.12)" : "transparent", cursor: "pointer", fontSize: 12, color: showHistory ? V.v400 : t.muted, display: "flex", alignItems: "center", gap: 5 }}>
-            <Clock size={12} /> History
+      {/* Main chat area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile top bar */}
+        <div className="md:hidden flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: `1px solid ${t.border}`, background: t.card }}>
+          <button onClick={() => setShowSidebar(true)} style={{ color: t.muted, background: "none", border: "none", cursor: "pointer" }}>
+            <ChevronLeft size={18} />
           </button>
-          <button style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${t.border}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <MoreHorizontal size={14} color={t.muted} />
+          <span className="text-sm font-bold" style={{ color: t.text }}>KIRO</span>
+          <button onClick={() => setActiveId(null)} className="ml-auto flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold"
+            style={{ background: "rgba(107,53,232,0.1)", color: V.v300, border: "none", cursor: "pointer" }}>
+            <Plus size={11} /> New
           </button>
         </div>
 
-        {/* Messages */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "24px 20px", display: "flex", flexDirection: "column", gap: 20 }}>
-
-          {isEmpty && (
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "40px 24px" }}>
-              {/* KIRO mark */}
-              <div style={{ width: 64, height: 64, borderRadius: 20, background: `linear-gradient(145deg, ${V.v500}, ${V.v900})`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, boxShadow: `0 8px 32px rgba(107,53,232,0.4)` }}>
-                <Zap size={28} color="white" />
-              </div>
-              <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.03em", color: t.text, marginBottom: 8 }}>
-                What can I help you with?
-              </h2>
-              <p style={{ fontSize: 14, color: t.muted, marginBottom: 32, maxWidth: 420, lineHeight: 1.6 }}>
-                I'm KIRO - your AI commerce co-pilot. Ask me anything about your store, products, orders, or strategy.
-              </p>
-
-              {/* Suggestions */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, width: "100%", maxWidth: 600 }}>
-                {SUGGESTIONS.map((s, i) => {
-                  const Icon = s.icon;
-                  return (
-                    <motion.button
-                      key={i}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.06 }}
-                      onClick={() => setInput(s.label)}
-                      style={{ padding: "12px", borderRadius: 12, border: `1px solid ${t.border}`, background: t.faint, cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}
-                      whileHover={{ scale: 1.02, borderColor: `rgba(107,53,232,0.3)` }}
-                      whileTap={{ scale: 0.97 }}
-                    >
-                      <Icon size={14} color={V.v400} style={{ marginBottom: 6 }} />
-                      <div style={{ fontSize: 11.5, fontWeight: 500, color: t.text, lineHeight: 1.4 }}>{s.label}</div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-
-          {messages.map((msg, i) => (
-            <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}
-              style={{ display: "flex", gap: 12, flexDirection: msg.role === "user" ? "row-reverse" : "row", alignItems: "flex-start" }}>
-
-              {/* Avatar */}
-              <div style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700,
-                background: msg.role === "kiro" ? `linear-gradient(145deg, ${V.v500}, ${V.v900})` : theme === "dark" ? "rgba(255,255,255,0.08)" : "rgba(15,5,32,0.08)",
-                color: msg.role === "kiro" ? "white" : t.text,
-              }}>
-                {msg.role === "kiro" ? <Zap size={13} color="white" /> : "O"}
-              </div>
-
-              {/* Bubble */}
-              <div style={{ maxWidth: "72%", display: "flex", flexDirection: "column", gap: 4, alignItems: msg.role === "user" ? "flex-end" : "flex-start" }}>
-                <div style={{
-                  padding: "12px 16px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                  fontSize: 14, lineHeight: 1.6, color: msg.role === "user" ? "#fff" : t.text,
-                  background: msg.role === "user" ? `linear-gradient(135deg, ${V.v500}, ${V.v700})` : theme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(15,5,32,0.04)",
-                  border: msg.role === "user" ? "none" : `1px solid ${t.border}`,
-                  boxShadow: msg.role === "user" ? `0 4px 16px rgba(107,53,232,0.3)` : "none",
-                }}>
-                  {msg.content}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 10, color: t.muted }}>{msg.time}</span>
-                  {msg.role === "kiro" && (
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <button style={{ padding: "2px 6px", borderRadius: 6, border: `1px solid ${t.border}`, background: "transparent", cursor: "pointer", fontSize: 10, color: t.muted, display: "flex", alignItems: "center", gap: 3 }}>
-                        <Copy size={9} /> Copy
-                      </button>
-                      <button style={{ padding: "2px 6px", borderRadius: 6, border: `1px solid ${t.border}`, background: "transparent", cursor: "pointer", fontSize: 10, color: t.muted, display: "flex", alignItems: "center", gap: 3 }}>
-                        <RefreshCw size={9} /> Retry
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-
-          {loading && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-              <div style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(145deg, ${V.v500}, ${V.v900})` }}>
-                <Zap size={13} color="white" />
-              </div>
-              <div style={{ padding: "14px 18px", borderRadius: "18px 18px 18px 4px", background: theme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(15,5,32,0.04)", border: `1px solid ${t.border}`, display: "flex", gap: 4, alignItems: "center" }}>
-                {[0, 1, 2].map(i => (
-                  <motion.div key={i} animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, delay: i * 0.2, repeat: Infinity }}
-                    style={{ width: 7, height: 7, borderRadius: "50%", background: V.v400 }} />
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          <div ref={bottomRef} />
-        </div>
-
-        {/* Input */}
-        <div style={{ flexShrink: 0, padding: "16px 20px", borderTop: `1px solid ${t.border}` }}>
-          <div style={{ display: "flex", gap: 10, alignItems: "flex-end", padding: "12px 14px", borderRadius: 16, border: `1px solid ${input ? "rgba(107,53,232,0.4)" : t.border}`, background: theme === "dark" ? "rgba(255,255,255,0.03)" : "rgba(15,5,32,0.03)", transition: "border-color 0.2s" }}>
-            <button style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${t.border}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Paperclip size={14} color={t.muted} />
-            </button>
-
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={e => { setInput(e.target.value); autoResize(); }}
-              onKeyDown={handleKey}
-              placeholder="Ask KIRO anything about your store..."
-              rows={1}
-              style={{ flex: 1, background: "transparent", border: "none", outline: "none", resize: "none", fontSize: 14, color: t.text, lineHeight: 1.5, fontFamily: "'Plus Jakarta Sans', sans-serif", maxHeight: 160 }}
-            />
-
-            <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-              <button style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${t.border}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Mic size={14} color={t.muted} />
-              </button>
-              <button onClick={handleSend} disabled={!input.trim() || loading}
-                style={{ width: 36, height: 36, borderRadius: 10, border: "none", cursor: input.trim() ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", background: input.trim() ? `linear-gradient(135deg, ${V.v500}, ${V.v700})` : theme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(15,5,32,0.06)", transition: "all 0.15s", boxShadow: input.trim() ? `0 4px 12px rgba(107,53,232,0.35)` : "none" }}>
-                <Send size={14} color={input.trim() ? "white" : t.muted} />
-              </button>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: 10, gap: 4 }}>
-            <Zap size={10} color={V.v400} />
-            <span style={{ fontFamily: "'Syncopate', sans-serif", fontSize: 8, color: t.muted, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-              KIRO by DropOS · AI Commerce Intelligence
-            </span>
-          </div>
+        <div className="flex-1 min-h-0">
+          <KIROChat
+            key={activeId || "new"}
+            className="h-full"
+            storeId={storeId}
+          />
         </div>
       </div>
     </div>

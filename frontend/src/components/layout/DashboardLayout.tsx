@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import CreditWallet, { CreditBadge } from "../ui/CreditWallet";
+import KIROPulse from "../ui/KIROPulse";
+import PushNotificationPrompt from "../ui/PushNotificationPrompt";
 
 // ── CONTEXTS ──────────────────────────────────────────────────────────────────
 const ThemeContext = createContext<{ theme: "dark" | "light"; toggle: () => void }>({ theme: "dark", toggle: () => {} });
@@ -188,6 +190,7 @@ function SidebarContents({ t, nav, pathname, plan, user, onNavClick, onLogout, t
 
       {/* Bottom */}
       <div style={{ flexShrink: 0, padding: 8, borderTop: `1px solid ${t.border}` }}>
+        <KIROPulse t={t} />
         <div style={{ marginBottom: 8 }}><CreditWallet /></div>
         <Link href="/dashboard/billing" onClick={onNavClick}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 12, marginBottom: 6, cursor: "pointer", background: "rgba(107,53,232,0.08)", border: "1px solid rgba(107,53,232,0.18)" }}>
@@ -448,6 +451,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               ))}
             </AnimatePresence>
           </div>
+
+          <PushNotificationPrompt />
 
           {/* ── CONFIRM DIALOG ── */}
           <AnimatePresence>

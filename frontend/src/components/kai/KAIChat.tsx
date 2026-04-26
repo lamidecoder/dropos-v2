@@ -159,12 +159,19 @@ export default function KIROChat({ className, storeId: propStoreId, initialMessa
     setLoading(true);
 
     try {
-      const res = await api.post("/kiro/action", {
-        action:  action.action,
-        payload: action.payload || {},
+      const res = await api.post("/kai/action", {
         storeId: effectiveStoreId,
+        actions: [{
+          id:       Date.now().toString(),
+          type:     action.action,
+          payload:  action.payload || {},
+          approved: true,
+        }],
       });
-      const result = res.data?.data?.result || res.data?.result || "Done.";
+      const results = res.data?.data || [];
+      const result  = results[0]?.result
+        ? JSON.stringify(results[0].result).slice(0, 200)
+        : results[0]?.error || "Done.";
       setMessages(prev => prev.map(m =>
         m.id === resultPlaceholder.id ? { ...m, content: result, isStreaming: false } : m
       ));
@@ -201,7 +208,7 @@ export default function KIROChat({ className, storeId: propStoreId, initialMessa
 
       // Try real SSE streaming first
       const streamRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api"}/kiro/smart-chat`,
+        `${process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api"}/kai/smart-chat`,
         {
           method:  "POST",
           headers: {
@@ -258,7 +265,7 @@ export default function KIROChat({ className, storeId: propStoreId, initialMessa
         }
       } else {
         // Fallback: non-streaming endpoint
-        const res = await api.post("/kiro/smart-chat", {
+        const res = await api.post("/kai/smart-chat", {
           message: text, storeId: effectiveStoreId, sessionId: sessionId || undefined,
         });
         const { reply, session_id, actions = [] } = res.data.data || res.data;
