@@ -48,17 +48,22 @@ export default function BillingPage() {
   const currentPlan = user?.subscription?.plan || "FREE";
 
   const upgradeMut = useMutation({
-    mutationFn: (planId: string) => api.post("/billing/upgrade", { plan: planId, currency, billing }),
+    mutationFn: async (planId: string) => {
+      const price = PLANS.find(p => p.id === planId)?.price[currency] || 0;
+      const amount = billing === "annual" ? Math.round(price * 10) : price; // 10 months for annual (2 free)
+      return api.post("/billing/upgrade", { plan: planId, currency, billing, amount });
+    },
     onSuccess: (res) => {
       const url = res.data?.data?.authorizationUrl || res.data?.data?.url;
       if (url) { window.location.href = url; }
       else { toast.success("Plan updated!"); }
     },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Upgrade failed — backend offline"),
+    onError: (e: any) => toast.error(e.response?.data?.message || "Upgrade failed - backend offline"),
   });
 
   const handleUpgrade = (planId: string) => {
-    if (planId === "FREE") return; // downgrade handled separately
+    if (planId === "FREE") return;
+    if (planId === currentPlan) { toast.success("You are already on this plan"); return; }
     upgradeMut.mutate(planId);
   };
 
@@ -95,7 +100,7 @@ export default function BillingPage() {
       </motion.div>
 
       {/* Billing toggle + currency */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: 28 }}>
+      <div className="flex flex-wrap items-center justify-center gap-3 mb-7" style={{}}>
         <div style={{ display: "flex", padding: 3, borderRadius: 12, background: t.card, border: `1px solid ${t.border}` }}>
           {(["monthly", "annual"] as const).map(b => (
             <button key={b} onClick={() => setBilling(b)}
@@ -115,7 +120,7 @@ export default function BillingPage() {
       </div>
 
       {/* Plan cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 32 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" style={{}}>
         {PLANS.map((plan, i) => {
           const Icon = plan.icon;
           const isCurrent = currentPlan === plan.id;
