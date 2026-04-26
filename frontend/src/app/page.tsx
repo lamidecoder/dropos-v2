@@ -194,28 +194,25 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     fetch(`${API}/waitlist/stats`).then(r => r.json()).then(d => { if (d.data?.count) setCount(d.data.count); }).catch(() => {});
   }, []);
 
   useEffect(() => {
-    const schedule = () => {
-      const delay = 8000 + Math.random() * 12000;
-      return setTimeout(() => {
-        const id = Date.now();
-        const name = TOAST_NAMES[Math.floor(Math.random() * TOAST_NAMES.length)];
-        const city = TOAST_CITIES[Math.floor(Math.random() * TOAST_CITIES.length)];
-        setToasts(t => [...t.slice(-1), { id, name, city }]);
-        setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 5000);
-        schedule();
-      }, delay);
-    };
-    const t = setTimeout(() => {
+    if (typeof window === "undefined") return;
+    let alive = true;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const show = () => {
+      if (!alive) return;
       const id = Date.now();
-      setToasts([{ id, name: "Sarah K.", city: "New York" }]);
-      setTimeout(() => setToasts([]), 5000);
-    }, 4000);
-    const r = schedule();
-    return () => { clearTimeout(t); clearTimeout(r); };
+      const name = TOAST_NAMES[Math.floor(Math.random() * TOAST_NAMES.length)];
+      const city = TOAST_CITIES[Math.floor(Math.random() * TOAST_CITIES.length)];
+      setToasts(t => [...t.slice(-1), { id, name, city }]);
+      timers.push(setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 5000));
+      if (alive) timers.push(setTimeout(show, 10000 + Math.random() * 15000));
+    };
+    timers.push(setTimeout(show, 4000));
+    return () => { alive = false; timers.forEach(clearTimeout); };
   }, []);
 
   const submit = async () => {
