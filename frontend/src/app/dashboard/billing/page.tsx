@@ -64,7 +64,13 @@ export default function BillingPage() {
   const handleUpgrade = (planId: string) => {
     if (planId === "FREE") return;
     if (planId === currentPlan) { toast.success("You are already on this plan"); return; }
-    upgradeMut.mutate(planId);
+    const plan = PLANS.find(p => p.id === planId);
+    const price = plan?.price[currency] || 0;
+    const msg = billing === "annual"
+      ? `Upgrade to ${plan?.name} — ${CURRENCY_LABELS[currency]}${(price * 10).toLocaleString()}/year (2 months free)`
+      : `Upgrade to ${plan?.name} — ${CURRENCY_LABELS[currency]}${price.toLocaleString()}/month`;
+    toast.loading(msg, { duration: 2000 });
+    setTimeout(() => upgradeMut.mutate(planId), 400);
   };
 
   return (

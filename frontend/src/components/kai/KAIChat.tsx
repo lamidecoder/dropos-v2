@@ -22,14 +22,14 @@ interface Message {
 }
 
 const QUICK_CHIPS = [
-  { icon: "📊", label: "Sales today",           prompt: "What are my sales today?" },
-  { icon: "📦", label: "Unfulfilled orders",     prompt: "Show me orders that need fulfillment" },
-  { icon: "🔥", label: "Trending products",      prompt: "What products are trending right now in Nigeria?" },
+  { icon: "📊", label: "Sales today",           prompt: "What are my sales today and how do I grow them?" },
+  { icon: "📦", label: "Pending orders",         prompt: "Show me orders that need fulfillment right now" },
+  { icon: "🔥", label: "Trending products",      prompt: "What products are trending right now? Show me demand data." },
   { icon: "✍️",  label: "TikTok script",          prompt: "Write a TikTok script for my best-selling product" },
-  { icon: "💰", label: "Protect margins",        prompt: "Alert me if any product margin drops below 30%" },
-  { icon: "📈", label: "Revenue forecast",       prompt: "Forecast my revenue for the next 30 days" },
-  { icon: "🎯", label: "Improve store score",   prompt: "How can I improve my store health score?" },
-  { icon: "🔍", label: "Find better supplier",   prompt: "Find me a better supplier for my top products" },
+  { icon: "🎟️", label: "Create coupon",          prompt: "Create a 15% off coupon code for new customers" },
+  { icon: "⚡", label: "Flash sale",             prompt: "Set up a 3-hour flash sale on my top products at 20% off" },
+  { icon: "📈", label: "Revenue forecast",       prompt: "Forecast my revenue for next 30 days based on current trends" },
+  { icon: "🎯", label: "Grow my store",          prompt: "Audit my store and tell me the 3 things I should fix right now" },
 ];
 
 function KIROAvatar({ size = 32 }: { size?: number }) {
@@ -54,11 +54,22 @@ function TypingIndicator() {
 
 function ActionButtons({ actions, onAction }: { actions: Array<{ label: string; action: string; payload?: any }>; onAction: (a: any) => void }) {
   if (!actions?.length) return null;
+  const ACTION_ICONS: Record<string, string> = {
+    create_coupon:      "🎟️",
+    update_price:       "💰",
+    update_order_status:"📦",
+    create_product:     "➕",
+    send_broadcast:     "📣",
+    run_flash_sale:     "⚡",
+    navigate:           "→",
+    update_goal:        "🎯",
+  };
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
       {actions.map((a, i) => (
         <button key={i} onClick={() => onAction(a)}
-          style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(107,53,232,0.35)", background: "rgba(107,53,232,0.1)", color: "#A78BFA", transition: "all 0.15s" }}>
+          style={{ display:"flex", alignItems:"center", gap:5, padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(107,53,232,0.35)", background: "rgba(107,53,232,0.1)", color: "#A78BFA", transition: "all 0.15s" }}>
+          {ACTION_ICONS[a.action] && <span>{ACTION_ICONS[a.action]}</span>}
           {a.label}
         </button>
       ))}
