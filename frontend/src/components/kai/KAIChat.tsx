@@ -1,8 +1,8 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence }                  from "framer-motion";
-import { useAuthStore }                             from "../../../store/auth.store";
-import { api }                                      from "../../../lib/api";
+import { useAuthStore }                             from "../../store/auth.store";
+import { api }                                      from "../../lib/api";
 import {
   Send, Sparkles, Copy, Check, ThumbsUp, RotateCcw,
   Loader2, Plus, X, Zap, BarChart2, ShoppingCart,
