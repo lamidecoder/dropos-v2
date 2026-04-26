@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { publicApi } from "../../../../../../../../lib/api";
+import { publicApi } from "../../../../../../lib/api";
 import { ShoppingBag, Users, Clock, Check, Zap, ChevronRight, Loader2, Share2 } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
