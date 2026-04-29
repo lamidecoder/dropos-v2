@@ -4,64 +4,81 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Menu, X, ArrowRight } from "lucide-react";
-import { ThemeToggle } from "../../components/ui/ThemeToggle";
 
-const navLinks = [
-  { href: "/",          label: "Home"      },
-  { href: "/features",  label: "Features"  },
-  { href: "/pricing",   label: "Pricing"   },
-  { href: "/about",     label: "About"     },
-  { href: "/changelog", label: "Changelog" },
-  { href: "/contact",   label: "Contact"   },
+const NAV = [
+  { href: "/features",      label: "Features"    },
+  { href: "/how-it-works",  label: "How it Works"},
+  { href: "/pricing",       label: "Pricing"     },
+  { href: "/about",         label: "About"       },
+  { href: "/contact",       label: "Contact"     },
 ];
 
-function Navbar() {
-  const pathname = usePathname();
+const FOOTER_COLS = [
+  {
+    title: "Product",
+    links: [
+      ["Features",       "/features"     ],
+      ["How it Works",   "/how-it-works" ],
+      ["Pricing",        "/pricing"      ],
+      ["For Creators",   "/features#studio"],
+      ["Security",       "/security"     ],
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      ["About",          "/about"        ],
+      ["Contact",        "/contact"      ],
+      ["Referral",       "/auth/register"],
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      ["Privacy Policy", "/privacy"      ],
+      ["Terms of Use",   "/terms"        ],
+      ["Cookie Policy",  "/cookies"      ],
+    ],
+  },
+];
+
+function Nav() {
+  const pathname  = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [open,    setOpen]     = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  return (
-    <motion.header
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? "py-3" : "py-5"
-      }`}
-    >
-      <div
-        className="mx-auto max-w-7xl px-6 transition-all duration-500"
-        style={scrolled ? {
-          backdropFilter: "blur(20px)",
-          background: "var(--topbar-bg)",
-          borderRadius: "16px",
-          border: "1px solid var(--border)",
-          boxShadow: "var(--shadow-xl)",
-        } : {}}>
+  useEffect(() => { setOpen(false); }, [pathname]);
 
-        <div className="flex items-center justify-between h-14">
+  const pill = "px-4 py-2 rounded-xl text-sm font-medium transition-all";
+
+  return (
+    <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? "py-2" : "py-4"}`}>
+      <div className={`mx-auto max-w-6xl px-4 sm:px-6 transition-all duration-300 ${scrolled ? "rounded-2xl shadow-lg" : ""}`}
+        style={scrolled ? { background: "var(--topbar-bg)", backdropFilter: "blur(20px)", border: "1px solid var(--border)" } : {}}>
+        <div className="flex items-center h-14 gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-all" style={{ background: "linear-gradient(135deg,#7C3AED,#8B5CF6)", boxShadow: "0 4px 12px rgba(124,58,237,0.25)" }}>
-              <Zap size={16} color="white" fill="white" />
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", boxShadow: "0 4px 12px rgba(107,53,232,0.3)" }}>
+              <Zap size={15} color="white" />
             </div>
-            <span className="font-black text-lg tracking-tight" style={{ color: "var(--text-primary)" }}>Drop<span style={{ color: "var(--accent)" }}>OS</span></span>
+            <span className="font-black text-lg tracking-tight" style={{ color: "var(--text-primary)" }}>
+              Drop<span style={{ color: "#8B5CF6" }}>OS</span>
+            </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((l) => (
-              <Link key={l.href} href={l.href}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          {/* Desktop links */}
+          <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+            {NAV.map(l => (
+              <Link key={l.href} href={l.href} className={pill}
                 style={{
-                  color:      pathname === l.href ? "var(--accent)"    : "var(--nav-text)",
-                  background: pathname === l.href ? "var(--accent-dim)": "transparent",
+                  color:      pathname === l.href ? "#8B5CF6" : "var(--nav-text)",
+                  background: pathname === l.href ? "rgba(107,53,232,0.08)" : "transparent",
                   fontWeight: pathname === l.href ? 600 : 500,
                 }}>
                 {l.label}
@@ -69,21 +86,23 @@ function Navbar() {
             ))}
           </nav>
 
-          {/* CTA */}
-          <div className="hidden md:flex items-center gap-3">
-            <ThemeToggle compact />
-            <Link href="/auth/login" className="text-sm font-medium transition-colors" style={{ color: "var(--text-secondary)" }}>
+          {/* CTAs */}
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+            <Link href="/auth/login" className="text-sm font-medium px-3 py-2 rounded-xl transition-colors" style={{ color: "var(--text-secondary)" }}>
               Sign in
             </Link>
-            <Link href="/auth/register"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-[var(--text-primary)] transition-all" style={{ background: "#10B981", boxShadow: "0 4px 12px rgba(16,185,129,0.3)" }}>
-              Start free <ArrowRight size={13} />
+            <Link href="/auth/register">
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white"
+                style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", boxShadow: "0 4px 14px rgba(107,53,232,0.35)" }}>
+                Start free <ArrowRight size={13} />
+              </button>
             </Link>
           </div>
 
-          {/* Mobile toggle */}
-          <button onClick={() => setOpen(!open)} className="md:hidden transition-colors" style={{ color: "var(--text-secondary)" }}>
-            {open ? <X size={22} /> : <Menu size={22} />}
+          {/* Mobile burger */}
+          <button onClick={() => setOpen(o => !o)} className="md:hidden ml-auto p-2 rounded-xl"
+            style={{ color: "var(--text-secondary)", background: "var(--bg-secondary)" }}>
+            {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
@@ -91,68 +110,76 @@ function Navbar() {
       {/* Mobile menu */}
       <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="md:hidden mx-4 mt-2 rounded-2xl p-4 space-y-1" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-xl)" }}
-          >
-            {navLinks.map((l) => (
-              <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
-                className="block px-4 py-3 rounded-xl text-sm font-medium transition-all"
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="md:hidden mx-4 mt-2 rounded-2xl p-4 space-y-1"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }}>
+            {NAV.map(l => (
+              <Link key={l.href} href={l.href} className="block px-4 py-3 rounded-xl text-sm font-medium transition-all"
                 style={{
-                  color:      pathname === l.href ? "var(--accent)"    : "var(--nav-text)",
-                  background: pathname === l.href ? "var(--accent-dim)": "transparent",
-                  fontWeight: pathname === l.href ? 600 : 500,
+                  color:      pathname === l.href ? "#8B5CF6" : "var(--nav-text)",
+                  background: pathname === l.href ? "rgba(107,53,232,0.08)" : "transparent",
                 }}>
                 {l.label}
               </Link>
             ))}
-            <div className="pt-2 flex flex-col gap-2" style={{ borderTop: "1px solid var(--border)" }}>
-              <Link href="/auth/login" onClick={() => setOpen(false)} className="block px-4 py-3 text-sm font-medium" style={{ color: "var(--text-secondary)" }}>Sign in</Link>
-              <Link href="/auth/register" onClick={() => setOpen(false)} className="block px-4 py-3 rounded-xl text-sm font-bold text-[var(--text-primary)] text-center" style={{ background: "#10B981" }}>Start free →</Link>
+            <div className="pt-3 space-y-2" style={{ borderTop: "1px solid var(--border)" }}>
+              <Link href="/auth/login" className="block px-4 py-3 rounded-xl text-sm font-medium text-center" style={{ color: "var(--text-secondary)" }}>Sign in</Link>
+              <Link href="/auth/register" className="block px-4 py-3 rounded-xl text-sm font-bold text-white text-center"
+                style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+                Start free →
+              </Link>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.header>
+    </header>
   );
 }
 
 function Footer() {
   return (
     <footer style={{ borderTop: "1px solid var(--border)", background: "var(--bg-secondary)" }}>
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-          <div className="col-span-2">
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+          {/* Brand */}
+          <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#7C3AED,#8B5CF6)" }}>
-                <Zap size={14} color="white" fill="white" />
+              <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+                <Zap size={13} color="white" />
               </div>
-              <span className="font-black" style={{ color: "var(--text-primary)" }}>Drop<span style={{ color: "var(--accent)" }}>OS</span></span>
+              <span className="font-black text-base" style={{ color: "var(--text-primary)" }}>Drop<span style={{ color: "#8B5CF6" }}>OS</span></span>
             </Link>
-            <p className="text-sm leading-relaxed max-w-xs" style={{ color: "var(--text-tertiary)" }}>
-              The complete dropshipping platform. Launch your store, sell worldwide, scale fast.
+            <p className="text-sm leading-relaxed" style={{ color: "var(--text-tertiary)", maxWidth: 200 }}>
+              The AI-native commerce platform. Launch your store in 60 seconds.
             </p>
+            <div className="flex items-center gap-2 mt-4">
+              <div className="w-2 h-2 rounded-full bg-emerald-400" style={{ animation: "pulse 2s infinite" }} />
+              <span className="text-xs font-medium" style={{ color: "var(--text-tertiary)" }}>All systems operational</span>
+            </div>
           </div>
-          {[
-            { title: "Product",  links: [["Features","/features"],["Pricing","/pricing"],["Changelog","/changelog"],["Roadmap","#"]] },
-            { title: "Company",  links: [["About","/about"],["Contact","/contact"],["Blog","#"],["Careers","#"]] },
-            { title: "Legal",    links: [["Privacy","#"],["Terms","#"],["Cookies","#"],["Security","#"]] },
-          ].map((col) => (
+
+          {/* Columns */}
+          {FOOTER_COLS.map(col => (
             <div key={col.title}>
-              <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "var(--text-tertiary)" }}>{col.title}</h4>
-              <ul className="space-y-2.5">
+              <h4 className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: "var(--text-tertiary)", letterSpacing: "0.1em" }}>
+                {col.title}
+              </h4>
+              <ul className="space-y-3">
                 {col.links.map(([label, href]) => (
-                  <li key={label}><Link href={href} className="text-sm transition-colors" style={{ color: "var(--text-secondary)" }}>{label}</Link></li>
+                  <li key={label}>
+                    <Link href={href} className="text-sm transition-colors hover:text-[#8B5CF6]" style={{ color: "var(--text-secondary)" }}>
+                      {label}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderTop: "1px solid var(--border)" }}>
-          <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>© {new Date().getFullYear()} DropOS. All rights reserved.</p>
-          <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>Built for entrepreneurs who move fast.</p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8" style={{ borderTop: "1px solid var(--border)" }}>
+          <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>© 2026 DropOS. All rights reserved.</p>
+          <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>Built for entrepreneurs who move fast 🚀</p>
         </div>
       </div>
     </footer>
@@ -160,21 +187,10 @@ function Footer() {
 }
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}>
-      <Navbar />
-      <AnimatePresence mode="wait">
-        <motion.main
-          key={pathname}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -16 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {children}
-        </motion.main>
-      </AnimatePresence>
+      <Nav />
+      <main style={{ paddingTop: "88px" }}>{children}</main>
       <Footer />
     </div>
   );

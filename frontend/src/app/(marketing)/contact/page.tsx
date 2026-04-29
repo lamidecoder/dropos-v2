@@ -30,17 +30,7 @@ export default function ContactPage() {
   return (
     <div style={{ background: "#07050F", color: "#fff", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');`}</style>
-
-      <nav className="sticky top-0 z-50 px-6 h-16 flex items-center justify-between" style={{ background: "rgba(7,5,15,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
-            <Zap size={13} color="white" />
-          </div>
-          <span className="font-black text-white">Drop<span style={{ color: "#8B5CF6" }}>OS</span></span>
-        </Link>
-      </nav>
-
-      <div className="max-w-4xl mx-auto px-6 py-20">
+<div className="max-w-4xl mx-auto px-6 py-20">
         <div className="text-center mb-14">
           <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#8B5CF6" }}>Contact</p>
           <h1 className="font-black text-4xl sm:text-5xl mb-4" style={{ letterSpacing: "-2px" }}>Get in touch</h1>
