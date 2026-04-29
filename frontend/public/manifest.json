@@ -1,12 +1,12 @@
 {
   "name": "DropOS",
   "short_name": "DropOS",
-  "description": "The complete dropshipping platform. Manage your store on the go.",
+  "description": "KIRO builds your dropshipping store and grows your revenue. Launch in 60 seconds.",
   "start_url": "/dashboard",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0F172A",
-  "theme_color": "#7C3AED",
+  "background_color": "#06040D",
+  "theme_color": "#6B35E8",
   "lang": "en",
   "categories": [
     "business",
@@ -63,22 +63,7 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshots/dashboard.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Dashboard"
-    },
-    {
-      "src": "/screenshots/mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Mobile dashboard"
-    }
-  ],
+  "screenshots": [],
   "shortcuts": [
     {
       "name": "New Order",

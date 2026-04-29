@@ -6,7 +6,7 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
   title:       { default: "DropOS", template: "%s | DropOS" },
-  description: "The complete SaaS dropshipping platform. Launch your store in minutes.",
+  description: "KIRO builds your dropshipping store, finds winning products, and grows your revenue. Launch in 60 seconds. Free forever.",
   keywords:    ["dropshipping","ecommerce","saas","store builder","KIRO","AI"],
   authors:     [{ name: "DropOS" }],
   manifest:    "/manifest.json",
@@ -19,18 +19,19 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false },
   openGraph: {
     type:        "website",
-    locale:      "en_NG",
+    locale:      "en_US",
     url:         process.env.NEXT_PUBLIC_APP_URL,
     siteName:    "DropOS",
     title:       "DropOS - Launch Your Store in 60 Seconds with KIRO",
-    description: "KIRO builds your dropshipping store, finds winning products, and grows your revenue. Free to start.",
+    description: "KIRO builds your store, finds winning products, and grows your revenue. Launch in 60 seconds. Sell in 90+ countries.",
     images:      [{ url: "/icons/icon-512.png", width: 512, height: 512 }],
   },
   twitter: { card: "summary_large_image", title: "DropOS" },
   icons: {
     icon:  [
-      { url: "/icons/icon-32.png",  sizes: "32x32",  type: "image/png" },
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon.svg",        type: "image/svg+xml"                },
+      { url: "/icons/icon-32.png",  sizes: "32x32",  type: "image/png"  },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png"  },
     ],
     apple: [
       { url: "/icons/icon-152.png", sizes: "152x152" },
