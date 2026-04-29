@@ -20,6 +20,8 @@ export function useLogin() {
       toast.success(`Welcome back, ${user.name}!`);
       if (user.role === "SUPER_ADMIN") {
         router.push("/admin");
+      } else if (!user.onboarded) {
+        router.push("/onboarding");
       } else {
         router.push("/dashboard");
       }
@@ -36,9 +38,18 @@ export function useRegister() {
   return useMutation({
     mutationFn: (data: { name: string; email: string; password: string; phone?: string }) =>
       authAPI.register(data),
-    onSuccess: () => {
-      toast.success("Account created! Check your email to verify.");
-      router.push("/auth/login?registered=true");
+    onSuccess: (res: any) => {
+      // If server returns token directly (no email verify), go to onboarding
+      if (res?.data?.data?.accessToken) {
+        const { user, accessToken } = res.data.data;
+        const { setUser, setAccessToken } = useAuthStore.getState();
+        setUser(user);
+        setAccessToken(accessToken);
+        router.push("/onboarding");
+      } else {
+        toast.success("Account created! Sign in to continue.");
+        router.push("/auth/login?registered=true");
+      }
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || "Registration failed");

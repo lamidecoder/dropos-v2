@@ -22,13 +22,13 @@ const STARTERS = [
 ];
 
 const DEMO_FLOW = [
-  { role:"KIRO" as const, text:"Hey 👋 I'm KIRO — your AI business partner. What do you want to sell?" },
+  { role:"KIRO" as const, text:"Hey 👋 I'm KIRO  -  your AI business partner. What do you want to sell?" },
 ];
 
 const FEATURES = [
   { emoji:"⚡", label:"60-second stores",  desc:"Type your niche. KIRO builds your store instantly." },
   { emoji:"🎯", label:"Winning products",  desc:"KIRO researches what sells before you import anything." },
-  { emoji:"📣", label:"AI ad copy",        desc:"TikTok scripts, Instagram captions, WhatsApp messages — all written." },
+  { emoji:"📣", label:"AI ad copy",        desc:"TikTok scripts, Instagram captions, WhatsApp messages  -  all written." },
   { emoji:"📊", label:"Plain English data",desc:"No charts. Just 'You made ₦84,000 today. Here's what to do next.'" },
 ];
 
@@ -159,7 +159,7 @@ export default function PublicKIROPage() {
       }
       setMsgs(p => p.map(m => m.id === kid ? { ...m, done:true } : m));
     } catch {
-      setMsgs(p => p.map(m => m.id === kid ? { ...m, text:"I am ready to help — try again or create your free account to get started.", done:true } : m));
+      setMsgs(p => p.map(m => m.id === kid ? { ...m, text:"I am ready to help  -  try again or create your free account to get started.", done:true } : m));
     } finally { setLoading(false); }
   }, [input, loading, msgCount, authed]);
 
@@ -201,7 +201,7 @@ export default function PublicKIROPage() {
             Your AI business<br/>partner.
           </h1>
           <p style={{ fontSize:14, color:"rgba(255,255,255,0.4)", lineHeight:1.6, margin:0 }}>
-            Tell KIRO what you sell. It builds your store, finds winning products, and writes your ads — right now.
+            Tell KIRO what you sell. It builds your store, finds winning products, and writes your ads  -  right now.
           </p>
         </motion.div>
 

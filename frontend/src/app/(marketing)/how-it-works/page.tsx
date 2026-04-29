@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "How it Works — DropOS",
+  title: "How it Works  -  DropOS",
   description: "See exactly how DropOS works. Your store live in 60 seconds, powered by KIRO.",
 };
 
@@ -12,7 +12,7 @@ const STEPS = [
     n:"01", emoji:"💬", color:"#8B5CF6",
     title:"Tell KIRO what you sell",
     desc:"Type one sentence. 'I want to sell hair products' is enough. KIRO handles everything from there.",
-    detail:"No forms. No onboarding checklist. Just a conversation — the same way you describe your business to a friend.",
+    detail:"No forms. No onboarding checklist. Just a conversation  -  the same way you describe your business to a friend.",
     bullets:["Works in English, French, Yoruba and 20+ languages","Understands niche and target market from context","Takes 15 seconds"],
   },
   {
@@ -40,14 +40,14 @@ const STEPS = [
     n:"05", emoji:"📊", color:"#EC4899",
     title:"KIRO grows your revenue",
     desc:"Every morning, KIRO briefs you on what happened and what to do next. In plain English.",
-    detail:"Not charts you have to interpret. 'Your LED mask is trending — 3 competitors are out of stock. Want me to run a flash sale?'",
+    detail:"Not charts you have to interpret. 'Your LED mask is trending  -  3 competitors are out of stock. Want me to run a flash sale?'",
     bullets:["Daily briefings via push notification or WhatsApp","Competitor monitoring and price alerts","Revenue forecasting 30 days ahead"],
   },
 ];
 
 const HOW_PAID = [
-  { emoji:"💳", title:"Customer pays you", desc:"Your customer pays via Paystack, Stripe, bank transfer, or Pay on Delivery. Money goes straight to your account — not held by DropOS." },
-  { emoji:"📦", title:"KIRO orders from supplier", desc:"KIRO automatically places the order with your supplier using the supplier price — which is less than what your customer paid." },
+  { emoji:"💳", title:"Customer pays you", desc:"Your customer pays via Paystack, Stripe, bank transfer, or Pay on Delivery. Money goes straight to your account  -  not held by DropOS." },
+  { emoji:"📦", title:"KIRO orders from supplier", desc:"KIRO automatically places the order with your supplier using the supplier price  -  which is less than what your customer paid." },
   { emoji:"💰", title:"You keep the difference", desc:"Your profit is the gap between customer price and supplier cost. DropOS charges a small monthly subscription, not a cut of your sales." },
   { emoji:"🏦", title:"Payouts are instant", desc:"Paystack pays out to your Nigerian bank account within 1-3 business days. Stripe handles international payouts globally." },
 ];
@@ -116,7 +116,7 @@ export default function HowItWorksPage() {
           <div className="mt-6 p-5 rounded-2xl text-center" style={{ background:"rgba(107,53,232,0.06)", border:"1px solid rgba(107,53,232,0.15)" }}>
             <p className="text-sm font-semibold mb-1" style={{ color:"#A78BFA" }}>Example: You sell a wig for ₦45,000</p>
             <p className="text-sm" style={{ color:"var(--text-secondary)" }}>
-              You buy it from supplier for ₦22,000. You keep ₦23,000 profit. DropOS charges ₦9,500/month flat — not a percentage of your sales.
+              You buy it from supplier for ₦22,000. You keep ₦23,000 profit. DropOS charges ₦9,500/month flat  -  not a percentage of your sales.
             </p>
           </div>
         </div>

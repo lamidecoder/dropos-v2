@@ -21,6 +21,8 @@ import CreditWallet from "../ui/CreditWallet";
 import KIROPulse from "../ui/KIROPulse";
 import CommandPalette from "../ui/CommandPalette";
 import PushNotificationPrompt from "../ui/PushNotificationPrompt";
+import MilestoneCelebration from "../ui/MilestoneCelebration";
+import { useNavLevel } from "../ui/NavLevel";
 
 // ── CONTEXTS ──────────────────────────────────────────────────────────────────
 const ThemeContext = createContext<{ theme: "dark" | "light"; toggle: () => void }>({ theme: "dark", toggle: () => {} });
@@ -67,7 +69,7 @@ const V = {
   v400: "#8B5CF6", v300: "#A78BFA", v200: "#C4B5FD",
 };
 
-// ── COMPLETE NAV — all 83 pages covered ───────────────────────────────────────
+// ── COMPLETE NAV  -  all 83 pages covered ───────────────────────────────────────
 const OWNER_NAV = [
   // Always-visible top links
   { id: "top", label: null, alwaysOpen: true, items: [
@@ -118,7 +120,7 @@ const OWNER_NAV = [
     { href: "/dashboard/funnel",          icon: Target,        label: "Funnel"          },
   ]},
 
-  // Studio — AI content creation
+  // Studio  -  AI content creation
   { id: "studio", label: "Studio", items: [
     { href: "/dashboard/content-studio", icon: Video,      label: "Content Studio", badge: "AI" },
     { href: "/dashboard/image-studio",   icon: Image,      label: "Image Studio",   badge: "AI" },
@@ -254,6 +256,24 @@ function NavGroup({ group, pathname, t, onNavClick }: { group: any; pathname: st
 
 // ── SIDEBAR ───────────────────────────────────────────────────────────────────
 function Sidebar({ t, pathname, plan, user, onNavClick, onLogout, theme }: any) {
+  const { level, label: navLabel, productCount, orderCount } = useNavLevel();
+
+  // Progressive nav: filter groups based on user level
+  const VISIBLE_AT: Record<string, number> = {
+    "top":          0,
+    "store":        0,
+    "sales":        1,  // unlock after first product
+    "marketing":    2,  // unlock after first order
+    "studio":       2,  // unlock after first order
+    "intelligence": 3,  // unlock after 10 orders
+    "tools":        3,
+    "developers":   3,
+    "account":      0,
+  };
+
+  const visibleNav = OWNER_NAV.filter(g => (VISIBLE_AT[g.id] ?? 0) <= level);
+  const lockedCount = OWNER_NAV.filter(g => (VISIBLE_AT[g.id] ?? 0) > level).length;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: t.sidebarBg }}>
       {/* Logo */}
@@ -271,9 +291,21 @@ function Sidebar({ t, pathname, plan, user, onNavClick, onLogout, theme }: any) 
 
       {/* Scrollable nav */}
       <div style={{ flex: 1, overflowY: "auto", padding: "10px 6px", scrollbarWidth: "none" }}>
-        {OWNER_NAV.map(group => (
+        {visibleNav.map(group => (
           <NavGroup key={group.id} group={group} pathname={pathname} t={t} onNavClick={onNavClick} />
         ))}
+
+        {/* Locked groups hint */}
+        {lockedCount > 0 && level < 4 && (
+          <div style={{ margin:"8px 4px 4px", padding:"10px 12px", borderRadius:12, background:"rgba(107,53,232,0.04)", border:"1px solid rgba(107,53,232,0.1)", textAlign:"center" }}>
+            <p style={{ fontSize:10, color:"rgba(255,255,255,0.25)", lineHeight:1.5 }}>
+              More features unlock as you grow.
+            </p>
+            <p style={{ fontSize:10, color:V.v300, marginTop:2, fontWeight:600 }}>
+              {navLabel}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Bottom */}
@@ -423,7 +455,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* HEADER */}
           <header className="ds-header" style={{ flexShrink:0, display:"flex", alignItems:"center", gap:8, height:56, padding:"0 16px", borderBottom:`1px solid ${t.border}`, background:t.headerBg, backdropFilter:"blur(20px)", zIndex:20 }}>
 
-            {/* Hamburger — mobile only */}
+            {/* Hamburger  -  mobile only */}
             <button className="ds-menu-btn" onClick={() => setMobileNavOpen(true)}
               style={{ width:36, height:36, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", border:"none", cursor:"pointer", background:t.navHover, flexShrink:0 }}>
               <Menu size={16} color={t.textMuted} />
@@ -436,7 +468,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </h1>
             </div>
 
-            {/* Command palette — desktop */}
+            {/* Command palette  -  desktop */}
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               <CommandPalette />
 
@@ -454,7 +486,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </button>
               </Link>
 
-              {/* KIRO header shortcut — desktop */}
+              {/* KIRO header shortcut  -  desktop */}
               <Link href="/dashboard/kiro" className="ds-kiro-btn" style={{ textDecoration:"none" }}>
                 <div className="kpulse" style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 12px", borderRadius:11, background:`linear-gradient(135deg,${V.v500},${V.v700})`, color:"#fff", cursor:"pointer" }}>
                   <Zap size={13} color="white" />
@@ -464,7 +496,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </header>
 
-          {/* PAGE CONTENT — no AnimatePresence (causes freeze on refresh) */}
+          {/* PAGE CONTENT  -  no AnimatePresence (causes freeze on refresh) */}
           <main className="thin-scroll ds-main" style={{ flex:1, overflowY:"auto", overflowX:"hidden", padding:"20px 16px 24px" }}>
             {children}
           </main>
@@ -510,6 +542,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       <PushNotificationPrompt />
+      <MilestoneCelebration />
 
       {/* CONFIRM DIALOG */}
       <AnimatePresence>

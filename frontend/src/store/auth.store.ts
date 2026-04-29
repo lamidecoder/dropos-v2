@@ -22,6 +22,10 @@ interface User {
   emailVerified: boolean;
   subscription?: { plan: string; status: string; currentPeriodEnd: string };
   stores?:       Array<{ id: string; name: string; slug: string; status: string }>;
+  onboarded?:    boolean;
+  niche?:        string;
+  stage?:        string;
+  goal?:         string;
 }
 
 interface AuthState {

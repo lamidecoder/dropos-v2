@@ -10,15 +10,15 @@ const API = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/a
 const DEMO_MESSAGES = [
   { role: "user",  text: "Build me a store selling wireless earbuds" },
   { role: "kiro",  text: "Scanning market data, building your store...", typing: true },
-  { role: "kiro",  text: "Done ✓  Your store is live at earbuds.droposhq.com — 12 products added, SEO optimised. Want the TikTok ad too?" },
+  { role: "kiro",  text: "Done ✓  Your store is live at earbuds.droposhq.com  -  12 products added, SEO optimised. Want the TikTok ad too?" },
   { role: "user",  text: "Yes, write the TikTok ad" },
   { role: "kiro",  text: "Hook (0\u20133s): \"POV: You found earbuds that stay in\"\nMid: Unboxing, noise cancel demo, 40hr battery\nCTA: \"500 sold this week. Link in bio.\"" },
 ];
 
 const FEATURES = [
-  { icon: Zap,          label: "KIRO AI",         desc: "Your AI business partner. Builds stores, writes ads, finds products — all from chat.",   color: "#8B5CF6", bg: "rgba(139,92,246,0.08)" },
+  { icon: Zap,          label: "KIRO AI",         desc: "Your AI business partner. Builds stores, writes ads, finds products  -  all from chat.",   color: "#8B5CF6", bg: "rgba(139,92,246,0.08)" },
   { icon: Globe,        label: "Sell Everywhere",  desc: "90+ currencies, global payments, 135+ countries. Your store works anywhere on Earth.",    color: "#06B6D4", bg: "rgba(6,182,212,0.08)"  },
-  { icon: ShoppingCart, label: "Full Commerce",    desc: "Products, orders, shipping, coupons, subscriptions — everything built in, nothing extra.", color: "#10B981", bg: "rgba(16,185,129,0.08)" },
+  { icon: ShoppingCart, label: "Full Commerce",    desc: "Products, orders, shipping, coupons, subscriptions  -  everything built in, nothing extra.", color: "#10B981", bg: "rgba(16,185,129,0.08)" },
   { icon: BarChart2,    label: "Real Analytics",   desc: "LTV, cohort retention, revenue attribution. Plain English insights from KIRO.",           color: "#F59E0B", bg: "rgba(245,158,11,0.08)"  },
   { icon: Package,      label: "Auto-Fulfilment",  desc: "KIRO places and tracks orders with AliExpress, CJ, Zendrop. You do nothing.",            color: "#EC4899", bg: "rgba(236,72,153,0.08)"  },
   { icon: Sparkles,     label: "Content Studio",   desc: "AI product photos, TikTok videos, ad creatives. No designer, no agency.",                  color: "#6366F1", bg: "rgba(99,102,241,0.08)"  },
@@ -89,7 +89,7 @@ function KIRODemo() {
         <div className="w-3 h-3 rounded-full" style={{ background: "#FFBD2E" }} />
         <div className="w-3 h-3 rounded-full" style={{ background: "#28C840" }} />
         <div className="flex-1 text-center">
-          <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.3)" }}>KIRO — AI Business Partner</span>
+          <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.3)" }}>KIRO  -  AI Business Partner</span>
         </div>
       </div>
 
@@ -285,7 +285,7 @@ export default function HomePage() {
               </h1>
 
               <p className="text-base sm:text-lg mb-8 leading-relaxed" style={{ color: "rgba(255,255,255,0.45)", maxWidth: 440 }}>
-                KIRO builds your dropshipping store, finds winning products, writes your ads, and grows your revenue — all from a single chat. No experience needed.
+                KIRO builds your dropshipping store, finds winning products, writes your ads, and grows your revenue  -  all from a single chat. No experience needed.
               </p>
 
               {/* Waitlist */}
@@ -325,7 +325,7 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            {/* Right — KIRO demo */}
+            {/* Right  -  KIRO demo */}
             <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25, type: "spring", stiffness: 90 }}
               className="relative">
               <KIRODemo />
@@ -361,7 +361,7 @@ export default function HomePage() {
             <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#8B5CF6" }}>Everything built in</p>
             <h2 className="font-black mb-4" style={{ fontSize: "clamp(28px,4vw,48px)", letterSpacing: "-2px" }}>One platform. Zero plugins.</h2>
             <p className="text-base max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Shopify charges extra for everything. DropOS includes it all — and KIRO makes it run itself.
+              Shopify charges extra for everything. DropOS includes it all  -  and KIRO makes it run itself.
             </p>
           </div>
 
@@ -396,16 +396,16 @@ export default function HomePage() {
               KIRO does the work.<br />You take the revenue.
             </h2>
             <p className="text-base max-w-lg mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Tell KIRO what you want. It builds, optimises, and runs everything — while you focus on your customers.
+              Tell KIRO what you want. It builds, optimises, and runs everything  -  while you focus on your customers.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { emoji:"🏪", title:"Builds stores",    desc:"One sentence. Store live in 60 seconds with products, theme, and payments." },
-              { emoji:"📣", title:"Writes ads",       desc:"TikTok scripts, Instagram captions, WhatsApp messages — in any language." },
+              { emoji:"📣", title:"Writes ads",       desc:"TikTok scripts, Instagram captions, WhatsApp messages  -  in any language." },
               { emoji:"📦", title:"Fulfils orders",   desc:"KIRO places supplier orders and sends tracking to customers automatically." },
-              { emoji:"📊", title:"Grows revenue",   desc:"Spots trends, detects slow products, suggests what to do — in plain English." },
+              { emoji:"📊", title:"Grows revenue",   desc:"Spots trends, detects slow products, suggests what to do  -  in plain English." },
             ].map((c, i) => {
               const fd = useFadeIn(i * 0.08);
               return (
