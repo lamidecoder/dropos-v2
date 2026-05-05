@@ -1,70 +1,92 @@
 "use client";
 import { useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "../../../lib/api";
-import { useAuthStore } from "../../../store/auth.store";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../../components/layout/DashboardLayout";
+import { useAuthStore } from "../../../store/auth.store";
+import { api } from "../../../lib/api";
 import { useCreditsStore, CREDIT_COSTS } from "../../../store/credits.store";
-import { Upload, Wand2, Download, Copy, Loader2, X, Check, Zap, Sparkles, Image as ImageIcon, AlertTriangle } from "lucide-react";
+import { Upload, Wand2, Download, Copy, Loader2, X, Check, Zap, Image as ImageIcon, AlertTriangle, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
 
-const V = { v500: "#6B35E8", v400: "#8B5CF6", v300: "#A78BFA" };
-const TM = {
-  dark:  { card: "#181230", border: "rgba(255,255,255,0.06)", text: "#fff", muted: "rgba(255,255,255,0.38)", faint: "rgba(255,255,255,0.04)" },
-  light: { card: "#fff",    border: "rgba(15,5,32,0.07)",    text: "#0D0918", muted: "rgba(13,9,24,0.45)", faint: "rgba(15,5,32,0.03)" },
+const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA" };
+
+// Before/after examples from Unsplash
+const TOOL_EXAMPLES = {
+  remove_bg:   {
+    before: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop",
+    after:  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop&sat=-100",
+    label:  "Clean white background"
+  },
+  lifestyle:   {
+    before: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=200&h=200&fit=crop",
+    after:  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop",
+    label:  "Product in real setting"
+  },
+  enhance:     {
+    before: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&h=200&fit=crop&blur=2",
+    after:  "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&h=200&fit=crop",
+    label:  "Sharp professional quality"
+  },
+  ad_creative: {
+    before: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=200&h=200&fit=crop",
+    after:  "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=200&h=200&fit=crop&bri=30",
+    label:  "Ready-to-post ad"
+  },
 };
 
 const TOOLS = [
-  { id: "remove_bg",   label: "Remove Background", emoji: "✂️", desc: "Clean white or transparent background", cost: "image_generate" as const },
-  { id: "lifestyle",   label: "Lifestyle Scene",    emoji: "🌟", desc: "Product in a real-world setting",       cost: "image_lifestyle" as const },
-  { id: "enhance",     label: "Enhance Photo",      emoji: "✨", desc: "Sharpen blurry, improve lighting",      cost: "image_generate" as const },
-  { id: "ad_creative", label: "Ad Creative",         emoji: "📣", desc: "Ready-to-post social media ad",         cost: "image_background" as const },
+  { id:"remove_bg",   icon:"✂️", label:"Remove Background", desc:"Perfect white or transparent BG", credits:5  },
+  { id:"lifestyle",   icon:"🌟", label:"Lifestyle Scene",   desc:"Product in a real-world setting",  credits:15 },
+  { id:"enhance",     icon:"✨", label:"Enhance Photo",     desc:"Sharpen and improve lighting",      credits:5  },
+  { id:"ad_creative", icon:"📣", label:"Ad Creative",       desc:"Social-ready ad with text",         credits:10 },
 ];
 
 const BACKGROUNDS = [
-  { id: "studio",   label: "Studio",    emoji: "⬜" },
-  { id: "bedroom",  label: "Bedroom",   emoji: "🛏️" },
-  { id: "kitchen",  label: "Kitchen",   emoji: "🍳" },
-  { id: "outdoor",  label: "Outdoor",   emoji: "🌿" },
-  { id: "luxury",   label: "Luxury",    emoji: "✨" },
-  { id: "fashion",  label: "Editorial", emoji: "👗" },
-  { id: "flat_lay", label: "Flat Lay",  emoji: "📐" },
-  { id: "market",   label: "Market",    emoji: "🏪" },
+  { id:"studio",   emoji:"⬜", label:"Studio"    },
+  { id:"bedroom",  emoji:"🛏️", label:"Bedroom"  },
+  { id:"kitchen",  emoji:"🍳", label:"Kitchen"   },
+  { id:"outdoor",  emoji:"🌿", label:"Outdoor"   },
+  { id:"luxury",   emoji:"✨", label:"Luxury"    },
+  { id:"flat_lay", emoji:"📐", label:"Flat Lay"  },
 ];
 
 export default function ImageStudioPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const t = isDark ? TM.dark : TM.light;
-  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
+  const t = {
+    card:   isDark ? "#0F0C1E" : "#fff",
+    border: isDark ? "rgba(255,255,255,0.06)" : "rgba(107,53,232,0.1)",
+    text:   isDark ? "#F0ECFF" : "#130D2E",
+    muted:  isDark ? "rgba(240,236,255,0.5)" : "rgba(19,13,46,0.55)",
+    faint:  isDark ? "rgba(255,255,255,0.03)" : "rgba(107,53,232,0.04)",
+  };
+  const storeId  = useAuthStore(s => s.user?.stores?.[0]?.id);
   const { balance, deduct } = useCreditsStore();
 
-  const [activeTool, setActiveTool]   = useState("remove_bg");
-  const [imageUrl,   setImageUrl]     = useState("");
-  const [bgStyle,    setBgStyle]      = useState("studio");
-  const [productName,setProductName]  = useState("");
-  const [hook,       setHook]         = useState("");
-  const [result,     setResult]       = useState<string | null>(null);
-  const [uploading,  setUploading]    = useState(false);
-  const [copied,     setCopied]       = useState(false);
+  const [tool,        setTool]        = useState("remove_bg");
+  const [imageUrl,    setImageUrl]    = useState("");
+  const [bgStyle,     setBgStyle]     = useState("studio");
+  const [productName, setProductName] = useState("");
+  const [result,      setResult]      = useState<string|null>(null);
+  const [uploading,   setUploading]   = useState(false);
+  const [copied,      setCopied]      = useState(false);
+  const [showBefore,  setShowBefore]  = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const tool     = TOOLS.find(t => t.id === activeTool)!;
-  const cost     = CREDIT_COSTS[tool.cost];
-  const canAfford = balance >= cost;
+  const selectedTool = TOOLS.find(t => t.id === tool)!;
+  const canAfford    = balance >= selectedTool.credits;
+  const example      = TOOL_EXAMPLES[tool as keyof typeof TOOL_EXAMPLES];
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("upload_preset", "dropos_products");
+      const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", "dropos_products");
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "demo";
-      const res  = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: fd });
+      const res  = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method:"POST", body:fd });
       const data = await res.json();
       if (data.secure_url) { setImageUrl(data.secure_url); setResult(null); }
       else toast.error("Upload failed");
@@ -74,230 +96,227 @@ export default function ImageStudioPage() {
 
   const processMut = useMutation({
     mutationFn: async () => {
-      if (!canAfford) throw new Error("Insufficient credits");
-      deduct(cost);
-      
-      if (activeTool === "remove_bg") {
-        const r = await api.post("/super/images/remove-bg", { imageUrl, storeId });
-        return r.data.data?.url || r.data.url;
-      }
-      if (activeTool === "lifestyle") {
-        const r = await api.post("/super/images/lifestyle", { imageUrl, backgroundStyle: bgStyle, productName, storeId });
-        return r.data.data?.url || r.data.url;
-      }
-      if (activeTool === "enhance") {
-        const r = await api.post("/super/images/enhance", { imageUrl, storeId });
-        return r.data.data?.url || r.data.url;
-      }
-      // ad_creative
-      const r = await api.post("/super/images/ad-creative", { productName, hook, backgroundColor: bgStyle, storeId });
+      if (!canAfford) throw new Error("credits");
+      deduct(selectedTool.credits);
+      const endpoint = tool === "remove_bg" ? "/super/images/remove-bg"
+        : tool === "lifestyle" ? "/super/images/lifestyle"
+        : tool === "enhance"   ? "/super/images/enhance"
+        : "/super/images/ad-creative";
+      const body = { imageUrl, storeId, backgroundStyle: bgStyle, productName };
+      const r = await api.post(endpoint, body);
       return r.data.data?.url || r.data.url;
     },
-    onSuccess: url => {
-      setResult(url);
-      toast.success("Image generated!");
-    },
-    onError: (err: any) => {
-      if (err.message === "Insufficient credits") {
-        toast.error("Not enough credits. Top up to continue.");
-        return;
-      }
-      if (err.response?.status === 503) {
-        toast("Add FAL_AI_KEY to Render environment to enable AI generation", { icon: "⚙️", duration: 6000 });
-      } else {
-        toast.error(err.response?.data?.message || "Generation failed");
-      }
+    onSuccess: (url) => { setResult(url); toast.success("Image ready!"); },
+    onError: (e:any) => {
+      if (e.message === "credits") { toast.error("Not enough credits"); return; }
+      toast("Add FAL_AI_KEY to Render to enable AI generation", { icon:"⚙️", duration:6000 });
     },
   });
 
-  const canProcess = activeTool === "ad_creative" ? !!productName : !!imageUrl;
+  const inp = { width:"100%", padding:"11px 14px", borderRadius:12, border:`1px solid ${t.border}`, background:t.faint, color:t.text, fontSize:13, outline:"none", fontFamily:"inherit" } as const;
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-start justify-between gap-4 mb-6">
+    <div style={{ maxWidth:1000, margin:"0 auto" }}>
+      {/* Header */}
+      <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24, flexWrap:"wrap", gap:12 }}>
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{ color: t.text }}>AI Image Studio</h1>
-            <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: "rgba(107,53,232,0.12)", color: V.v300, border: "1px solid rgba(107,53,232,0.2)" }}>Fal.ai</span>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+            <h1 style={{ fontSize:22, fontWeight:900, letterSpacing:"-0.8px", color:t.text }}>Image Studio</h1>
+            <span style={{ fontSize:10, fontWeight:700, padding:"3px 8px", borderRadius:99, background:"rgba(107,53,232,0.12)", color:V.v300, border:"1px solid rgba(107,53,232,0.2)", textTransform:"uppercase", letterSpacing:"0.06em" }}>Fal.ai</span>
           </div>
-          <p className="text-xs sm:text-sm" style={{ color: t.muted }}>Professional product images in seconds. No photographer needed.</p>
+          <p style={{ fontSize:13, color:t.muted }}>Professional product photos without a photographer</p>
         </div>
-        {/* Credits */}
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl flex-shrink-0" style={{ background: "rgba(107,53,232,0.08)", border: "1px solid rgba(107,53,232,0.2)" }}>
-          <Zap size={12} color={V.v400} />
-          <span className="text-xs font-bold" style={{ color: V.v300 }}>{balance.toLocaleString()} credits</span>
+        <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 14px", borderRadius:12, background:"rgba(107,53,232,0.08)", border:"1px solid rgba(107,53,232,0.18)" }}>
+          <Zap size={13} color={V.v400}/><span style={{ fontSize:13, fontWeight:700, color:V.v300 }}>{balance.toLocaleString()} credits</span>
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Left — Controls */}
-        <div className="space-y-4">
-          {/* Tool picker */}
-          <div className="p-4 rounded-2xl" style={{ background: t.card, border: `1px solid ${t.border}` }}>
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: t.muted }}>Choose Tool</p>
-            <div className="space-y-2">
-              {TOOLS.map(tool => (
-                <button key={tool.id} onClick={() => { setActiveTool(tool.id); setResult(null); }}
-                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all"
-                  style={{ background: activeTool === tool.id ? "rgba(107,53,232,0.12)" : t.faint, border: `1px solid ${activeTool === tool.id ? "rgba(107,53,232,0.3)" : t.border}` }}>
-                  <span className="text-lg">{tool.emoji}</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold" style={{ color: activeTool === tool.id ? V.v300 : t.text }}>{tool.label}</p>
-                    <p className="text-xs" style={{ color: t.muted }}>{tool.desc}</p>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "rgba(107,53,232,0.1)", color: V.v400 }}>
-                    {CREDIT_COSTS[tool.cost]} cr
-                  </span>
-                  {activeTool === tool.id && <Check size={13} style={{ color: V.v400, flexShrink: 0 }} />}
-                </button>
-              ))}
-            </div>
-          </div>
+      <div style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:16, alignItems:"start" }}>
 
-          {/* Image upload */}
-          {activeTool !== "ad_creative" && (
-            <div className="p-4 rounded-2xl" style={{ background: t.card, border: `1px solid ${t.border}` }}>
-              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: t.muted }}>Product Image</p>
-              {!imageUrl ? (
-                <button onClick={() => fileRef.current?.click()}
-                  className="w-full border-2 border-dashed rounded-xl py-10 flex flex-col items-center gap-2 transition-all"
-                  style={{ borderColor: t.border, background: t.faint }}>
-                  {uploading
-                    ? <Loader2 size={24} className="animate-spin" style={{ color: V.v400 }} />
-                    : <Upload size={24} style={{ color: t.muted }} />}
-                  <p className="text-sm font-medium" style={{ color: t.text }}>{uploading ? "Uploading..." : "Click to upload"}</p>
-                  <p className="text-xs" style={{ color: t.muted }}>JPG, PNG — max 10MB</p>
-                </button>
-              ) : (
-                <div className="relative">
-                  <img src={imageUrl} alt="Product" className="w-full h-48 object-contain rounded-xl" style={{ background: t.faint }} />
-                  <button onClick={() => { setImageUrl(""); setResult(null); }}
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-white"
-                    style={{ background: "rgba(0,0,0,0.6)" }}>
-                    <X size={13} />
+        {/* LEFT - Controls */}
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+
+          {/* Tool picker with visual examples */}
+          <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.06}}
+            style={{ borderRadius:18, border:`1px solid ${t.border}`, background:t.card, overflow:"hidden" }}>
+            <div style={{ padding:"14px 16px 10px", borderBottom:`1px solid ${t.border}` }}>
+              <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:t.muted }}>Choose Tool</p>
+            </div>
+            <div style={{ padding:"8px" }}>
+              {TOOLS.map(tl => {
+                const isActive = tool === tl.id;
+                return (
+                  <button key={tl.id} onClick={() => { setTool(tl.id); setResult(null); }}
+                    style={{ width:"100%", display:"flex", alignItems:"center", gap:12, padding:"10px 12px", borderRadius:12, border:`1px solid ${isActive?"rgba(107,53,232,0.3)":"transparent"}`, background:isActive?"rgba(107,53,232,0.1)":"transparent", cursor:"pointer", marginBottom:4, transition:"all 0.15s" }}>
+                    <span style={{ fontSize:18, flexShrink:0 }}>{tl.icon}</span>
+                    <div style={{ flex:1, textAlign:"left" }}>
+                      <p style={{ fontSize:12, fontWeight:700, color:isActive?V.v200:t.text }}>{tl.label}</p>
+                      <p style={{ fontSize:10, color:t.muted }}>{tl.desc}</p>
+                    </div>
+                    <span style={{ fontSize:9, fontWeight:700, padding:"2px 7px", borderRadius:99, background:"rgba(107,53,232,0.1)", color:V.v400 }}>{tl.credits}cr</span>
+                    {isActive && <Check size={12} color={V.v400}/>}
                   </button>
-                </div>
-              )}
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+                );
+              })}
             </div>
-          )}
+          </motion.div>
 
-          {/* Background picker */}
-          {(activeTool === "lifestyle" || activeTool === "ad_creative") && (
-            <div className="p-4 rounded-2xl" style={{ background: t.card, border: `1px solid ${t.border}` }}>
-              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: t.muted }}>Background Style</p>
-              <div className="grid grid-cols-4 gap-2">
+          {/* Background picker for lifestyle */}
+          {tool === "lifestyle" && (
+            <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
+              style={{ borderRadius:18, border:`1px solid ${t.border}`, background:t.card, padding:16 }}>
+              <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:t.muted, marginBottom:12 }}>Background</p>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
                 {BACKGROUNDS.map(bg => (
                   <button key={bg.id} onClick={() => setBgStyle(bg.id)}
-                    className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all"
-                    style={{ background: bgStyle === bg.id ? "rgba(107,53,232,0.15)" : t.faint, border: `1px solid ${bgStyle === bg.id ? "rgba(107,53,232,0.4)" : t.border}` }}>
-                    <span className="text-lg">{bg.emoji}</span>
-                    <span className="text-[9px] font-semibold text-center" style={{ color: bgStyle === bg.id ? V.v300 : t.muted }}>{bg.label}</span>
+                    style={{ padding:"10px 6px", borderRadius:10, border:`1px solid ${bgStyle===bg.id?"rgba(107,53,232,0.4)":t.border}`, background:bgStyle===bg.id?"rgba(107,53,232,0.12)":t.faint, cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+                    <span style={{ fontSize:18 }}>{bg.emoji}</span>
+                    <span style={{ fontSize:9, fontWeight:600, color:bgStyle===bg.id?V.v300:t.muted }}>{bg.label}</span>
                   </button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
-          {/* Product details */}
-          {(activeTool === "lifestyle" || activeTool === "ad_creative") && (
-            <div className="p-4 rounded-2xl space-y-3" style={{ background: t.card, border: `1px solid ${t.border}` }}>
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: t.muted }}>Product Details</p>
-              <input value={productName} onChange={e => setProductName(e.target.value)} placeholder="Product name (e.g. Wireless Earbuds)"
-                className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                style={{ background: t.faint, border: `1px solid ${t.border}`, color: t.text, fontFamily: "inherit" }} />
-              {activeTool === "ad_creative" && (
-                <input value={hook} onChange={e => setHook(e.target.value)} placeholder="Ad hook (e.g. Sound so clear it feels live)"
-                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                  style={{ background: t.faint, border: `1px solid ${t.border}`, color: t.text, fontFamily: "inherit" }} />
-              )}
-            </div>
-          )}
-
-          {/* Not enough credits warning */}
-          {!canAfford && (
-            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
-              <AlertTriangle size={14} color="#EF4444" />
-              <p className="text-xs" style={{ color: "#EF4444" }}>Not enough credits. You need {cost} credits.</p>
-              <Link href="/dashboard/billing" className="text-xs font-bold ml-auto" style={{ color: "#EF4444", whiteSpace: "nowrap" }}>Top up</Link>
-            </div>
+          {/* Product name for ad creative */}
+          {tool === "ad_creative" && (
+            <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
+              style={{ borderRadius:18, border:`1px solid ${t.border}`, background:t.card, padding:16 }}>
+              <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:t.muted, marginBottom:10 }}>Ad Text</p>
+              <input value={productName} onChange={e=>setProductName(e.target.value)} placeholder="Product name for the ad" style={inp}/>
+            </motion.div>
           )}
 
           {/* Generate button */}
-          <button
-            disabled={!canProcess || processMut.isPending || !canAfford}
-            onClick={() => processMut.mutate()}
-            className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-50"
-            style={{ background: canProcess && canAfford ? `linear-gradient(135deg,${V.v500},#3D1C8A)` : t.faint, boxShadow: canProcess && canAfford ? "0 8px 32px rgba(107,53,232,0.3)" : "none" }}>
-            {processMut.isPending
-              ? <><Loader2 size={15} className="animate-spin" />Generating... ({cost} credits)</>
-              : <><Wand2 size={15} />Generate with AI ({cost} credits)</>
-            }
-          </button>
+          {!canAfford && (
+            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", borderRadius:12, background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.2)" }}>
+              <AlertTriangle size={13} color="#EF4444"/>
+              <p style={{ fontSize:12, color:"#EF4444", flex:1 }}>Need {selectedTool.credits} credits</p>
+              <Link href="/dashboard/billing" style={{ fontSize:12, fontWeight:700, color:"#EF4444" }}>Top up</Link>
+            </div>
+          )}
+          <motion.button whileTap={{scale:0.97}} onClick={() => processMut.mutate()}
+            disabled={!imageUrl || processMut.isPending || !canAfford}
+            style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"13px", borderRadius:14, border:"none", cursor:imageUrl&&canAfford?"pointer":"not-allowed", fontFamily:"inherit", fontSize:13, fontWeight:800, color:"#fff", background:imageUrl&&canAfford?"linear-gradient(135deg,#6B35E8,#3D1C8A)":"rgba(255,255,255,0.06)", opacity:(!imageUrl||!canAfford)&&!processMut.isPending?0.5:1, transition:"all 0.15s" }}>
+            {processMut.isPending ? <><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/> Processing...</> : <><Wand2 size={14}/> Generate ({selectedTool.credits} credits)</>}
+          </motion.button>
         </div>
 
-        {/* Right — Result */}
-        <div className="rounded-2xl overflow-hidden flex flex-col" style={{ background: t.card, border: `1px solid ${t.border}`, minHeight: 400 }}>
-          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${t.border}` }}>
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: t.muted }}>Result</p>
-            {result && (
-              <div className="flex gap-2">
-                <button onClick={() => { navigator.clipboard.writeText(result); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
-                  style={{ background: t.faint, color: copied ? "#10B981" : t.muted }}>
-                  {copied ? <Check size={11} /> : <Copy size={11} />} {copied ? "Copied" : "Copy URL"}
-                </button>
-                <a href={result} download target="_blank"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
-                  style={{ background: "rgba(107,53,232,0.15)", color: V.v300 }}>
-                  <Download size={11} /> Download
-                </a>
+        {/* RIGHT - Upload + Result */}
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+
+          {/* Upload area */}
+          {!imageUrl ? (
+            <motion.div initial={{opacity:0,x:16}} animate={{opacity:1,x:0}} transition={{delay:0.08}}
+              onClick={() => fileRef.current?.click()}
+              style={{ borderRadius:18, border:`2px dashed ${t.border}`, background:t.faint, padding:32, display:"flex", flexDirection:"column", alignItems:"center", gap:12, cursor:"pointer", transition:"all 0.2s", minHeight:200 }}>
+              {uploading
+                ? <Loader2 size={32} style={{color:V.v400,animation:"spin 1s linear infinite"}}/>
+                : <Upload size={32} style={{color:t.muted}}/>}
+              <div style={{ textAlign:"center" }}>
+                <p style={{ fontSize:15, fontWeight:700, color:t.text, marginBottom:4 }}>{uploading?"Uploading...":"Upload your product photo"}</p>
+                <p style={{ fontSize:12, color:t.muted }}>JPG or PNG, max 10MB</p>
               </div>
-            )}
-          </div>
+              {/* Example images grid */}
+              {!uploading && (
+                <div style={{ display:"flex", gap:8, marginTop:8, flexWrap:"wrap", justifyContent:"center" }}>
+                  {["photo-1523275335684-37898b6baf30","photo-1491553895911-0055eca6402d","photo-1584308666744-24d5c474f2ae"].map(id => (
+                    <img key={id} src={`https://images.unsplash.com/${id}?w=60&h=60&fit=crop`} alt="example"
+                      style={{ width:52, height:52, borderRadius:10, objectFit:"cover", opacity:0.5, border:`1px solid ${t.border}` }}
+                      onError={e=>{(e.target as HTMLImageElement).style.display="none";}}/>
+                  ))}
+                  <div style={{ width:52, height:52, borderRadius:10, background:"rgba(107,53,232,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:V.v400, fontWeight:700 }}>+more</div>
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div initial={{opacity:0,scale:0.96}} animate={{opacity:1,scale:1}}
+              style={{ borderRadius:18, border:`1px solid ${t.border}`, background:t.card, overflow:"hidden" }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", borderBottom:`1px solid ${t.border}` }}>
+                <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:t.muted }}>Your Photo</p>
+                <button onClick={() => { setImageUrl(""); setResult(null); }} style={{ width:28, height:28, borderRadius:"50%", border:"none", background:"rgba(239,68,68,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <X size={13} color="#EF4444"/>
+                </button>
+              </div>
+              <div style={{ padding:12 }}>
+                <img src={imageUrl} alt="uploaded" style={{ width:"100%", maxHeight:200, objectFit:"contain", borderRadius:12, background:t.faint }}/>
+              </div>
+            </motion.div>
+          )}
 
-          <div className="flex-1 flex items-center justify-center p-6">
-            <AnimatePresence mode="wait">
-              {processMut.isPending && (
-                <motion.div key="loading" className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                    style={{ background: `linear-gradient(135deg,${V.v500},#3D1C8A)` }}>
-                    <Wand2 size={28} color="white" />
+          {/* Result */}
+          <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.14}}
+            style={{ borderRadius:18, border:`1px solid ${t.border}`, background:t.card, overflow:"hidden", minHeight:240 }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", borderBottom:`1px solid ${t.border}` }}>
+              <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:t.muted }}>Result</p>
+              {result && (
+                <div style={{ display:"flex", gap:8 }}>
+                  <button onClick={() => { navigator.clipboard.writeText(result); setCopied(true); setTimeout(()=>setCopied(false),2000); }}
+                    style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:`1px solid ${t.border}`, background:t.faint, cursor:"pointer", fontSize:11, fontWeight:600, color:copied?"#10B981":t.muted }}>
+                    {copied?<Check size={10}/>:<Copy size={10}/>} {copied?"Copied":"Copy URL"}
+                  </button>
+                  <a href={result} download target="_blank"
+                    style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, background:"rgba(107,53,232,0.1)", color:V.v300, textDecoration:"none", fontSize:11, fontWeight:600 }}>
+                    <Download size={10}/> Download
+                  </a>
+                </div>
+              )}
+            </div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:20, minHeight:200 }}>
+              <AnimatePresence mode="wait">
+                {processMut.isPending && (
+                  <motion.div key="loading" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{textAlign:"center"}}>
+                    <motion.div animate={{rotate:360}} transition={{duration:1.5,repeat:Infinity,ease:"linear"}}
+                      style={{width:52,height:52,borderRadius:16,background:"linear-gradient(135deg,#6B35E8,#3D1C8A)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
+                      <Wand2 size={24} color="white"/>
+                    </motion.div>
+                    <p style={{fontSize:13,fontWeight:700,color:t.text,marginBottom:4}}>Processing your image...</p>
+                    <p style={{fontSize:11,color:t.muted}}>15-30 seconds</p>
                   </motion.div>
-                  <p className="font-bold text-sm mb-1" style={{ color: t.text }}>Generating your image...</p>
-                  <p className="text-xs" style={{ color: t.muted }}>This takes 15-30 seconds</p>
-                </motion.div>
-              )}
+                )}
+                {!processMut.isPending && result && (
+                  <motion.div key="result" initial={{opacity:0,scale:0.95}} animate={{opacity:1,scale:1}} style={{width:"100%"}}>
+                    <img src={result} alt="generated" style={{width:"100%",maxHeight:300,objectFit:"contain",borderRadius:12,background:tool==="remove_bg"?"repeating-conic-gradient(rgba(255,255,255,0.05) 0% 25%, transparent 0% 50%) 0 0 / 16px 16px":t.faint}}/>
+                  </motion.div>
+                )}
+                {!processMut.isPending && !result && (
+                  <motion.div key="empty" initial={{opacity:0}} animate={{opacity:1}} style={{textAlign:"center"}}>
+                    <div style={{fontSize:40,marginBottom:12}}>{selectedTool.icon}</div>
+                    <p style={{fontSize:13,color:t.muted}}>{selectedTool.label}</p>
+                    <p style={{fontSize:11,color:t.muted,opacity:0.6,marginTop:4}}>Upload a photo to begin</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
 
-              {!processMut.isPending && result && (
-                <motion.div key="result" className="w-full" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                  <img src={result} alt="Generated" className="w-full rounded-xl object-contain max-h-96"
-                    style={{ background: activeTool === "remove_bg" ? "repeating-conic-gradient(rgba(255,255,255,0.05) 0% 25%, transparent 0% 50%) 0 0 / 16px 16px" : t.faint }} />
-                </motion.div>
-              )}
-
-              {!processMut.isPending && !result && (
-                <motion.div key="empty" className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: t.faint }}>
-                    <ImageIcon size={28} style={{ color: t.muted }} />
-                  </div>
-                  <p className="text-sm font-medium mb-1" style={{ color: t.muted }}>Your image appears here</p>
-                  <p className="text-xs" style={{ color: t.muted, opacity: 0.6 }}>Upload a photo and click Generate</p>
-                  <div className="mt-6 p-3 rounded-xl text-left" style={{ background: t.faint, border: `1px solid ${t.border}` }}>
-                    <p className="text-xs font-semibold mb-2" style={{ color: t.muted }}>Tip: Best results come from</p>
-                    {["Clear, well-lit product photo","White or simple background","Product fills most of the frame"].map(tip => (
-                      <p key={tip} className="text-xs mb-1 flex items-center gap-1.5" style={{ color: t.muted }}>
-                        <Sparkles size={9} style={{ color: V.v400, flexShrink: 0 }} /> {tip}
-                      </p>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          {/* Before/after examples */}
+          <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.2}}
+            style={{borderRadius:18,border:`1px solid ${t.border}`,background:t.card,overflow:"hidden"}}>
+            <div style={{padding:"12px 16px 8px",borderBottom:`1px solid ${t.border}`}}>
+              <p style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",color:t.muted}}>Example Results</p>
+            </div>
+            <div style={{padding:12,display:"flex",gap:10,alignItems:"center",justifyContent:"center"}}>
+              <div style={{textAlign:"center"}}>
+                <img src={example.before} alt="before" style={{width:90,height:90,objectFit:"cover",borderRadius:10,border:`1px solid ${t.border}`}} onError={e=>{(e.target as HTMLImageElement).style.display="none";}}/>
+                <p style={{fontSize:9,color:t.muted,marginTop:4}}>Before</p>
+              </div>
+              <span style={{fontSize:18,color:V.v400}}>→</span>
+              <div style={{textAlign:"center"}}>
+                <img src={example.after} alt="after" style={{width:90,height:90,objectFit:"cover",borderRadius:10,border:`1px solid rgba(107,53,232,0.3)`}} onError={e=>{(e.target as HTMLImageElement).style.display="none";}}/>
+                <p style={{fontSize:9,color:t.muted,marginTop:4}}>After</p>
+              </div>
+              <div style={{flex:1,paddingLeft:8}}>
+                <p style={{fontSize:11,fontWeight:700,color:t.text,marginBottom:4}}>{selectedTool.label}</p>
+                <p style={{fontSize:10,color:t.muted,lineHeight:1.5}}>{example.label}</p>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
+
+      <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleUpload}/>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }
