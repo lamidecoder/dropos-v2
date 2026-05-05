@@ -49,6 +49,14 @@ import webhookRoutes       from "./routes/webhook.routes";
 import returnsRoutes       from "./routes/returns.routes";
 import twoFARoutes         from "./routes/twoFA.routes";
 import productSubscriptionRoutes from "./routes/productSubscription.routes";
+import onboardingRoutes  from "./routes/onboarding.routes";
+import milestoneRoutes   from "./routes/milestone.routes";
+import contactRoutes     from "./routes/contact.routes";
+import bundleRoutes      from "./routes/bundle.routes";
+import groupBuyRoutes    from "./routes/groupbuy.routes";
+import referralRoutes    from "./routes/referral.routes";
+import navLevelRoutes    from "./routes/navlevel.routes";
+import reportsRoutes     from "./routes/reports.routes";
 import waitlistRoutes      from "./routes/waitlist.routes";
 
 // KAI CORE
@@ -197,6 +205,14 @@ app.use("/api/intel",            intelRoutes);
 app.use("/api/fulfillment",      fulfillmentRoutes);
 
 // ERRORS
+app.use("/api/onboarding",    onboardingRoutes);
+app.use("/api/milestones",     milestoneRoutes);
+app.use("/api/contact",        contactRoutes);
+app.use("/api/bundles",        bundleRoutes);
+app.use("/api/group-buy",      groupBuyRoutes);
+app.use("/api/referral",       referralRoutes);
+app.use("/api/nav-level",      navLevelRoutes);
+app.use("/api/reports",        reportsRoutes);
 app.use(notFound);
 app.use(errorHandler);
 

@@ -120,6 +120,11 @@ model User {
   refreshToken      String?
   adminNotes        String?
   flags             String[]   @default([])
+  onboarded         Boolean    @default(false)
+  onboardNiche      String?
+  onboardStage      String?
+  onboardGoal       String?
+  onboardTemplate   String?
   country           String?
   city              String?
   timezone          String?    @default("UTC")
@@ -134,6 +139,7 @@ model User {
   notifications     Notification[]
   auditLogs         AuditLog[]
   pushSubscriptions PushSubscription[]
+  referral          Referral?
 
   @@index([email])
   @@index([role])
@@ -153,6 +159,8 @@ model Store {
   banner          String?
   domain          String?     @unique
   customDomain    String?     @unique
+  templateId      String?
+  paystackConnected Boolean  @default(false)
   status          StoreStatus @default(PENDING)
   primaryColor    String?     @default("#7c3aed")
   accentColor     String?     @default("#a855f7")
@@ -1355,4 +1363,81 @@ model WaitlistEntry {
   @@index([email])
   @@index([referralCode])
   @@index([spotNumber])
+}
+
+model Bundle {
+  id              String   @id @default(uuid())
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name            String
+  productIds      String[]
+  discountPercent Float    @default(10)
+  bundlePrice     Float?
+  originalPrice   Float?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model GroupBuy {
+  id              String        @id @default(uuid())
+  storeId         String
+  store           Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product       @relation(fields: [productId], references: [id])
+  title           String
+  description     String?
+  groupPrice      Float
+  originalPrice   Float
+  minMembers      Int
+  endsAt          DateTime
+  active          Boolean       @default(true)
+  members         GroupBuyMember[]
+  createdAt       DateTime      @default(now())
+}
+
+model GroupBuyMember {
+  id          String   @id @default(uuid())
+  groupBuyId  String
+  groupBuy    GroupBuy @relation(fields: [groupBuyId], references: [id], onDelete: Cascade)
+  name        String
+  email       String
+  paid        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Milestone {
+  id        String   @id @default(uuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  message   String
+  cta       Json?
+  seen      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String   @default("general")
+  message   String
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+}
+
+model Referral {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code        String   @unique
+  clicks      Int      @default(0)
+  signups     Int      @default(0)
+  conversions Int      @default(0)
+  earned      Float    @default(0)
+  pending     Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
