@@ -3,9 +3,10 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { AppError } from "../utils/AppError";
 
-export interface CustomerAuthRequest extends Request {
+export type CustomerAuthRequest = Request & {
   customer?: { accountId: string; storeId: string; email: string };
-}
+  headers: any; params: any; body: any; query: any;
+};
 
 export const authenticateCustomer = (req: CustomerAuthRequest, _res: Response, next: NextFunction) => {
   const header = req.headers.authorization;

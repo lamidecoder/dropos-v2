@@ -1,6 +1,6 @@
 // src/controllers/twoFA.controller.ts
 import { Response } from "express";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { AuthRequest } from "../middleware/auth";
 import speakeasy from "speakeasy";

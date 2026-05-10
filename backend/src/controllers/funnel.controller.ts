@@ -1,6 +1,6 @@
 // src/controllers/funnel.controller.ts
 import { Request, Response } from "express";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { AuthRequest } from "../middleware/auth";
 import { AppError } from "../utils/AppError";
 

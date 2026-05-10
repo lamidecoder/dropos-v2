@@ -2,7 +2,7 @@
 import { supplierService, FulfillmentPayload } from "../services/supplier.service";
 import { Request, Response } from "express";
 import { z } from "zod";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { logger } from "../utils/logger";
 import { generateOrderNumber, paginate } from "../utils/helpers";

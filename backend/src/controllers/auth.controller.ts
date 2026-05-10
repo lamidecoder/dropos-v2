@@ -2,7 +2,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import {
   signAccessToken, signRefreshToken, verifyRefreshToken,
   setRefreshCookie, clearRefreshCookie

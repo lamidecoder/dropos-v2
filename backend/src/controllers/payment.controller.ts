@@ -1,7 +1,7 @@
 // src/controllers/payment.controller.ts
 import { Request, Response } from "express";
 import { z } from "zod";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { calculateFee, detectGateway } from "../utils/helpers";
 import { AuthRequest } from "../middleware/auth";

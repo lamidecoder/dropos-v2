@@ -1,7 +1,7 @@
 // src/routes/coupon.routes.ts
 import { Router, Request, Response } from "express";
 import { authenticate } from "../middleware/auth";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { requireStoreOwner } from "../controllers/store.controller";
 import { AuthRequest } from "../middleware/auth";

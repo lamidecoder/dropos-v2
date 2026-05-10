@@ -2,7 +2,7 @@
 import { Router, Request, Response } from "express";
 import { authenticate } from "../middleware/auth";
 import { emailService } from "../services/email.service";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { AuthRequest } from "../middleware/auth";
 
@@ -90,7 +90,7 @@ router.post("/weekly-digest/:storeId", authenticate, async (req: AuthRequest, re
 
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const orders  = await prisma.order.findMany({
-    where:   { storeId: req.params.storeId, createdAt: { gte: weekAgo }, status: "PAID" },
+    where:   { storeId: req.params.storeId, createdAt: { gte: weekAgo }, status: "COMPLETED" },
     include: { items: { include: { product: { select: { name: true } } } } },
   });
 

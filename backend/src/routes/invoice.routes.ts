@@ -1,7 +1,7 @@
 // src/routes/invoice.routes.ts
 import { Router, Request, Response } from "express";
 import { authenticate } from "../middleware/auth";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 
 const router = Router();

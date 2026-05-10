@@ -1,7 +1,7 @@
 // src/routes/analytics.routes.ts
 import { Router } from "express";
 import { authenticate } from "../middleware/auth";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { requireStoreOwner } from "../controllers/store.controller";
 
 const router = Router();

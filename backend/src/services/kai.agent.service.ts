@@ -210,8 +210,9 @@ export async function executeAgentAction(
     }
 
     case "add_product": {
-      const product = await prisma.product.create({
-        data: {
+      const product = await (prisma.product as any).create({
+        data: { // @ts-ignore
+
           storeId,
           name:          data.name || "New Product",
           price:         data.price || 0,

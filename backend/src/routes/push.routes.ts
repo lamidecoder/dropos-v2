@@ -1,7 +1,7 @@
 // src/routes/push.routes.ts
 import { Router, Request, Response } from "express";
 import { authenticate } from "../middleware/auth";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { pushToUser, PushTemplates } from "../services/push.service";
 import { AppError } from "../utils/AppError";
 

@@ -2,7 +2,7 @@
 import { Request, Response } from "express";
 import { CustomerAuthRequest } from "../middleware/customerAuth";
 import { z } from "zod";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";

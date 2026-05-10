@@ -226,9 +226,10 @@ model Store {
   apiKeys         ApiKey[]
   returnRequests  ReturnRequest[]
   affiliates      Affiliate[]
-  bundles         Bundle[]
-  groupBuys       GroupBuy[]
-  milestones      Milestone[]
+  bundles              Bundle[]
+  groupBuys            GroupBuy[]
+  milestones           Milestone[]
+  whatsappBroadcasts   WhatsappBroadcast[]
   @@index([ownerId])
   @@index([slug])
   @@index([status])
@@ -596,6 +597,7 @@ model Coupon {
   value         Float
   minOrderValue Float     @default(0)
   maxUses       Int?
+  usageLimit    Int?
   usedCount     Int       @default(0)
   isActive      Boolean   @default(true)
   expiresAt     DateTime?
@@ -1321,6 +1323,7 @@ model CohortData {
 // ─── KAI Chat History ─────────────────────────────────────────────────────────
 
 model KaiConversation {
+  storeId   String?
   id        String       @id @default(uuid())
   userId    String
   title     String       @default("New Chat")
@@ -1489,7 +1492,7 @@ model RefreshToken {
 
 model KaiMemory {
   id         String   @id @default(uuid())
-  userId     String
+  userId     String?
   storeId    String?
   key        String
   value      String
@@ -1537,16 +1540,17 @@ model KaiMarketCache {
 
 model KaiPulseAlert {
   id        String   @id @default(uuid())
-  storeId   String
-  userId    String
-  type      String
-  title     String
-  message   String
-  data      Json?
-  read      Boolean  @default(false)
-  priority  String   @default("normal")
-  severity   String   @default("info")
-  actionable Boolean  @default(false)
+  storeId         String
+  userId          String?
+  type            String
+  title           String
+  message         String
+  data            Json?
+  read            Boolean  @default(false)
+  priority        String   @default("normal")
+  severity        String   @default("info")
+  actionable      Boolean  @default(false)
+  suggestedPrompt String?
   createdAt  DateTime @default(now())
   @@index([storeId])
   @@index([userId])
@@ -1563,6 +1567,7 @@ model KaiMorningBrief {
   topOpportunity    String?
   revenueLastNight  Float    @default(0)
   ordersLastNight   Int      @default(0)
+  urgentAction      String?
   @@unique([storeId, date], name: "storeId_date")
   @@map("kai_morning_briefs")
 }
@@ -1578,6 +1583,7 @@ model KaiBrandVoice {
   usesEmojis     Boolean  @default(true)
   language       String   @default("en")
   sentenceLength String   @default("medium")
+  sampleContent  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   @@map("kai_brand_voices")
@@ -1659,15 +1665,20 @@ model LoyaltyTransaction {
 }
 
 model WhatsappBroadcast {
-  id          String   @id @default(uuid())
-  storeId     String
-  message     String
-  recipients  Int      @default(0)
-  sent        Int      @default(0)
-  failed      Int      @default(0)
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String    @id @default(uuid())
+  storeId        String
+  message        String
+  recipients     Int       @default(0)
+  recipientCount Int       @default(0)
+  sent           Int       @default(0)
+  sentCount      Int       @default(0)
+  failed         Int       @default(0)
+  status         String    @default("pending")
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  store          Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   @@index([storeId])
   @@map("whatsapp_broadcasts")
 }

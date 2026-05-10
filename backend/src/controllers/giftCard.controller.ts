@@ -1,7 +1,7 @@
 // src/controllers/giftCard.controller.ts
 import { Request, Response } from "express";
 import { z } from "zod";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { AuthRequest } from "../middleware/auth";
 import { emailService } from "../services/email.service";

@@ -47,8 +47,8 @@ router.post("/:storeId", async (req: AuthRequest, res: Response) => {
     webhookUrl:   z.string().url().optional().or(z.literal("")),
   }).parse(req.body);
 
-  const supplier = await prisma.supplier.create({
-    data: { ...data, storeId } as any,
+  const supplier = await (prisma.supplier as any).create({
+    data: { ...data, storeId },
   });
 
   return res.status(201).json({ success: true, data: supplier });
