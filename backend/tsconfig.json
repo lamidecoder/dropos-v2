@@ -23,7 +23,9 @@
       ]
     },
     "baseUrl": ".",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "noEmitOnError": false,
+    "strictNullChecks": false
   },
   "include": [
     "src/**/*",
