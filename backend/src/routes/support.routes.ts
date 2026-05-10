@@ -16,7 +16,7 @@ router.post("/", async (req: any, res) => {
     priority: z.enum(["LOW","MEDIUM","HIGH","URGENT"]).default("MEDIUM"),
   }).parse(req.body);
 
-  const ticket = await prisma.supportTicket.create({
+  const ticket = await (prisma.supportTicket as any).create({
     data: { userId: req.user!.userId, subject, message, priority },
   });
   return res.status(201).json({ success: true, data: ticket });
@@ -61,7 +61,7 @@ router.patch("/:ticketId", async (req: any, res) => {
   });
 
   if (message) {
-    await prisma.ticketReply.create({
+    await (prisma.ticketReply as any).create({
       data: {
         ticketId: ticket.id,
         senderId: req.user!.userId,

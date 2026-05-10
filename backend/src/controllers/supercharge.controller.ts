@@ -120,7 +120,7 @@ export async function scrapeProduct(req: Request, res: Response) {
 export async function importScrapedProduct(req: Request, res: Response) {
   try {
     const { storeId, product } = req.body;
-    const created = await prisma.product.create({
+    const created = await (prisma.product as any).create({
       data: {
         storeId,
         name: product.name,
@@ -132,7 +132,7 @@ export async function importScrapedProduct(req: Request, res: Response) {
         tags: product.tags || [],
         images: product.images || [],
         sourceUrl: product.supplierUrl,
-        seoTitle: product.seoTitle,
+        metaTitle: product.seoTitle,
         seoDescription: product.seoDescription,
         isActive: true,
       },

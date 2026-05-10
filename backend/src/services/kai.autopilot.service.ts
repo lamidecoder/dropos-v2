@@ -60,7 +60,7 @@ export async function onOrderPaid(orderId: string): Promise<void> {
   // ── Alert seller about manual items ────────────────────────
   if (manualItems.length > 0) {
     const sym = locale.currencySymbol;
-    await prisma.kaiPulseAlert.create({
+    await (prisma.kaiPulseAlert as any).create({
       data: {
         storeId:    order.storeId,
         type:       "new_order_manual",
@@ -142,7 +142,7 @@ async function fulfillViaCJ(params: {
       });
 
       // Alert seller silently — no action needed
-      await prisma.kaiPulseAlert.create({
+      await (prisma.kaiPulseAlert as any).create({
         data: {
           storeId:    order.storeId,
           type:       "auto_fulfilled",
@@ -156,7 +156,7 @@ async function fulfillViaCJ(params: {
 
     } else {
       // Auto-fulfill failed — alert seller to do it manually
-      await prisma.kaiPulseAlert.create({
+      await (prisma.kaiPulseAlert as any).create({
         data: {
           storeId:    order.storeId,
           type:       "fulfillment_failed",
@@ -170,7 +170,7 @@ async function fulfillViaCJ(params: {
       }).catch(() => {});
     }
   } catch (err: any) {
-    await prisma.kaiPulseAlert.create({
+    await (prisma.kaiPulseAlert as any).create({
       data: {
         storeId:    order.storeId,
         type:       "fulfillment_error",
@@ -274,7 +274,7 @@ export async function syncAndNotifyTracking(storeId: string): Promise<number> {
   }
 
   if (notified > 0) {
-    await prisma.kaiPulseAlert.create({
+    await (prisma.kaiPulseAlert as any).create({
       data: {
         storeId,
         type:       "tracking_synced",
@@ -298,8 +298,7 @@ export async function syncSupplierStock(storeId: string): Promise<{
 }> {
   const store = await prisma.store.findUnique({
     where:   { id: storeId },
-    include: { integrations: true },
-    select: { country: true, name: true, integrations: true } as any,
+    include: { integrations: true } as any,
   });
 
   const locale  = getLocale((store as any)?.country || "NG");
@@ -385,7 +384,7 @@ If cannot verify: {"inStock": null, "found": false}`,
 
   // Create one consolidated alert instead of spamming
   if (alerts.length > 0) {
-    await prisma.kaiPulseAlert.create({
+    await (prisma.kaiPulseAlert as any).create({
       data: {
         storeId,
         type:       "supplier_sync",

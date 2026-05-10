@@ -45,7 +45,7 @@ export async function awardPoints(orderId: string): Promise<void> {
       },
     });
   } else {
-    await prisma.loyaltyAccount.create({
+    await (prisma.loyaltyAccount as any).create({
       data: {
         customerId: order.customer.id,
         storeId: order.store.id,

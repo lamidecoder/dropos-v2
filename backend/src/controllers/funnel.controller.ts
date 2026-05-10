@@ -12,7 +12,7 @@ export const trackFunnelEvent = async (req: Request, res: Response) => {
   const validEvents = ["view", "add_to_cart", "checkout_start", "purchase"];
   if (!validEvents.includes(event)) return res.json({ success: true });
 
-  await prisma.funnelEvent.create({
+  await (prisma.funnelEvent as any).create({
     data: {
       storeId, sessionId, event, productId, orderId, value,
       meta: meta || null,

@@ -73,7 +73,7 @@ export const initializePayment = async (req: Request, res: Response) => {
   }
 
   // Create pending payment record
-  await prisma.payment.create({
+  await (prisma.payment as any).create({
     data: {
       orderId,
       storeId:           order.storeId,

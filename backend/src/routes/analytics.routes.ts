@@ -82,10 +82,10 @@ router.get("/:storeId/export", authenticate, async (req: any, res) => {
   } else if (type === "customers") {
     const rows = await prisma.storeCustomer.findMany({
       where: { storeId },
-      select: { name: true, email: true, totalOrders: true, totalSpent: true, createdAt: true },
+      select: { name: true, email: true, orderCount: true, totalSpent: true, createdAt: true },
     });
     csv  = "Name,Email,Orders,Total Spent,Since\n";
-    csv += rows.map(r => `"${r.name}",${r.email},${r.totalOrders},${r.totalSpent.toFixed(2)},${r.createdAt.toISOString().split("T")[0]}`).join("\n");
+    csv += rows.map(r => `"${r.name}",${r.email},${r.orderCount},${r.totalSpent.toFixed(2)},${r.createdAt.toISOString().split("T")[0]}`).join("\n");
   }
 
   res.setHeader("Content-Type", "text/csv");

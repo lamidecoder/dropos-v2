@@ -172,7 +172,7 @@ export async function saveMessageSafely(params: {
   metadata?: any;
 }): Promise<void> {
   try {
-    await prisma.kaiMessage.create({
+    await (prisma.kaiMessage as any).create({
       data: {
         conversationId: params.conversationId,
         role:           params.role,

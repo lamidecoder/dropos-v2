@@ -38,7 +38,7 @@ router.post("/complete", async (req: any, res: Response) => {
 
     // Create first milestone: store setup
     if (storeId) {
-      await prisma.milestone.create({
+      await (prisma.milestone as any).create({
         data: {
           storeId, type: "store_complete",
           title: "Your store is live",

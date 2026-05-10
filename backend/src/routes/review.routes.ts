@@ -35,7 +35,7 @@ router.post("/:storeId/:productId", globalRateLimiter, async (req: Request, res:
   const dupe = await prisma.review.findFirst({ where: { productId: req.params.productId, email } });
   if (dupe) throw new AppError("You have already reviewed this product", 400);
 
-  const review = await prisma.review.create({
+  const review = await (prisma.review as any).create({
     data: {
       storeId:   req.params.storeId,
       productId: req.params.productId,

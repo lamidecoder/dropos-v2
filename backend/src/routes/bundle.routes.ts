@@ -29,7 +29,7 @@ router.post("/:storeId", async (req: any, res: Response) => {
     const originalPrice = products.reduce((a: number, p: any) => a + (p.price || 0), 0);
     const bundlePrice   = originalPrice * (1 - (discountPercent || 10) / 100);
 
-    const bundle = await prisma.bundle.create({
+    const bundle = await (prisma.bundle as any).create({
       data: { storeId: req.params.storeId, name, productIds, discountPercent: discountPercent || 10, originalPrice, bundlePrice },
     });
     res.status(201).json({ success: true, data: bundle });

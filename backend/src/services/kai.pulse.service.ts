@@ -27,7 +27,7 @@ async function createAlert(
   });
   if (recent) return;
 
-  await prisma.kaiPulseAlert.create({
+  await (prisma.kaiPulseAlert as any).create({
     data: {
       storeId, type, title, message, severity,
       actionable: !!suggestedPrompt,
@@ -247,8 +247,10 @@ Make it specific and actionable for a Nigerian/African seller.`,
     opportunity = data.content?.[0]?.text?.trim() || opportunity;
   }
 
-  await prisma.kaiMorningBrief.create({
+  await (prisma.kaiMorningBrief as any).create({
     data: {
+      userId: 'system',
+      content: '',
       storeId, date: today,
       revenueLastNight: revenueAmt,
       ordersLastNight: overnightOrders,

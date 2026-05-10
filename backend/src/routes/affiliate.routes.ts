@@ -42,7 +42,7 @@ router.post("/:storeId", authenticate, async (req: Request, res: Response) => {
   const existing = await prisma.affiliate.findFirst({ where: { storeId, code } });
   if (existing) code = randomCode(10);
 
-  const affiliate = await prisma.affiliate.create({
+  const affiliate = await (prisma.affiliate as any).create({
     data: {
       storeId, name, email, code,
       commissionPct:  Number(commissionPct)  || 10,
@@ -108,7 +108,7 @@ router.post("/:storeId/:id/payout", authenticate, async (req: Request, res: Resp
   const { amount, method, reference, note } = req.body;
   if (!amount || amount <= 0) throw new AppError("Amount required", 400);
 
-  const payout = await prisma.affiliatePayout.create({
+  const payout = await (prisma.affiliatePayout as any).create({
     data: { affiliateId: id, storeId, amount: Number(amount), method: method || "manual", reference, note, status: "SENT" },
   });
 
@@ -129,7 +129,7 @@ router.post("/track-click", globalRateLimiter, async (req: Request, res: Respons
   if (!aff) return res.json({ success: true });
 
   await Promise.all([
-    await prisma.referralClick.create({
+    await (prisma.referralClick as any).create({
       data: { affiliateId: aff.id, storeId, ip: req.ip, userAgent: req.headers["user-agent"], page },
     }),
     await prisma.affiliate.update({ where: { id: aff.id }, data: { totalClicks: { increment: 1 } } }),
@@ -151,7 +151,7 @@ router.post("/record-conversion", globalRateLimiter, async (req: Request, res: R
     : (Number(orderValue) * aff.commissionPct) / 100;
 
   await Promise.all([
-    await prisma.referralConversion.create({
+    await (prisma.referralConversion as any).create({
       data: { affiliateId, orderId, storeId, orderValue: Number(orderValue), commission, status: "PENDING" },
     }),
     await prisma.affiliate.update({

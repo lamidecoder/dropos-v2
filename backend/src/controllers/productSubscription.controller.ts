@@ -36,7 +36,7 @@ export const createProductSubscription = async (req: Request, res: Response) => 
 
   const discountedPrice = product.price * (1 - data.discount / 100);
 
-  const sub = await prisma.productSubscription.create({
+  const sub = await (prisma.productSubscription as any).create({
     data: {
       storeId, productId: data.productId, customerEmail: data.customerEmail,
       interval: data.interval, intervalCount: data.intervalCount,

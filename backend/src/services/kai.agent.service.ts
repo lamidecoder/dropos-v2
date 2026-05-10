@@ -309,7 +309,7 @@ export async function executeAgentAction(
 
     case "create_coupon": {
       const code = data.code || generateCouponCode();
-      const coupon = await prisma.coupon.create({
+      const coupon = await (prisma.coupon as any).create({
         data: {
           storeId,
           code:          code.toUpperCase(),

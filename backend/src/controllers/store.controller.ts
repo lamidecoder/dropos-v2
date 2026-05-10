@@ -57,7 +57,7 @@ export const createStore = async (req: AuthRequest, res: Response) => {
 
   const slug = await uniqueSlug(slugify(data.name));
 
-  const store = await prisma.store.create({
+  const store = await (prisma.store as any).create({
     data: {
       ...data,
       ownerId: userId,

@@ -33,7 +33,7 @@ export async function sendReviewRequest(orderId: string): Promise<void> {
     const reviewUrl    = `https://${order.store.slug}.droposHQ.com/review/${orderId}`;
 
     // Save review request record
-    await prisma.reviewRequest.create({
+    await (prisma.reviewRequest as any).create({
       data: {
         orderId,
         customerId: order.customer.id,

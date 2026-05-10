@@ -53,7 +53,7 @@ export const saveAbandonedCart = async (req: Request, res: Response) => {
     return res.json({ success: true, token: existing.token });
   }
 
-  const cart = await prisma.abandonedCart.create({
+  const cart = await (prisma.abandonedCart as any).create({
     data: {
       storeId:  data.storeId,
       email:    data.email,

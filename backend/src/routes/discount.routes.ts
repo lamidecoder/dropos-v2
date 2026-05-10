@@ -42,7 +42,7 @@ router.post("/:storeId", authenticate, async (req: AuthRequest, res: Response) =
 
   if (!name || !type || !valueType) throw new AppError("name, type, valueType required", 400);
 
-  const discount = await prisma.discount.create({
+  const discount = await (prisma.discount as any).create({
     data: {
       storeId, name, description, type, valueType,
       value:         Number(value) || 0,

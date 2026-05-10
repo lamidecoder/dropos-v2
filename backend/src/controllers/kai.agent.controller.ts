@@ -96,13 +96,13 @@ export async function agentChat(req: Request, res: Response) {
       : null;
 
     if (!conv) {
-      conv = await prisma.kaiConversation.create({
+      conv = await (prisma.kaiConversation as any).create({
         data:    { storeId: activeStoreId, title: generateTitle(message) },
         include: { messages: true },
       });
     }
 
-    await prisma.kaiMessage.create({
+    await (prisma.kaiMessage as any).create({
       data: { conversationId: conv.id, role: "user", content: message },
     });
 
@@ -144,7 +144,7 @@ export async function agentChat(req: Request, res: Response) {
       },
     });
 
-    await prisma.kaiMessage.create({
+    await (prisma.kaiMessage as any).create({
       data: { conversationId: conv.id, role: "assistant", content: fullResponse, metadata: { intent, searched: useSearch } },
     });
     await prisma.kaiConversation.update({ where: { id: conv.id }, data: { updatedAt: new Date() } });
@@ -184,7 +184,7 @@ export async function executeAction(req: Request, res: Response) {
     const result = await executeAgentAction(action, data || {}, storeId);
 
     // Log the action
-    await prisma.kaiActionLog.create({
+    await (prisma.kaiActionLog as any).create({
       data: {
         storeId,
         conversationId: data?.conversationId || "",

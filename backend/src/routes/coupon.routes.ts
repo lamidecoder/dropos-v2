@@ -87,7 +87,7 @@ router.post("/:storeId", authenticate, async (req: AuthRequest, res: Response) =
   });
   if (existing) throw new AppError("Coupon code already exists", 400);
 
-  const coupon = await prisma.coupon.create({
+  const coupon = await (prisma.coupon as any).create({
     data: {
       storeId,
       code:          data.code.toUpperCase().trim(),

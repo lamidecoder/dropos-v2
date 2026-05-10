@@ -423,7 +423,7 @@ If cannot verify: {"currentPriceUSD": null, "inStock": null, "found": false}
 
   // Create pulse alerts for significant changes
   if (priceChanges.length > 0 || stockChanges.length > 0) {
-    await prisma.kaiPulseAlert.create({
+    await (prisma.kaiPulseAlert as any).create({
       data: {
         storeId, type: "price_sync", severity: "info",
         title: `Price/stock sync complete`,

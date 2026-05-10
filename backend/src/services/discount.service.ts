@@ -156,7 +156,7 @@ export class DiscountService {
   // ── Record discount usage after order placed ─────────────────────────────
   static async recordUsage(discountId: string, orderId: string, customerId: string | undefined, amountSaved: number) {
     await prisma.$transaction(async (tx) => { const results = await Promise.all([
-      await prisma.discountUsage.create({
+      await (prisma.discountUsage as any).create({
         data: { discountId, orderId, customerId, amountSaved },
       }),
       await prisma.discount.update({

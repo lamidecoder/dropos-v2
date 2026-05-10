@@ -73,12 +73,11 @@ export async function importConfirmed(req: Request, res: Response) {
     if (!store) return res.status(403).json({ success: false, message: "Not your store" });
 
     // Create the product
-    const product = await prisma.product.create({
+    const product = await (prisma.product as any).create({
       data: {
         storeId,
         name:          scrapedData.name,
-        description:   scrapedData.description,
-        shortDesc:     scrapedData.shortDescription,
+        description:   scrapedData.shortDescription || scrapedData.description,
         price:         Number(sellingPrice || scrapedData.suggestedLocalPrice?.replace(/[^\d]/g, "") || 0),
         costPrice:     scrapedData.supplierCostLocal || 0,
         stockQuantity: 50,
@@ -86,8 +85,8 @@ export async function importConfirmed(req: Request, res: Response) {
         tags:          scrapedData.tags || [],
         images:        scrapedData.images || [],
         sourceUrl:     scrapedData.supplierUrl,
-        seoTitle:      scrapedData.seoTitle,
-        seoDescription: scrapedData.seoDescription,
+        metaTitle:      scrapedData.seoTitle || scrapedData.metaTitle,
+        metaDescription: scrapedData.seoDescription,
         isActive:      true,
         metadata: {
           angle:           selectedAngle,

@@ -36,7 +36,7 @@ router.post("/:id/join", async (req: Request, res: Response) => {
     const existing = await prisma.groupBuyMember.findFirst({ where: { groupBuyId: req.params.id, email } });
     if (existing) return res.status(400).json({ success: false, message: "You have already joined this group buy" });
 
-    await prisma.groupBuyMember.create({ data: { groupBuyId: req.params.id, name, email } });
+    await (prisma.groupBuyMember as any).create({ data: { groupBuyId: req.params.id, name, email } });
     res.json({ success: true, message: "Joined! We will email you when the group fills up." });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
@@ -47,7 +47,7 @@ router.post("/:id/join", async (req: Request, res: Response) => {
 router.post("/", authenticate as any, async (req: any, res: Response) => {
   try {
     const { storeId, productId, title, description, groupPrice, originalPrice, minMembers, endsAt } = req.body;
-    const gb = await prisma.groupBuy.create({
+    const gb = await (prisma.groupBuy as any).create({
       data: { storeId, productId, title, description, groupPrice, originalPrice, minMembers: minMembers || 10, endsAt: new Date(endsAt) },
     });
     res.status(201).json({ success: true, data: gb });

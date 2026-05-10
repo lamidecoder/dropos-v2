@@ -198,7 +198,7 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
   const user = await prisma.user.update({ where: { id: userId }, data });
 
   // Audit log
-  await prisma.auditLog.create({
+  await (prisma.auditLog as any).create({
     data: {
       userId:   req.user!.userId,
       action:   "UPDATE_USER",
@@ -231,7 +231,7 @@ export const updateUserSubscription = async (req: AuthRequest, res: Response) =>
     include: { user: { select: { email: true, name: true } } },
   });
 
-  await prisma.auditLog.create({
+  await (prisma.auditLog as any).create({
     data: {
       userId:   req.user!.userId,
       action:   "UPDATE_SUBSCRIPTION",
@@ -265,7 +265,7 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
 
   await prisma.user.delete({ where: { id: userId } });
 
-  await prisma.auditLog.create({
+  await (prisma.auditLog as any).create({
     data: {
       userId:   req.user!.userId,
       action:   "DELETE_USER",
@@ -299,7 +299,7 @@ export const updateSettings = async (req: AuthRequest, res: Response) => {
     data,
   });
 
-  await prisma.auditLog.create({
+  await (prisma.auditLog as any).create({
     data: {
       userId:   req.user!.userId,
       action:   "UPDATE_PLATFORM_SETTINGS",

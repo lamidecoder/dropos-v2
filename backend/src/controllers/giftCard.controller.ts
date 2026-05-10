@@ -31,7 +31,7 @@ export const createGiftCard = async (req: AuthRequest, res: Response) => {
   const data = createGiftCardSchema.parse(req.body);
   const code = generateGiftCode();
 
-  const giftCard = await prisma.giftCard.create({
+  const giftCard = await (prisma.giftCard as any).create({
     data: {
       storeId, code, balance: data.amount, initialAmount: data.amount,
       currency: data.currency, assignedTo: data.assignedTo,

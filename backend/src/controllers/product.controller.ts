@@ -42,7 +42,7 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
   const data = productSchema.parse(req.body);
   const slug = await uniqueProductSlug(storeId, slugify(data.name));
 
-  const product = await prisma.product.create({
+  const product = await (prisma.product as any).create({
     data: { ...data, storeId, slug },
   });
 
@@ -140,7 +140,7 @@ export const bulkCreateProducts = async (req: AuthRequest, res: Response) => {
     try {
       const parsed = productSchema.parse(rawProducts[i]);
       const slug   = await uniqueProductSlug(storeId, slugify(parsed.name));
-      const product = await prisma.product.create({ data: { ...parsed, storeId, slug } });
+      const product = await (prisma.product as any).create({ data: { ...parsed, storeId, slug } });
       created.push(product);
       results.push({ index: i, success: true, name: parsed.name });
     } catch (err: any) {
@@ -224,7 +224,7 @@ export const createVariant = async (req: AuthRequest, res: Response) => {
   const { storeId, productId } = req.params;
   await requireStoreOwner(storeId, req.user!.userId, req.user!.role);
   const data = variantSchema.parse(req.body);
-  const variant = await prisma.productVariant.create({ data: { productId, ...data } });
+  const variant = await (prisma.productVariant as any).create({ data: { productId, ...data } });
   res.status(201).json({ success: true, data: variant });
 };
 

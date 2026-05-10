@@ -150,7 +150,7 @@ export const joinWaitlist = async (req: Request, res: Response) => {
     }
 
     // 8. Save
-    await prisma.waitlistEntry.create({
+    await (prisma.waitlistEntry as any).create({
       data: {
         name,
         email,

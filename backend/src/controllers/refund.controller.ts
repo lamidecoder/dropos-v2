@@ -32,14 +32,14 @@ export const createRefund = async (req: AuthRequest, res: Response) => {
 
   if (data.amount > order.total) throw new AppError("Refund amount exceeds order total", 400);
 
-  const refund = await prisma.refund.create({
+  const refund = await (prisma.refund as any).create({
     data: { orderId, storeId, amount: data.amount, reason: data.reason, description: data.description, photos: data.photos },
   });
 
   // Notify store owner (in-app)
   const storeForNotif = await prisma.store.findUnique({ where: { id: order.storeId }, select: { ownerId: true } });
   if (storeForNotif?.ownerId) {
-    await prisma.notification.create({
+    await (prisma.notification as any).create({
       data: {
         userId: storeForNotif.ownerId, type: "warning",
         title: "Refund Request",
@@ -119,7 +119,7 @@ export const customerRequestRefund = async (req: Request, res: Response) => {
   const existing = await prisma.refund.findFirst({ where: { orderId: order.id, status: { in: ["PENDING","APPROVED"] } } });
   if (existing) throw new AppError("Refund already requested", 409);
 
-  const refund = await prisma.refund.create({
+  const refund = await (prisma.refund as any).create({
     data: { orderId: order.id, storeId: order.storeId, amount: data.amount, reason: data.reason, description: data.description, photos: data.photos },
   });
 

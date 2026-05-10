@@ -12,7 +12,7 @@ router.get("/stats", async (req: any, res: Response) => {
     let referral = await prisma.referral.findUnique({ where: { userId: req.user.id } });
     if (!referral) {
       const code = crypto.randomBytes(4).toString("hex").toUpperCase();
-      referral = await prisma.referral.create({ data: { userId: req.user.id, code } });
+      referral = await (prisma.referral as any).create({ data: { userId: req.user.id, code } });
     }
     res.json({ success: true, data: referral });
   } catch (err: any) {

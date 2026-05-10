@@ -33,7 +33,7 @@ router.get("/:storeId", authenticate, async (req: Request, res: Response) => {
 // POST /api/shipping/:storeId
 router.post("/:storeId", authenticate, async (req: Request, res: Response) => {
   const { name, countries, shippingRate, freeThreshold, estimatedDays } = req.body;
-  const zone = await prisma.shippingZone.create({
+  const zone = await (prisma.shippingZone as any).create({
     data: {
       storeId:       req.params.storeId,
       name,

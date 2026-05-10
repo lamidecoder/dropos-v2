@@ -26,7 +26,7 @@ export const requestReturn = async (req: Request, res: Response) => {
   const existing = await prisma.returnRequest.findFirst({ where: { orderId: order.id, status: { in: ["REQUESTED","APPROVED"] } } });
   if (existing) throw new AppError("A return request already exists for this order", 409);
 
-  const returnReq = await prisma.returnRequest.create({
+  const returnReq = await (prisma.returnRequest as any).create({
     data: { orderId: order.id, storeId: order.storeId, customerEmail: data.customerEmail, reason: data.reason, description: data.description, photos: data.photos },
   });
 
@@ -99,7 +99,7 @@ export const createFlashSale = async (req: AuthRequest, res: Response) => {
   const { storeId } = req.params;
   const data = flashSaleSchema.parse(req.body);
 
-  const sale = await prisma.flashSale.create({
+  const sale = await (prisma.flashSale as any).create({
     data: { storeId, ...data, startsAt: new Date(data.startsAt), endsAt: new Date(data.endsAt) },
   });
   res.status(201).json({ success: true, data: sale });

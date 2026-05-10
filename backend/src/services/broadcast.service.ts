@@ -36,7 +36,7 @@ export async function createBroadcast(storeId: string, data: {
 }) {
   const audience = await getAudience(storeId, data.segment);
 
-  const broadcast = await prisma.whatsappBroadcast.create({
+  const broadcast = await (prisma.whatsappBroadcast as any).create({
     data: {
       storeId,
       message: data.message,

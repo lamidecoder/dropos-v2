@@ -29,7 +29,7 @@ export const createWebhook = async (req: AuthRequest, res: Response) => {
   const count = await prisma.storeWebhook.count({ where: { storeId, isActive: true } });
   if (count >= 5) throw new AppError("Maximum 5 webhooks per store", 400);
 
-  const webhook = await prisma.storeWebhook.create({
+  const webhook = await (prisma.storeWebhook as any).create({
     data: { storeId, url: data.url, events: data.events, secret },
     select: { id: true, url: true, events: true, isActive: true, createdAt: true, secret: true },
   });
@@ -44,8 +44,7 @@ export const getWebhooks = async (req: AuthRequest, res: Response) => {
 
   const webhooks = await prisma.storeWebhook.findMany({
     where: { storeId },
-    select: { id: true, url: true, events: true, isActive: true, lastFiredAt: true, failCount: true, createdAt: true },
-    include: { deliveries: { take: 5, orderBy: { createdAt: "desc" }, select: { event: true, success: true, statusCode: true, createdAt: true } } },
+    include: { deliveries: { take: 5, orderBy: { createdAt: "desc" } } },
   });
 
   res.json({ success: true, data: webhooks });
@@ -94,11 +93,11 @@ export const testWebhook = async (req: AuthRequest, res: Response) => {
     } as any);
 
     await prisma.storeWebhook.update({ where: { id: webhookId }, data: { lastFiredAt: new Date() } });
-    await prisma.webhookDelivery.create({ data: { webhookId, event: "test", payload, statusCode: response.status, success: response.ok } });
+    await (prisma.webhookDelivery as any).create({ data: { webhookId, event: "test", payload, statusCode: response.status, success: response.ok } });
 
     res.json({ success: true, data: { statusCode: response.status, ok: response.ok } });
   } catch (err: any) {
-    await prisma.webhookDelivery.create({ data: { webhookId, event: "test", payload, success: false, response: err.message } });
+    await (prisma.webhookDelivery as any).create({ data: { webhookId, event: "test", payload, success: false, response: err.message } });
     res.json({ success: false, message: `Delivery failed: ${err.message}` });
   }
 };
@@ -120,10 +119,10 @@ export async function fireWebhook(storeId: string, event: string, data: any) {
       });
 
       await prisma.storeWebhook.update({ where: { id: wh.id }, data: { lastFiredAt: new Date(), failCount: res.ok ? 0 : { increment: 1 } } });
-      await prisma.webhookDelivery.create({ data: { webhookId: wh.id, event, payload, statusCode: (res as any).status as number, success: !!(res as any).ok } });
+      await (prisma.webhookDelivery as any).create({ data: { webhookId: wh.id, event, payload, statusCode: (res as any).status as number, success: !!(res as any).ok } });
     } catch (err: any) {
       await prisma.storeWebhook.update({ where: { id: wh.id }, data: { failCount: { increment: 1 } } });
-      await prisma.webhookDelivery.create({ data: { webhookId: wh.id, event, payload, success: false, response: err.message } });
+      await (prisma.webhookDelivery as any).create({ data: { webhookId: wh.id, event, payload, success: false, response: err.message } });
     }
   }
 }

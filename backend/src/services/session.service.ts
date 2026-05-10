@@ -42,7 +42,7 @@ export async function saveRefreshToken(
 ): Promise<void> {
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
-  await prisma.refreshToken.create({
+  await (prisma.refreshToken as any).create({
     data: {
       token:     refreshToken,
       userId,

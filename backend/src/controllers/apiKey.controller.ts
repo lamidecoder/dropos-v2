@@ -31,7 +31,7 @@ export const createApiKey = async (req: AuthRequest, res: Response) => {
   const keyHash = hashKey(rawKey);
   const keyPrefix = rawKey.slice(0, 16);
 
-  const apiKey = await prisma.apiKey.create({
+  const apiKey = await (prisma.apiKey as any).create({
     data: {
       storeId, name: data.name, keyHash, keyPrefix,
       permissions: data.permissions,

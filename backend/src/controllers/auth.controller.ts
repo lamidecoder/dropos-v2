@@ -47,7 +47,7 @@ export const register = async (req: Request, res: Response) => {
   const verifyToken = generateToken();
 
   // Create user
-  const user = await prisma.user.create({
+  const user = await (prisma.user as any).create({
     data: {
       email:            body.email,
       password,
@@ -65,7 +65,7 @@ export const register = async (req: Request, res: Response) => {
   const now = new Date();
   const trialEnd = new Date(now);
   trialEnd.setDate(trialEnd.getDate() + 14); // 14-day trial
-  await prisma.subscription.create({
+  await (prisma.subscription as any).create({
     data: {
       userId:             user.id,
       plan:               "STARTER",

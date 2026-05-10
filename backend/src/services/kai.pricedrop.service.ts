@@ -86,7 +86,7 @@ If can't find: {"currentPriceUSD": null, "found": false}`,
         const sym = store?.currency === "NGN" ? "₦" : "$";
 
         // Create KAI Pulse alert
-        await prisma.kaiPulseAlert.create({
+        await (prisma.kaiPulseAlert as any).create({
           data: {
             storeId,
             type: "pricing_opportunity",

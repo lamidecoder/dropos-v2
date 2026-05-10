@@ -101,7 +101,7 @@ export const createOrder = async (req: Request, res: Response) => {
     where: { storeId_email: { storeId: data.storeId, email: data.customerEmail } },
   });
   if (!customer) {
-    customer = await prisma.storeCustomer.create({
+    customer = await (prisma.storeCustomer as any).create({
       data: {
         storeId: data.storeId,
         email:   data.customerEmail,
@@ -112,7 +112,7 @@ export const createOrder = async (req: Request, res: Response) => {
   }
 
   // Create order
-  const order = await prisma.order.create({
+  const order = await (prisma.order as any).create({
     data: {
       orderNumber,
       storeId:         data.storeId,
@@ -346,7 +346,7 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
             method = "MANUAL"; success = true;
           }
 
-          await prisma.fulfillmentOrder.create({
+          await (prisma.fulfillmentOrder as any).create({
             data: {
               orderId:    updated.id,
               supplierId: supplier.id,

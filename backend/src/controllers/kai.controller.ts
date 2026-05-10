@@ -98,14 +98,14 @@ export async function smartChat(req: Request, res: Response) {
       : null;
 
     if (!conv) {
-      conv = await prisma.kaiConversation.create({
+      conv = await (prisma.kaiConversation as any).create({
         data: { storeId, title: generateTitle(message) },
         include: { messages: true },
       });
     }
 
     // Save user message
-    await prisma.kaiMessage.create({
+    await (prisma.kaiMessage as any).create({
       data: { conversationId: conv.id, role: "user", content: message },
     });
 
@@ -157,7 +157,7 @@ export async function smartChat(req: Request, res: Response) {
     });
 
     // Save KAI response
-    await prisma.kaiMessage.create({
+    await (prisma.kaiMessage as any).create({
       data: {
         conversationId: conv.id,
         role: "assistant",
@@ -206,7 +206,7 @@ export async function executeAction(req: Request, res: Response) {
           result = await prisma.order.update({ where: { id: action.payload.orderId }, data: { status: action.payload.status } });
           break;
         case "create_coupon":
-          result = await prisma.coupon.create({
+          result = await (prisma.coupon as any).create({
             data: { storeId, code: action.payload.code, discountType: action.payload.discountType || "PERCENTAGE",
               discountValue: action.payload.discountValue, isActive: true,
               expiresAt: action.payload.expiresAt ? new Date(action.payload.expiresAt) : null },
@@ -226,7 +226,7 @@ export async function executeAction(req: Request, res: Response) {
         default:
           result = { note: `Action ${action.type} logged for manual execution` };
       }
-      await prisma.kaiActionLog.create({
+      await (prisma.kaiActionLog as any).create({
         data: { storeId, conversationId: conversationId || "", actionType: action.type,
           payload: action.payload, approved: true, executed: true, result },
       });
@@ -340,7 +340,7 @@ export async function createSkill(req: Request, res: Response) {
   try {
     const { storeId, name, prompt, description, icon, variables } = req.body;
     if (!storeId || !name || !prompt) return res.status(400).json({ success: false, message: "storeId, name, prompt required" });
-    const skill = await prisma.kaiSkill.create({
+    const skill = await (prisma.kaiSkill as any).create({
       data: { storeId, name, prompt, description, icon, variables: variables || [] },
     });
     res.json({ success: true, data: skill });
@@ -407,7 +407,7 @@ export async function createGoal(req: Request, res: Response) {
     if (!storeId || !title || !targetValue || !deadline)
       return res.status(400).json({ success: false, message: "storeId, title, targetValue, deadline required" });
 
-    const goal = await prisma.kaiGoal.create({
+    const goal = await (prisma.kaiGoal as any).create({
       data: { storeId, title, description, targetValue, unit: unit || "NGN", deadline: new Date(deadline) },
       include: { milestones: true },
     });

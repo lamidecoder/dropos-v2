@@ -42,7 +42,7 @@ export const registerCustomer = async (req: Request, res: Response) => {
   const passwordHash = await bcrypt.hash(data.password, 12);
   const verifyToken = crypto.randomBytes(32).toString("hex");
 
-  const account = await prisma.customerAccount.create({
+  const account = await (prisma.customerAccount as any).create({
     data: { storeId: data.storeId, email: data.email, name: data.name, phone: data.phone, passwordHash, verifyToken },
     select: { id: true, email: true, name: true, emailVerified: true, createdAt: true },
   });

@@ -154,7 +154,7 @@ router.post("/:storeId/import/save", async (req: AuthRequest, res: Response) => 
   }
 
   // Create product
-  const product = await prisma.product.create({
+  const product = await (prisma.product as any).create({
     data: {
       storeId,
       slug,
@@ -330,7 +330,7 @@ router.post("/:storeId/fulfill/:orderId", async (req: AuthRequest, res: Response
     }
 
     // Record fulfillment
-    await prisma.fulfillmentOrder.create({
+    await (prisma.fulfillmentOrder as any).create({
       data: {
         orderId:    order.id,
         supplierId: supplier.id,
@@ -419,7 +419,7 @@ router.post("/:storeId/products/:productId/suppliers", async (req: AuthRequest, 
   });
   if (existing) throw new AppError("This supplier is already assigned to this product", 409);
 
-  const assignment = await prisma.supplierProduct.create({
+  const assignment = await (prisma.supplierProduct as any).create({
     data: { ...body, productId },
     include: { supplier: { select: { id: true, name: true, type: true } } },
   });
