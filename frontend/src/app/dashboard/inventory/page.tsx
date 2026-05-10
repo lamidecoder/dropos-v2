@@ -1,45 +1,163 @@
 "use client";
-import{useState}from"react";
-import{useQuery,useMutation,useQueryClient}from"@tanstack/react-query";
-import{motion,AnimatePresence}from"framer-motion";
-import{useTheme}from"../../../components/layout/DashboardLayout";
-import{useAuthStore}from"../../../store/auth.store";
-import{api}from"../../../lib/api";
-import toast from"react-hot-toast";
-import Link from"next/link";
-import{BarChart2,AlertTriangle,Package,Search,Edit2,Check,X}from"lucide-react";
-const V={v500:"#6B35E8",v400:"#8B5CF6",v300:"#A78BFA",cyan:"#06B6D4",green:"#10B981",amber:"#F59E0B",red:"#EF4444",fuchsia:"#C026D3"};
-const TM={dark:{card:"#181230",border:"rgba(255,255,255,0.06)",text:"#fff",muted:"rgba(255,255,255,0.38)",faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:"#0D0918",muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
-const inp=(t,err)=>({padding:"10px 14px",borderRadius:10,border:`1px solid ${err?"rgba(239,68,68,0.5)":t.border}`,background:"rgba(255,255,255,0.04)",color:t.text,fontSize:13,outline:"none",width:"100%",fontFamily:"inherit"});
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useTheme } from "../../../components/layout/DashboardLayout";
+import { useAuthStore } from "../../../store/auth.store";
+import { api } from "../../../lib/api";
+import { Package, AlertTriangle, TrendingDown, Search, Edit2, Check, X } from "lucide-react";
+import toast from "react-hot-toast";
 
-export default function InventoryPage(){
-  const{theme}=useTheme();const isDark=theme==="dark";const t=isDark?TM.dark:TM.light;
-  const storeId=useAuthStore(s=>s.user?.stores?.[0]?.id);const qc=useQueryClient();
-  const[search,setSearch]=useState("");const[filter,setFilter]=useState("all");const[editing,setEditing]=useState(null);const[editVal,setEditVal]=useState("");
-  const{data,isLoading}=useQuery({queryKey:["inventory",storeId],queryFn:()=>api.get(`/products/${storeId}`).then(r=>r.data.data),enabled:!!storeId});
-  const upd=useMutation({mutationFn:({id,inventory})=>api.patch(`/products/${storeId}/${id}`,{inventory}),onSuccess:()=>{toast.success("Stock updated");qc.invalidateQueries({queryKey:["inventory"]});setEditing(null);},onError:(e)=>toast.error(e.response?.data?.message||"Failed")});
-  const products=data||[];
-  const filtered=products.filter(p=>(!search||p.name?.toLowerCase().includes(search.toLowerCase()))&&(filter==="all"?true:filter==="low"?p.inventory>0&&p.inventory<=5:filter==="out"?p.inventory===0:p.inventory>5));
-  const oos=products.filter(p=>p.inventory===0).length;const low=products.filter(p=>p.inventory>0&&p.inventory<=5).length;
-  return(<div className="max-w-5xl mx-auto">
-    <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} className="mb-6"><h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{color:t.text}}>Inventory</h1><p className="text-xs sm:text-sm mt-1" style={{color:t.muted}}>Manage stock levels across all products</p></motion.div>
-    {oos>0&&<div className="flex items-center gap-3 p-4 rounded-2xl mb-4" style={{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.2)"}}><AlertTriangle size={15} color={V.red}/><p className="text-xs" style={{color:V.red}}><strong>{oos} product{oos!==1?"s":""}</strong> out of stock</p></div>}
-    {low>0&&<div className="flex items-center gap-3 p-4 rounded-2xl mb-4" style={{background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.2)"}}><AlertTriangle size={15} color={V.amber}/><p className="text-xs" style={{color:V.amber}}><strong>{low} product{low!==1?"s":""}</strong> running low (5 or fewer units)</p></div>}
-    <div className="flex items-center gap-2 mb-4 overflow-x-auto" style={{scrollbarWidth:"none"}}>
-      <div className="flex items-center gap-2 px-3 py-2 rounded-xl flex-shrink-0" style={{background:t.card,border:`1px solid ${t.border}`}}><Search size={12} style={{color:t.muted}}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." className="bg-transparent border-none outline-none text-xs w-28" style={{color:t.text,fontFamily:"inherit"}}/></div>
-      {["all","in-stock","low","out"].map(f=>(<button key={f} onClick={()=>setFilter(f)} className="px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex-shrink-0" style={{background:filter===f?V.v500:t.card,color:filter===f?"#fff":t.muted,border:`1px solid ${filter===f?V.v500:t.border}`}}>{f==="in-stock"?"In Stock":f==="out"?"Out of Stock":f==="low"?"Low Stock":"All"}</button>))}
+const V = { v500:"#6B35E8", v400:"#8B5CF6", green:"#10B981", amber:"#F59E0B", red:"#EF4444" };
+
+export default function InventoryPage() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const t = {
+    card: isDark?"#181230":"#fff", border: isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)",
+    text: isDark?"#F0ECFF":"#130D2E", muted: isDark?"rgba(240,236,255,0.45)":"rgba(19,13,46,0.55)",
+    faint: isDark?"rgba(255,255,255,0.03)":"rgba(107,53,232,0.03)",
+    row: isDark?"rgba(255,255,255,0.02)":"rgba(107,53,232,0.015)",
+  };
+  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
+  const qc = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [editing, setEditing] = useState<{id:string,stock:number}|null>(null);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["inventory", storeId],
+    queryFn: () => api.get(`/products/${storeId}?limit=100`).then(r => r.data.data?.products || r.data.data || []),
+    enabled: !!storeId,
+  });
+
+  const updateMut = useMutation({
+    mutationFn: ({ id, stock }: {id:string;stock:number}) =>
+      api.patch(`/products/${storeId}/${id}`, { inventory: stock }),
+    onSuccess: () => { toast.success("Stock updated"); qc.invalidateQueries({queryKey:["inventory"]}); setEditing(null); },
+    onError: () => toast.error("Update failed"),
+  });
+
+  const products = (data || []).filter((p: any) => {
+    const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
+    const stock = p.inventory ?? p.stockQuantity ?? 0;
+    if (filter === "low")      return matchSearch && stock > 0 && stock <= 10;
+    if (filter === "out")      return matchSearch && stock === 0;
+    if (filter === "in_stock") return matchSearch && stock > 10;
+    return matchSearch;
+  });
+
+  const low   = (data||[]).filter((p:any) => { const s=p.inventory??p.stockQuantity??0; return s>0&&s<=10; }).length;
+  const out   = (data||[]).filter((p:any) => (p.inventory??p.stockQuantity??0)===0).length;
+  const total = (data||[]).length;
+
+  const stockColor = (s: number) => s === 0 ? V.red : s <= 10 ? V.amber : V.green;
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight mb-1" style={{color:t.text}}>Inventory</h1>
+          <p className="text-sm" style={{color:t.muted}}>{total} products · {low} low · {out} out of stock</p>
+        </div>
+      </motion.div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        {[
+          {label:"Total Products", value:total,   color:V.v400, icon:Package,       id:"all"},
+          {label:"Low Stock",      value:low,     color:V.amber,icon:TrendingDown,  id:"low"},
+          {label:"Out of Stock",   value:out,     color:V.red,  icon:AlertTriangle, id:"out"},
+        ].map((s,i) => (
+          <motion.div key={s.label} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.06}}
+            onClick={() => setFilter(filter===s.id?"all":s.id)} style={{cursor:"pointer"}}
+            className="p-4 rounded-2xl transition-all" style={{background:filter===s.id?`${s.color}12`:t.card,border:`1px solid ${filter===s.id?s.color+"40":t.border}`}}>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-2" style={{background:`${s.color}15`}}>
+              <s.icon size={14} style={{color:s.color}}/>
+            </div>
+            <p className="text-xl font-black mb-0.5" style={{color:t.text}}>{s.value}</p>
+            <p className="text-xs" style={{color:t.muted}}>{s.label}</p>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl mb-4" style={{background:t.faint,border:`1px solid ${t.border}`}}>
+        <Search size={14} style={{color:t.muted,flexShrink:0}}/>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search products..."
+          style={{flex:1,background:"transparent",border:"none",outline:"none",color:t.text,fontSize:13,fontFamily:"inherit"}}/>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-2xl overflow-hidden" style={{background:t.card,border:`1px solid ${t.border}`}}>
+        <div className="grid grid-cols-12 gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{color:t.muted,borderBottom:`1px solid ${t.border}`}}>
+          <div className="col-span-6">Product</div>
+          <div className="col-span-2 text-center">Stock</div>
+          <div className="col-span-2 text-center">Status</div>
+          <div className="col-span-2 text-center">Action</div>
+        </div>
+        {isLoading ? (
+          <div className="text-center py-12" style={{color:t.muted}}>Loading...</div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-12" style={{color:t.muted}}>No products found</div>
+        ) : products.map((p:any, i:number) => {
+          const stock = p.inventory ?? p.stockQuantity ?? 0;
+          const color = stockColor(stock);
+          const isEditing = editing?.id === p.id;
+          return (
+            <motion.div key={p.id} initial={{opacity:0}} animate={{opacity:1}} transition={{delay:i*0.02}}
+              className="grid grid-cols-12 gap-3 items-center px-4 py-3"
+              style={{borderBottom:i<products.length-1?`1px solid ${t.border}`:"none",background:i%2===0?t.row:"transparent"}}>
+              <div className="col-span-6 flex items-center gap-3 min-w-0">
+                {p.images?.[0] ? (
+                  <img src={p.images[0]} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" style={{border:`1px solid ${t.border}`}}
+                    onError={e=>{(e.target as HTMLImageElement).style.display="none"}}/>
+                ) : (
+                  <div className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style={{background:t.faint,border:`1px solid ${t.border}`}}>
+                    <Package size={14} style={{color:t.muted}}/>
+                  </div>
+                )}
+                <p className="text-sm font-medium truncate" style={{color:t.text}}>{p.name}</p>
+              </div>
+              <div className="col-span-2 text-center">
+                {isEditing ? (
+                  <input type="number" value={editing.stock} min={0}
+                    onChange={e => setEditing({id:p.id,stock:Number(e.target.value)})}
+                    className="w-16 text-center rounded-lg py-1 text-sm font-bold"
+                    style={{background:t.faint,border:`1px solid ${V.v400}`,color:t.text,outline:"none"}}/>
+                ) : (
+                  <span className="text-sm font-bold" style={{color}}>{stock}</span>
+                )}
+              </div>
+              <div className="col-span-2 flex justify-center">
+                <span className="text-xs font-semibold px-2 py-1 rounded-full"
+                  style={{color,background:`${color}15`}}>
+                  {stock===0?"Out of Stock":stock<=10?"Low Stock":"In Stock"}
+                </span>
+              </div>
+              <div className="col-span-2 flex justify-center gap-1">
+                {isEditing ? (
+                  <>
+                    <button onClick={() => updateMut.mutate({id:p.id,stock:editing!.stock})}
+                      style={{width:28,height:28,borderRadius:8,border:"none",background:"rgba(16,185,129,0.15)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <Check size={13} color={V.green}/>
+                    </button>
+                    <button onClick={() => setEditing(null)}
+                      style={{width:28,height:28,borderRadius:8,border:"none",background:"rgba(239,68,68,0.1)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <X size={13} color={V.red}/>
+                    </button>
+                  </>
+                ) : (
+                  <button onClick={() => setEditing({id:p.id,stock})}
+                    style={{width:28,height:28,borderRadius:8,border:`1px solid ${t.border}`,background:t.faint,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <Edit2 size={12} style={{color:t.muted}}/>
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
     </div>
-    <div className="rounded-2xl overflow-hidden" style={{background:t.card,border:`1px solid ${t.border}`}}>
-      <div className="hidden sm:grid px-4 py-2.5" style={{gridTemplateColumns:"1fr 120px 100px 80px",borderBottom:`1px solid ${t.border}`}}>{["Product","Status","Stock",""].map((h,i)=>(<div key={i} style={{fontSize:10,fontWeight:700,color:t.muted,textTransform:"uppercase",letterSpacing:"0.08em"}}>{h}</div>))}</div>
-      {isLoading?Array.from({length:5}).map((_,i)=><div key={i} className="h-14 animate-pulse mx-4 my-2 rounded-xl" style={{background:t.faint}}/>):filtered.length===0?(
-        <div className="text-center py-16"><Package size={32} style={{color:t.muted,opacity:0.3,margin:"0 auto 12px"}}/><p className="text-sm" style={{color:t.muted}}>No products found</p></div>
-      ):(<div className="divide-y" style={{borderColor:t.border}}>{filtered.map((p,i)=>{const oos=p.inventory===0;const low=p.inventory>0&&p.inventory<=5;const sc=oos?V.red:low?V.amber:V.green;const sl=oos?"Out of Stock":low?"Low Stock":"In Stock";return(<div key={p.id} className="grid sm:grid items-center px-4 py-3" style={{gridTemplateColumns:"1fr 120px 100px 80px"}}>
-        <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0" style={{background:t.faint}}>{p.images?.[0]?<img src={p.images[0]} alt="" className="w-full h-full object-cover"/>:<Package size={12} style={{color:t.muted}}/>}</div><div><p className="text-sm font-semibold truncate" style={{color:t.text,maxWidth:200}}>{p.name}</p><p className="text-xs" style={{color:t.muted}}>{p.category||"Uncategorised"}</p></div></div>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{background:`${sc}15`,color:sc}}>{sl}</span>
-        {editing===p.id?(<div className="flex items-center gap-1.5"><input type="number" value={editVal} onChange={e=>setEditVal(e.target.value)} className="w-16 px-2 py-1 rounded-lg text-xs outline-none" style={{background:t.faint,border:`1px solid ${t.border}`,color:t.text,fontFamily:"inherit"}} autoFocus/><button onClick={()=>upd.mutate({id:p.id,inventory:parseInt(editVal)||0})} style={{color:V.green}}><Check size={13}/></button><button onClick={()=>setEditing(null)} style={{color:t.muted}}><X size={13}/></button></div>):(<span className="text-sm font-black" style={{color:oos?V.red:t.text}}>{p.inventory}</span>)}
-        <button onClick={()=>{setEditing(p.id);setEditVal(p.inventory?.toString()||"0");}} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold" style={{border:`1px solid ${t.border}`,color:t.muted}}><Edit2 size={10}/>Edit</button>
-      </div>);})}
-      </div>)}
-    </div>
-  </div>);
+  );
 }
