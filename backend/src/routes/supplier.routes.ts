@@ -2,7 +2,7 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../config/database";
-import { authenticate } from "../middleware/auth";
+import { authenticate, AuthRequest } from "../middleware/auth";
 import { AppError } from "../utils/AppError";
 import { requireStoreOwner } from "../controllers/store.controller";
 import { supplierService, FulfillmentPayload } from "../services/supplier.service";
@@ -49,7 +49,7 @@ router.post("/:storeId", async (req: AuthRequest, res: Response) => {
   }).parse(req.body);
 
   const supplier = await prisma.supplier.create({
-    data: { ...data, storeId },
+    data: { ...data, storeId } as any,
   });
 
   return res.status(201).json({ success: true, data: supplier });

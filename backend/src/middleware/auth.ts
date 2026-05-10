@@ -4,6 +4,7 @@
 // REPLACES existing auth middleware
 // ============================================================
 import { Request, Response, NextFunction } from "express";
+export interface AuthRequest extends Request { user?: any; }
 import { verifyAccessToken }               from "../services/session.service";
 import prisma                              from "../lib/prisma";
 

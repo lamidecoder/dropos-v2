@@ -67,7 +67,7 @@ function uploadToCloudinary(buffer: Buffer, folder = "dropos/products", mimetype
   });
 }
 
-async function saveLocally(file: Express.Multer.File): Promise<string> {
+async function saveLocally(file: any /* Express.Multer.File */): Promise<string> {
   const fs   = await import("fs");
   const path = await import("path");
   const { v4: uuid } = await import("uuid");
@@ -95,7 +95,7 @@ router.post("/", upload.single("file"), async (req: Request, res: Response) => {
 
 // POST /api/upload/multiple
 router.post("/multiple", upload.array("files", 10), async (req: Request, res: Response) => {
-  const files = req.files as Express.Multer.File[];
+  const files = req.files as any /* Express.Multer.File */[];
   if (!files?.length) throw new AppError("No files uploaded", 400);
   if (USE_CLOUDINARY) {
     const results = await Promise.all(files.map((f) => uploadToCloudinary(f.buffer)));

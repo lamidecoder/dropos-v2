@@ -90,12 +90,12 @@ router.post("/weekly-digest/:storeId", authenticate, async (req: AuthRequest, re
 
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const orders  = await prisma.order.findMany({
-    where:   { storeId: req.params.storeId, createdAt: { gte: weekAgo }, paymentStatus: "PAID" },
+    where:   { storeId: req.params.storeId, createdAt: { gte: weekAgo }, status: "PAID" },
     include: { items: { include: { product: { select: { name: true } } } } },
   });
 
   const revenue      = orders.reduce((s, o) => s + Number(o.total), 0);
-  const newCustomers = await prisma.customer.count({ where: { storeId: req.params.storeId, createdAt: { gte: weekAgo } } });
+  const newCustomers = await prisma.storeCustomer.count({ where: { storeId: req.params.storeId, createdAt: { gte: weekAgo } } });
 
   // Top product by quantity sold
   const productCount: Record<string, { name: string; qty: number }> = {};

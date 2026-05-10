@@ -313,7 +313,7 @@ export async function executeAgentAction(
           storeId,
           code:          code.toUpperCase(),
           discountType:  data.type || "PERCENTAGE",
-          discountValue: data.discount || 10,
+          value: data.discount || 10,
           isActive:      true,
           usageLimit:    data.limit || null,
           expiresAt:     data.expiresAt ? new Date(data.expiresAt) : null,

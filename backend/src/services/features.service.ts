@@ -114,7 +114,7 @@ export async function gradeProducts(storeId: string) {
 
   const graded = products.map(product => {
     const paidItems = product.orderItems.filter(oi =>
-      ["PAID", "SHIPPED", "DELIVERED"].includes(oi.order.status)
+      ["COMPLETED", "SHIPPED", "DELIVERED"].includes(oi.order.status)
     );
     const last30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const last90 = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
@@ -166,11 +166,11 @@ export async function gradeProducts(storeId: string) {
 // CUSTOMER COMEBACK PREDICTOR
 // ══════════════════════════════════════════════════════════════
 export async function getAtRiskCustomers(storeId: string) {
-  const customers = await prisma.customer.findMany({
+  const customers = await prisma.storeCustomer.findMany({
     where: { storeId },
     include: {
       orders: {
-        where: { status: { in: ["PAID", "SHIPPED", "DELIVERED"] } },
+        where: { status: { in: ["COMPLETED", "SHIPPED", "DELIVERED"] } },
         orderBy: { createdAt: "desc" },
         take: 10,
         select: { createdAt: true, total: true },
@@ -233,11 +233,11 @@ const ACHIEVEMENTS = [
 export async function getStoreAchievements(storeId: string) {
   const [orders, reviews, customers, flashSales, broadcasts] = await Promise.all([
     prisma.order.findMany({
-      where: { storeId, status: { in: ["PAID", "SHIPPED", "DELIVERED"] } },
+      where: { storeId, status: { in: ["COMPLETED", "SHIPPED", "DELIVERED"] } },
       select: { total: true, createdAt: true, customer: { select: { country: true } } },
     }),
     prisma.review.findMany({ where: { storeId }, select: { rating: true } }),
-    prisma.customer.count({ where: { storeId } }),
+    prisma.storeCustomer.count({ where: { storeId } }),
     prisma.flashSale?.count({ where: { storeId } }).catch(() => 0),
     Promise.resolve(0), // broadcasts count - add when WhatsApp module built
   ]);
@@ -285,7 +285,7 @@ export async function getStoreAchievements(storeId: string) {
 // ══════════════════════════════════════════════════════════════
 export async function getRevenueReplay(storeId: string) {
   const orders = await prisma.order.findMany({
-    where: { storeId, status: { in: ["PAID", "SHIPPED", "DELIVERED"] } },
+    where: { storeId, status: { in: ["COMPLETED", "SHIPPED", "DELIVERED"] } },
     orderBy: { createdAt: "asc" },
     select: { id: true, total: true, createdAt: true },
   });

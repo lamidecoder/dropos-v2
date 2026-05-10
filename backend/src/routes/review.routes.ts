@@ -1,10 +1,8 @@
 // src/routes/review.routes.ts
 import { Router, Request, Response } from "express";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { authenticate } from "../middleware/auth";
 import { emailService } from "../services/email.service";
-import { AppError } from "../utils/AppError";
-import { globalRateLimiter } from "../middleware/rateLimiter";
 import { AppError } from "../utils/AppError";
 import { globalRateLimiter } from "../middleware/rateLimiter";
 

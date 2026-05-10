@@ -20,7 +20,7 @@ export async function getAudience(storeId: string, segment: string) {
     where.orders = { some: { createdAt: { gte: d } } };
   }
 
-  const customers = await prisma.customer.findMany({
+  const customers = await prisma.storeCustomer.findMany({
     where,
     select: { id: true, name: true, phone: true, email: true },
   });
@@ -59,7 +59,7 @@ export async function sendBroadcastNow(broadcastId: string): Promise<{
   });
   if (!broadcast) throw new Error("Broadcast not found");
 
-  const customers = await prisma.customer.findMany({
+  const customers = await prisma.storeCustomer.findMany({
     where: { storeId: broadcast.storeId },
     select: { phone: true },
   });
