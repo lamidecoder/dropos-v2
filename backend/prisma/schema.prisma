@@ -266,6 +266,7 @@ model Product {
   orderItems      OrderItem[]
   reviews         Review[]
   supplierProducts SupplierProduct[]
+  groupBuys       GroupBuy[]
 
   @@unique([storeId, slug])
   @@index([storeId])
