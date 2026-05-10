@@ -19,7 +19,7 @@ export function useNavLevel(): NavLevel {
 
   const { data } = useQuery({
     queryKey:  ["nav-level", store?.id],
-    queryFn:   () => api.get(`/dashboard/${store?.id}/nav-level`).then(r => r.data.data),
+    queryFn:   () => api.get(`/nav-level/${store?.id}`).then(r => r.data.data),
     enabled:   !!store?.id,
     staleTime: 300000,
     retry:     false,

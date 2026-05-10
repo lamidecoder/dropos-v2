@@ -48,8 +48,3 @@ export function useSessionRestore() {
   }, []);
 }
 
-// ── Provider component - wrap in root layout ──────────────────
-export function SessionProvider({ children }: { children: React.ReactNode }) {
-  useSessionRestore();
-  return <>{children}</>;
-}
