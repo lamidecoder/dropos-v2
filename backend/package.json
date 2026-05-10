@@ -1,12 +1,12 @@
 {
   "name": "dropos-backend",
   "version": "1.0.0",
-  "description": "DropOS SaaS Dropshipping Platform — Backend API",
+  "description": "DropOS SaaS Dropshipping Platform \u2014 Backend API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "echo build done",
-    "start": "node -r ts-node/register src/server.ts",
+    "build": "npx tsc --skipLibCheck",
+    "start": "node --max-old-space-size=400 dist/server.js",
     "seed": "npx ts-node prisma/seed.ts",
     "generate": "npx prisma generate",
     "migrate": "npx prisma migrate dev",
