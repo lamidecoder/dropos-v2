@@ -61,10 +61,10 @@ if (!apiKey) {
   // Most important job — keeps sellers hands-free
   // ══════════════════════════════════════════════════════════
   schedule(15 * 60 * 1000, async () => {
-    const { autoFulfillPendingOrders } = await import("../services/kai.autopilot.service");
+    const { syncAndNotifyTracking } = await import("../services/kai.autopilot.service");
     const stores = await getStoresWithCJ();
     for (const store of stores) {
-      await autoFulfillPendingOrders(store.id);
+      await syncAndNotifyTracking(store.id);
       await new Promise(r => setTimeout(r, 1000));
     }
   }, "Auto Fulfillment");

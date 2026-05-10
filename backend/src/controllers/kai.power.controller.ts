@@ -24,7 +24,7 @@ export async function productPage(req: Request, res: Response) {
     const store = await prisma.store.findFirst({ where: { ownerId: user?.id }, select: { country: true, currency: true } });
     const country = store?.country || "NG";
 
-    const page = await generateProductPage({ url, productName, productDescription, country, language, niche, apiKey: apiKey() });
+    const page = await generateProductPage({ url, productName, productDescription, country, language, apiKey: apiKey() });
     res.json({ success: true, data: page });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
@@ -101,7 +101,6 @@ export async function profitCalc(req: Request, res: Response) {
       supplierCostUSD: Number(supplierCostUSD),
       shippingCostLocal: Number(shippingCostLocal || 0),
       sellingPriceLocal: Number(sellingPriceLocal),
-      exchangeRate,
       country,
       adSpendDaily: adSpendDaily ? Number(adSpendDaily) : undefined,
       expectedConversionRate: expectedConversionRate ? Number(expectedConversionRate) : undefined,
@@ -138,7 +137,7 @@ export async function competitorAnalysis(req: Request, res: Response) {
     if (!storeUrl) return res.status(400).json({ success: false, message: "storeUrl required" });
 
     const user = (req as any).user;
-    const analysis = await analyzeCompetitor({ storeUrl, storeId: user?.stores?.[0]?.id, apiKey: apiKey() });
+    const analysis = await analyzeCompetitor({ storeUrl, apiKey: apiKey() });
     res.json({ success: true, data: analysis });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });

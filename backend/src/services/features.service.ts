@@ -46,7 +46,7 @@ export async function calculateHealthScore(storeId: string): Promise<{
   const recentOrders = orders.filter(o => new Date(o.createdAt) >= last7days);
   const unfulfilled  = orders.filter(o => o.status === "PENDING" || o.status === "PROCESSING");
   const oldUnfulfilled = unfulfilled.filter(o =>
-    new Date(Date.now() - new Date(o.createdAt).getTime()) > 48 * 60 * 60 * 1000
+    (Date.now() - new Date(o.createdAt).getTime()) > 48 * 60 * 60 * 1000
   );
 
   const avgRating = reviews.length > 0

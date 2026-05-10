@@ -1,12 +1,11 @@
 // src/routes/supplier.routes.ts
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import { prisma } from "../config/database";
+import prisma from "../lib/prisma";
 import { authenticate, AuthRequest } from "../middleware/auth";
 import { AppError } from "../utils/AppError";
 import { requireStoreOwner } from "../controllers/store.controller";
 import { supplierService, FulfillmentPayload } from "../services/supplier.service";
-import { AuthRequest } from "../middleware/auth";
 
 const router = Router();
 

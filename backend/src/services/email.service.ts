@@ -105,6 +105,10 @@ const base = (opts: {
 
 // ── Email service class ────────────────────────────────────────────────────
 class EmailService {
+  private baseTemplate(content: string, brandColor = "#6B35E8"): string {
+    return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#0a0a0a;font-family:system-ui,sans-serif;color:#ffffff;">${content}</body></html>`;
+  }
+
   // Public helper for ad-hoc emails from controllers
   async send(options: { to: string; subject: string; html: string }) {
     if (DEV_MODE) {
