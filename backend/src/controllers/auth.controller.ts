@@ -76,13 +76,45 @@ export const register = async (req: Request, res: Response) => {
     },
   });
 
-  // Send verification email
-  await emailService.sendVerificationEmail(user.email, user.name, verifyToken);
+  // Auto-create default store for the user
+  const slug = body.email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "") + Math.floor(Math.random() * 1000);
+  const store = await (prisma.store as any).create({
+    data: {
+      ownerId:     user.id,
+      name:        `${body.name}'s Store`,
+      slug,
+      domain:      `${slug}.droposhq.com`,
+      status:      "ACTIVE",
+      currency:    body.country === "NG" ? "NGN" : "USD",
+      country:     body.country || "NG",
+      primaryColor:"#6B35E8",
+    },
+  }).catch(() => null);
+
+  // Issue JWT so frontend goes straight to onboarding
+  const userWithStore = await prisma.user.findUnique({
+    where: { id: user.id },
+    include: {
+      subscription: true,
+      stores: { select: { id: true, name: true, slug: true, status: true } },
+    },
+  });
+  const payload = { userId: user.id, email: user.email, role: user.role };
+  const accessToken  = signAccessToken(payload);
+  const refreshToken = signRefreshToken(payload);
+  await prisma.user.update({ where: { id: user.id }, data: { refreshToken } });
+  setRefreshCookie(res, refreshToken);
+
+  // Send verification email (non-blocking)
+  emailService.sendVerificationEmail(user.email, user.name, verifyToken).catch(() => {});
 
   return res.status(201).json({
     success: true,
-    message: "Registration successful. Please check your email to verify your account.",
-    data: { id: user.id, email: user.email, name: user.name },
+    message: "Account created successfully.",
+    data: {
+      accessToken,
+      user: { id: userWithStore!.id, email: userWithStore!.email, name: userWithStore!.name, role: userWithStore!.role, onboarded: userWithStore!.onboarded, stores: userWithStore!.stores, subscription: userWithStore!.subscription },
+    },
   });
 };
 
