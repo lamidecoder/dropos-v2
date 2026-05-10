@@ -314,6 +314,9 @@ model StoreCustomer {
   country         String?
   totalSpent      Float     @default(0)
   orderCount      Int       @default(0)
+  totalOrders     Int       @default(0)
+  city            String?
+  notes           String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -1327,6 +1330,8 @@ model KaiConversation {
   id        String       @id @default(uuid())
   userId    String
   title     String       @default("New Chat")
+  archived  Boolean      @default(false)
+  pinned    Boolean      @default(false)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   messages  KaiMessage[]
@@ -1681,4 +1686,18 @@ model WhatsappBroadcast {
   updatedAt      DateTime  @updatedAt
   @@index([storeId])
   @@map("whatsapp_broadcasts")
+}
+
+model KaiActionLog {
+  id             String   @id @default(uuid())
+  storeId        String
+  conversationId String?
+  actionType     String
+  payload        Json?
+  approved       Boolean  @default(false)
+  executed       Boolean  @default(false)
+  result         Json?
+  createdAt      DateTime @default(now())
+  @@index([storeId])
+  @@map("kai_action_logs")
 }

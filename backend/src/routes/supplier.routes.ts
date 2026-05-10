@@ -233,7 +233,7 @@ router.put("/:storeId/products/:productId/link", async (req: AuthRequest, res: R
     shippingDays:     z.number().optional(),
   }).parse(req.body);
 
-  const link = await prisma.supplierProduct.upsert({
+  const link = await (prisma.supplierProduct as any).upsert({
     where:  { supplierId_productId: { supplierId: body.supplierId, productId } },
     create: { ...body, productId, lastSynced: new Date(), stockStatus: "IN_STOCK" },
     update: { ...body, lastSynced: new Date() },

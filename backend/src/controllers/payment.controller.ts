@@ -27,7 +27,7 @@ export const initializePayment = async (req: Request, res: Response) => {
     include: { store: true },
   });
   if (!order) throw new AppError("Order not found", 404);
-  if (order.payment) throw new AppError("Payment already initiated for this order", 400);
+  if ((order as any).payment) throw new AppError("Payment already initiated for this order", 400);
 
   // Auto-detect gateway
   const gateway = manualGateway || detectGateway(country);

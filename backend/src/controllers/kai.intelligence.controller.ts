@@ -80,7 +80,7 @@ export const confirmBulkImport = wrap(async (req: Request) => {
         : pricingRule === "3x"   ? p.localCost * 3
         : p.suggestedLocalPrice || p.localCost * 2.5;
 
-      return prisma.product.create({
+      return (prisma.product as any).create({
         data: {
           storeId, name: p.name,
           price: Math.round(sellingPrice),

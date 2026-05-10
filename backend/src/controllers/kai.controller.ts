@@ -3,6 +3,7 @@
 // Path: backend/src/controllers/kai.controller.ts
 // ============================================================
 import { Request, Response } from "express";
+import { AuthRequest } from "../middleware/auth";
 import { PrismaClient } from "@prisma/client";
 import {
   getStoreContext, buildCompleteSystemPrompt, callClaude,
@@ -218,7 +219,7 @@ export async function executeAction(req: Request, res: Response) {
         case "update_goal":
           result = await prisma.kaiGoal.upsert({
             where: { id: action.payload.goalId || "new" },
-            create: { storeId, title: action.payload.title, targetValue: action.payload.targetValue,
+            create: { storeId, userId: (req as AuthRequest).user?.userId || (req as AuthRequest).user?.id || 'system', title: action.payload.title, targetValue: action.payload.targetValue,
               currentValue: 0, unit: action.payload.unit, deadline: new Date(action.payload.deadline) },
             update: { currentValue: action.payload.currentValue },
           });
@@ -391,7 +392,7 @@ export async function getGoals(req: Request, res: Response) {
     if (!storeId) return res.status(400).json({ success: false, message: "storeId required" });
     const goals = await prisma.kaiGoal.findMany({
       where: { storeId },
-      include: { milestones: true },
+      
       orderBy: { deadline: "asc" },
     });
     res.json({ success: true, data: goals });
@@ -409,7 +410,7 @@ export async function createGoal(req: Request, res: Response) {
 
     const goal = await (prisma.kaiGoal as any).create({
       data: { storeId, title, description, targetValue, unit: unit || "NGN", deadline: new Date(deadline) },
-      include: { milestones: true },
+      
     });
 
     // Save to memory

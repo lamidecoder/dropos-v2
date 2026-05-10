@@ -91,16 +91,16 @@ export async function liveSales(req: Request, res: Response) {
   try {
     const { storeId } = req.params;
     const orders = await prisma.order.findMany({
-      where: { storeId, status: { in: ["PAID", "SHIPPED", "DELIVERED"] } },
+      where: { storeId, status: { in: ["COMPLETED", "SHIPPED", "DELIVERED"] } },
       orderBy: { createdAt: "desc" },
       take: 10,
       include: {
         customer: { select: { name: true, city: true } },
         items: { take: 1, include: { product: { select: { name: true } } } },
-      },
+      } as any,
     });
 
-    const feed = orders.map(o => ({
+    const feed = (orders as any[]).map((o: any) => ({
       id: o.id,
       customerName: o.customer?.name?.split(" ")[0] || "Someone",
       city: o.customer?.city || "Nigeria",
@@ -122,7 +122,7 @@ export async function sendComeback(req: Request, res: Response) {
   try {
     const { customerId, message, storeId } = req.body;
     // Store the intent — actual WhatsApp sending handled by WhatsApp service
-    await prisma.customer.update({
+    await prisma.storeCustomer.update({
       where: { id: customerId },
       data: { notes: `Win-back sent ${new Date().toLocaleDateString()}` } as any,
     });
