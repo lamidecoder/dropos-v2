@@ -223,6 +223,9 @@ model Store {
   apiKeys         ApiKey[]
   returnRequests  ReturnRequest[]
   affiliates      Affiliate[]
+  bundles         Bundle[]
+  groupBuys       GroupBuy[]
+  milestones      Milestone[]
   @@index([ownerId])
   @@index([slug])
   @@index([status])
