@@ -32,7 +32,7 @@ export async function onOrderPaid(orderId: string): Promise<void> {
     },
   });
 
-  if (!order || order.status !== "PAID") return;
+  if (!order || order.status !== "COMPLETED") return;
 
   const cjIntegration = order.store.integrations?.find(i => i.provider === "cjdropshipping" && i.isActive);
   const locale        = getLocale(order.store.country || "NG");

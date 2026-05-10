@@ -128,8 +128,8 @@ Return ONLY JSON: {"products":["product1","product2","product3","product4","prod
 // ── Skills for a store ────────────────────────────────────────
 export async function getKaiSkills(storeId: string) {
   const [storeSkills, globalSkills] = await Promise.all([
-    prisma.kaiSkill.findMany({ where: { storeId }, orderBy: [{ usageCount: "desc" }] }),
-    prisma.kaiSkill.findMany({ where: { isGlobal: true }, orderBy: { usageCount: "desc" }, take: 10 }),
+    prisma.kaiSkill.findMany({ where: { storeId }, orderBy: [{ useCount: "desc" }] }),
+    prisma.kaiSkill.findMany({ where: { isGlobal: true }, orderBy: { useCount: "desc" }, take: 10 }),
   ]);
   return { storeSkills, globalSkills };
 }

@@ -143,7 +143,7 @@ export async function deleteMemory(storeId: string, key: string): Promise<void> 
 export async function getActiveGoals(storeId: string) {
   return prisma.kaiGoal.findMany({
     where: { storeId, status: "active" },
-    include: { milestones: true },
+    ,
     orderBy: { deadline: "asc" },
     take: 3,
   });
@@ -153,7 +153,7 @@ export async function getActiveGoals(storeId: string) {
 export async function updateGoalProgress(goalId: string, currentValue: number): Promise<void> {
   const goal = await prisma.kaiGoal.findUnique({
     where: { id: goalId },
-    include: { milestones: true },
+    ,
   });
   if (!goal) return;
 
@@ -169,7 +169,7 @@ export async function updateGoalProgress(goalId: string, currentValue: number): 
   // Mark milestones achieved
   for (const milestone of goal.milestones) {
     if (!milestone.achieved && currentValue >= milestone.targetValue) {
-      await prisma.kaiMilestone.update({
+      await prisma.milestone.update({
         where: { id: milestone.id },
         data: { achieved: true, achievedAt: new Date() },
       });

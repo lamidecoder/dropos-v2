@@ -11,7 +11,7 @@ export async function generateForecast(storeId: string, apiKey: string) {
   // Get 90 days of data
   const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
   const orders = await prisma.order.findMany({
-    where: { storeId, status: { in: ["PAID", "SHIPPED", "DELIVERED"] }, createdAt: { gte: since } },
+    where: { storeId, status: { in: ["COMPLETED", "SHIPPED", "DELIVERED"] }, createdAt: { gte: since } },
     select: { total: true, createdAt: true },
     orderBy: { createdAt: "asc" },
   });

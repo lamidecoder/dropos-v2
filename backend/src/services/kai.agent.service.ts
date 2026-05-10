@@ -336,9 +336,9 @@ export async function executeAgentAction(
       const todayStart  = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const monthStart  = new Date(now.getFullYear(), now.getMonth(), 1);
       const [todayOrders, monthOrders, allOrders] = await Promise.all([
-        prisma.order.findMany({ where: { storeId, createdAt: { gte: todayStart }, status: { in: ["PAID","SHIPPED","DELIVERED"] } }, select: { total: true } }),
-        prisma.order.findMany({ where: { storeId, createdAt: { gte: monthStart }, status: { in: ["PAID","SHIPPED","DELIVERED"] } }, select: { total: true } }),
-        prisma.order.aggregate({ where: { storeId, status: { in: ["PAID","SHIPPED","DELIVERED"] } }, _count: true, _sum: { total: true } }),
+        prisma.order.findMany({ where: { storeId, createdAt: { gte: todayStart }, status: { in: ["COMPLETED","SHIPPED","DELIVERED"] } }, select: { total: true } }),
+        prisma.order.findMany({ where: { storeId, createdAt: { gte: monthStart }, status: { in: ["COMPLETED","SHIPPED","DELIVERED"] } }, select: { total: true } }),
+        prisma.order.aggregate({ where: { storeId, status: { in: ["COMPLETED","SHIPPED","DELIVERED"] } }, _count: true, _sum: { total: true } }),
       ]);
       return {
         success: true,
@@ -356,7 +356,7 @@ export async function executeAgentAction(
     case "get_top_products": {
       const topItems = await prisma.orderItem.groupBy({
         by: ["productId"],
-        where: { order: { storeId, status: { in: ["PAID","SHIPPED","DELIVERED"] } } },
+        where: { order: { storeId, status: { in: ["COMPLETED","SHIPPED","DELIVERED"] } } },
         _sum: { quantity: true },
         orderBy: { _sum: { quantity: "desc" } },
         take: 5,
@@ -369,9 +369,9 @@ export async function executeAgentAction(
     }
 
     case "list_customers": {
-      const customers = await prisma.customer.findMany({
+      const customers = await prisma.storeCustomer.findMany({
         where: { storeId },
-        include: { orders: { select: { total: true }, where: { status: { in: ["PAID","SHIPPED","DELIVERED"] } } } },
+        include: { orders: { select: { total: true }, where: { status: { in: ["COMPLETED","SHIPPED","DELIVERED"] } } } },
         orderBy: { createdAt: "desc" },
         take: 10,
       });
@@ -481,7 +481,7 @@ function extractOrderId(text: string): string | undefined {
 function extractOrderStatus(text: string): string {
   if (/ship|shipped/.test(text))    return "SHIPPED";
   if (/deliver|delivered/.test(text)) return "DELIVERED";
-  if (/paid|pay/.test(text))        return "PAID";
+  if (/paid|pay/.test(text))        return "COMPLETED";
   if (/cancel/.test(text))          return "CANCELLED";
   if (/process/.test(text))         return "PROCESSING";
   return "SHIPPED";

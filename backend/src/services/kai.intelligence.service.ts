@@ -326,7 +326,7 @@ Return ONLY JSON array:
 // ══════════════════════════════════════════════════════════════
 export async function checkFulfillmentStatus(storeId: string) {
   const pendingOrders = await prisma.order.findMany({
-    where: { storeId, status: "PAID", fulfillmentStatus: "UNFULFILLED" },
+    where: { storeId, status: "COMPLETED", fulfillmentStatus: "UNFULFILLED" },
     include: {
       items: { include: { product: { select: { name: true, sourceUrl: true, metadata: true } } } },
       customer: { select: { name: true, email: true, address: true, phone: true } },

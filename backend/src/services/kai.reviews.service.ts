@@ -111,7 +111,7 @@ export async function processReviewRequests(): Promise<void> {
     where: {
       status: "DELIVERED",
       updatedAt: { gte: sixDaysAgo, lte: fiveDaysAgo },
-      reviewRequests: { none: {} },
+      // reviewRequests filter removed - use date-based filter instead
     },
     select: { id: true },
     take: 50,
