@@ -63,7 +63,7 @@ export async function pushToUser(userId: string, payload: PushPayload): Promise<
 export async function pushToStoreOwner(storeId: string, payload: PushPayload): Promise<number> {
   const store = await prisma.store.findUnique({ where: { id: storeId }, select: { userId: true } });
   if (!store) return 0;
-  return pushToUser(store.userId, payload);
+  return pushToUser(store.ownerId, payload);
 }
 
 // ── Pre-built notification templates ────────────────────────────────────────

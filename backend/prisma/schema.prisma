@@ -140,6 +140,7 @@ model User {
   auditLogs         AuditLog[]
   pushSubscriptions PushSubscription[]
   referral          Referral?
+  refreshTokens     RefreshToken[]
 
   @@index([email])
   @@index([role])
@@ -198,7 +199,9 @@ model Store {
   liveChatId        String?     // Tawk.to property ID / Crisp website ID / Tidio key
   liveChatEnabled   Boolean     @default(false)
   notifyOwnerSms    Boolean     @default(true)   // SMS owner on new order
-  notifyCustomerSms Boolean     @default(false)  // SMS customer on order + status
+  notifyCustomerSms Boolean     @default(false)
+  loyaltyEnabled    Boolean     @default(false)
+  themeSettings     Json?  // SMS customer on order + status
   createdAt         DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -255,6 +258,8 @@ model Product {
   tags            String[]      @default([])
   status          ProductStatus @default(DRAFT)
   isDigital       Boolean       @default(false)
+  sourceUrl       String?
+  stockQuantity   Int?
   metaTitle       String?
   metaDescription String?
   createdAt       DateTime      @default(now())
@@ -339,6 +344,8 @@ model Order {
   trackingUrl       String?
   refundAmount      Float?
   cancelReason      String?
+  fulfillmentStatus String      @default("UNFULFILLED")
+  tax               Float       @default(0)
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
@@ -1444,4 +1451,145 @@ model Referral {
   pending     Float    @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+
+
+
+
+
+
+
+
+
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String    @unique
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model KaiMemory {
+  id        String   @id @default(uuid())
+  userId    String
+  storeId   String?
+  key       String
+  value     String
+  ttl       DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([userId, key])
+  @@map("kai_memories")
+}
+
+model KaiGoal {
+  id          String   @id @default(uuid())
+  userId      String
+  storeId     String
+  title       String
+  description String?
+  target      Float?
+  current     Float    @default(0)
+  unit        String   @default("NGN")
+  deadline    DateTime?
+  achieved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@map("kai_goals")
+}
+
+model KaiMarketCache {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  data        Json
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  @@map("kai_market_cache")
+}
+
+model KaiPulseAlert {
+  id        String   @id @default(uuid())
+  storeId   String
+  userId    String
+  type      String
+  title     String
+  message   String
+  data      Json?
+  read      Boolean  @default(false)
+  priority  String   @default("normal")
+  createdAt DateTime @default(now())
+  @@index([storeId])
+  @@index([userId])
+  @@map("kai_pulse_alerts")
+}
+
+model KaiMorningBrief {
+  id        String   @id @default(uuid())
+  userId    String
+  storeId   String
+  content   String
+  date      DateTime @default(now())
+  delivered Boolean  @default(false)
+  @@map("kai_morning_briefs")
+}
+
+model KaiBrandVoice {
+  id         String   @id @default(uuid())
+  storeId    String   @unique
+  tone       String   @default("friendly")
+  style      String   @default("conversational")
+  keywords   String[] @default([])
+  avoidWords String[] @default([])
+  examples   String[] @default([])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@map("kai_brand_voices")
+}
+
+model KaiSkill {
+  id          String   @id @default(uuid())
+  userId      String
+  name        String
+  description String?
+  prompt      String
+  useCount    Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([userId])
+  @@map("kai_skills")
+}
+
+model LoyaltyAccount {
+  id           String   @id @default(uuid())
+  storeId      String
+  customerId   String
+  points       Int      @default(0)
+  totalEarned  Int      @default(0)
+  totalSpent   Int      @default(0)
+  tier         String   @default("bronze")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  @@unique([storeId, customerId])
+  @@map("loyalty_accounts")
+}
+
+model ReviewRequest {
+  id         String   @id @default(uuid())
+  orderId    String   @unique
+  storeId    String
+  customerId String?
+  email      String
+  sentAt     DateTime?
+  responded  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  @@map("review_requests")
 }

@@ -69,7 +69,7 @@ export async function analyzeStore(storeId: string): Promise<void> {
       where: {
         storeId,
         createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-        status: { in: ["PAID", "SHIPPED", "DELIVERED"] },
+        status: { in: ["COMPLETED", "SHIPPED", "DELIVERED"] },
       },
     });
     const prev7Days = await prisma.order.count({
@@ -79,7 +79,7 @@ export async function analyzeStore(storeId: string): Promise<void> {
           gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
           lte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         },
-        status: { in: ["PAID", "SHIPPED", "DELIVERED"] },
+        status: { in: ["COMPLETED", "SHIPPED", "DELIVERED"] },
       },
     });
     if (prev7Days > 0 && last7Days < prev7Days * 0.6) {
@@ -201,7 +201,7 @@ export async function generateMorningBrief(storeId: string, apiKey: string): Pro
     where: {
       storeId,
       createdAt: { gte: midnight },
-      status: { in: ["PAID", "SHIPPED", "DELIVERED"] },
+      status: { in: ["COMPLETED", "SHIPPED", "DELIVERED"] },
     },
   });
 
@@ -209,7 +209,7 @@ export async function generateMorningBrief(storeId: string, apiKey: string): Pro
     where: {
       storeId,
       createdAt: { gte: midnight },
-      status: { in: ["PAID", "SHIPPED", "DELIVERED"] },
+      status: { in: ["COMPLETED", "SHIPPED", "DELIVERED"] },
     },
     _sum: { total: true },
   });

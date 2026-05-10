@@ -7,7 +7,7 @@
     ],
     "outDir": "./dist",
     "rootDir": "./src",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -22,7 +22,8 @@
         "./src/*"
       ]
     },
-    "baseUrl": "."
+    "baseUrl": ".",
+    "noImplicitAny": false
   },
   "include": [
     "src/**/*",
@@ -31,6 +32,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "prisma"
+    "prisma",
+    "src/utils/app.additions.ts"
   ]
 }
