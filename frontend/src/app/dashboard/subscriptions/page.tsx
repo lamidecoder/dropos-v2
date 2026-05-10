@@ -1,46 +1,132 @@
 "use client";
-import{useState}from"react";
-import{useQuery,useMutation,useQueryClient}from"@tanstack/react-query";
-import{motion,AnimatePresence}from"framer-motion";
-import{useTheme}from"../../../components/layout/DashboardLayout";
-import{useAuthStore}from"../../../store/auth.store";
-import{api}from"../../../lib/api";
-import toast from"react-hot-toast";
-import Link from"next/link";
-import{Repeat,Pause,Play,DollarSign,Users}from"lucide-react";
-const V={v500:"#6B35E8",v400:"#8B5CF6",v300:"#A78BFA",cyan:"#06B6D4",green:"#10B981",amber:"#F59E0B",red:"#EF4444"};
-const TM={dark:{card:"#181230",border:"rgba(255,255,255,0.06)",text:"#fff",muted:"rgba(255,255,255,0.38)",faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:"#0D0918",muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
-const inp=(t,err)=>({padding:"10px 14px",borderRadius:10,border:`1px solid ${err?"rgba(239,68,68,0.5)":t.border}`,background:"rgba(255,255,255,0.04)",color:t.text,fontSize:13,outline:"none",width:"100%",fontFamily:"inherit"});
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useTheme } from "../../../components/layout/DashboardLayout";
+import { useAuthStore } from "../../../store/auth.store";
+import { api } from "../../../lib/api";
+import { Repeat, Users, DollarSign, TrendingUp, Check, X, Pause } from "lucide-react";
+import toast from "react-hot-toast";
 
-const ST={ACTIVE:{label:"Active",color:V.green,bg:"rgba(16,185,129,0.12)"},PAUSED:{label:"Paused",color:V.amber,bg:"rgba(245,158,11,0.12)"},CANCELLED:{label:"Cancelled",color:V.red,bg:"rgba(239,68,68,0.12)"}};
-const IV={weekly:"Weekly",monthly:"Monthly",quarterly:"Every 3 months"};
-const fmt=n=>new Intl.NumberFormat("en",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(n||0);
-export default function SubscriptionsPage(){
-  const{theme}=useTheme();const isDark=theme==="dark";const t=isDark?TM.dark:TM.light;
-  const storeId=useAuthStore(s=>s.user?.stores?.[0]?.id);const qc=useQueryClient();
-  const{data,isLoading}=useQuery({queryKey:["subs",storeId],queryFn:()=>api.get(`/product-subscriptions/${storeId}`).then(r=>r.data.data),enabled:!!storeId});
-  const upd=useMutation({mutationFn:({id,status})=>api.patch(`/product-subscriptions/${storeId}/${id}`,{status}),onSuccess:()=>{toast.success("Updated");qc.invalidateQueries({queryKey:["subs"]});},onError:()=>toast.error("Backend offline")});
-  const subs=data||[];
-  const mrr=subs.filter(s=>s.status==="ACTIVE").reduce((a,s)=>a+(s.interval==="monthly"?s.amount:s.interval==="weekly"?s.amount*4:s.amount/3),0);
-  return(<div className="max-w-5xl mx-auto">
-    <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} className="mb-6">
-      <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{color:t.text}}>Subscriptions</h1>
-      <p className="text-xs sm:text-sm mt-1" style={{color:t.muted}}>Recurring product orders from your customers</p>
-    </motion.div>
-    <div className="grid grid-cols-3 gap-3 mb-5">
-      {[{label:"Monthly Recurring",value:fmt(mrr),color:V.green},{label:"Active",value:subs.filter(s=>s.status==="ACTIVE").length,color:t.text},{label:"Total",value:subs.length,color:t.text}].map(s=>(<div key={s.label} className="p-4 rounded-2xl" style={{background:t.card,border:`1px solid ${t.border}`}}><p className="text-xl font-black mb-0.5" style={{color:s.color}}>{s.value}</p><p className="text-xs" style={{color:t.muted}}>{s.label}</p></div>))}
+const V = { v500:"#6B35E8", v400:"#8B5CF6", green:"#10B981", amber:"#F59E0B", red:"#EF4444" };
+
+function fmt(n: number) { return new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(n||0); }
+
+const STATUS: Record<string,any> = {
+  active:   {label:"Active",   color:V.green, bg:"rgba(16,185,129,0.1)"},
+  paused:   {label:"Paused",   color:V.amber, bg:"rgba(245,158,11,0.1)"},
+  cancelled:{label:"Cancelled",color:V.red,   bg:"rgba(239,68,68,0.1)"},
+};
+
+export default function SubscriptionsPage() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const t = {
+    card:   isDark ? "#181230" : "#fff",
+    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.08)",
+    text:   isDark ? "#F0ECFF" : "#130D2E",
+    muted:  isDark ? "rgba(240,236,255,0.45)" : "rgba(19,13,46,0.55)",
+    faint:  isDark ? "rgba(255,255,255,0.03)" : "rgba(107,53,232,0.03)",
+  };
+  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
+  const qc = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["subscriptions", storeId],
+    queryFn:  () => api.get(`/product-subscriptions/${storeId}`).then(r => r.data.data || []),
+    enabled:  !!storeId,
+  });
+
+  const actionMut = useMutation({
+    mutationFn: ({id, status}: {id:string;status:string}) =>
+      api.patch(`/product-subscriptions/${storeId}/${id}`, { status }),
+    onSuccess: (_,v) => { toast.success(`Subscription ${v.status}`); qc.invalidateQueries({queryKey:["subscriptions"]}); },
+  });
+
+  const subs = data || [];
+  const active = subs.filter((s:any) => s.status === "active");
+  const mrr    = active.reduce((a:number, s:any) => a + (s.amount || 0), 0);
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} className="mb-6">
+        <h1 className="text-xl sm:text-2xl font-black tracking-tight mb-1" style={{ color:t.text }}>Subscriptions</h1>
+        <p className="text-sm" style={{ color:t.muted }}>Recurring orders from loyal customers</p>
+      </motion.div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        {[
+          { label:"Active Subs",  value:active.length,       color:V.green, icon:Users       },
+          { label:"Monthly Revenue",value:fmt(mrr),           color:V.v400,  icon:DollarSign  },
+          { label:"Total Subs",   value:subs.length,         color:V.amber, icon:Repeat      },
+        ].map((s, i) => (
+          <motion.div key={s.label} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.06}}
+            className="p-4 rounded-2xl" style={{ background:t.card, border:`1px solid ${t.border}` }}>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-2" style={{ background:`${s.color}15` }}>
+              <s.icon size={14} style={{ color:s.color }}/>
+            </div>
+            <p className="text-xl font-black mb-0.5" style={{ color:t.text }}>{s.value}</p>
+            <p className="text-xs" style={{ color:t.muted }}>{s.label}</p>
+          </motion.div>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <div className="text-center py-16" style={{ color:t.muted }}>Loading...</div>
+      ) : subs.length === 0 ? (
+        <div className="text-center py-16 rounded-2xl" style={{ background:t.faint, border:`1px solid ${t.border}` }}>
+          <Repeat size={36} style={{ color:t.muted, margin:"0 auto 12px" }}/>
+          <p className="font-bold text-base mb-2" style={{ color:t.text }}>No subscriptions yet</p>
+          <p className="text-sm max-w-sm mx-auto" style={{ color:t.muted }}>
+            When customers subscribe to recurring orders on your products, they appear here automatically.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-2xl overflow-hidden" style={{ background:t.card, border:`1px solid ${t.border}` }}>
+          <div className="grid grid-cols-12 px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color:t.muted, borderBottom:`1px solid ${t.border}` }}>
+            <div className="col-span-4">Customer</div>
+            <div className="col-span-3">Product</div>
+            <div className="col-span-2 text-center">Amount</div>
+            <div className="col-span-2 text-center">Status</div>
+            <div className="col-span-1 text-center">Actions</div>
+          </div>
+          {subs.map((s: any, i: number) => {
+            const cfg = STATUS[s.status] || STATUS.active;
+            return (
+              <motion.div key={s.id} initial={{opacity:0}} animate={{opacity:1}} transition={{delay:i*0.03}}
+                className="grid grid-cols-12 items-center px-4 py-3"
+                style={{ borderBottom:i<subs.length-1?`1px solid ${t.border}`:"none", background:i%2===0?"rgba(255,255,255,0.015)":"transparent" }}>
+                <div className="col-span-4 min-w-0">
+                  <p className="text-sm font-medium truncate" style={{ color:t.text }}>{s.customerName || s.customerEmail || "Customer"}</p>
+                  <p className="text-xs" style={{ color:t.muted }}>Every {s.intervalDays || 30} days</p>
+                </div>
+                <div className="col-span-3 min-w-0">
+                  <p className="text-sm truncate" style={{ color:t.muted }}>{s.productName || "Product"}</p>
+                </div>
+                <div className="col-span-2 text-center">
+                  <p className="text-sm font-bold" style={{ color:t.text }}>{fmt(s.amount)}</p>
+                </div>
+                <div className="col-span-2 flex justify-center">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color:cfg.color, background:cfg.bg }}>{cfg.label}</span>
+                </div>
+                <div className="col-span-1 flex justify-center">
+                  {s.status === "active" ? (
+                    <button onClick={() => actionMut.mutate({id:s.id,status:"paused"})}
+                      style={{ width:28, height:28, borderRadius:8, border:`1px solid ${t.border}`, background:t.faint, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <Pause size={12} style={{ color:t.muted }}/>
+                    </button>
+                  ) : s.status === "paused" ? (
+                    <button onClick={() => actionMut.mutate({id:s.id,status:"active"})}
+                      style={{ width:28, height:28, borderRadius:8, border:"none", background:"rgba(16,185,129,0.15)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <Check size={12} color={V.green}/>
+                    </button>
+                  ) : null}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </div>
-    <div className="rounded-2xl overflow-hidden" style={{background:t.card,border:`1px solid ${t.border}`}}>
-      {isLoading?Array.from({length:3}).map((_,i)=><div key={i} className="h-16 animate-pulse m-3 rounded-xl" style={{background:t.faint}}/>):subs.length===0?(
-        <div className="flex flex-col items-center justify-center py-20 text-center"><Repeat size={36} style={{color:t.muted,opacity:0.3,marginBottom:14}}/><p className="font-bold text-sm mb-1" style={{color:t.text}}>No subscriptions yet</p><p className="text-xs" style={{color:t.muted,maxWidth:280}}>When customers subscribe to recurring products, they appear here</p></div>
-      ):(<div className="divide-y" style={{borderColor:t.border}}>{subs.map((sub,i)=>{const s=ST[sub.status]||ST.ACTIVE;return(<div key={sub.id} className="flex items-center gap-3 px-4 py-3.5">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:s.bg}}><Repeat size={14} style={{color:s.color}}/></div>
-        <div className="flex-1 min-w-0"><p className="text-sm font-semibold" style={{color:t.text}}>{sub.customerName||sub.customer?.name||"Customer"}</p><p className="text-xs mt-0.5" style={{color:t.muted}}>{sub.product?.name||"Product"} · {IV[sub.interval]||sub.interval} · {fmt(sub.amount)}</p></div>
-        <span className="text-xs px-2.5 py-1 rounded-full font-semibold flex-shrink-0" style={{background:s.bg,color:s.color}}>{s.label}</span>
-        {sub.status==="ACTIVE"&&<button onClick={()=>upd.mutate({id:sub.id,status:"PAUSED"})} className="p-2 rounded-lg flex-shrink-0" style={{border:`1px solid ${t.border}`,color:t.muted}}><Pause size={12}/></button>}
-        {sub.status==="PAUSED"&&<button onClick={()=>upd.mutate({id:sub.id,status:"ACTIVE"})} className="p-2 rounded-lg flex-shrink-0" style={{border:`1px solid ${t.border}`,color:V.green}}><Play size={12}/></button>}
-      </div>);})}
-      </div>)}
-    </div>
-  </div>);
+  );
 }
