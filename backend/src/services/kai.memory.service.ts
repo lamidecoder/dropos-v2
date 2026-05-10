@@ -169,7 +169,7 @@ export async function updateGoalProgress(goalId: string, currentValue: number): 
     if (!milestone.achieved && currentValue >= milestone.targetValue) {
       await prisma.milestone.update({
         where: { id: milestone.id },
-        data: { achieved: true, achievedAt: new Date() },
+        data: { seen: true },
       });
     }
   }
