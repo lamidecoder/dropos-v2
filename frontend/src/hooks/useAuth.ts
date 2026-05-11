@@ -14,9 +14,13 @@ export function useLogin() {
   return useMutation({
     mutationFn: (data: { email: string; password: string }) => authAPI.login(data),
     onSuccess: (res) => {
-      const { user, accessToken } = res.data.data;
+      const { user, accessToken, refreshToken } = res.data.data;
       setUser(user);
       setAccessToken(accessToken);
+      // Save refresh token so page refresh keeps session alive
+      if (refreshToken && typeof window !== "undefined") {
+        localStorage.setItem("dropos-refresh-token", refreshToken);
+      }
       toast.success(`Welcome back, ${user.name}!`);
       if (user.role === "SUPER_ADMIN") {
         router.push("/admin");
@@ -39,12 +43,16 @@ export function useRegister() {
     mutationFn: (data: { name: string; email: string; password: string; phone?: string }) =>
       authAPI.register(data),
     onSuccess: (res: any) => {
-      // If server returns token directly (no email verify), go to onboarding
-      if (res?.data?.data?.accessToken) {
-        const { user, accessToken } = res.data.data;
+      const { user, accessToken, refreshToken } = res?.data?.data || {};
+      if (accessToken && user) {
         const { setUser, setAccessToken } = useAuthStore.getState();
         setUser(user);
         setAccessToken(accessToken);
+        // Save refresh token so page refresh keeps session alive
+        if (refreshToken && typeof window !== "undefined") {
+          localStorage.setItem("dropos-refresh-token", refreshToken);
+        }
+        toast.success(`Welcome to DropOS, ${user.name}! 🎉`);
         router.push("/onboarding");
       } else {
         toast.success("Account created! Sign in to continue.");

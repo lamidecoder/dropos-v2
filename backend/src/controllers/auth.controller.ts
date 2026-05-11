@@ -113,6 +113,7 @@ export const register = async (req: Request, res: Response) => {
     message: "Account created successfully.",
     data: {
       accessToken,
+      refreshToken, // include so frontend can save to localStorage
       user: { id: userWithStore!.id, email: userWithStore!.email, name: userWithStore!.name, role: userWithStore!.role, onboarded: userWithStore!.onboarded, stores: userWithStore!.stores, subscription: userWithStore!.subscription },
     },
   });
