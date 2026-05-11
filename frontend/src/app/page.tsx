@@ -2,11 +2,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Zap, ArrowRight, Mail, Check } from "lucide-react";
+import { Zap, ArrowRight, Check } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
-
-// Launch date: 30 days from now (update this to real date before launch)
 const LAUNCH = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
 function useCountdown(target: Date) {
@@ -30,14 +28,26 @@ function useCountdown(target: Date) {
 
 function Block({ value, label }: { value: number; label: string }) {
   return (
-    <div className="flex flex-col items-center">
-      <div className="relative">
-        <div className="w-20 h-20 rounded-2xl flex items-center justify-center font-black text-3xl"
-          style={{ background: "rgba(107,53,232,0.12)", border: "1px solid rgba(107,53,232,0.25)", color: "#F0ECFF", letterSpacing: "-0.04em" }}>
-          {String(value).padStart(2, "0")}
-        </div>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+      <div style={{
+        width: "clamp(56px, 14vw, 80px)",
+        height: "clamp(56px, 14vw, 80px)",
+        borderRadius: 14,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "clamp(22px, 5vw, 32px)",
+        fontWeight: 900,
+        letterSpacing: "-0.04em",
+        background: "rgba(107,53,232,0.12)",
+        border: "1px solid rgba(107,53,232,0.25)",
+        color: "#F0ECFF",
+      }}>
+        {String(value).padStart(2, "0")}
       </div>
-      <p className="text-xs font-semibold mt-2 uppercase tracking-widest" style={{ color: "rgba(240,236,255,0.35)" }}>{label}</p>
+      <p style={{ fontSize: "clamp(9px, 2vw, 11px)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(240,236,255,0.35)", margin: 0 }}>
+        {label}
+      </p>
     </div>
   );
 }
@@ -57,130 +67,194 @@ export default function ComingSoonPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, source: "coming_soon" }),
       });
-      setSubmitted(true);
-    } catch {
-      setSubmitted(true); // optimistic — store anyway
-    }
+    } catch {}
+    setSubmitted(true);
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden"
-      style={{ background: "#080612" }}>
-
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "#080612",
+      padding: "24px 16px",
+      position: "relative",
+      overflow: "hidden",
+      boxSizing: "border-box",
+    }}>
       {/* Background glows */}
-      <div style={{ position: "absolute", top: "10%", left: "50%", transform: "translateX(-50%)", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(107,53,232,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: "5%", right: "10%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(61,28,138,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "5%", left: "50%", transform: "translateX(-50%)", width: "min(600px, 100vw)", height: "min(600px, 100vw)", borderRadius: "50%", background: "radial-gradient(circle, rgba(107,53,232,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "0", right: "0", width: "min(300px, 50vw)", height: "min(300px, 50vw)", borderRadius: "50%", background: "radial-gradient(circle, rgba(61,28,138,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}
-        className="flex flex-col items-center text-center max-w-xl w-full relative z-10">
-
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+          width: "100%",
+          maxWidth: 520,
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 mb-12">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
-            <Zap size={18} color="#fff" fill="#fff" />
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "clamp(32px, 8vw, 52px)", textDecoration: "none" }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", flexShrink: 0 }}>
+            <Zap size={17} color="#fff" fill="#fff" />
           </div>
-          <span className="text-lg font-black tracking-tight" style={{ color: "#F0ECFF" }}>DropOS</span>
+          <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.03em", color: "#F0ECFF" }}>DropOS</span>
         </Link>
 
         {/* Badge */}
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 px-4 py-2 rounded-full mb-8"
-          style={{ background: "rgba(107,53,232,0.1)", border: "1px solid rgba(107,53,232,0.2)" }}>
-          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#10B981" }} />
-          <span className="text-xs font-bold" style={{ color: "rgba(167,139,250,0.9)" }}>Something big is coming</span>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.15 }}
+          style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 16px", borderRadius: 99, background: "rgba(107,53,232,0.1)", border: "1px solid rgba(107,53,232,0.2)", marginBottom: "clamp(20px, 5vw, 32px)" }}
+        >
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981", animation: "pulse 2s infinite" }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(167,139,250,0.9)" }}>Something big is coming</span>
         </motion.div>
 
         {/* Headline */}
-        <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-5 leading-tight"
-          style={{ color: "#F0ECFF", letterSpacing: "-0.04em" }}>
-          Your AI-powered<br />
+        <h1 style={{
+          fontSize: "clamp(28px, 8vw, 48px)",
+          fontWeight: 900,
+          letterSpacing: "-0.04em",
+          lineHeight: 1.1,
+          color: "#F0ECFF",
+          margin: "0 0 clamp(12px, 3vw, 20px)",
+        }}>
+          Your AI-powered{" "}
           <span style={{ background: "linear-gradient(135deg,#8B5CF6,#A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             dropshipping store
           </span>
         </h1>
 
-        <p className="text-base mb-10 leading-relaxed" style={{ color: "rgba(240,236,255,0.5)", maxWidth: 400 }}>
+        <p style={{
+          fontSize: "clamp(13px, 3.5vw, 15px)",
+          lineHeight: 1.65,
+          color: "rgba(240,236,255,0.5)",
+          margin: "0 0 clamp(28px, 7vw, 44px)",
+          maxWidth: 380,
+        }}>
           DropOS is the first AI-native store platform built for African merchants.
-          KIRO handles everything — product import, pricing, fulfilment, and marketing.
+          KIRO handles everything — import, pricing, fulfilment, and growth.
         </p>
 
         {/* Countdown */}
-        <div className="flex items-center gap-5 mb-10">
+        <div style={{ display: "flex", alignItems: "center", gap: "clamp(10px, 3vw, 20px)", marginBottom: "clamp(28px, 7vw, 44px)" }}>
           <Block value={d} label="Days" />
-          <span className="text-2xl font-black pb-5" style={{ color: "rgba(107,53,232,0.4)" }}>:</span>
+          <span style={{ fontSize: "clamp(18px, 5vw, 28px)", fontWeight: 900, color: "rgba(107,53,232,0.4)", paddingBottom: "clamp(16px, 4vw, 24px)" }}>:</span>
           <Block value={h} label="Hours" />
-          <span className="text-2xl font-black pb-5" style={{ color: "rgba(107,53,232,0.4)" }}>:</span>
+          <span style={{ fontSize: "clamp(18px, 5vw, 28px)", fontWeight: 900, color: "rgba(107,53,232,0.4)", paddingBottom: "clamp(16px, 4vw, 24px)" }}>:</span>
           <Block value={m} label="Mins" />
-          <span className="text-2xl font-black pb-5" style={{ color: "rgba(107,53,232,0.4)" }}>:</span>
+          <span style={{ fontSize: "clamp(18px, 5vw, 28px)", fontWeight: 900, color: "rgba(107,53,232,0.4)", paddingBottom: "clamp(16px, 4vw, 24px)" }}>:</span>
           <Block value={s} label="Secs" />
         </div>
 
-        {/* Email waitlist */}
+        {/* Email form */}
         {submitted ? (
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-3 px-6 py-4 rounded-2xl"
-            style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)" }}>
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(16,185,129,0.15)" }}>
-              <Check size={16} color="#10B981" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 20px", borderRadius: 16, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", width: "100%", maxWidth: 400, boxSizing: "border-box" }}
+          >
+            <div style={{ width: 32, height: 32, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(16,185,129,0.15)", flexShrink: 0 }}>
+              <Check size={15} color="#10B981" />
             </div>
-            <div className="text-left">
-              <p className="text-sm font-bold" style={{ color: "#10B981" }}>You're on the list!</p>
-              <p className="text-xs" style={{ color: "rgba(240,236,255,0.4)" }}>We'll email you the moment we launch.</p>
+            <div style={{ textAlign: "left" }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#10B981", margin: "0 0 2px" }}>You're on the list!</p>
+              <p style={{ fontSize: 12, color: "rgba(240,236,255,0.35)", margin: 0 }}>We'll email you the moment we launch.</p>
             </div>
           </motion.div>
         ) : (
-          <div className="flex w-full max-w-sm gap-2">
+          <div style={{ display: "flex", width: "100%", maxWidth: 400, gap: 8, flexWrap: "wrap" }}>
             <input
               value={email}
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === "Enter" && join()}
               type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-xl text-sm outline-none"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(107,53,232,0.2)", color: "#F0ECFF", fontFamily: "inherit" }}
+              placeholder="your@email.com"
+              style={{
+                flex: "1 1 160px",
+                minWidth: 0,
+                padding: "11px 16px",
+                borderRadius: 12,
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(107,53,232,0.2)",
+                color: "#F0ECFF",
+                fontSize: 14,
+                outline: "none",
+                fontFamily: "inherit",
+                boxSizing: "border-box",
+              }}
             />
             <button
               onClick={join}
               disabled={!email || loading}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white"
-              style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", border: "none", cursor: email && !loading ? "pointer" : "not-allowed", opacity: !email ? 0.6 : 1, flexShrink: 0 }}>
+              style={{
+                flex: "0 0 auto",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "11px 18px",
+                borderRadius: 12,
+                background: email && !loading ? "linear-gradient(135deg,#6B35E8,#3D1C8A)" : "rgba(107,53,232,0.3)",
+                border: "none",
+                cursor: email && !loading ? "pointer" : "not-allowed",
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 700,
+                fontFamily: "inherit",
+                whiteSpace: "nowrap",
+              }}
+            >
               {loading ? "..." : <><span>Notify me</span><ArrowRight size={14} /></>}
             </button>
           </div>
         )}
 
-        {/* Features preview */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-10">
-          {["AI product import", "KIRO AI assistant", "Paystack & Stripe", "Nigerian merchants"].map(f => (
-            <span key={f} className="flex items-center gap-1.5 text-xs"
-              style={{ color: "rgba(240,236,255,0.4)" }}>
-              <Check size={11} color="#6B35E8" />
+        {/* Features */}
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "8px 20px", margin: "clamp(20px,5vw,36px) 0" }}>
+          {["AI product import", "KIRO AI assistant", "Paystack & Stripe", "Built for Nigeria"].map(f => (
+            <span key={f} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "clamp(11px, 2.5vw, 12px)", color: "rgba(240,236,255,0.38)" }}>
+              <Check size={10} color="#6B35E8" />
               {f}
             </span>
           ))}
         </div>
 
-        {/* Already have account */}
-        <div className="flex items-center gap-3 mt-12">
-          <Link href="/auth/login"
-            className="text-xs font-semibold px-4 py-2 rounded-xl transition-all"
-            style={{ color: "rgba(167,139,250,0.7)", textDecoration: "none", border: "1px solid rgba(107,53,232,0.15)", background: "rgba(107,53,232,0.05)" }}>
+        {/* Auth links */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+          <Link href="/auth/login" style={{ fontSize: 13, fontWeight: 600, padding: "8px 18px", borderRadius: 10, color: "rgba(167,139,250,0.7)", textDecoration: "none", border: "1px solid rgba(107,53,232,0.15)", background: "rgba(107,53,232,0.05)" }}>
             Sign in
           </Link>
-          <Link href="/auth/register"
-            className="text-xs font-semibold px-4 py-2 rounded-xl text-white"
-            style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", textDecoration: "none" }}>
-            Early access →
+          <Link href="/auth/register" style={{ fontSize: 13, fontWeight: 700, padding: "8px 18px", borderRadius: 10, color: "#fff", textDecoration: "none", background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
+            Get early access →
           </Link>
         </div>
       </motion.div>
 
       {/* Footer */}
-      <p className="absolute bottom-6 text-xs" style={{ color: "rgba(240,236,255,0.2)" }}>
+      <p style={{ position: "absolute", bottom: 20, left: 0, right: 0, textAlign: "center", fontSize: 11, color: "rgba(240,236,255,0.18)", margin: 0 }}>
         © {new Date().getFullYear()} DropOS · Built for African merchants
       </p>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+        * { box-sizing: border-box; }
+      `}</style>
     </div>
   );
 }
