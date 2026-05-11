@@ -1,56 +1,35 @@
 "use client";
 import { motion } from "framer-motion";
 import { useTheme } from "../../../components/layout/DashboardLayout";
-import { Zap, ArrowRight } from "lucide-react";
+import { Zap, ArrowRight, MousePointer, Eye, Clock } from "lucide-react";
 import Link from "next/link";
-
+const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA" };
 export default function ReplayPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const t = {
-    card:   isDark ? "#181230" : "#fff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.08)",
-    text:   isDark ? "#F0ECFF" : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.45)" : "rgba(19,13,46,0.55)",
-    faint:  isDark ? "rgba(255,255,255,0.03)" : "rgba(107,53,232,0.03)",
-  };
+  const t = { card:isDark?"#181230":"#fff", border:isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)", text:isDark?"#F0ECFF":"#130D2E", muted:isDark?"rgba(240,236,255,0.45)":"rgba(19,13,46,0.55)", faint:isDark?"rgba(255,255,255,0.03)":"rgba(107,53,232,0.03)" };
   return (
-    <div className="max-w-4xl mx-auto">
-      <motion.div initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} className="mb-8">
-        <h1 className="text-xl sm:text-2xl font-black tracking-tight mb-1.5" style={{ color:t.text }}>▶️ Session Replay</h1>
-        <p className="text-sm" style={{ color:t.muted }}>Watch how real visitors use your store. See exactly where they drop off.</p>
+    <div style={{maxWidth:800,margin:"0 auto"}}>
+      <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} style={{marginBottom:24}}>
+        <h1 style={{fontSize:22,fontWeight:900,letterSpacing:"-0.04em",color:t.text,margin:"0 0 4px"}}>Session Replay</h1>
+        <p style={{fontSize:13,color:t.muted,margin:0}}>Watch exactly how customers navigate your store</p>
       </motion.div>
-      <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.08 }}
-        className="rounded-2xl p-10 text-center mb-5" style={{ background:t.card, border:`1px solid ${t.border}` }}>
-        <div className="text-5xl mb-5">▶️</div>
-        <h2 className="text-xl font-black mb-3" style={{ color:t.text, letterSpacing:"-0.5px" }}>Session Replay</h2>
-        <p className="text-sm leading-relaxed mb-6 max-w-md mx-auto" style={{ color:t.muted }}>Record customer sessions and replay them. See mouse movements, clicks, scroll depth. KIRO tells you what each session means.</p>
-        <Link href="/dashboard/kiro">
-          <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white"
-            style={{ background:"linear-gradient(135deg,#6B35E8,#3D1C8A)", border:"none", cursor:"pointer" }}>
-            <Zap size={13}/> Ask KIRO <ArrowRight size={13}/>
-          </button>
+      <div style={{padding:40,borderRadius:20,background:t.card,border:`1px solid ${t.border}`,textAlign:"center",marginBottom:16}}>
+        <div style={{width:64,height:64,borderRadius:20,background:"rgba(107,53,232,0.1)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",fontSize:28}}>🎬</div>
+        <h2 style={{fontSize:18,fontWeight:800,color:t.text,margin:"0 0 8px",letterSpacing:"-0.03em"}}>Coming in Phase 2</h2>
+        <p style={{fontSize:13,color:t.muted,margin:"0 0 24px",maxWidth:400,marginLeft:"auto",marginRight:"auto",lineHeight:1.6}}>Session replay lets you watch real customer journeys — where they click, scroll, hesitate, and drop off. KIRO will automatically flag the moments that cost you sales.</p>
+        <Link href="/dashboard/kiro" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 20px",borderRadius:12,background:`linear-gradient(135deg,${V.v500},#3D1C8A)`,textDecoration:"none",color:"#fff",fontSize:13,fontWeight:700}}>
+          <Zap size={13}/> Ask KIRO for analytics instead
         </Link>
-      </motion.div>
-      <div className="grid sm:grid-cols-3 gap-4">
-        <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1 }}
-          className="p-4 rounded-2xl" style={{ background:t.faint, border:`1px solid ${t.border}` }}>
-          <div className="text-2xl mb-2">🎬</div>
-          <p className="text-sm font-semibold mb-1" style={{ color:t.text }}>Session recording</p>
-          <p className="text-xs leading-relaxed" style={{ color:t.muted }}>See exactly what customers do on your store</p>
-        </motion.div>
-        <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.18 }}
-          className="p-4 rounded-2xl" style={{ background:t.faint, border:`1px solid ${t.border}` }}>
-          <div className="text-2xl mb-2">📍</div>
-          <p className="text-sm font-semibold mb-1" style={{ color:t.text }}>Heatmaps</p>
-          <p className="text-xs leading-relaxed" style={{ color:t.muted }}>Where people click, scroll, and leave</p>
-        </motion.div>
-        <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.26 }}
-          className="p-4 rounded-2xl" style={{ background:t.faint, border:`1px solid ${t.border}` }}>
-          <div className="text-2xl mb-2">🧠</div>
-          <p className="text-sm font-semibold mb-1" style={{ color:t.text }}>KIRO analysis</p>
-          <p className="text-xs leading-relaxed" style={{ color:t.muted }}>KIRO explains patterns and what to fix</p>
-        </motion.div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+        {[{icon:Eye,label:"Heatmaps",desc:"See where eyes and clicks go"},{icon:MousePointer,label:"Click tracking",desc:"Every tap mapped in real time"},{icon:Clock,label:"Session length",desc:"How long customers stay"}].map((f,i)=>(
+          <div key={i} style={{padding:16,borderRadius:14,background:t.faint,border:`1px solid ${t.border}`}}>
+            <div style={{width:32,height:32,borderRadius:10,background:"rgba(107,53,232,0.1)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:10}}><f.icon size={14} color={V.v400}/></div>
+            <p style={{fontSize:13,fontWeight:700,color:t.text,margin:"0 0 4px"}}>{f.label}</p>
+            <p style={{fontSize:12,color:t.muted,margin:0}}>{f.desc}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
