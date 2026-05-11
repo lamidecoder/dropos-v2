@@ -15,7 +15,6 @@ import { notFound } from "./middleware/notFound";
 import { requestLogger } from "./middleware/requestLogger";
 
 // Core Routes
-import authRefreshRoutes from "./routes/auth.refresh.routes";
 import authRoutes        from "./routes/auth.routes";
 import storeRoutes       from "./routes/store.routes";
 import productRoutes     from "./routes/product.routes";
@@ -158,7 +157,6 @@ app.get("/api/health", (_req: Request, res: Response) => {
 
 // CORE BUSINESS ROUTES
 app.use("/api/auth",                 authRoutes);
-app.use("/api/auth",                 authRefreshRoutes);
 app.use("/api/stores",               storeRoutes);
 app.use("/api/products",             productRoutes);
 app.use("/api/orders",               orderRoutes);

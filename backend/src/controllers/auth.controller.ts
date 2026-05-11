@@ -197,12 +197,18 @@ export const login = async (req: Request, res: Response) => {
 
 // ── Refresh Token ─────────────────────────────────────────────────────────────
 export const refreshToken = async (req: Request, res: Response) => {
-  const token = req.cookies?.refresh_token || req.body?.refreshToken;
+  const token = req.cookies?.dropos_refresh || req.cookies?.refresh_token || req.body?.refreshToken;
   if (!token) throw new AppError("No refresh token", 401);
 
   const payload = verifyRefreshToken(token);
 
-  const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+  const user = await prisma.user.findUnique({
+    where: { id: payload.userId },
+    include: {
+      subscription: true,
+      stores: { select: { id: true, name: true, slug: true, status: true } },
+    },
+  });
   if (!user || user.refreshToken !== token) throw new AppError("Invalid refresh token", 401);
 
   const newPayload      = { userId: user.id, email: user.email, role: user.role };
@@ -214,7 +220,11 @@ export const refreshToken = async (req: Request, res: Response) => {
 
   return res.json({
     success: true,
-    data: { accessToken: newAccessToken },
+    data: {
+      accessToken:  newAccessToken,
+      refreshToken: newRefreshToken,
+      user:         sanitizeUser(user),
+    },
   });
 };
 

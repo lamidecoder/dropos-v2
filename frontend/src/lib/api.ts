@@ -39,13 +39,16 @@ function processQueue(token: string) {
 api.interceptors.response.use(
   (res) => {
     // Store refresh token when login succeeds
-    if (res.config.url?.includes("/auth/login") && res.data?.data?.refreshToken) {
+    if ((res.config.url?.includes("/auth/login") || res.config.url?.includes("/auth/register")) && res.data?.data?.refreshToken) {
       if (typeof window !== "undefined") {
         localStorage.setItem("dropos-refresh-token", res.data.data.refreshToken);
       }
       // Also set the access token immediately in store
       if (res.data?.data?.accessToken) {
         useAuthStore.getState().setAccessToken(res.data.data.accessToken);
+      }
+      if (res.data?.data?.user) {
+        useAuthStore.getState().setUser(res.data.data.user);
       }
     }
     return res;

@@ -69,7 +69,7 @@ export function setRefreshCookie(res: Response, refreshToken: string): void {
   res.cookie(COOKIE_NAME, refreshToken, {
     httpOnly: true,              // Not accessible via JS (XSS protection)
     secure:   process.env.NODE_ENV === "production", // HTTPS only in prod
-    sameSite: "strict",          // CSRF protection
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",  // none required for cross-domain
     maxAge:   30 * 24 * 60 * 60 * 1000, // 30 days
     path:     "/api/auth",       // Only sent to auth endpoints
   });

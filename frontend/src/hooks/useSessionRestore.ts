@@ -1,17 +1,10 @@
 "use client";
-// ============================================================
-// Session Restore Hook
-// Path: frontend/src/hooks/useSessionRestore.ts
-//
-// On every page load, tries to restore session from cookie.
-// User stays logged in even after server restart.
-// ============================================================
 import { useEffect, useRef } from "react";
 import { useAuthStore }      from "@/store/auth.store";
 import { api }               from "@/lib/api";
 
 export function useSessionRestore() {
-  const { user, accessToken, setUser, setAccessToken, setLoading, setHydrated } = useAuthStore();
+  const { accessToken, setUser, setAccessToken, setLoading, setHydrated } = useAuthStore();
   const didRestore = useRef(false);
 
   useEffect(() => {
@@ -19,25 +12,38 @@ export function useSessionRestore() {
     didRestore.current = true;
 
     const restore = async () => {
-      // Already have a valid access token in memory - no need to restore
+      // Already have token in memory - just mark hydrated
       if (accessToken) {
         setHydrated(true);
         return;
       }
 
-      // Try to restore from httpOnly cookie
-      // If server is restarted, cookie still exists → restores session
       try {
         setLoading(true);
-        const res = await api.get("/auth/me");
-        if (res.data.success) {
-          const { accessToken: newToken, user: restoredUser } = res.data.data;
+        const storedRefresh = typeof window !== "undefined"
+          ? localStorage.getItem("dropos-refresh-token") : null;
+
+        // Single call: refresh returns both new token AND user data
+        const res = await api.post(
+          "/auth/refresh",
+          storedRefresh ? { refreshToken: storedRefresh } : {},
+          { withCredentials: true }
+        );
+
+        const { accessToken: newToken, refreshToken: newRefresh, user } = res.data?.data || {};
+
+        if (newToken) {
           setAccessToken(newToken);
-          setUser(restoredUser);
+          if (newRefresh && typeof window !== "undefined") {
+            localStorage.setItem("dropos-refresh-token", newRefresh);
+          }
+          if (user) setUser(user);
         }
       } catch {
-        // No valid session - user needs to log in
-        // Don't redirect - let each page decide what to do
+        // No valid session - clear stale refresh token
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("dropos-refresh-token");
+        }
       } finally {
         setLoading(false);
         setHydrated(true);
@@ -47,4 +53,3 @@ export function useSessionRestore() {
     restore();
   }, []);
 }
-

@@ -67,12 +67,20 @@ export const useAuthStore = create<AuthState>()(
       // ── Refresh session using httpOnly cookie ───────────────
       refreshSession: async (): Promise<boolean> => {
         try {
-          const res = await api.post("/auth/refresh"); // cookie sent automatically
-          const { accessToken, user } = res.data.data;
-          set({ accessToken, user, lastRefresh: Date.now() });
+          const storedRefresh = typeof window !== "undefined"
+            ? localStorage.getItem("dropos-refresh-token") : null;
+          const res = await api.post("/auth/refresh",
+            storedRefresh ? { refreshToken: storedRefresh } : {},
+            { withCredentials: true }
+          );
+          const { accessToken, user, refreshToken: newRefresh } = res.data.data;
+          if (newRefresh && typeof window !== "undefined") {
+            localStorage.setItem("dropos-refresh-token", newRefresh);
+          }
+          set({ accessToken, ...(user && { user }), lastRefresh: Date.now() });
           return true;
         } catch {
-          set({ user: null, accessToken: null });
+          set({ accessToken: null });
           return false;
         }
       },
