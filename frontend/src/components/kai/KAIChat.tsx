@@ -249,22 +249,25 @@ export default function KIROChat({ className, storeId: propStoreId, initialMessa
           for (const line of lines) {
             if (line.startsWith("data: ")) {
               const data = line.slice(6).trim();
-              if (data === "[DONE]") {
-                setMessages(prev => prev.map(m =>
-                  m.id === kiroPlaceholder.id ? { ...m, content: fullText, isStreaming: false, actions } : m
-                ));
-                break;
-              }
+              if (data === "[DONE]") break;
               try {
                 const parsed = JSON.parse(data);
-                if (parsed.type === "text_delta" && parsed.delta) {
-                  fullText += parsed.delta;
+                // Handle {token} format (backend) OR {type:"text_delta",delta} format
+                const chunk = parsed.token ?? parsed.delta ?? (parsed.type === "text_delta" ? parsed.delta : null);
+                if (chunk) {
+                  fullText += chunk;
                   setMessages(prev => prev.map(m =>
                     m.id === kiroPlaceholder.id ? { ...m, content: fullText, isStreaming: true } : m
                   ));
                   bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-                } else if (parsed.type === "actions") {
+                } else if (parsed.done || parsed.type === "done") {
+                  setMessages(prev => prev.map(m =>
+                    m.id === kiroPlaceholder.id ? { ...m, content: fullText, isStreaming: false, actions } : m
+                  ));
+                } else if (parsed.actions || parsed.type === "actions") {
                   actions = parsed.actions || [];
+                } else if (parsed.conversationId && !sessionId) {
+                  setSessionId(parsed.conversationId);
                 } else if (parsed.session_id && !sessionId) {
                   setSessionId(parsed.session_id);
                 }
