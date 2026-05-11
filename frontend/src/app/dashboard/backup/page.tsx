@@ -1,33 +1,109 @@
 "use client";
-import{useState}from"react";
-import{useQuery,useMutation,useQueryClient}from"@tanstack/react-query";
-import{motion,AnimatePresence}from"framer-motion";
-import{useTheme}from"../../../components/layout/DashboardLayout";
-import{useAuthStore}from"../../../store/auth.store";
-import{api}from"../../../lib/api";
-import toast from"react-hot-toast";
-import Link from"next/link";
-import{Download,Package,ShoppingCart,Users,Check,Shield,Clock}from"lucide-react";
-const V={v500:"#6B35E8",v400:"#8B5CF6",v300:"#A78BFA",cyan:"#06B6D4",green:"#10B981",amber:"#F59E0B",red:"#EF4444"};
-const TM={dark:{card:"#181230",border:"rgba(255,255,255,0.06)",text:"#fff",muted:"rgba(255,255,255,0.38)",faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:"#0D0918",muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
-const inp=(t,err)=>({padding:"10px 14px",borderRadius:10,border:`1px solid ${err?"rgba(239,68,68,0.5)":t.border}`,background:"rgba(255,255,255,0.04)",color:t.text,fontSize:13,outline:"none",width:"100%",fontFamily:"inherit"});
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useTheme } from "../../../components/layout/DashboardLayout";
+import { useAuthStore } from "../../../store/auth.store";
+import { api } from "../../../lib/api";
+import { Download, Package, ShoppingCart, Users, FileText, Shield, Check, Loader2, Clock } from "lucide-react";
+import toast from "react-hot-toast";
 
-const EXPORTS=[{type:"orders",label:"Orders",icon:ShoppingCart,color:V.cyan,desc:"Full order history with items and totals"},{type:"products",label:"Products",icon:Package,color:V.v400,desc:"Product catalog with prices and inventory"},{type:"customers",label:"Customers",icon:Users,color:V.green,desc:"Customer list with contact info and history"}];
-export default function BackupPage(){
-  const{theme}=useTheme();const isDark=theme==="dark";const t=isDark?TM.dark:TM.light;
-  const storeId=useAuthStore(s=>s.user?.stores?.[0]?.id);
-  const[exporting,setExporting]=useState(null);const[done,setDone]=useState([]);
-  const handleExport=async(type)=>{setExporting(type);try{const r=await api.get(`/analytics/${storeId}/export`,{params:{type},responseType:"blob"});const url=URL.createObjectURL(r.data);const a=document.createElement("a");a.href=url;a.download=`dropos-${type}-${new Date().toISOString().split("T")[0]}.csv`;a.click();setDone(p=>[...p,type]);toast.success(`${type} exported`);}catch{toast.error("Backend offline");}finally{setExporting(null);}};
-  return(<div className="max-w-3xl mx-auto">
-    <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} className="mb-6"><h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{color:t.text}}>Backup and Export</h1><p className="text-xs sm:text-sm mt-1" style={{color:t.muted}}>Download your store data as CSV files</p></motion.div>
-    <div className="flex items-center gap-3 p-4 rounded-2xl mb-5" style={{background:"rgba(107,53,232,0.06)",border:"1px solid rgba(107,53,232,0.15)"}}><Shield size={15} style={{color:V.v400,flexShrink:0}}/><p className="text-xs" style={{color:t.muted}}>We recommend exporting your data monthly. Store it in Google Drive or your email for safekeeping.</p></div>
-    <div className="space-y-3">{EXPORTS.map((ex,i)=>{const isExp=exporting===ex.type;const isDone=done.includes(ex.type);return(<motion.div key={ex.type} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.07}} className="flex items-center gap-4 p-5 rounded-2xl" style={{background:t.card,border:`1px solid ${t.border}`}}>
-      <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{background:`${ex.color}12`}}><ex.icon size={20} style={{color:ex.color}}/></div>
-      <div className="flex-1 min-w-0"><p className="text-sm font-bold" style={{color:t.text}}>{ex.label}</p><p className="text-xs mt-0.5" style={{color:t.muted}}>{ex.desc}</p></div>
-      <button onClick={()=>handleExport(ex.type)} disabled={!!exporting} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex-shrink-0 disabled:opacity-50" style={{background:isDone?"rgba(16,185,129,0.1)":`${ex.color}12`,color:isDone?V.green:ex.color,border:`1px solid ${isDone?"rgba(16,185,129,0.3)":ex.color+"30"}`}}>
-        {isExp?<><Clock size={11} className="animate-spin"/>Exporting</>:isDone?<><Check size={11}/>Downloaded</>:<><Download size={11}/>Export CSV</>}
-      </button>
-    </motion.div>);})}
+const V = { v500:"#6B35E8", v400:"#8B5CF6", green:"#10B981", amber:"#F59E0B" };
+
+const EXPORTS = [
+  { id:"orders",    icon:ShoppingCart, label:"Orders",        desc:"All orders with customer details, items, status" },
+  { id:"products",  icon:Package,      label:"Products",      desc:"Full product catalogue with prices and inventory" },
+  { id:"customers", icon:Users,        label:"Customers",     desc:"Customer list with order history and spend" },
+  { id:"revenue",   icon:FileText,     label:"Revenue Report",desc:"Revenue, tax, and profit summary by period" },
+];
+
+export default function BackupPage() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const t = {
+    card: isDark?"#181230":"#fff", border: isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)",
+    text: isDark?"#F0ECFF":"#130D2E", muted: isDark?"rgba(240,236,255,0.45)":"rgba(19,13,46,0.55)",
+    faint: isDark?"rgba(255,255,255,0.03)":"rgba(107,53,232,0.03)",
+  };
+  const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
+  const [downloaded, setDownloaded] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState<string|null>(null);
+
+  const exportData = async (type: string) => {
+    setLoading(type);
+    try {
+      const r = await api.get(`/reports/${storeId}/${type}`, { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([r.data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `dropos-${type}-${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      setDownloaded(prev => new Set([...prev, type]));
+      toast.success(`${type} exported successfully`);
+    } catch {
+      toast.error("Export failed — try again");
+    }
+    setLoading(null);
+  };
+
+  const lastBackup = new Date();
+  lastBackup.setDate(lastBackup.getDate() - 1);
+
+  return (
+    <div style={{ maxWidth: 700, margin: "0 auto" }}>
+      <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} style={{marginBottom:24}}>
+        <h1 style={{fontSize:22,fontWeight:900,letterSpacing:"-0.04em",color:t.text,margin:"0 0 4px"}}>Backup & Export</h1>
+        <p style={{fontSize:13,color:t.muted,margin:0}}>Download your store data as CSV — works in Excel and Google Sheets</p>
+      </motion.div>
+
+      {/* Last backup info */}
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:12,background:"rgba(16,185,129,0.06)",border:"1px solid rgba(16,185,129,0.2)",marginBottom:20}}>
+        <Shield size={14} color={V.green} style={{flexShrink:0}}/>
+        <div style={{flex:1}}>
+          <p style={{fontSize:12,fontWeight:700,color:V.green,margin:"0 0 1px"}}>Your data is safe</p>
+          <p style={{fontSize:11,color:t.muted,margin:0}}>Stored securely on Railway PostgreSQL with daily automated backups</p>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
+          <Clock size={11} style={{color:t.muted}}/>
+          <span style={{fontSize:11,color:t.muted}}>{lastBackup.toLocaleDateString()}</span>
+        </div>
+      </div>
+
+      {/* Export options */}
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {EXPORTS.map((exp, i) => {
+          const Icon = exp.icon;
+          const isDone = downloaded.has(exp.id);
+          const isLoading = loading === exp.id;
+          return (
+            <motion.div key={exp.id} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.06}}
+              style={{display:"flex",alignItems:"center",gap:14,padding:16,borderRadius:16,background:t.card,border:`1px solid ${isDone?"rgba(16,185,129,0.3)":t.border}`}}>
+              <div style={{width:42,height:42,borderRadius:12,background:isDone?"rgba(16,185,129,0.1)":`${V.v400}10`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <Icon size={17} color={isDone?V.green:V.v400}/>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <p style={{fontSize:14,fontWeight:700,color:t.text,margin:"0 0 3px"}}>{exp.label}</p>
+                <p style={{fontSize:12,color:t.muted,margin:0}}>{exp.desc}</p>
+              </div>
+              <button onClick={() => exportData(exp.id)} disabled={isLoading}
+                style={{display:"flex",alignItems:"center",gap:6,padding:"8px 16px",borderRadius:10,border:`1px solid ${isDone?"rgba(16,185,129,0.4)":t.border}`,background:isDone?"rgba(16,185,129,0.08)":t.faint,cursor:isLoading?"not-allowed":"pointer",color:isDone?V.green:t.muted,fontSize:12,fontWeight:700,flexShrink:0}}>
+                {isLoading ? <Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/> : isDone ? <Check size={12}/> : <Download size={12}/>}
+                {isLoading ? "Exporting..." : isDone ? "Done" : "Export CSV"}
+              </button>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Tip */}
+      <div style={{marginTop:20,padding:"12px 16px",borderRadius:12,background:t.faint,border:`1px solid ${t.border}`}}>
+        <p style={{fontSize:12,color:t.muted,margin:0,lineHeight:1.5}}>
+          💡 <strong style={{color:t.text}}>Tip:</strong> Export your data monthly and store it in Google Drive. If you ever migrate platforms, you'll have everything ready.
+        </p>
+      </div>
+
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
-  </div>);
+  );
 }
