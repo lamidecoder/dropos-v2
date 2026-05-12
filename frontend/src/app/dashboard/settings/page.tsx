@@ -5,7 +5,7 @@ import { useTheme, useToast, useConfirm } from "../../../components/layout/Dashb
 import { useAuthStore } from "../../../store/auth.store";
 import { api } from "../../../lib/api";
 import toast from "react-hot-toast";
-import { User, Bell, Shield, Palette, Globe, Trash2, Eye, EyeOff, ChevronRight, Camera, Sun, Moon, Check } from "lucide-react";
+import { User, Bell, Shield, Palette, Globe, Trash2, Eye, EyeOff, ChevronRight, Camera, Sun, Moon, Check, CreditCard } from "lucide-react";
 
 const V = { v500: "#6B35E8", v400: "#8B5CF6", v300: "#A78BFA" };
 const T = {
@@ -19,6 +19,7 @@ const SECTIONS = [
   { id: "security",      label: "Security",     icon: Shield  },
   { id: "appearance",    label: "Appearance",   icon: Palette },
   { id: "domain",        label: "Domain",        icon: Globe   },
+  { id: "payments",      label: "Payments",     icon: CreditCard },
   { id: "danger",        label: "Danger Zone",  icon: Trash2  },
 ];
 
