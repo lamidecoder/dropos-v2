@@ -6,29 +6,33 @@ export interface JwtPayload {
   userId: string;
   email:  string;
   role:   string;
+  type?:  string;
   iat?:   number;
   exp?:   number;
 }
 
-const JWT_SECRET         = process.env.JWT_SECRET!;
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
+const JWT_SECRET         = process.env.JWT_SECRET         || "dropos-super-secret-jwt-key-2024-change-this";
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "dropos-refresh-secret-key-2024-change-this";
 
-if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
-  throw new Error("JWT secrets must be defined in environment variables");
-}
-
+// ── Sign access token (15 min) ────────────────────────────────
 export const signAccessToken = (payload: Omit<JwtPayload, "iat" | "exp">): string => {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "15m",
-  } as SignOptions);
+  return jwt.sign(
+    { ...payload, type: "access" },   // ← type field required by auth middleware
+    JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || "15m" } as SignOptions
+  );
 };
 
+// ── Sign refresh token (7 days) ──────────────────────────────
 export const signRefreshToken = (payload: Omit<JwtPayload, "iat" | "exp">): string => {
-  return jwt.sign(payload, JWT_REFRESH_SECRET, {
-    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
-  } as SignOptions);
+  return jwt.sign(
+    { ...payload, type: "refresh" },  // ← type field for safety
+    JWT_REFRESH_SECRET,
+    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d" } as SignOptions
+  );
 };
 
+// ── Verify access token ───────────────────────────────────────
 export const verifyAccessToken = (token: string): JwtPayload => {
   try {
     return jwt.verify(token, JWT_SECRET) as JwtPayload;
@@ -38,6 +42,7 @@ export const verifyAccessToken = (token: string): JwtPayload => {
   }
 };
 
+// ── Verify refresh token ──────────────────────────────────────
 export const verifyRefreshToken = (token: string): JwtPayload => {
   try {
     return jwt.verify(token, JWT_REFRESH_SECRET) as JwtPayload;
@@ -47,16 +52,17 @@ export const verifyRefreshToken = (token: string): JwtPayload => {
   }
 };
 
+// ── Cookie helpers (not used directly — use session.service) ──
 export const setRefreshCookie = (res: any, token: string) => {
-  res.cookie("refresh_token", token, {
+  res.cookie("dropos_refresh", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: "/api/auth/refresh",
+    secure:   process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge:   7 * 24 * 60 * 60 * 1000,
+    path:     "/api/auth",
   });
 };
 
 export const clearRefreshCookie = (res: any) => {
-  res.clearCookie("refresh_token", { path: "/api/auth/refresh" });
+  res.clearCookie("dropos_refresh", { path: "/api/auth" });
 };

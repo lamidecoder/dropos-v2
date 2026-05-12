@@ -5,7 +5,7 @@
 // ============================================================
 import { Request, Response, NextFunction } from "express";
 export type AuthRequest = Request & { user?: any; params: any; body: any; query: any; };
-import { verifyAccessToken }               from "../services/session.service";
+import { verifyAccessToken }               from "../config/jwt";
 import prisma                              from "../lib/prisma";
 
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
@@ -26,7 +26,7 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       return res.status(401).json({
         success: false,
         code:    "TOKEN_EXPIRED",
-        message: "Session expired — please refresh",
+        message: "Token expired",
       });
     }
 

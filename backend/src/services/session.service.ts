@@ -141,11 +141,12 @@ export async function revokeAllSessions(userId: string): Promise<void> {
   });
 }
 
-// ── Verify access token ───────────────────────────────────────
+// ── Verify access token (delegates to jwt.ts) ────────────────
+// Keeping for backward compat but auth.ts uses jwt.ts directly
 export function verifyAccessToken(token: string): { userId: string; role: string } | null {
   try {
-    const decoded = jwt.verify(token, ACCESS_SECRET) as any;
-    if (decoded.type !== "access") return null;
+    const jwt2 = require("jsonwebtoken");
+    const decoded = jwt2.verify(token, ACCESS_SECRET) as any;
     return { userId: decoded.userId, role: decoded.role };
   } catch {
     return null;

@@ -105,17 +105,16 @@ api.interceptors.response.use(
       return api(original);
 
     } catch (refreshError) {
-      // Refresh failed - clear everything and redirect
+      // Refresh truly failed — clear stale token but don't spam redirects
       refreshQueue = [];
+      isRefreshing = false;
       if (typeof window !== "undefined") {
         localStorage.removeItem("dropos-refresh-token");
-      }
-      useAuthStore.getState().logout();
-
-      if (typeof window !== "undefined") {
+        // Only redirect if we're actually inside the dashboard (not store or auth pages)
         const path = window.location.pathname;
-        if (!path.startsWith("/store/") && !path.startsWith("/auth/")) {
-          window.location.href = "/auth/login";
+        if (path.startsWith("/dashboard") || path.startsWith("/admin") || path.startsWith("/onboarding")) {
+          useAuthStore.getState().logout();
+          window.location.href = "/auth/login?expired=1";
         }
       }
       return Promise.reject(refreshError);

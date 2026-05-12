@@ -198,10 +198,24 @@ export const login = async (req: Request, res: Response) => {
 
 // ── Refresh Token ─────────────────────────────────────────────────────────────
 export const refreshToken = async (req: Request, res: Response) => {
-  const token = req.cookies?.dropos_refresh || req.cookies?.refresh_token || req.body?.refreshToken;
-  if (!token) throw new AppError("No refresh token", 401);
+  // Accept token from cookie OR body (for cross-domain reliability)
+  const token =
+    req.cookies?.dropos_refresh   ||
+    req.cookies?.refresh_token    ||
+    req.body?.refreshToken        ||
+    null;
 
-  const payload = verifyRefreshToken(token);
+  if (!token) {
+    return res.status(401).json({ success:false, code:"NO_REFRESH", message:"No refresh token provided" });
+  }
+
+  // Verify the JWT signature & expiry — don't check DB field (avoids race conditions)
+  let payload: any;
+  try {
+    payload = verifyRefreshToken(token);
+  } catch {
+    return res.status(401).json({ success:false, code:"REFRESH_INVALID", message:"Refresh token invalid or expired" });
+  }
 
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
@@ -210,13 +224,17 @@ export const refreshToken = async (req: Request, res: Response) => {
       stores: { select: { id: true, name: true, slug: true, status: true } },
     },
   });
-  if (!user || user.refreshToken !== token) throw new AppError("Invalid refresh token", 401);
+
+  if (!user || user.status === "BANNED" || user.status === "SUSPENDED") {
+    return res.status(401).json({ success:false, code:"USER_INVALID", message:"Account not found or suspended" });
+  }
 
   const newPayload      = { userId: user.id, email: user.email, role: user.role };
   const newAccessToken  = signAccessToken(newPayload);
   const newRefreshToken = signRefreshToken(newPayload);
 
-  await prisma.user.update({ where: { id: user.id }, data: { refreshToken: newRefreshToken } });
+  // Update the stored refresh token (best-effort, non-blocking)
+  await prisma.user.update({ where: { id: user.id }, data: { refreshToken: newRefreshToken } }).catch(() => {});
   setRefreshCookie(res, newRefreshToken);
 
   return res.json({

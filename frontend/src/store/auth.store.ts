@@ -100,17 +100,8 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
-// ── Auto-refresh access token before it expires ───────────────
-// Access tokens expire every 15 minutes.
-// This refreshes every 13 minutes to stay ahead.
-if (typeof window !== "undefined") {
-  setInterval(async () => {
-    const { user, refreshSession } = useAuthStore.getState();
-    if (user) {
-      await refreshSession();
-    }
-  }, 13 * 60 * 1000); // every 13 minutes
-}
+// NOTE: Auto-refresh removed — the 401 interceptor in api.ts handles
+// token refresh transparently when any request fails. No interval needed.
 
 export const useUser      = () => useAuthStore((s) => s.user);
 export const useIsAdmin   = () => useAuthStore((s) => s.user?.role === "SUPER_ADMIN");
