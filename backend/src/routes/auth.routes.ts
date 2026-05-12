@@ -19,6 +19,8 @@ router.post("/forgot-password",        authRateLimiter, forgotPassword);
 router.post("/reset-password",         authRateLimiter, resetPassword);
 router.get ("/me",                     authenticate, getMe);
 router.patch("/me",                    authenticate, updateProfile);
+router.put  ("/profile",               authenticate, updateProfile); // alias
+router.put  ("/password",              authenticate, changePassword); // alias
 router.patch("/me/password",           authenticate, changePassword);
 
 export default router;

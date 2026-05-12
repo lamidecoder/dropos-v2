@@ -134,6 +134,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Page content */}
         <main style={{ flex:1, padding:"clamp(16px,3vw,28px)", overflowY:"auto" }}>
+      
+      <style>{`
+        :root {
+          --bg-base: #07050F;
+          --bg-card: rgba(255,255,255,0.03);
+          --bg-card-hover: rgba(255,255,255,0.05);
+          --border: rgba(255,255,255,0.07);
+          --text-primary: rgba(255,255,255,0.9);
+          --text-secondary: rgba(255,255,255,0.6);
+          --text-tertiary: rgba(255,255,255,0.35);
+          --accent: #6B35E8;
+          --accent-light: rgba(107,53,232,0.15);
+          --green: #10B981;
+          --amber: #F59E0B;
+          --red: #EF4444;
+        }
+      `}</style>
           {children}
         </main>
       </div>

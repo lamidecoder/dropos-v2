@@ -1,211 +1,142 @@
 "use client";
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "../../../lib/api";
-
-import { Search, Edit2, Trash2, ChevronLeft, ChevronRight, Flag, Filter, X } from "lucide-react";
+import { Search, Trash2, ChevronLeft, ChevronRight, Users, UserCheck, Ban, Crown, Filter } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
-export default function AdminUsersPage() {
-  
-  
-  const qc   = useQueryClient();
-  const card = "bg-[var(--bg-card)] border-[var(--border)]";
-  const tx   = "text-[var(--text-primary)]";
-  const sub  = "text-[var(--text-tertiary)]";
-  const tRow = "border-[var(--border)] hover:bg-[var(--bg-card)]";
+const V = { v500:"#6B35E8", v400:"#8B5CF6", green:"#10B981", amber:"#F59E0B", red:"#EF4444" };
+const t = { card:"rgba(255,255,255,0.03)", border:"rgba(255,255,255,0.07)", text:"rgba(255,255,255,0.9)", muted:"rgba(255,255,255,0.4)", faint:"rgba(255,255,255,0.02)" };
 
-  const [page,   setPage]   = useState(1);
+const STATUS_COLOR: Record<string,string> = { ACTIVE:V.green, PENDING_VERIFICATION:V.amber, SUSPENDED:V.red, BANNED:V.red };
+const PLAN_COLOR:   Record<string,string> = { FREE:"rgba(255,255,255,0.3)", GROWTH:V.v400, PRO:"#F59E0B", ENTERPRISE:"#10B981" };
+
+export default function AdminUsersPage() {
+  const qc = useQueryClient();
+  const [page, setPage]     = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [plan,   setPlan]   = useState("");
+  const [plan, setPlan]     = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users", page, search, status, plan],
-    queryFn:  () => adminAPI.getUsers({ page, limit: 15, search, status, plan }).then((r) => r.data),
+    queryFn:  () => adminAPI.getUsers({ page, limit:20, search, status, plan }).then(r => r.data),
+    keepPreviousData: true,
   });
 
-  const deleteUser = useMutation({
-    mutationFn: (id: string) => adminAPI.deleteUser(id),
-    onSuccess: () => { toast.success("User deleted"); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
-    onError:   () => toast.error("Delete failed"),
+  const deleteMut = useMutation({
+    mutationFn: (id:string) => adminAPI.deleteUser(id),
+    onSuccess: () => { toast.success("User deleted"); qc.invalidateQueries({queryKey:["admin-users"]}); },
+    onError: () => toast.error("Delete failed"),
+  });
+
+  const suspendMut = useMutation({
+    mutationFn: ({id,status}:{id:string;status:string}) => adminAPI.updateUser(id,{status}),
+    onSuccess: () => { toast.success("User updated"); qc.invalidateQueries({queryKey:["admin-users"]}); },
   });
 
   const users = data?.data || [];
-  const pagination = data?.pagination;
-  const LIMIT = 15;
+  const meta  = data?.meta || { total:0, page:1, pages:1 };
 
   return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className={`text-2xl font-black tracking-tight ${tx}`}>All Users</h1>
-            <p className={`text-sm mt-0.5 ${sub}`}>{pagination?.total || 0} total users</p>
-          </div>
+    <div>
+      <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} style={{ marginBottom:20 }}>
+        <h1 style={{ fontSize:22, fontWeight:900, letterSpacing:"-0.04em", color:t.text, margin:"0 0 4px" }}>Users</h1>
+        <p style={{ fontSize:13, color:t.muted, margin:0 }}>{meta.total?.toLocaleString()||0} total users</p>
+      </motion.div>
+
+      {/* Filters */}
+      <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" }}>
+        <div style={{ flex:1, minWidth:200, display:"flex", alignItems:"center", gap:8, padding:"9px 14px", borderRadius:12, background:t.card, border:`1px solid ${t.border}` }}>
+          <Search size={14} style={{ color:t.muted, flexShrink:0 }}/>
+          <input value={search} onChange={e=>{setSearch(e.target.value);setPage(1);}} placeholder="Search by name or email..."
+            style={{ flex:1, background:"transparent", border:"none", outline:"none", color:t.text, fontSize:13, fontFamily:"inherit" }}/>
         </div>
-
-        {/* Filters */}
-        <div className={`rounded-2xl border p-4 flex flex-wrap gap-3 ${card}`}>
-          <div className={`flex items-center gap-2 rounded-xl px-3 py-2 border text-sm flex-1 min-w-[200px] bg-[#08080f] border-[var(--border)]`}>
-            <Search size={14} className={sub} />
-            <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              placeholder="Search by name, email…"
-              className="bg-transparent outline-none flex-1 text-sm" />
-            {search && <button onClick={() => setSearch("")}><X size={12} className={sub} /></button>}
-          </div>
-
-          <div className="flex gap-2">
-            {[["", "All Status"], ["ACTIVE", "Active"], ["SUSPENDED", "Suspended"], ["BANNED", "Banned"]].map(([v, l]) => (
-              <button key={v} onClick={() => { setStatus(v); setPage(1); }}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all
-                  ${status === v ? "text-[var(--text-primary)]" : `${sub} ${"hover:bg-[var(--bg-card)]"}`}`}
-                style={status === v ? { background: "linear-gradient(135deg,#7c3aed,#a855f7)" } : {}}>
-                {l}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex gap-2">
-            {[["", "All Plans"], ["STARTER", "Starter"], ["PRO", "Pro"], ["ADVANCED", "Advanced"]].map(([v, l]) => (
-              <button key={v} onClick={() => { setPlan(v); setPage(1); }}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all
-                  ${plan === v ? "text-[var(--text-primary)]" : `${sub} ${"hover:bg-[var(--bg-card)]"}`}`}
-                style={plan === v ? { background: "linear-gradient(135deg,#7c3aed,#a855f7)" } : {}}>
-                {l}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className={`rounded-2xl border overflow-hidden ${card}`}>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className={`border-b border-inherit text-xs ${sub}`}>
-                {["User", "Location", "Plan", "Stores", "Revenue", "Flags", "Last Login", "Status", "Actions"].map((h) => (
-                  <th key={h} className="text-left font-semibold px-5 py-3.5">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className={`border-b border-[var(--border)]/50`}>
-                    {Array.from({ length: 9 }).map((_, j) => (
-                      <td key={j} className="px-5 py-4">
-                        <div className={`h-3 rounded animate-pulse ${"bg-[var(--bg-card)]"}`} style={{ width: `${40 + Math.random() * 40}%` }} />
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : users.map((u: any) => (
-                <tr key={u.id}
-                  className={`border-b transition-colors ${tRow}`}>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--text-primary)] text-sm font-black flex-shrink-0"
-                        style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
-                        {u.name?.charAt(0)}
-                      </div>
-                      <div>
-                        <div className={`font-bold text-sm ${tx}`}>{u.name}</div>
-                        <div className={`text-xs ${sub}`}>{u.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className={`px-5 py-4 text-xs ${sub}`}>{u.city || u.country || "-"}</td>
-                  <td className="px-5 py-4">
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full
-                      ${u.subscription?.plan === "ADVANCED" ? "bg-violet-400/10 text-violet-700 dark:text-violet-400"
-                        : u.subscription?.plan === "PRO" ? "bg-amber-400/10 text-amber-700 dark:text-amber-400"
-                        : "bg-[var(--bg-secondary)] text-[var(--text-tertiary)]"}`}>
-                      {u.subscription?.plan || "STARTER"}
-                    </span>
-                  </td>
-                  <td className={`px-5 py-4 font-semibold text-center ${tx}`}>{u._count?.stores || 0}</td>
-                  <td className={`px-5 py-4 font-bold text-emerald-700 dark:text-emerald-400`}>
-                    ${(u.revenue?.total || 0).toLocaleString()}
-                  </td>
-                  <td className="px-5 py-4">
-                    {u.flags?.length > 0
-                      ? <span className="flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400"><Flag size={11} />{u.flags.length}</span>
-                      : <span className={`text-xs ${sub}`}>-</span>}
-                  </td>
-                  <td className={`px-5 py-4 text-xs ${sub}`}>
-                    {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : "Never"}
-                  </td>
-                  <td className="px-5 py-4">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
-                      ${u.status === "ACTIVE" ? "bg-emerald-400/10 text-emerald-700 dark:text-emerald-400"
-                        : u.status === "SUSPENDED" ? "bg-red-400/10 text-red-600 dark:text-red-400"
-                        : "bg-[var(--bg-secondary)] text-[var(--text-tertiary)]"}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${u.status === "ACTIVE" ? "bg-emerald-500" : u.status === "SUSPENDED" ? "bg-red-500" : "bg-slate-400"}`} />
-                      {u.status}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <Link href={`/admin/users/${u.id}`}
-                        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all
-                          border-violet-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-400/10`}>
-                        <Edit2 size={11} /> Manage
-                      </Link>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Delete ${u.name}? This cannot be undone.`)) {
-                            deleteUser.mutate(u.id);
-                          }
-                        }}
-                        className={`p-1.5 rounded-lg transition-all ${"text-red-600 dark:text-red-400 hover:bg-red-400/10"}`}>
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!isLoading && !users.length && (
-                <tr>
-                  <td colSpan={9} className={`px-5 py-16 text-center ${sub}`}>
-                    <Search size={32} className="mx-auto mb-3 opacity-20" />
-                    <p className="text-sm">No users found</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {pagination && pagination.pages > 1 && (
-          <div className="flex items-center justify-between">
-            <p className={`text-sm ${sub}`}>
-              Showing {((page - 1) * LIMIT) + 1}-{Math.min(page * LIMIT, pagination.total)} of {pagination.total}
-            </p>
-            <div className="flex gap-2">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                className={`p-2 rounded-xl border transition-all disabled:opacity-40
-                  border-[var(--border)] text-[var(--text-tertiary)] hover:bg-[var(--bg-card)]`}>
-                <ChevronLeft size={16} />
-              </button>
-              {Array.from({ length: Math.min(pagination.pages, 5) }, (_, i) => i + 1).map((p) => (
-                <button key={p} onClick={() => setPage(p)}
-                  className={`w-9 h-9 rounded-xl text-sm font-semibold border transition-all
-                    ${page === p ? "text-[var(--text-primary)] border-transparent" : `border-[var(--border)] hover:bg-[var(--bg-card)] `}`}
-                  style={page === p ? { background: "linear-gradient(135deg,#7c3aed,#a855f7)" } : {}}>
-                  {p}
-                </button>
-              ))}
-              <button onClick={() => setPage(p => Math.min(pagination.pages, p + 1))} disabled={page === pagination.pages}
-                className={`p-2 rounded-xl border transition-all disabled:opacity-40
-                  border-[var(--border)] text-[var(--text-tertiary)] hover:bg-[var(--bg-card)]`}>
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
-        )}
+        <select value={status} onChange={e=>{setStatus(e.target.value);setPage(1);}}
+          style={{ padding:"9px 14px", borderRadius:12, border:`1px solid ${t.border}`, background:t.card, color:t.muted, fontSize:13, outline:"none", cursor:"pointer", fontFamily:"inherit" }}>
+          <option value="">All Status</option>
+          <option value="ACTIVE">Active</option>
+          <option value="PENDING_VERIFICATION">Pending</option>
+          <option value="SUSPENDED">Suspended</option>
+          <option value="BANNED">Banned</option>
+        </select>
+        <select value={plan} onChange={e=>{setPlan(e.target.value);setPage(1);}}
+          style={{ padding:"9px 14px", borderRadius:12, border:`1px solid ${t.border}`, background:t.card, color:t.muted, fontSize:13, outline:"none", cursor:"pointer", fontFamily:"inherit" }}>
+          <option value="">All Plans</option>
+          <option value="FREE">Free</option>
+          <option value="GROWTH">Growth</option>
+          <option value="PRO">Pro</option>
+        </select>
       </div>
+
+      {/* Table */}
+      <div style={{ borderRadius:16, overflow:"hidden", background:t.card, border:`1px solid ${t.border}` }}>
+        <div style={{ display:"grid", gridTemplateColumns:"2fr 1.5fr 1fr 1fr 100px", gap:12, padding:"10px 16px", borderBottom:`1px solid ${t.border}` }}>
+          {["User","Email","Plan","Status","Actions"].map(h => (
+            <p key={h} style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:t.muted, margin:0 }}>{h}</p>
+          ))}
+        </div>
+        {isLoading ? (
+          <div style={{ textAlign:"center", padding:"40px", color:t.muted }}>Loading users...</div>
+        ) : users.length === 0 ? (
+          <div style={{ textAlign:"center", padding:"40px" }}>
+            <Users size={28} style={{ color:t.muted, margin:"0 auto 10px" }}/>
+            <p style={{ color:t.muted, fontSize:13, margin:0 }}>No users found</p>
+          </div>
+        ) : users.map((u:any, i:number) => {
+          const statusColor = STATUS_COLOR[u.status] || V.amber;
+          const planColor   = PLAN_COLOR[u.subscription?.plan || "FREE"];
+          return (
+            <motion.div key={u.id} initial={{opacity:0}} animate={{opacity:1}} transition={{delay:i*0.02}}
+              style={{ display:"grid", gridTemplateColumns:"2fr 1.5fr 1fr 1fr 100px", gap:12, alignItems:"center", padding:"12px 16px", borderBottom:`1px solid ${t.border}`, background:i%2===0?"transparent":t.faint }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
+                <div style={{ width:32, height:32, borderRadius:10, background:`linear-gradient(135deg,${V.v500},#3D1C8A)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"#fff", flexShrink:0 }}>
+                  {u.name?.charAt(0)||"U"}
+                </div>
+                <div style={{ minWidth:0 }}>
+                  <Link href={`/admin/users/${u.id}`} style={{ fontSize:13, fontWeight:700, color:t.text, textDecoration:"none", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", display:"block" }}>{u.name}</Link>
+                  <p style={{ fontSize:11, color:t.muted, margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{new Date(u.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <p style={{ fontSize:12, color:t.muted, margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{u.email}</p>
+              <span style={{ fontSize:11, fontWeight:700, color:planColor, background:`${planColor}18`, padding:"3px 10px", borderRadius:99, width:"fit-content" }}>
+                {u.subscription?.plan || "FREE"}
+              </span>
+              <span style={{ fontSize:11, fontWeight:700, color:statusColor, background:`${statusColor}15`, padding:"3px 10px", borderRadius:99, width:"fit-content" }}>
+                {u.status?.replace("_"," ")||"ACTIVE"}
+              </span>
+              <div style={{ display:"flex", gap:4 }}>
+                <button onClick={()=>suspendMut.mutate({id:u.id,status:u.status==="ACTIVE"?"SUSPENDED":"ACTIVE"})}
+                  style={{ width:28, height:28, borderRadius:8, border:"none", background:u.status==="ACTIVE"?"rgba(239,68,68,0.1)":"rgba(16,185,129,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
+                  title={u.status==="ACTIVE"?"Suspend":"Activate"}>
+                  {u.status==="ACTIVE"?<Ban size={12} color={V.red}/>:<UserCheck size={12} color={V.green}/>}
+                </button>
+                <button onClick={()=>{if(confirm("Delete user?")){deleteMut.mutate(u.id);}}}
+                  style={{ width:28, height:28, borderRadius:8, border:"none", background:"rgba(239,68,68,0.08)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <Trash2 size={12} color={V.red}/>
+                </button>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Pagination */}
+      {meta.pages > 1 && (
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginTop:16 }}>
+          <button onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={page===1}
+            style={{ width:32, height:32, borderRadius:10, border:`1px solid ${t.border}`, background:t.faint, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:page===1?0.3:1 }}>
+            <ChevronLeft size={14} color={t.muted}/>
+          </button>
+          <span style={{ fontSize:13, color:t.muted }}>Page {page} of {meta.pages}</span>
+          <button onClick={()=>setPage(p=>Math.min(meta.pages,p+1))} disabled={page===meta.pages}
+            style={{ width:32, height:32, borderRadius:10, border:`1px solid ${t.border}`, background:t.faint, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:page===meta.pages?0.3:1 }}>
+            <ChevronRight size={14} color={t.muted}/>
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

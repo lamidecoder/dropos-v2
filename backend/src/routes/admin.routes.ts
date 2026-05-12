@@ -15,6 +15,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get ("/dashboard",                 getDashboardStats);
+router.get ("/stats",                     getDashboardStats); // alias for frontend
 router.get ("/analytics",                 getPlatformAnalytics);
 
 router.get ("/users",                     getAllUsers);

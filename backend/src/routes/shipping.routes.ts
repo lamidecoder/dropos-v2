@@ -68,4 +68,17 @@ router.delete("/:storeId/:id", authenticate, async (req: Request, res: Response)
   res.json({ success: true });
 });
 
+
+// POST /api/shipping/rates — Calculate shipping rates for checkout
+router.post("/rates", async (req: Request, res: Response) => {
+  try {
+    const { calculateShippingRates } = await import("../services/shipping.service");
+    const { origin, destination, weightKg, valueNGN, storeId } = req.body;
+    const rates = await calculateShippingRates({ origin, destination, weightKg: Number(weightKg)||0.5, valueNGN: Number(valueNGN)||0, storeId });
+    res.json({ success: true, data: rates });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 export default router;
