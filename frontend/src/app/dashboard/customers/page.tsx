@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuthStore } from "../../../store/auth.store";
 import { motion } from "framer-motion";
 import { useTheme } from "../../../components/layout/DashboardLayout";
 import { api } from "../../../lib/api";
@@ -75,8 +76,8 @@ export default function CustomersPage() {
   const [sort, setSort] = useState("recent");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["customers"],
-    queryFn: () => api.get("/customers").then(r => r.data.data),
+    queryKey: ["customers", storeId],
+    queryFn: () => api.get(`/customers/${storeId}`).then(r => r.data.data),
   });
 
   const customers: any[] = data || [];
