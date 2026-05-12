@@ -1,173 +1,201 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShoppingCart, Search, Heart, Package, ChevronDown, Star, Truck, Shield, RotateCcw, ArrowRight, Menu, X } from "lucide-react";
+import { ShoppingCart, Search, Heart, Package, ChevronDown, Star, Truck, Shield, RotateCcw, ArrowRight, Menu, X, Zap, Filter } from "lucide-react";
 import { useCartStore } from "../../../store/cart.store";
-import { useCurrencyStore } from "../../../store/currency.store";
 import dynamic from "next/dynamic";
 import CartDrawer from "../CartDrawer";
 import FlashSaleBanner from "../FlashSaleBanner";
 
 const AbandonedCartTracker = dynamic(() => import("../AbandonedCartTracker"), { ssr: false });
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 export type TemplateProps = {
-  store:             any;
-  products?:         any[];
-  product?:          any;
-  cart?:             any;
-  onAddToCart?:      (product: any) => void;
-  onRemoveFromCart?: (productId: string) => void;
-  onUpdateQuantity?: (productId: string, qty: number) => void;
-  onCheckout?:       () => void;
-  page?:             "home" | "product" | "cart" | "checkout" | "confirmation";
-  search?:           string;
-  onSearch?:         (q: string) => void;
-  setSearch?:        (q: string) => void;
-  category?:         string;
-  onCategory?:       (c: string) => void;
-  setCategory?:      (c: string) => void;
-  categories?:       string[];
-  sort?:             string;
-  onSort?:           (s: string) => void;
-  setSort?:          (s: string) => void;
-  isLoading?:        boolean;
-  flashSales?:       any[];
-  [key: string]:     any;
+  store: any; products?: any[]; product?: any; cart?: any;
+  onAddToCart?: (p: any) => void; onRemoveFromCart?: (id: string) => void;
+  onUpdateQuantity?: (id: string, qty: number) => void; onCheckout?: () => void;
+  page?: "home"|"product"|"cart"|"checkout"|"confirmation";
+  search?: string; onSearch?: (q: string) => void; setSearch?: (q: string) => void;
+  category?: string; onCategory?: (c: string) => void; setCategory?: (c: string) => void;
+  categories?: string[]; sort?: string; onSort?: (s: string) => void; setSort?: (s: string) => void;
+  isLoading?: boolean; flashSales?: any[]; [key: string]: any;
 };
 
-// Normalize props — accept both setX and onX patterns
-function normalize(props: TemplateProps) {
-  return {
-    ...props,
-    onSearch:   props.onSearch   ?? props.setSearch   ?? (() => {}),
-    onCategory: props.onCategory ?? props.setCategory ?? (() => {}),
-    onSort:     props.onSort     ?? props.setSort     ?? (() => {}),
-  };
+function normalize(p: TemplateProps) {
+  return { ...p, onSearch: p.onSearch??p.setSearch??(() =>{}), onCategory: p.onCategory??p.setCategory??(() =>{}), onSort: p.onSort??p.setSort??(() =>{}) };
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function useFmt(currency: string) {
-  const { format, baseCurrency, setBaseCurrency } = useCurrencyStore();
-  if (baseCurrency !== currency) setBaseCurrency(currency);
-  return (v: number) => format(v, currency);
+  return (n: number) => new Intl.NumberFormat("en-NG", { style:"currency", currency: currency||"NGN", maximumFractionDigits: 0 }).format(n||0);
 }
 
-// ── Product Card ──────────────────────────────────────────────────────────────
-function ProductCard({ product, storeSlug, brand, dark, currency }: {
-  product: any; storeSlug: string; brand: string; dark?: boolean; currency: string;
-}) {
-  const addItem = useCartStore(s => s.addItem);
-  const fmt     = useFmt(currency);
-  const [added, setAdded] = useState(false);
-  const [liked, setLiked] = useState(false);
-
-  const img      = product.images?.[0];
-  const oos      = product.inventory === 0;
-  const discount = product.comparePrice && product.comparePrice > product.price
-    ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100) : 0;
-
-  const handleAdd = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (oos) return;
-    addItem({ id: product.id, productId: product.id, name: product.name, price: product.price, image: img, storeId: product.storeId, storeSlug });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1600);
-  };
+// ── Shared components ──────────────────────────────────────────────────────────
+function StoreHeader({ store, search, onSearch, brand, dark, onCategory, categories=[], category }: any) {
+  const cartCount = useCartStore(s => s.items.reduce((a,i) => a+i.quantity, 0));
+  const toggleCart = useCartStore(s => s.toggleCart);
+  const [open, setOpen] = useState(false);
+  const bg = dark ? "#07050F" : "#fff";
+  const border = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)";
+  const text = dark ? "#fff" : "#111";
+  const muted = dark ? "rgba(255,255,255,0.4)" : "#666";
 
   return (
-    <Link href={`/store/${storeSlug}/product/${product.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-0.5"
-      style={{
-        background: dark ? "rgba(255,255,255,0.04)" : "#fff",
-        border: dark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #f0f0f0",
-        boxShadow: dark ? "none" : "0 2px 12px rgba(0,0,0,0.06)",
-      }}>
-
-      {/* Image area */}
-      <div className="relative aspect-square overflow-hidden"
-        style={{ background: dark ? "rgba(255,255,255,0.03)" : "#f9f9f9" }}>
-        {img
-          ? <img src={img} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
-          : <div className="w-full h-full flex items-center justify-center"><Package size={28} style={{ color: `${brand}40` }} /></div>
-        }
-
-        {/* Badges */}
-        {discount > 0 && !oos && (
-          <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-lg text-[11px] font-black text-white" style={{ background: "#EF4444" }}>
-            -{discount}%
-          </span>
-        )}
-        {oos && (
-          <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.45)" }}>
-            <span className="text-xs font-bold text-white px-3 py-1.5 rounded-full" style={{ background: "rgba(0,0,0,0.6)" }}>Sold Out</span>
-          </div>
-        )}
-
-        {/* Wishlist */}
-        <button onClick={e => { e.preventDefault(); setLiked(!liked); }}
-          className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shadow-md"
-          style={{ background: "rgba(255,255,255,0.95)" }}>
-          <Heart size={13} className={liked ? "fill-red-500 text-red-500" : "text-slate-400"} />
+    <header style={{ background: bg, borderBottom: `1px solid ${border}`, position:"sticky", top:0, zIndex:30 }}>
+      <div style={{ maxWidth:1280, margin:"0 auto", padding:"0 16px", height:60, display:"flex", alignItems:"center", gap:16 }}>
+        <Link href={`/store/${store.slug}`} style={{ fontWeight:900, fontSize:18, letterSpacing:"-0.04em", color: brand, textDecoration:"none", flexShrink:0 }}>
+          {store.name}
+        </Link>
+        {/* Search */}
+        <div style={{ flex:1, maxWidth:400, display:"flex", alignItems:"center", gap:8, padding:"7px 12px", borderRadius:12, background: dark?"rgba(255,255,255,0.06)":"#f5f5f5", border:`1px solid ${border}` }}>
+          <Search size={13} style={{ color:muted, flexShrink:0 }}/>
+          <input value={search||""} onChange={e=>onSearch(e.target.value)} placeholder="Search products..."
+            style={{ flex:1, background:"transparent", border:"none", outline:"none", fontSize:13, color:text, fontFamily:"inherit" }}/>
+        </div>
+        <button onClick={toggleCart} style={{ position:"relative", background:"none", border:"none", cursor:"pointer", flexShrink:0 }}>
+          <ShoppingCart size={22} color={text}/>
+          {cartCount > 0 && (
+            <span style={{ position:"absolute", top:-6, right:-6, width:17, height:17, borderRadius:"50%", background:brand, color:"#fff", fontSize:9, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center" }}>{cartCount}</span>
+          )}
         </button>
+      </div>
+      {/* Category bar */}
+      {categories.length > 1 && (
+        <div style={{ maxWidth:1280, margin:"0 auto", padding:"0 16px 0", overflowX:"auto", display:"flex", gap:6, paddingBottom:10 }}>
+          {categories.map((c:string) => (
+            <button key={c} onClick={() => onCategory(c)}
+              style={{ padding:"4px 12px", borderRadius:99, fontSize:12, fontWeight:600, whiteSpace:"nowrap", border:`1px solid ${category===c?brand:border}`, background:category===c?`${brand}15`:"transparent", color:category===c?brand:muted, cursor:"pointer" }}>
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
+    </header>
+  );
+}
 
-        {/* Add to cart — slides up on hover */}
-        {!oos && (
-          <div className="absolute bottom-2.5 inset-x-2.5 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200">
-            <button onClick={handleAdd}
-              className="w-full py-2.5 rounded-xl text-xs font-bold text-white shadow-lg"
-              style={{ background: added ? "#10B981" : `linear-gradient(135deg,${brand},${brand}cc)` }}>
-              {added ? "Added!" : "Add to Cart"}
+function ProductCard({ p, store, brand, dark, currency, variant="default" }: any) {
+  const addItem = useCartStore(s => s.addItem);
+  const [wish, setWish] = useState(false);
+  const [added, setAdded] = useState(false);
+  const img = p.images?.[0] || `https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop&q=80`;
+  const fmt = useFmt(currency);
+  const discount = p.comparePrice && p.comparePrice > p.price ? Math.round((1-p.price/p.comparePrice)*100) : 0;
+
+  const add = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    addItem({ productId:p.id, name:p.name, price:p.price, image:img, storeId:store.id, quantity:1 });
+    setAdded(true); setTimeout(()=>setAdded(false), 1500);
+  };
+
+  if (variant === "minimal") return (
+    <Link href={`/store/${store.slug}/product/${p.id}`} style={{ textDecoration:"none", display:"block" }}>
+      <div style={{ cursor:"pointer" }}>
+        <div style={{ aspectRatio:"1", borderRadius:4, overflow:"hidden", marginBottom:10, background:"#f5f5f5" }}>
+          <img src={img} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{(e.target as HTMLImageElement).src=`https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop`}}/>
+        </div>
+        <p style={{ fontSize:13, fontWeight:600, color:"#111", margin:"0 0 4px", lineHeight:1.3 }}>{p.name}</p>
+        <p style={{ fontSize:13, fontWeight:800, color:"#111", margin:0 }}>{fmt(p.price)}</p>
+      </div>
+    </Link>
+  );
+
+  if (variant === "boutique") return (
+    <Link href={`/store/${store.slug}/product/${p.id}`} style={{ textDecoration:"none", display:"block" }}>
+      <div style={{ cursor:"pointer", fontFamily:"'Playfair Display', Georgia, serif" }}>
+        <div style={{ aspectRatio:"3/4", borderRadius:2, overflow:"hidden", marginBottom:12, background:"#f9f6f3", position:"relative" }}>
+          <img src={img} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{(e.target as HTMLImageElement).src=`https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=500&fit=crop`}}/>
+          <button onClick={add} style={{ position:"absolute", bottom:12, left:"50%", transform:"translateX(-50%)", padding:"8px 20px", borderRadius:2, background:"rgba(255,255,255,0.95)", border:"none", cursor:"pointer", fontSize:11, fontWeight:600, letterSpacing:"0.1em", whiteSpace:"nowrap" }}>
+            {added ? "ADDED ✓" : "ADD TO CART"}
+          </button>
+        </div>
+        <p style={{ fontSize:13, color:"#555", margin:"0 0 4px", fontFamily:"'Inter',system-ui" }}>{p.category||""}</p>
+        <p style={{ fontSize:15, fontWeight:700, color:"#111", margin:"0 0 4px" }}>{p.name}</p>
+        <p style={{ fontSize:14, color:"#111", margin:0 }}>{fmt(p.price)}</p>
+      </div>
+    </Link>
+  );
+
+  if (variant === "dark") return (
+    <Link href={`/store/${store.slug}/product/${p.id}`} style={{ textDecoration:"none", display:"block" }}>
+      <div style={{ borderRadius:16, overflow:"hidden", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.06)", cursor:"pointer", transition:"transform 0.2s" }}>
+        <div style={{ aspectRatio:"1", overflow:"hidden", position:"relative", background:"rgba(255,255,255,0.02)" }}>
+          <img src={img} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{(e.target as HTMLImageElement).src=`https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop`}}/>
+          {discount>0&&<span style={{ position:"absolute", top:10, left:10, background:brand, color:"#fff", fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:99 }}>-{discount}%</span>}
+          <button onClick={add} style={{ position:"absolute", bottom:10, right:10, width:36, height:36, borderRadius:"50%", background:brand, border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <ShoppingCart size={14} color="#fff"/>
+          </button>
+        </div>
+        <div style={{ padding:"12px 14px" }}>
+          <p style={{ fontSize:13, fontWeight:600, color:"rgba(255,255,255,0.85)", margin:"0 0 4px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</p>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <p style={{ fontSize:15, fontWeight:800, color:"#fff", margin:0 }}>{fmt(p.price)}</p>
+            {p.comparePrice&&<p style={{ fontSize:12, color:"rgba(255,255,255,0.3)", textDecoration:"line-through", margin:0 }}>{fmt(p.comparePrice)}</p>}
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+
+  // default/classic card
+  return (
+    <Link href={`/store/${store.slug}/product/${p.id}`} style={{ textDecoration:"none", display:"block" }}>
+      <div style={{ borderRadius:16, overflow:"hidden", background:"#fff", border:"1px solid #f0f0f0", cursor:"pointer", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", transition:"box-shadow 0.2s" }}>
+        <div style={{ aspectRatio:"1", overflow:"hidden", position:"relative", background:"#f8f8f8" }}>
+          <img src={img} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{(e.target as HTMLImageElement).src=`https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop`}}/>
+          {discount>0&&<span style={{ position:"absolute", top:10, left:10, background:"#EF4444", color:"#fff", fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:99 }}>-{discount}%</span>}
+          <div style={{ position:"absolute", top:10, right:10 }}>
+            <button onClick={e=>{e.preventDefault();e.stopPropagation();setWish(w=>!w)}} style={{ width:32, height:32, borderRadius:"50%", background:"rgba(255,255,255,0.9)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <Heart size={14} fill={wish?"#EF4444":"none"} color={wish?"#EF4444":"#999"}/>
             </button>
           </div>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="p-3 sm:p-4 flex-1 flex flex-col gap-1.5">
-        {product.category && (
-          <span className="text-[10px] font-semibold uppercase tracking-widest"
-            style={{ color: dark ? "rgba(255,255,255,0.3)" : "#9ca3af" }}>
-            {product.category}
-          </span>
-        )}
-        <h3 className="font-semibold text-xs sm:text-sm leading-snug line-clamp-2 flex-1"
-          style={{ color: dark ? "rgba(255,255,255,0.88)" : "#111827" }}>
-          {product.name}
-        </h3>
-        <div className="flex items-baseline gap-2 mt-auto">
-          <span className="font-black text-sm sm:text-base" style={{ color: dark ? "#fff" : "#111827" }}>
-            {fmt(product.price ?? 0)}
-          </span>
-          {product.comparePrice && product.comparePrice > product.price && (
-            <span className="text-xs line-through" style={{ color: dark ? "rgba(255,255,255,0.22)" : "#9ca3af" }}>
-              {fmt(product.comparePrice)}
-            </span>
-          )}
+        </div>
+        <div style={{ padding:"12px 14px 14px" }}>
+          <p style={{ fontSize:13, color:"#888", margin:"0 0 3px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.category||store.name}</p>
+          <p style={{ fontSize:14, fontWeight:700, color:"#111", margin:"0 0 6px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</p>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <div>
+              <p style={{ fontSize:16, fontWeight:900, color:"#111", margin:0, letterSpacing:"-0.03em" }}>{fmt(p.price)}</p>
+              {p.comparePrice&&<p style={{ fontSize:11, color:"#bbb", textDecoration:"line-through", margin:0 }}>{fmt(p.comparePrice)}</p>}
+            </div>
+            <button onClick={add} style={{ width:36, height:36, borderRadius:10, background:`linear-gradient(135deg,${brand},${brand}cc)`, border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              {added?<span style={{fontSize:14}}>✓</span>:<ShoppingCart size={14} color="#fff"/>}
+            </button>
+          </div>
         </div>
       </div>
     </Link>
   );
 }
 
-// ── Trust bar ─────────────────────────────────────────────────────────────────
-function TrustBar({ dark }: { dark?: boolean }) {
+function ProductGrid({ products, store, brand, dark, currency, variant="default" }: any) {
+  if (!products?.length) return (
+    <div style={{ textAlign:"center", padding:"60px 20px" }}>
+      <Package size={36} style={{ color:"#ccc", margin:"0 auto 12px" }}/>
+      <p style={{ color:"#999", fontSize:14 }}>No products found</p>
+    </div>
+  );
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:variant==="minimal"?24:16 }}>
+      {products.map((p:any) => <ProductCard key={p.id} p={p} store={store} brand={brand} dark={dark} currency={currency} variant={variant}/>)}
+    </div>
+  );
+}
+
+function TrustBar({ dark, brand }: any) {
   const items = [
-    { icon: Truck,    label: "Free delivery over ₦30k" },
-    { icon: Shield,   label: "Secure payment" },
-    { icon: RotateCcw,label: "Easy returns" },
-    { icon: Star,     label: "Verified seller" },
+    { icon:"🚚", label:"Free Delivery", sub:"Orders over ₦15k" },
+    { icon:"🔒", label:"Secure Payment", sub:"Paystack protected" },
+    { icon:"↩️", label:"Easy Returns", sub:"7-day policy" },
   ];
   return (
-    <div className="border-y px-4 sm:px-6 py-3 overflow-x-auto"
-      style={{ borderColor: dark ? "rgba(255,255,255,0.06)" : "#f0f0f0", scrollbarWidth: "none" }}>
-      <div className="flex items-center gap-6 sm:gap-10 min-w-max mx-auto justify-center">
-        {items.map(({ icon: Icon, label }) => (
-          <div key={label} className="flex items-center gap-2">
-            <Icon size={13} style={{ color: dark ? "rgba(255,255,255,0.4)" : "#9ca3af", flexShrink: 0 }} />
-            <span className="text-xs font-medium whitespace-nowrap" style={{ color: dark ? "rgba(255,255,255,0.45)" : "#6b7280" }}>
-              {label}
-            </span>
+    <div style={{ borderBottom:`1px solid ${dark?"rgba(255,255,255,0.06)":"#f0f0f0"}`, borderTop:`1px solid ${dark?"rgba(255,255,255,0.06)":"#f0f0f0"}` }}>
+      <div style={{ maxWidth:1280, margin:"0 auto", padding:"14px 16px", display:"flex", gap:16, justifyContent:"center", flexWrap:"wrap" }}>
+        {items.map(i => (
+          <div key={i.label} style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <span style={{ fontSize:18 }}>{i.icon}</span>
+            <div>
+              <p style={{ fontSize:12, fontWeight:700, color:dark?"rgba(255,255,255,0.8)":"#333", margin:0 }}>{i.label}</p>
+              <p style={{ fontSize:11, color:dark?"rgba(255,255,255,0.35)":"#999", margin:0 }}>{i.sub}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -175,394 +203,290 @@ function TrustBar({ dark }: { dark?: boolean }) {
   );
 }
 
-// ── Storefront Header ─────────────────────────────────────────────────────────
-function StoreHeader({ store, search, onSearch, dark, brand, onCategory, categories, category }: {
-  store: any; search?: string; onSearch: (q: string) => void;
-  dark?: boolean; brand: string; onCategory: (c: string) => void;
-  categories: string[]; category?: string;
-}) {
-  const cartCount  = useCartStore(s => s.items.reduce((a, i) => a + i.quantity, 0));
-  const toggleCart = useCartStore(s => s.toggleCart);
-  const [mobileMenu, setMobileMenu] = useState(false);
-  const slug = store.slug;
-
-  const bg      = dark ? "rgba(8,6,18,0.97)" : "rgba(255,255,255,0.97)";
-  const border  = dark ? "rgba(255,255,255,0.07)" : "#f0f0f0";
-  const textCol = dark ? "#fff" : "#111827";
-  const mutedCol = dark ? "rgba(255,255,255,0.45)" : "#6b7280";
-
+function SortBar({ sort, onSort, total, dark }: any) {
+  const text = dark ? "rgba(255,255,255,0.4)" : "#888";
+  const bg = dark ? "rgba(255,255,255,0.05)" : "#f5f5f5";
+  const border = dark ? "rgba(255,255,255,0.08)" : "#e5e7eb";
+  const col = dark ? "rgba(255,255,255,0.7)" : "#333";
   return (
-    <header className="sticky top-0 z-40" style={{ background: bg, backdropFilter: "blur(20px)", borderBottom: `1px solid ${border}` }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center gap-3 sm:gap-4">
-
-        {/* Logo */}
-        <Link href={`/store/${slug}`} className="flex items-center gap-2.5 flex-shrink-0">
-          {store.logo
-            ? <img src={store.logo} alt={store.name} className="h-7 w-auto" />
-            : <>
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-white text-xs font-black flex-shrink-0"
-                  style={{ background: brand }}>{store.name?.[0]}</div>
-                <span className="font-black text-sm sm:text-base tracking-tight" style={{ color: textCol }}>{store.name}</span>
-              </>
-          }
-        </Link>
-
-        {/* Search — desktop */}
-        <div className="flex-1 max-w-xs hidden sm:block">
-          <div className="relative">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: mutedCol }} />
-            <input value={search || ""} onChange={e => onSearch(e.target.value)} placeholder="Search products..."
-              className="w-full pl-9 pr-4 py-2 rounded-xl text-sm outline-none"
-              style={{ background: dark ? "rgba(255,255,255,0.06)" : "#f4f4f5", border: `1px solid ${border}`, color: textCol }} />
-          </div>
-        </div>
-
-        <div className="flex-1" />
-
-        {/* Nav links — desktop */}
-        {categories.length > 1 && (
-          <nav className="hidden sm:flex items-center gap-1">
-            {categories.slice(0, 5).map(c => (
-              <button key={c} onClick={() => onCategory(c)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                style={c === category
-                  ? { background: brand, color: "#fff" }
-                  : { color: mutedCol }}>
-                {c}
-              </button>
-            ))}
-          </nav>
-        )}
-
-        {/* Cart */}
-        <button onClick={toggleCart}
-          className="relative flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white transition-all hover:opacity-90"
-          style={{ background: brand }}>
-          <ShoppingCart size={14} />
-          <span className="hidden sm:inline">Cart</span>
-          {cartCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">
-              {cartCount > 9 ? "9+" : cartCount}
-            </span>
-          )}
-        </button>
-
-        {/* Mobile menu toggle */}
-        <button onClick={() => setMobileMenu(!mobileMenu)} className="sm:hidden p-2 rounded-lg" style={{ color: mutedCol }}>
-          {mobileMenu ? <X size={18} /> : <Menu size={18} />}
-        </button>
-      </div>
-
-      {/* Mobile search + nav */}
-      {mobileMenu && (
-        <div className="sm:hidden px-4 pb-3 pt-1 space-y-2" style={{ borderTop: `1px solid ${border}` }}>
-          <div className="relative">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: mutedCol }} />
-            <input value={search || ""} onChange={e => onSearch(e.target.value)} placeholder="Search products..."
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
-              style={{ background: dark ? "rgba(255,255,255,0.06)" : "#f4f4f5", border: `1px solid ${border}`, color: textCol }} />
-          </div>
-          {categories.length > 1 && (
-            <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-              {categories.map(c => (
-                <button key={c} onClick={() => { onCategory(c); setMobileMenu(false); }}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium flex-shrink-0 transition-all"
-                  style={c === category ? { background: brand, color: "#fff" } : { background: dark ? "rgba(255,255,255,0.07)" : "#f4f4f5", color: mutedCol }}>
-                  {c}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </header>
-  );
-}
-
-// ── Sort bar ──────────────────────────────────────────────────────────────────
-function SortBar({ sort, onSort, total, dark }: { sort?: string; onSort: (s: string) => void; total: number; dark?: boolean }) {
-  const mutedCol = dark ? "rgba(255,255,255,0.38)" : "#9ca3af";
-  const border   = dark ? "rgba(255,255,255,0.07)" : "#f0f0f0";
-
-  return (
-    <div className="flex items-center justify-between px-4 sm:px-6 py-3" style={{ borderBottom: `1px solid ${border}` }}>
-      <span className="text-xs" style={{ color: mutedCol }}>{total} product{total !== 1 ? "s" : ""}</span>
-      <div className="relative">
-        <select value={sort || "newest"} onChange={e => onSort(e.target.value)}
-          className="appearance-none pl-3 pr-7 py-1.5 rounded-lg text-xs font-medium outline-none cursor-pointer"
-          style={{ background: dark ? "rgba(255,255,255,0.06)" : "#f4f4f5", border: `1px solid ${border}`, color: dark ? "rgba(255,255,255,0.7)" : "#374151" }}>
-          <option value="newest">Newest</option>
-          <option value="price_asc">Price: Low to High</option>
-          <option value="price_desc">Price: High to Low</option>
-          <option value="popular">Popular</option>
-        </select>
-        <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: mutedCol }} />
-      </div>
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:4, flexWrap:"wrap", gap:8 }}>
+      <span style={{ fontSize:13, color:text }}>{total} products</span>
+      <select value={sort||"newest"} onChange={e=>onSort(e.target.value)}
+        style={{ padding:"6px 12px", borderRadius:10, border:`1px solid ${border}`, background:bg, color:col, fontSize:12, fontWeight:600, outline:"none", cursor:"pointer", fontFamily:"inherit" }}>
+        <option value="newest">Newest</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="popular">Most Popular</option>
+      </select>
     </div>
   );
 }
 
-// ── Product grid ──────────────────────────────────────────────────────────────
-function ProductGrid({ products, store, brand, dark, currency }: { products: any[]; store: any; brand: string; dark?: boolean; currency: string }) {
-  const faint = dark ? "rgba(255,255,255,0.04)" : "#f9f9f9";
+function StoreFooter({ store, brand, dark }: any) {
+  const text = dark ? "rgba(255,255,255,0.3)" : "#999";
   const border = dark ? "rgba(255,255,255,0.06)" : "#f0f0f0";
-
-  if (products.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: faint, border: `1px solid ${border}` }}>
-          <Package size={24} style={{ color: dark ? "rgba(255,255,255,0.2)" : "#d1d5db" }} />
-        </div>
-        <p className="font-semibold text-sm mb-1" style={{ color: dark ? "rgba(255,255,255,0.4)" : "#6b7280" }}>No products found</p>
-        <p className="text-xs" style={{ color: dark ? "rgba(255,255,255,0.2)" : "#9ca3af" }}>Try a different search or category</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-      {products.map(p => (
-        <ProductCard key={p.id} product={p} storeSlug={store.slug} brand={brand} dark={dark} currency={currency} />
-      ))}
-    </div>
-  );
-}
-
-// ── Skeleton ──────────────────────────────────────────────────────────────────
-function Skeleton({ dark }: { dark?: boolean }) {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="rounded-2xl overflow-hidden animate-pulse"
-          style={{ background: dark ? "rgba(255,255,255,0.04)" : "#f9f9f9" }}>
-          <div className="aspect-square" style={{ background: dark ? "rgba(255,255,255,0.06)" : "#f0f0f0" }} />
-          <div className="p-3 space-y-2">
-            <div className="h-3 rounded-full w-2/3" style={{ background: dark ? "rgba(255,255,255,0.06)" : "#e5e7eb" }} />
-            <div className="h-3 rounded-full w-1/2" style={{ background: dark ? "rgba(255,255,255,0.04)" : "#e5e7eb" }} />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ── Footer ────────────────────────────────────────────────────────────────────
-function StoreFooter({ store, dark, brand }: { store: any; dark?: boolean; brand: string }) {
-  const mutedCol = dark ? "rgba(255,255,255,0.22)" : "#9ca3af";
-  const border   = dark ? "rgba(255,255,255,0.06)" : "#f0f0f0";
-
-  return (
-    <footer className="px-4 sm:px-6 py-10 mt-12" style={{ borderTop: `1px solid ${border}` }}>
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs font-black flex-shrink-0" style={{ background: brand }}>{store.name?.[0]}</div>
-          <span className="text-sm font-semibold" style={{ color: dark ? "rgba(255,255,255,0.5)" : "#6b7280" }}>{store.name}</span>
-        </div>
-        <p className="text-xs" style={{ color: mutedCol }}>
-          Powered by{" "}
-          <a href="https://droposhq.com" target="_blank" rel="noopener noreferrer"
-            className="font-bold hover:opacity-70 transition-opacity" style={{ color: mutedCol }}>
-            DropOS
-          </a>
-        </p>
-      </div>
+    <footer style={{ borderTop:`1px solid ${border}`, marginTop:48, padding:"32px 16px", textAlign:"center" }}>
+      <p style={{ fontWeight:900, fontSize:18, letterSpacing:"-0.03em", color:brand, marginBottom:8 }}>{store.name}</p>
+      <p style={{ fontSize:12, color:text, marginBottom:16 }}>{store.description||"Quality products, fast delivery"}</p>
+      <p style={{ fontSize:11, color:text }}>© {new Date().getFullYear()} {store.name} · Powered by DropOS</p>
     </footer>
   );
 }
 
-// ── CLASSIC template ──────────────────────────────────────────────────────────
-function ClassicTemplate(raw: TemplateProps) {
-  const props    = normalize(raw);
-  const { store, products = [], search, onSearch, category, onCategory, categories = [], sort, onSort, isLoading } = props;
-  const brand    = store.brandColor || store.primaryColor || "#6B35E8";
-  const currency = store.currency || "NGN";
-  const fmt      = useFmt(currency);
-
+function Skeleton({ dark, count=8 }: any) {
+  const bg = dark ? "rgba(255,255,255,0.06)" : "#f0f0f0";
   return (
-    <div className="min-h-screen" style={{ background: "#fafafa", fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif" }}>
-      {(props.flashSales || []).filter((s:any) => s.active && new Date(s.endsAt) > new Date()).slice(0,1).map((sale:any) => (
-        <FlashSaleBanner key={sale.id} sale={sale} brand={brand} />
-      ))}
-      <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand}
-        onCategory={onCategory} categories={categories} category={category} />
-
-      {/* Hero */}
-      <div className="relative overflow-hidden" style={{ background: "#fff", borderBottom: "1px solid #f0f0f0" }}>
-        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg,${brand}06,transparent)` }} />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center">
-          {store.bannerImage && (
-            <div className="absolute inset-0 overflow-hidden">
-              <img src={store.bannerImage} alt="" className="w-full h-full object-cover opacity-10" />
-            </div>
-          )}
-          <div className="relative">
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-gray-900 mb-3 sm:mb-4">{store.name}</h1>
-            {store.description && (
-              <p className="text-sm sm:text-base text-gray-500 max-w-lg mx-auto leading-relaxed mb-6">{store.description}</p>
-            )}
-            <button onClick={() => document.getElementById("products-grid")?.scrollIntoView({ behavior: "smooth" })}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white"
-              style={{ background: `linear-gradient(135deg,${brand},${brand}cc)` }}>
-              Shop Now <ArrowRight size={14} />
-            </button>
+    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:16 }}>
+      {Array.from({length:count}).map((_,i)=>(
+        <div key={i} style={{ borderRadius:16, overflow:"hidden", background:bg }}>
+          <div style={{ aspectRatio:"1", background:dark?"rgba(255,255,255,0.04)":"#e8e8e8", animation:"pulse 1.5s ease-in-out infinite" }}/>
+          <div style={{ padding:14 }}>
+            <div style={{ height:12, background:dark?"rgba(255,255,255,0.06)":"#e8e8e8", borderRadius:6, marginBottom:8 }}/>
+            <div style={{ height:16, background:dark?"rgba(255,255,255,0.04)":"#f0f0f0", borderRadius:6, width:"60%" }}/>
           </div>
         </div>
-      </div>
-
-      <TrustBar />
-
-      {/* Products */}
-      <div id="products-grid" className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <SortBar sort={sort} onSort={onSort} total={products.length} />
-        <div className="pt-6">
-          {isLoading ? <Skeleton /> : <ProductGrid products={products} store={store} brand={brand} currency={currency} />}
-        </div>
-      </div>
-
-      <StoreFooter store={store} brand={brand} />
-
-      <CartDrawer storeSlug={store.slug} storeId={store.id} brand={brand} currency={currency}
-        fmt={v => new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(v)} />
+      ))}
     </div>
   );
 }
 
-// ── DARK LUXE template ────────────────────────────────────────────────────────
-function DarkLuxeTemplate(raw: TemplateProps) {
-  const props    = normalize(raw);
-  const { store, products = [], search, onSearch, category, onCategory, categories = [], sort, onSort, isLoading } = props;
-  const brand    = store.brandColor || store.primaryColor || "#6B35E8";
-  const currency = store.currency || "NGN";
-
+// ── TEMPLATE 1: CLASSIC ───────────────────────────────────────────────────────
+function ClassicTemplate(raw: TemplateProps) {
+  const props = normalize(raw);
+  const { store, products=[], search, onSearch, category, onCategory, categories=[], sort, onSort, isLoading } = props;
+  const brand = store.brandColor||store.primaryColor||"#6B35E8";
+  const currency = store.currency||"NGN";
+  const fmt = useFmt(currency);
   return (
-    <div className="min-h-screen" style={{ background: "#07050F", fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif" }}>
-      {(props.flashSales || []).filter((s:any) => s.active && new Date(s.endsAt) > new Date()).slice(0,1).map((sale:any) => (
-        <FlashSaleBanner key={sale.id} sale={sale} brand={brand} />
-      ))}
-      {(props.flashSales || []).filter((s:any) => s.active && new Date(s.endsAt) > new Date()).slice(0,1).map((sale:any) => (
-        <FlashSaleBanner key={sale.id} sale={sale} brand={brand} />
-      ))}
-      <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand} dark
-        onCategory={onCategory} categories={categories} category={category} />
-
-      {/* Hero */}
-      <div className="relative overflow-hidden" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-20"
-            style={{ background: `radial-gradient(ellipse, ${brand}, transparent 70%)`, filter: "blur(80px)" }} />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center">
-          <h1 className="text-3xl sm:text-6xl font-black tracking-tight text-white mb-4 sm:mb-5"
-            style={{ letterSpacing: "-2px" }}>
-            {store.name}
-          </h1>
-          {store.description && (
-            <p className="text-sm sm:text-lg max-w-md mx-auto leading-relaxed mb-8"
-              style={{ color: "rgba(255,255,255,0.4)" }}>
-              {store.description}
-            </p>
-          )}
-          <button onClick={() => document.getElementById("products-grid-dark")?.scrollIntoView({ behavior: "smooth" })}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white"
-            style={{ background: `linear-gradient(135deg,${brand},${brand}99)`, boxShadow: `0 8px 32px ${brand}40` }}>
-            Explore Collection <ArrowRight size={14} />
+    <div style={{ minHeight:"100vh", background:"#fafafa", fontFamily:"'Inter','Plus Jakarta Sans',system-ui" }}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
+      {(props.flashSales||[]).filter((s:any)=>s.active&&new Date(s.endsAt)>new Date()).slice(0,1).map((s:any)=><FlashSaleBanner key={s.id} sale={s} brand={brand}/>)}
+      <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand} onCategory={onCategory} categories={categories} category={category}/>
+      <div style={{ background:"#fff", borderBottom:"1px solid #f0f0f0" }}>
+        <div style={{ maxWidth:1280, margin:"0 auto", padding:"clamp(40px,8vw,80px) 16px", textAlign:"center" }}>
+          <h1 style={{ fontSize:"clamp(28px,6vw,56px)", fontWeight:900, letterSpacing:"-0.04em", color:"#111", margin:"0 0 12px" }}>{store.name}</h1>
+          {store.description&&<p style={{ fontSize:"clamp(14px,2.5vw,17px)", color:"#777", maxWidth:480, margin:"0 auto 24px", lineHeight:1.6 }}>{store.description}</p>}
+          <button onClick={()=>document.getElementById("pg")?.scrollIntoView({behavior:"smooth"})} style={{ padding:"12px 28px", borderRadius:12, background:`linear-gradient(135deg,${brand},${brand}cc)`, border:"none", cursor:"pointer", color:"#fff", fontSize:14, fontWeight:700 }}>
+            Shop Now →
           </button>
         </div>
       </div>
-
-      <TrustBar dark />
-
-      {/* Products */}
-      <div id="products-grid-dark" className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <SortBar sort={sort} onSort={onSort} total={products.length} dark />
-        <div className="pt-6">
-          {isLoading ? <Skeleton dark /> : <ProductGrid products={products} store={store} brand={brand} dark currency={currency} />}
-        </div>
+      <TrustBar/>
+      <div id="pg" style={{ maxWidth:1280, margin:"0 auto", padding:"24px 16px 48px" }}>
+        <SortBar sort={sort} onSort={onSort} total={products.length}/>
+        <div style={{ paddingTop:16 }}>{isLoading?<Skeleton/>:<ProductGrid products={products} store={store} brand={brand} currency={currency}/>}</div>
       </div>
-
-      <StoreFooter store={store} brand={brand} dark />
-
-      <CartDrawer storeSlug={store.slug} storeId={store.id} brand={brand} currency={currency}
-        fmt={v => new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(v)} />
+      <StoreFooter store={store} brand={brand}/>
+      <CartDrawer storeSlug={store.slug} storeId={store.id} brand={brand} currency={currency} fmt={fmt}/>
     </div>
   );
 }
 
-// ── MINIMAL template ──────────────────────────────────────────────────────────
-function MinimalTemplate(raw: TemplateProps) {
-  const props    = normalize(raw);
-  const { store, products = [], search, onSearch, category, onCategory, categories = [], sort, onSort, isLoading } = props;
-  const brand    = store.brandColor || store.primaryColor || "#111827";
-  const currency = store.currency || "NGN";
-
+// ── TEMPLATE 2: DARK LUXE ─────────────────────────────────────────────────────
+function DarkLuxeTemplate(raw: TemplateProps) {
+  const props = normalize(raw);
+  const { store, products=[], search, onSearch, category, onCategory, categories=[], sort, onSort, isLoading } = props;
+  const brand = store.brandColor||store.primaryColor||"#8B5CF6";
+  const currency = store.currency||"NGN";
+  const fmt = useFmt(currency);
   return (
-    <div className="min-h-screen" style={{ background: "#fff", fontFamily: "'Inter', system-ui, sans-serif" }}>
-      {(props.flashSales || []).filter((s:any) => s.active && new Date(s.endsAt) > new Date()).slice(0,1).map((sale:any) => (
-        <FlashSaleBanner key={sale.id} sale={sale} brand={brand} />
-      ))}
-      <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand}
-        onCategory={onCategory} categories={categories} category={category} />
-
-      {/* Minimal hero — just text, no background */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-        <div className="mb-8 sm:mb-10">
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-gray-900 mb-2">{store.name}</h1>
-          {store.description && <p className="text-sm text-gray-500 max-w-md leading-relaxed">{store.description}</p>}
+    <div style={{ minHeight:"100vh", background:"#07050F", fontFamily:"'Inter','Plus Jakarta Sans',system-ui" }}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
+      {(props.flashSales||[]).filter((s:any)=>s.active&&new Date(s.endsAt)>new Date()).slice(0,1).map((s:any)=><FlashSaleBanner key={s.id} sale={s} brand={brand}/>)}
+      <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand} dark onCategory={onCategory} categories={categories} category={category}/>
+      <div style={{ position:"relative", overflow:"hidden", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", width:"min(700px,100%)", height:400, borderRadius:"50%", background:`radial-gradient(ellipse,${brand}30,transparent 70%)`, filter:"blur(80px)", pointerEvents:"none" }}/>
+        <div style={{ maxWidth:1280, margin:"0 auto", padding:"clamp(48px,10vw,96px) 16px", textAlign:"center", position:"relative", zIndex:1 }}>
+          <h1 style={{ fontSize:"clamp(32px,7vw,72px)", fontWeight:900, letterSpacing:"-0.05em", color:"#fff", margin:"0 0 16px", lineHeight:0.95 }}>{store.name}</h1>
+          {store.description&&<p style={{ fontSize:"clamp(14px,2.5vw,18px)", color:"rgba(255,255,255,0.4)", maxWidth:440, margin:"0 auto 28px", lineHeight:1.6 }}>{store.description}</p>}
+          <button onClick={()=>document.getElementById("pg-dark")?.scrollIntoView({behavior:"smooth"})} style={{ padding:"12px 28px", borderRadius:12, background:`linear-gradient(135deg,${brand},${brand}99)`, border:"none", cursor:"pointer", color:"#fff", fontSize:14, fontWeight:700, boxShadow:`0 8px 32px ${brand}40` }}>
+            Explore Collection →
+          </button>
         </div>
-
-        {/* Sort */}
-        <div className="flex items-center justify-between mb-5 pb-4" style={{ borderBottom: "1px solid #f0f0f0" }}>
-          <span className="text-xs text-gray-400">{products.length} items</span>
-          <div className="relative">
-            <select value={sort || "newest"} onChange={e => onSort(e.target.value)}
-              className="appearance-none pl-3 pr-7 py-1.5 rounded-lg text-xs font-medium outline-none cursor-pointer bg-gray-50 border border-gray-200 text-gray-600">
-              <option value="newest">Newest</option>
-              <option value="price_asc">Low to High</option>
-              <option value="price_desc">High to Low</option>
-            </select>
-            <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
-          </div>
-        </div>
-
-        {isLoading ? <Skeleton /> : <ProductGrid products={products} store={store} brand={brand} currency={currency} />}
       </div>
-
-      <StoreFooter store={store} brand={brand} />
-      <CartDrawer storeSlug={store.slug} storeId={store.id} brand={brand} currency={currency}
-        fmt={v => new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(v)} />
+      <TrustBar dark brand={brand}/>
+      <div id="pg-dark" style={{ maxWidth:1280, margin:"0 auto", padding:"24px 16px 48px" }}>
+        <SortBar sort={sort} onSort={onSort} total={products.length} dark/>
+        <div style={{ paddingTop:16 }}>{isLoading?<Skeleton dark/>:<ProductGrid products={products} store={store} brand={brand} dark currency={currency} variant="dark"/>}</div>
+      </div>
+      <StoreFooter store={store} brand={brand} dark/>
+      <CartDrawer storeSlug={store.slug} storeId={store.id} brand={brand} currency={currency} fmt={fmt}/>
     </div>
   );
 }
 
-// ── Template registry ─────────────────────────────────────────────────────────
-const TEMPLATES: Record<string, (props: TemplateProps) => JSX.Element> = {
+// ── TEMPLATE 3: MINIMAL ───────────────────────────────────────────────────────
+function MinimalTemplate(raw: TemplateProps) {
+  const props = normalize(raw);
+  const { store, products=[], search, onSearch, category, onCategory, categories=[], sort, onSort, isLoading } = props;
+  const brand = store.brandColor||store.primaryColor||"#111";
+  const currency = store.currency||"NGN";
+  const fmt = useFmt(currency);
+  return (
+    <div style={{ minHeight:"100vh", background:"#fff", fontFamily:"'Helvetica Neue',Arial,sans-serif" }}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
+      {(props.flashSales||[]).filter((s:any)=>s.active&&new Date(s.endsAt)>new Date()).slice(0,1).map((s:any)=><FlashSaleBanner key={s.id} sale={s} brand={brand}/>)}
+      <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand} onCategory={onCategory} categories={categories} category={category}/>
+      <div style={{ maxWidth:1200, margin:"0 auto", padding:"clamp(32px,6vw,64px) 16px 0" }}>
+        <h1 style={{ fontSize:"clamp(22px,5vw,42px)", fontWeight:900, color:"#111", margin:"0 0 6px", letterSpacing:"-0.04em" }}>{store.name}</h1>
+        {store.description&&<p style={{ fontSize:14, color:"#888", maxWidth:400, margin:"0 0 32px", lineHeight:1.6 }}>{store.description}</p>}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 0", borderTop:"1px solid #111", borderBottom:"1px solid #eee", marginBottom:32 }}>
+          <span style={{ fontSize:12, color:"#888", fontWeight:500 }}>{products.length} ITEMS</span>
+          <select value={sort||"newest"} onChange={e=>onSort(e.target.value)} style={{ fontSize:12, color:"#111", background:"none", border:"none", outline:"none", fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
+            <option value="newest">NEWEST</option>
+            <option value="price_asc">PRICE ↑</option>
+            <option value="price_desc">PRICE ↓</option>
+          </select>
+        </div>
+        {isLoading?<Skeleton count={8}/>:<ProductGrid products={products} store={store} brand={brand} currency={currency} variant="minimal"/>}
+      </div>
+      <StoreFooter store={store} brand={brand}/>
+      <CartDrawer storeSlug={store.slug} storeId={store.id} brand={brand} currency={currency} fmt={fmt}/>
+    </div>
+  );
+}
+
+// ── TEMPLATE 4: BOUTIQUE ──────────────────────────────────────────────────────
+function BoutiqueTemplate(raw: TemplateProps) {
+  const props = normalize(raw);
+  const { store, products=[], search, onSearch, category, onCategory, categories=[], sort, onSort, isLoading } = props;
+  const brand = store.brandColor||store.primaryColor||"#c084fc";
+  const currency = store.currency||"NGN";
+  const fmt = useFmt(currency);
+  return (
+    <div style={{ minHeight:"100vh", background:"#fdf9f6", fontFamily:"Georgia,'Playfair Display',serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@400;500;600&display=swap');@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
+      {(props.flashSales||[]).filter((s:any)=>s.active&&new Date(s.endsAt)>new Date()).slice(0,1).map((s:any)=><FlashSaleBanner key={s.id} sale={s} brand={brand}/>)}
+      <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand} onCategory={onCategory} categories={categories} category={category}/>
+      {/* Elegant serif hero */}
+      <div style={{ textAlign:"center", padding:"clamp(48px,8vw,80px) 16px", background:"#fdf9f6", borderBottom:"1px solid #ede9e3" }}>
+        <p style={{ fontSize:11, letterSpacing:"0.2em", color:brand, fontFamily:"'Inter',sans-serif", fontWeight:600, margin:"0 0 16px", textTransform:"uppercase" }}>New Collection</p>
+        <h1 style={{ fontSize:"clamp(36px,7vw,72px)", fontWeight:900, letterSpacing:"-0.02em", color:"#1a1a1a", margin:"0 0 16px", lineHeight:0.9, fontFamily:"'Playfair Display',Georgia,serif" }}>{store.name}</h1>
+        {store.description&&<p style={{ fontSize:"clamp(14px,2vw,16px)", color:"#888", maxWidth:440, margin:"0 auto", lineHeight:1.7, fontFamily:"'Inter',sans-serif" }}>{store.description}</p>}
+      </div>
+      <div style={{ maxWidth:1200, margin:"0 auto", padding:"32px 16px 64px" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:28, fontFamily:"'Inter',sans-serif" }}>
+          <span style={{ fontSize:11, letterSpacing:"0.15em", color:"#aaa", textTransform:"uppercase" }}>{products.length} pieces</span>
+          <select value={sort||"newest"} onChange={e=>onSort(e.target.value)} style={{ fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase", color:"#555", background:"none", border:"none", outline:"none", fontWeight:600, cursor:"pointer", fontFamily:"'Inter',sans-serif" }}>
+            <option value="newest">Latest</option>
+            <option value="price_asc">Price ↑</option>
+            <option value="price_desc">Price ↓</option>
+          </select>
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:28 }}>
+          {isLoading?<Skeleton count={8}/>:products.map((p:any)=><ProductCard key={p.id} p={p} store={store} brand={brand} currency={currency} variant="boutique"/>)}
+        </div>
+      </div>
+      <StoreFooter store={store} brand={brand}/>
+      <CartDrawer storeSlug={store.slug} storeId={store.id} brand={brand} currency={currency} fmt={fmt}/>
+    </div>
+  );
+}
+
+// ── TEMPLATE 5: BOLD ─────────────────────────────────────────────────────────
+function BoldTemplate(raw: TemplateProps) {
+  const props = normalize(raw);
+  const { store, products=[], search, onSearch, category, onCategory, categories=[], sort, onSort, isLoading } = props;
+  const brand = store.brandColor||store.primaryColor||"#EF4444";
+  const currency = store.currency||"NGN";
+  const fmt = useFmt(currency);
+  return (
+    <div style={{ minHeight:"100vh", background:"#fff", fontFamily:"'Impact','Arial Black',system-ui" }}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
+      {(props.flashSales||[]).filter((s:any)=>s.active&&new Date(s.endsAt)>new Date()).slice(0,1).map((s:any)=><FlashSaleBanner key={s.id} sale={s} brand={brand}/>)}
+      <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand} onCategory={onCategory} categories={categories} category={category}/>
+      <div style={{ background:brand, color:"#fff", padding:"clamp(32px,8vw,80px) 16px", textAlign:"center" }}>
+        <h1 style={{ fontSize:"clamp(48px,12vw,120px)", fontWeight:900, letterSpacing:"-0.05em", margin:"0 0 8px", textTransform:"uppercase", lineHeight:0.85 }}>{store.name}</h1>
+        {store.description&&<p style={{ fontSize:"clamp(14px,2vw,18px)", opacity:0.8, fontFamily:"'Inter',sans-serif", fontWeight:400, maxWidth:480, margin:"16px auto 0", lineHeight:1.5 }}>{store.description}</p>}
+      </div>
+      <div style={{ maxWidth:1280, margin:"0 auto", padding:"24px 16px 64px" }}>
+        <SortBar sort={sort} onSort={onSort} total={products.length}/>
+        <div style={{ paddingTop:16 }}>{isLoading?<Skeleton/>:<ProductGrid products={products} store={store} brand={brand} currency={currency}/>}</div>
+      </div>
+      <StoreFooter store={store} brand={brand}/>
+      <CartDrawer storeSlug={store.slug} storeId={store.id} brand={brand} currency={currency} fmt={fmt}/>
+    </div>
+  );
+}
+
+// ── TEMPLATE 6: NEON ─────────────────────────────────────────────────────────
+function NeonTemplate(raw: TemplateProps) {
+  const props = normalize(raw);
+  const { store, products=[], search, onSearch, category, onCategory, categories=[], sort, onSort, isLoading } = props;
+  const brand = store.brandColor||store.primaryColor||"#00ff88";
+  const currency = store.currency||"NGN";
+  const fmt = useFmt(currency);
+  return (
+    <div style={{ minHeight:"100vh", background:"#000", fontFamily:"'Inter','Plus Jakarta Sans',system-ui" }}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}} @keyframes glow{0%,100%{text-shadow:0 0 20px ${brand}80}50%{text-shadow:0 0 40px ${brand}}}`}</style>
+      {(props.flashSales||[]).filter((s:any)=>s.active&&new Date(s.endsAt)>new Date()).slice(0,1).map((s:any)=><FlashSaleBanner key={s.id} sale={s} brand={brand}/>)}
+      <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand} dark onCategory={onCategory} categories={categories} category={category}/>
+      <div style={{ textAlign:"center", padding:"clamp(48px,10vw,96px) 16px", borderBottom:`1px solid ${brand}20` }}>
+        <h1 style={{ fontSize:"clamp(36px,9vw,96px)", fontWeight:900, letterSpacing:"-0.05em", color:brand, margin:"0 0 16px", animation:"glow 3s ease-in-out infinite", lineHeight:0.9 }}>{store.name}</h1>
+        {store.description&&<p style={{ fontSize:"clamp(13px,2vw,16px)", color:"rgba(255,255,255,0.4)", maxWidth:420, margin:"0 auto", lineHeight:1.6 }}>{store.description}</p>}
+      </div>
+      <div style={{ maxWidth:1280, margin:"0 auto", padding:"24px 16px 64px" }}>
+        <SortBar sort={sort} onSort={onSort} total={products.length} dark/>
+        <div style={{ paddingTop:16 }}>{isLoading?<Skeleton dark/>:<ProductGrid products={products} store={store} brand={brand} dark currency={currency} variant="dark"/>}</div>
+      </div>
+      <StoreFooter store={store} brand={brand} dark/>
+      <CartDrawer storeSlug={store.slug} storeId={store.id} brand={brand} currency={currency} fmt={fmt}/>
+    </div>
+  );
+}
+
+// ── TEMPLATE 7: GRID (dense magazine grid) ────────────────────────────────────
+function GridTemplate(raw: TemplateProps) {
+  const props = normalize(raw);
+  const { store, products=[], search, onSearch, category, onCategory, categories=[], sort, onSort, isLoading } = props;
+  const brand = store.brandColor||store.primaryColor||"#3B82F6";
+  const currency = store.currency||"NGN";
+  const fmt = useFmt(currency);
+  const addItem = useCartStore(s => s.addItem);
+  return (
+    <div style={{ minHeight:"100vh", background:"#f8fafc", fontFamily:"'Inter',system-ui" }}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
+      {(props.flashSales||[]).filter((s:any)=>s.active&&new Date(s.endsAt)>new Date()).slice(0,1).map((s:any)=><FlashSaleBanner key={s.id} sale={s} brand={brand}/>)}
+      <StoreHeader store={store} search={search} onSearch={onSearch} brand={brand} onCategory={onCategory} categories={categories} category={category}/>
+      <div style={{ background:brand, color:"#fff", padding:"20px 16px", textAlign:"center" }}>
+        <h1 style={{ fontSize:"clamp(20px,4vw,36px)", fontWeight:900, letterSpacing:"-0.03em", margin:0 }}>{store.name}</h1>
+        {store.description&&<p style={{ fontSize:13, opacity:0.8, margin:"6px 0 0", maxWidth:400, marginLeft:"auto", marginRight:"auto" }}>{store.description}</p>}
+      </div>
+      <div style={{ maxWidth:1400, margin:"0 auto", padding:"16px" }}>
+        <SortBar sort={sort} onSort={onSort} total={products.length}/>
+        <div style={{ paddingTop:12, display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))", gap:8 }}>
+          {isLoading?<Skeleton count={12}/>:products.map((p:any)=><ProductCard key={p.id} p={p} store={store} brand={brand} currency={currency}/>)}
+        </div>
+      </div>
+      <StoreFooter store={store} brand={brand}/>
+      <CartDrawer storeSlug={store.slug} storeId={store.id} brand={brand} currency={currency} fmt={fmt}/>
+    </div>
+  );
+}
+
+// ── Template registry ──────────────────────────────────────────────────────────
+const TEMPLATE_MAP: Record<string, (p: TemplateProps) => JSX.Element> = {
   "classic":      ClassicTemplate,
   "dark-luxe":    DarkLuxeTemplate,
   "minimal":      MinimalTemplate,
   "minimal-pro":  MinimalTemplate,
-  "bold":         ClassicTemplate,
-  "editorial":    ClassicTemplate,
-  "neon":         DarkLuxeTemplate,
-  "boutique":     ClassicTemplate,
-  "grid":         ClassicTemplate,
-  "magazine":     ClassicTemplate,
+  "boutique":     BoutiqueTemplate,
+  "bold":         BoldTemplate,
+  "editorial":    BoldTemplate,
+  "neon":         NeonTemplate,
+  "grid":         GridTemplate,
+  "magazine":     GridTemplate,
   "split":        ClassicTemplate,
   "glassmorphic": DarkLuxeTemplate,
-  "vintage":      ClassicTemplate,
+  "vintage":      BoutiqueTemplate,
   "ultra-dark":   DarkLuxeTemplate,
-  "runway":       DarkLuxeTemplate,
-  "elegant":      MinimalTemplate,
+  "runway":       BoutiqueTemplate,
   "modern":       ClassicTemplate,
 };
 
-// ── Main export ───────────────────────────────────────────────────────────────
 export function TemplateRenderer(props: TemplateProps) {
-  const theme     = props.store?.theme || "classic";
-  const Component = TEMPLATES[theme] || ClassicTemplate;
-  return (
-    <div className="template-root">
-      <Component {...props} />
-      <AbandonedCartTracker store={props.store} exitDiscount={10} idleMinutes={30} />
-    </div>
-  );
+  const theme = props.store?.templateId || props.store?.theme || "classic";
+  const Component = TEMPLATE_MAP[theme] || ClassicTemplate;
+  return <Component {...props}/>;
 }

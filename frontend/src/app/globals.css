@@ -296,3 +296,28 @@ html { -webkit-overflow-scrolling: touch; }
 .animate-slide {
   animation: slideUp 0.25s ease-out;
 }
+
+/* DropOS Responsive Utilities */
+* { box-sizing: border-box; }
+
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 480px) {
+  .grid-cols-2 { grid-template-columns: 1fr !important; }
+  .grid-cols-3 { grid-template-columns: 1fr !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* Dashboard mobile sidebar */
+@media (max-width: 900px) {
+  .dashboard-sidebar { transform: translateX(-100%); }
+  .dashboard-sidebar.open { transform: translateX(0); }
+}
+
+/* Smooth transitions */
+.transition-all { transition: all 0.2s ease; }
