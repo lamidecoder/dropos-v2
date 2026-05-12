@@ -75,7 +75,8 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       });
     }
 
-    (req as any).user = user;
+    // Alias userId = id so controllers work regardless of which field they use
+    (req as any).user = { ...user, userId: user.id };
     next();
   } catch (err) {
     console.error("[Auth]", err);
