@@ -9,7 +9,7 @@ router.use(authenticate);
 router.post("/complete", async (req: any, res: Response) => {
   try {
     const { niche, stage, goal, template } = req.body;
-    const userId  = req.user.id;
+    const userId  = req.user.userId || req.user.userId || req.user.id;
     const storeId = req.user.stores?.[0]?.id;
 
     // Update user as onboarded

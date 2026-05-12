@@ -1,213 +1,182 @@
-// src/app/admin/page.tsx
 "use client";
-
 import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { adminAPI } from "../../lib/api";
-import { AdminStatCards } from "../../components/dashboard/StatCards";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-
-import { AlertCircle, ChevronRight, Users, TrendingUp } from "lucide-react";
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { Users, DollarSign, ShoppingCart, TrendingUp, Store, Zap, ArrowUpRight, Activity, Clock, ChevronRight, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
-export default function AdminDashboard() {
-  
-  
-  const card = "bg-[var(--bg-card)] border-[var(--border)]";
-  const tx   = "text-[var(--text-primary)]";
-  const sub  = "text-[var(--text-tertiary)]";
+const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA", green:"#10B981", amber:"#F59E0B", red:"#EF4444", cyan:"#06B6D4" };
 
-  const { data: stats , isLoading } = useQuery({
-    queryKey: ["admin-dashboard"],
-    queryFn:  () => adminAPI.getDashboard().then((r) => r.data.data),
+function fmt(n: number) { return new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(n||0); }
+function num(n: number) { return n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(1)}k`:String(n||0); }
+
+function StatCard({ label, value, sub, color, icon:Icon, delay=0 }: any) {
+  return (
+    <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay}}
+      style={{ padding:20, borderRadius:16, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+        <div style={{ width:36, height:36, borderRadius:10, background:`${color}15`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <Icon size={16} color={color}/>
+        </div>
+        {sub !== undefined && (
+          <span style={{ fontSize:11, fontWeight:700, color:sub>=0?V.green:V.red, background:sub>=0?"rgba(16,185,129,0.1)":"rgba(239,68,68,0.1)", padding:"2px 8px", borderRadius:99 }}>
+            {sub>=0?"+":""}{sub}%
+          </span>
+        )}
+      </div>
+      <p style={{ fontSize:24, fontWeight:900, color:"#fff", letterSpacing:"-0.05em", margin:"0 0 4px", lineHeight:1 }}>{value}</p>
+      <p style={{ fontSize:12, color:"rgba(255,255,255,0.4)", margin:0 }}>{label}</p>
+    </motion.div>
+  );
+}
+
+const DEMO_REVENUE = [
+  {month:"Jan",revenue:1840000,fees:184000},{month:"Feb",revenue:2360000,fees:236000},
+  {month:"Mar",revenue:2890000,fees:289000},{month:"Apr",revenue:3520000,fees:352000},
+  {month:"May",revenue:4380000,fees:438000},{month:"Jun",revenue:5210000,fees:521000},
+  {month:"Jul",revenue:6140000,fees:614000},{month:"Aug",revenue:7200000,fees:720000},
+];
+
+const DEMO_GW = [
+  {name:"Paystack",value:68,color:V.amber},
+  {name:"Stripe",  value:24,color:V.v400},
+  {name:"Other",   value:8, color:V.cyan},
+];
+
+export default function AdminDashboard() {
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: () => adminAPI.getStats().then(r => r.data.data),
     refetchInterval: 60000,
+    retry: 2,
   });
 
   const { data: usersData } = useQuery({
-    queryKey: ["admin-users-preview"],
-    queryFn:  () => adminAPI.getUsers({ limit: 5 }).then((r) => r.data),
+    queryKey: ["admin-recent-users"],
+    queryFn: () => adminAPI.getUsers({ limit:5, sort:"newest" }).then(r => r.data),
+    retry: 2,
   });
 
-  const gwData = stats?.gatewayStats?.length
-    ? stats.gatewayStats.map((g: any) => ({
-        name:  g.gateway,
-        value: g._count.id,
-        color: g.gateway === "STRIPE" ? "#7c3aed" : g.gateway === "PAYSTACK" ? "#f59e0b" : "#10b981",
-      }))
-    : [
-        { name: "Stripe",      value: 58, color: "#7c3aed" },
-        { name: "Paystack",    value: 28, color: "#f59e0b" },
-        { name: "Flutterwave", value: 14, color: "#10b981" },
-      ];
-
-  const monthlyData = stats?.monthlyRevenue?.length
-    ? stats.monthlyRevenue
-    : [
-        { month: "Jan", revenue: 18400, fees: 1840 },
-        { month: "Feb", revenue: 23600, fees: 2360 },
-        { month: "Mar", revenue: 28900, fees: 2890 },
-        { month: "Apr", revenue: 35200, fees: 3520 },
-        { month: "May", revenue: 43800, fees: 4380 },
-        { month: "Jun", revenue: 52100, fees: 5210 },
-        { month: "Jul", revenue: 61400, fees: 6140 },
-      ];
+  const statCards = [
+    { label:"Total Users",       value: num(stats?.users?.total||0),       sub:stats?.users?.growth,       color:V.v400,  icon:Users         },
+    { label:"Platform Revenue",  value: fmt(stats?.revenue?.total||0),     sub:stats?.revenue?.growth,     color:V.green, icon:DollarSign    },
+    { label:"Active Stores",     value: num(stats?.stores?.active||0),     sub:stats?.stores?.growth,      color:V.cyan,  icon:Store         },
+    { label:"Total Orders",      value: num(stats?.orders?.total||0),      sub:stats?.orders?.growth,      color:V.amber, icon:ShoppingCart  },
+    { label:"DropOS Fees",       value: fmt(stats?.fees?.total||0),        sub:undefined,                  color:V.v300,  icon:TrendingUp    },
+    { label:"Avg MRR per Store", value: fmt(stats?.avgMRR||0),             sub:undefined,                  color:V.green, icon:Activity      },
+  ];
 
   const recentUsers = usersData?.data || [];
+  const gwData = stats?.gatewayStats?.length ? stats.gatewayStats.map((g:any)=>({name:g.gateway,value:g._count?.id||0,color:g.gateway==="PAYSTACK"?V.amber:V.v400})) : DEMO_GW;
+  const revenueData = stats?.monthlyRevenue?.length ? stats.monthlyRevenue : DEMO_REVENUE;
 
   return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Platform Overview</h1>
-          <p className={`text-sm mt-0.5 ${sub}`}>
-            All tenants · {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-          </p>
-        </div>
+    <div>
+      {/* Header */}
+      <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} style={{ marginBottom:24 }}>
+        <h1 style={{ fontSize:"clamp(20px,4vw,26px)", fontWeight:900, letterSpacing:"-0.04em", color:"#fff", margin:"0 0 4px" }}>Platform Overview</h1>
+        <p style={{ fontSize:13, color:"rgba(255,255,255,0.35)", margin:0 }}>
+          All merchants · {new Date().toLocaleDateString("en-NG",{month:"long",year:"numeric"})}
+        </p>
+      </motion.div>
 
-        {/* Stats */}
-        <AdminStatCards stats={stats} />
+      {/* Stat grid */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))", gap:12, marginBottom:24 }}>
+        {statCards.map((s,i) => <StatCard key={s.label} {...s} delay={i*0.06}/>)}
+      </div>
 
-        {/* Charts row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className={`lg:col-span-2 rounded-2xl border p-5 ${card}`}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className={`font-bold ${tx}`}>Platform Revenue</h3>
-              <Link href="/admin/analytics" className="text-xs font-semibold text-violet-500 flex items-center gap-1">
-                Full analytics <ChevronRight size={12} />
-              </Link>
-            </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={monthlyData}>
-                <XAxis dataKey="month" tick={{ fill: "var(--chart-axis)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "var(--chart-axis)", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-                <Tooltip
-                  contentStyle={{ background: "var(--chart-tooltip-bg)", border: "1px solid var(--chart-tooltip-border)", borderRadius: 12, fontSize: 12 }}
-                  formatter={(val: any, name: string) => [`$${Number(val).toLocaleString()}`, name === "fees" ? "Platform Fees" : "Total Revenue"]}
-                />
-                <Bar dataKey="revenue" fill="#7c3aed" radius={[4, 4, 0, 0]} name="revenue" />
-                <Bar dataKey="fees" fill="#f59e0b66" radius={[4, 4, 0, 0]} name="fees" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="space-y-4">
-            {/* Gateway pie */}
-            <div className={`rounded-2xl border p-5 ${card}`}>
-              <h3 className={`font-bold text-sm mb-3 ${tx}`}>Payment Gateways</h3>
-              <ResponsiveContainer width="100%" height={100}>
-                <PieChart>
-                  <Pie data={gwData} cx="50%" cy="50%" innerRadius={28} outerRadius={46} dataKey="value">
-                    {gwData.map((d: any, i: number) => <Cell key={i} fill={d.color} />)}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: "var(--chart-tooltip-bg)", border: "1px solid var(--chart-tooltip-border)", borderRadius: 8, fontSize: 11 }} />
-                </PieChart>
-              </ResponsiveContainer>
-              {gwData.map((d: any) => (
-                <div key={d.name} className="flex items-center justify-between text-xs mt-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full" style={{ background: d.color }} />
-                    <span className={sub}>{d.name}</span>
-                  </div>
-                  <span className={`font-bold ${tx}`}>{d.value}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Alerts */}
-            <div className={`rounded-2xl border p-4 ${card}`}>
-              <div className="flex items-center gap-2 mb-3">
-                <AlertCircle size={13} className="text-amber-500" />
-                <span className={`font-bold text-sm ${tx}`}>Alerts</span>
-              </div>
-              <div className="space-y-2">
-                {(stats?.failedPayments || 0) > 0 && (
-                  <Link href="/admin/payments"
-                    className={`block text-xs p-2 rounded-lg bg-red-100/80 dark:bg-red-900/20 text-red-600 dark:text-red-300 hover:bg-red-100 dark:bg-red-900/30 transition-all`}>
-                    ● {stats.failedPayments} failed payments
-                  </Link>
-                )}
-                {(stats?.openTickets || 0) > 0 && (
-                  <Link href="/admin/support"
-                    className={`block text-xs p-2 rounded-lg bg-amber-100/80 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:bg-amber-900/30 transition-all`}>
-                    ● {stats.openTickets} open support tickets
-                  </Link>
-                )}
-                {!stats?.failedPayments && !stats?.openTickets && (
-                  <p className={`text-xs ${sub}`}>No active alerts</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent users */}
-        <div className={`rounded-2xl border ${card}`}>
-          <div className="flex items-center justify-between p-5 border-b border-inherit">
-            <div className="flex items-center gap-2">
-              <Users size={16} className="text-violet-500" />
-              <h3 className={`font-bold ${tx}`}>Recent Users</h3>
-            </div>
-            <Link href="/admin/users" className="text-xs font-semibold text-violet-500 flex items-center gap-1">
-              Manage all <ChevronRight size={12} />
+      {/* Charts row */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 280px", gap:16, marginBottom:20 }} className="admin-charts">
+        {/* Revenue chart */}
+        <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.4}}
+          style={{ padding:20, borderRadius:16, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:8 }}>
+            <p style={{ fontSize:14, fontWeight:700, color:"#fff", margin:0 }}>Platform Revenue</p>
+            <Link href="/admin/analytics" style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, color:V.v300, textDecoration:"none", fontWeight:600 }}>
+              Full report <ArrowUpRight size={12}/>
             </Link>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className={`border-b border-inherit text-xs ${sub}`}>
-                  {["User", "Plan", "Stores", "Revenue", "Status", "Joined", ""].map((h) => (
-                    <th key={h} className="text-left font-semibold px-5 py-3">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {recentUsers.map((u: any) => (
-                  <tr key={u.id}
-                    className={`border-b transition-colors cursor-pointer border-[var(--border)]/50 hover:bg-[var(--bg-card)]/40`}>
-                    <td className="px-5 py-3">
-                      <div className={`font-semibold text-sm ${tx}`}>{u.name}</div>
-                      <div className={`text-xs ${sub}`}>{u.email}</div>
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className={`text-xs font-bold px-2 py-1 rounded-full
-                        ${u.subscription?.plan === "ADVANCED" ? "bg-violet-400/10 text-violet-700 dark:text-violet-400"
-                          : u.subscription?.plan === "PRO" ? "bg-amber-400/10 text-amber-700 dark:text-amber-400"
-                          : "bg-[var(--bg-secondary)] text-[var(--text-tertiary)]"}`}>
-                        {u.subscription?.plan || "STARTER"}
-                      </span>
-                    </td>
-                    <td className={`px-5 py-3 font-semibold ${tx}`}>{u._count?.stores || 0}</td>
-                    <td className={`px-5 py-3 font-bold text-emerald-700 dark:text-emerald-400`}>
-                      ${(u.revenue?.total || 0).toLocaleString()}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
-                        ${u.status === "ACTIVE" ? "bg-emerald-400/10 text-emerald-700 dark:text-emerald-400"
-                          : "bg-red-400/10 text-red-600 dark:text-red-400"}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${u.status === "ACTIVE" ? "bg-emerald-500" : "bg-red-500"}`} />
-                        {u.status}
-                      </span>
-                    </td>
-                    <td className={`px-5 py-3 text-xs ${sub}`}>
-                      {new Date(u.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-5 py-3">
-                      <Link href={`/admin/users/${u.id}`}
-                        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all
-                          border-violet-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-400/10`}>
-                        Manage
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-                {!recentUsers.length && (
-                  <tr>
-                    <td colSpan={7} className={`px-5 py-8 text-center text-sm ${sub}`}>No users yet</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={revenueData} margin={{top:0,right:0,bottom:0,left:0}}>
+              <defs>
+                <linearGradient id="gr" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={V.v400} stopOpacity={0.2}/>
+                  <stop offset="95%" stopColor={V.v400} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="month" tick={{fill:"rgba(255,255,255,0.3)",fontSize:10}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fill:"rgba(255,255,255,0.3)",fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`₦${(v/1000000).toFixed(1)}M`}/>
+              <Tooltip contentStyle={{background:"#181230",border:"1px solid rgba(107,53,232,0.3)",borderRadius:10,fontSize:12}} formatter={(v:any)=>[fmt(v),"Revenue"]}/>
+              <Area type="monotone" dataKey="revenue" stroke={V.v400} strokeWidth={2} fill="url(#gr)"/>
+            </AreaChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* Gateway pie */}
+        <motion.div initial={{opacity:0,x:16}} animate={{opacity:1,x:0}} transition={{delay:0.45}}
+          style={{ padding:20, borderRadius:16, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)" }}>
+          <p style={{ fontSize:14, fontWeight:700, color:"#fff", margin:"0 0 16px" }}>Payment Gateways</p>
+          <div style={{ display:"flex", justifyContent:"center" }}>
+            <PieChart width={140} height={140}>
+              <Pie data={gwData} cx={65} cy={65} innerRadius={38} outerRadius={60} dataKey="value" strokeWidth={0}>
+                {gwData.map((g:any,i:number) => <Cell key={i} fill={g.color}/>)}
+              </Pie>
+            </PieChart>
           </div>
-        </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:8 }}>
+            {gwData.map((g:any) => (
+              <div key={g.name} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <div style={{ width:8, height:8, borderRadius:"50%", background:g.color, flexShrink:0 }}/>
+                <span style={{ fontSize:12, color:"rgba(255,255,255,0.6)", flex:1 }}>{g.name}</span>
+                <span style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{g.value}{typeof g.value==="number"&&g.value<100?"%":""}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
+
+      {/* Recent users */}
+      <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.5}}
+        style={{ padding:20, borderRadius:16, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+          <p style={{ fontSize:14, fontWeight:700, color:"#fff", margin:0 }}>Recent Signups</p>
+          <Link href="/admin/users" style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, color:V.v300, textDecoration:"none", fontWeight:600 }}>
+            All users <ChevronRight size={12}/>
+          </Link>
+        </div>
+        {recentUsers.length === 0 ? (
+          <p style={{ fontSize:13, color:"rgba(255,255,255,0.3)", textAlign:"center", padding:"24px 0", margin:0 }}>No users yet</p>
+        ) : (
+          <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+            {recentUsers.slice(0,5).map((u:any,i:number) => (
+              <motion.div key={u.id} initial={{opacity:0,x:-8}} animate={{opacity:1,x:0}} transition={{delay:0.52+i*0.04}}
+                style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", borderRadius:12, background:"rgba(255,255,255,0.02)" }}>
+                <div style={{ width:32, height:32, borderRadius:10, background:`linear-gradient(135deg,${V.v500},${V.v700})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"#fff", flexShrink:0 }}>
+                  {u.name?.charAt(0)||"U"}
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <p style={{ fontSize:13, fontWeight:600, color:"rgba(255,255,255,0.8)", margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{u.name}</p>
+                  <p style={{ fontSize:11, color:"rgba(255,255,255,0.3)", margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{u.email}</p>
+                </div>
+                <div style={{ textAlign:"right", flexShrink:0 }}>
+                  <span style={{ fontSize:10, fontWeight:700, color:u.status==="ACTIVE"?V.green:V.amber, background:u.status==="ACTIVE"?"rgba(16,185,129,0.1)":"rgba(245,158,11,0.1)", padding:"2px 8px", borderRadius:99 }}>{u.status}</span>
+                  <p style={{ fontSize:10, color:"rgba(255,255,255,0.25)", margin:"3px 0 0" }}>{new Date(u.createdAt).toLocaleDateString()}</p>
+                </div>
+                <Link href={`/admin/users/${u.id}`} style={{ textDecoration:"none" }}>
+                  <ChevronRight size={14} color="rgba(255,255,255,0.2)"/>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
+      <style>{`
+        @media(max-width:700px){
+          .admin-charts{grid-template-columns:1fr!important}
+        }
+      `}</style>
+    </div>
   );
 }

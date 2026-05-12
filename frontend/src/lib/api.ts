@@ -47,9 +47,7 @@ api.interceptors.response.use(
       if (res.data?.data?.accessToken) {
         useAuthStore.getState().setAccessToken(res.data.data.accessToken);
       }
-      if (res.data?.data?.user) {
-        useAuthStore.getState().setUser(res.data.data.user);
-      }
+      // User is set by the mutation's onSuccess handler, not here
     }
     return res;
   },

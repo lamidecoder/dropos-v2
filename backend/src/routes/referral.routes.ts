@@ -9,10 +9,10 @@ router.use(authenticate);
 // GET /api/referral/stats
 router.get("/stats", async (req: any, res: Response) => {
   try {
-    let referral = await prisma.referral.findUnique({ where: { userId: req.user.id } });
+    let referral = await prisma.referral.findUnique({ where: { userId: req.user.userId || req.user.id } });
     if (!referral) {
       const code = crypto.randomBytes(4).toString("hex").toUpperCase();
-      referral = await (prisma.referral as any).create({ data: { userId: req.user.id, code } });
+      referral = await (prisma.referral as any).create({ data: { userId: req.user.userId || req.user.id, code } });
     }
     res.json({ success: true, data: referral });
   } catch (err: any) {
