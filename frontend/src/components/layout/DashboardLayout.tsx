@@ -355,11 +355,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const t    = theme === "dark" ? T.dark : T.light;
   const plan = user?.subscription?.plan || "FREE";
 
-  // Persist theme
+  // Persist theme + apply class to <html> for CSS var support
   useEffect(() => {
     const saved = localStorage.getItem("dropos-theme") as "dark"|"light"|null;
     if (saved) setTheme(saved);
   }, []);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    if (theme === "dark") {
+      html.classList.add("dark");
+    } else {
+      html.classList.remove("dark");
+    }
+  }, [theme]);
 
   // Close mobile nav on route change
   useEffect(() => { setMobileNavOpen(false); }, [pathname]);
@@ -381,7 +390,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleLogout = async () => {
     const ok = await confirm({ title: "Sign out?", message: "You will need to sign in again.", confirmText: "Sign out", cancelText: "Stay", variant: "warning" });
-    if (ok) { logout(); router.push("/login"); }
+    if (ok) { logout(); router.push("/auth/login"); }
   };
 
   const isBottomActive = (item: any) =>

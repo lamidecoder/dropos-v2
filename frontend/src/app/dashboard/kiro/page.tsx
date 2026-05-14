@@ -39,6 +39,10 @@ export default function KIROPage() {
     : { card: "#fff",    border: "rgba(15,5,32,0.07)",    text: "#0D0918", muted: "rgba(13,9,24,0.45)", faint: "rgba(15,5,32,0.03)", sidebar: "#f8f7ff" };
 
   const user    = useAuthStore(s => s.user);
+  const plan    = user?.subscription?.plan || "STARTER";
+  const planLabel = plan === "PRO" ? "Pro" : plan === "GROWTH" ? "Growth" : "Free";
+  const planColor = plan === "PRO" ? "#F59E0B" : plan === "GROWTH" ? "#8B5CF6" : "#6B7280";
+  const msgLimit  = plan === "PRO" ? "Unlimited" : plan === "GROWTH" ? "500/mo" : "50/mo";
   const storeId = user?.stores?.[0]?.id;
   const qc      = useQueryClient();
 

@@ -12,6 +12,11 @@
 /* ── LIGHT MODE (default) ───────────────────────────────────────────── */
 :root {
   --bg-base:            #F8FAFC;
+  --bg-card:            #FFFFFF;
+  --border-color:       rgba(107,53,232,0.10);
+  --text-primary:       #130D2E;
+  --text-secondary:     rgba(19,13,46,0.65);
+  --text-muted:         rgba(19,13,46,0.50);
   --bg-secondary:       #F1F5F9;
   --bg-card:            #FFFFFF;
   --bg-elevated:        #FFFFFF;
@@ -58,6 +63,11 @@
 /* ── DARK MODE ──────────────────────────────────────────────────────── */
 .dark {
   --bg-base:            #0F172A;
+  --bg-card:            #181230;
+  --border-color:       rgba(255,255,255,0.07);
+  --text-primary:       #F0ECFF;
+  --text-secondary:     rgba(240,236,255,0.65);
+  --text-muted:         rgba(240,236,255,0.45);
   --bg-secondary:       #111827;
   --bg-card:            #1E293B;
   --bg-elevated:        #1E293B;
