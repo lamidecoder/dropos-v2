@@ -185,11 +185,11 @@ export default function AutopilotPage() {
                     Connected as: {status?.cj?.email}
                   </p>
                   <div className="flex gap-2">
-                    <button onClick={() => runNow.mutate()} disabled={runNow.isLoading}
+                    <button onClick={() => runNow.mutate()} disabled={runNow.isPending}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium"
                       style={{ background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)", color: "#34d399" }}>
-                      {runNow.isLoading ? <Loader2 size={11} className="animate-spin" /> : <Zap size={11} />}
-                      {runNow.isLoading ? "Running..." : "Fulfill Now"}
+                      {runNow.isPending ? <Loader2 size={11} className="animate-spin" /> : <Zap size={11} />}
+                      {runNow.isPending ? "Running..." : "Fulfill Now"}
                     </button>
                     <button onClick={() => disconnectCJ.mutate()}
                       className="px-4 py-2 rounded-xl text-xs"
@@ -256,12 +256,12 @@ export default function AutopilotPage() {
                       </div>
 
                       <div className="flex gap-2">
-                        <button disabled={!cjEmail || !cjPass || connectCJ.isLoading}
+                        <button disabled={!cjEmail || !cjPass || connectCJ.isPending}
                           onClick={() => connectCJ.mutate()}
                           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
                           style={{ background: (cjEmail && cjPass) ? "#7c3aed" : "rgba(255,255,255,0.05)", color: (cjEmail && cjPass) ? "#fff" : "rgba(255,255,255,0.25)" }}>
-                          {connectCJ.isLoading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                          {connectCJ.isLoading ? "Connecting..." : "Connect & Activate"}
+                          {connectCJ.isPending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                          {connectCJ.isPending ? "Connecting..." : "Connect & Activate"}
                         </button>
                         <button onClick={() => { setShowCJForm(false); setCJEmail(""); setCJPass(""); }}
                           className="px-4 py-2.5 rounded-xl text-sm"

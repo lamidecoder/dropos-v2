@@ -6,7 +6,7 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContai
 import { Users, DollarSign, ShoppingCart, TrendingUp, Store, Zap, ArrowUpRight, Activity, Clock, ChevronRight, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
-const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA", green:"#10B981", amber:"#F59E0B", red:"#EF4444", cyan:"#06B6D4" };
+const V = { v500:"#6B35E8", v700:"#3D1C8A", v400:"#8B5CF6", v300:"#A78BFA", green:"#10B981", amber:"#F59E0B", red:"#EF4444", cyan:"#06B6D4" };
 
 function fmt(n: number) { return new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(n||0); }
 function num(n: number) { return n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(1)}k`:String(n||0); }

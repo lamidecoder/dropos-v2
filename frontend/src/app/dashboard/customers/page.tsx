@@ -69,6 +69,8 @@ function CustomerRow({ customer, t, isDark, i }: any) {
 }
 
 export default function CustomersPage() {
+  const { user } = useAuthStore();
+  const storeId = user?.stores?.[0]?.id;
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const t = isDark ? T.dark : T.light;

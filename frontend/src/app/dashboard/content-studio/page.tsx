@@ -149,7 +149,7 @@ export default function ContentStudioPage() {
                       {isActive && <div style={{ position:"absolute", inset:0, border:`2px solid ${V.v400}`, borderRadius:0 }}/>}
                     </div>
                     <div style={{ padding:"8px 10px 10px", textAlign:"left", width:"100%" }}>
-                      <p style={{ fontSize:11, fontWeight:700, color:isActive?V.v200:t.text, marginBottom:2 }}>{tpl.label}</p>
+                      <p style={{ fontSize:11, fontWeight:700, color:isActive?"#C4B5FD":t.text, marginBottom:2 }}>{tpl.label}</p>
                       <p style={{ fontSize:9.5, color:t.muted, lineHeight:1.4 }}>{tpl.desc}</p>
                       <p style={{ fontSize:9, fontWeight:700, color:tpl.color, marginTop:4 }}>{tpl.credits} credits</p>
                     </div>

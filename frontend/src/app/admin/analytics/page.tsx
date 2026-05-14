@@ -30,7 +30,7 @@ export default function AdminAnalyticsPage() {
 
   const { data: stats , isLoading } = useQuery({
     queryKey: ["admin-dashboard"],
-    queryFn:  () => adminAPI.getDashboard().then((r) => r.data.data),
+    queryFn:  () => adminAPI.getStats().then((r) => r.data.data),
   });
 
   const monthly = stats?.monthlyRevenue?.length ? stats.monthlyRevenue : MOCK_MONTHLY;

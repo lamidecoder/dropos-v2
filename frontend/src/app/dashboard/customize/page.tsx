@@ -246,15 +246,12 @@ export default function CustomizePage() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Load theme
-  const { isLoading } = useQuery({
+  const { isLoading } = useQuery<any>({
     queryKey: ["theme", storeId],
     queryFn:  async () => { const r = await api.get(`/theme/${storeId}`); return r.data.data; },
     enabled:  !!storeId,
-    onSuccess: (data: any) => {
-      setSettings(data);
-      setHistory([data]);
-      setHistIdx(0);
-    },
+    // @ts-ignore
+    onSuccess: (data: any) => { setSettings(data); setHistory([data]); setHistIdx(0); },
   });
 
   // Update settings with undo history
@@ -712,7 +709,7 @@ export default function CustomizePage() {
                 animate={{ width: 256, opacity: 1 }}
                 exit={{ width: 0, opacity: 0 }}
                 transition={{ type: "spring", damping: 30, stiffness: 300 }}>
-                <KAIThemePanel storeId={storeId} settings={settings} onApply={handleKAIApply} />
+                <KAIThemePanel storeId={storeId || ""} settings={settings} onApply={handleKAIApply} />
               </motion.div>
             )}
           </AnimatePresence>

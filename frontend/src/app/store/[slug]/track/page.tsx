@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useCurrencyStore } from "../../../../store/currency.store";
 
 import { useState } from "react";

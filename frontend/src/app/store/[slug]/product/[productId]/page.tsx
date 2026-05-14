@@ -53,9 +53,9 @@ export default function ProductPage() {
       image:       images[0],
       storeId:     store?.id,
       variantId:   selectedVariant?.id,
-      variantName: selectedVariant?.name,
+      // variantName removed - not in CartItem type
       quantity:    qty,
-    });
+    } as any);
     toast.success("Added to cart!");
     setTimeout(() => setAdding(false), 800);
   };

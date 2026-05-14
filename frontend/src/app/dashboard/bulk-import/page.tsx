@@ -72,11 +72,11 @@ export default function BulkImportPage() {
                 className="flex-1 bg-transparent outline-none text-sm"
                 style={{ color: "rgba(255,255,255,0.85)" }} />
             </div>
-            <button disabled={!storeUrl || scanMutation.isLoading} onClick={() => scanMutation.mutate()}
+            <button disabled={!storeUrl || scanMutation.isPending} onClick={() => scanMutation.mutate()}
               className="flex items-center gap-2 px-5 rounded-xl text-sm font-semibold flex-shrink-0"
               style={{ background: storeUrl ? "#7c3aed" : "rgba(255,255,255,0.05)", color: storeUrl ? "#fff" : "rgba(255,255,255,0.25)" }}>
-              {scanMutation.isLoading ? <Loader2 size={14} className="animate-spin" /> : <Package size={14} />}
-              {scanMutation.isLoading ? "Scanning..." : "Scan Store"}
+              {scanMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Package size={14} />}
+              {scanMutation.isPending ? "Scanning..." : "Scan Store"}
             </button>
           </div>
         </div>
@@ -142,11 +142,11 @@ export default function BulkImportPage() {
 
             {/* Import button */}
             {!imported ? (
-              <button disabled={!selected.size || importMutation.isLoading} onClick={() => importMutation.mutate()}
+              <button disabled={!selected.size || importMutation.isPending} onClick={() => importMutation.mutate()}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold"
                 style={{ background: selected.size ? "linear-gradient(135deg,#7c3aed,#5b21b6)" : "rgba(255,255,255,0.05)", color: selected.size ? "#fff" : "rgba(255,255,255,0.25)" }}>
-                {importMutation.isLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                {importMutation.isLoading ? "Importing..." : `Import ${selected.size} Products`}
+                {importMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                {importMutation.isPending ? "Importing..." : `Import ${selected.size} Products`}
               </button>
             ) : (
               <div className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl"
@@ -158,7 +158,7 @@ export default function BulkImportPage() {
           </div>
         )}
 
-        {!products.length && !scanMutation.isLoading && (
+        {!products.length && !scanMutation.isPending && (
           <div className="text-center py-16">
             <Package size={36} className="mx-auto mb-3" style={{ color: "rgba(255,255,255,0.08)" }} />
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>Paste a supplier store URL above</p>

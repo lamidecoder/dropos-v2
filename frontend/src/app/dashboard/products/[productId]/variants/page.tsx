@@ -54,13 +54,13 @@ export default function ProductVariantsPage() {
 
   const { data: product } = useQuery({
     queryKey: ["product", storeId, productId],
-    queryFn:  () => productAPI.get(storeId!, productId!).then(r => r.data.data),
+    queryFn:  () => productAPI.getOne(storeId!, productId!).then((r: any) => r.data.data),
     enabled:  !!storeId && !!productId,
   });
 
   const { data: variantsData, isLoading } = useQuery({
     queryKey: ["variants", productId],
-    queryFn:  () => api.get(`/products/${storeId}/${productId}/variants`).then(r => r.data),
+    queryFn:  () => api.get(`/products/${storeId}/${productId}/variants`).then((r: any) => r.data),
     enabled:  !!storeId && !!productId,
   });
 

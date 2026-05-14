@@ -20,10 +20,10 @@ export default function AdminUsersPage() {
   const [status, setStatus] = useState("");
   const [plan, setPlan]     = useState("");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<any>({
     queryKey: ["admin-users", page, search, status, plan],
-    queryFn:  () => adminAPI.getUsers({ page, limit:20, search, status, plan }).then(r => r.data),
-    keepPreviousData: true,
+    queryFn:  () => adminAPI.getUsers({ page, limit:20, search, status, plan }).then((r: any) => r.data),
+    placeholderData: (prev: any) => prev,
   });
 
   const deleteMut = useMutation({
@@ -33,12 +33,12 @@ export default function AdminUsersPage() {
   });
 
   const suspendMut = useMutation({
-    mutationFn: ({id,status}:{id:string;status:string}) => adminAPI.updateUser(id,{status}),
+    mutationFn: ({id,status}:{id:string;status:string}) => status === "BANNED" ? adminAPI.banUser(id) : adminAPI.unbanUser(id),
     onSuccess: () => { toast.success("User updated"); qc.invalidateQueries({queryKey:["admin-users"]}); },
   });
 
-  const users = data?.data || [];
-  const meta  = data?.meta || { total:0, page:1, pages:1 };
+  const users = (data as any)?.data || [];
+  const meta  = (data as any)?.meta || { total:0, page:1, pages:1 };
 
   return (
     <div>

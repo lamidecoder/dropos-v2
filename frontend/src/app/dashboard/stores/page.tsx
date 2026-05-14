@@ -110,8 +110,7 @@ export default function StoresPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const qc = useQueryClient();
-  const refreshUser = useAuthStore(s => s.refreshUser);
-
+  
   const t = {
     card:   isDark ? "#181230"                : "#fff",
     border: isDark ? "rgba(255,255,255,0.06)" : "rgba(15,5,32,0.07)",
@@ -134,7 +133,7 @@ export default function StoresPage() {
 
   const stores: any[] = Array.isArray(data) ? data : [];
 
-  const handleSuccess = () => { refetch(); refreshUser?.(); };
+  const handleSuccess = () => { refetch();  };
 
   const copyLink = (slug: string) => {
     navigator.clipboard.writeText(`https://droposhq.com/store/${slug}`);

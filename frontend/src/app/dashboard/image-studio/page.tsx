@@ -150,7 +150,7 @@ export default function ImageStudioPage() {
                     style={{ width:"100%", display:"flex", alignItems:"center", gap:12, padding:"10px 12px", borderRadius:12, border:`1px solid ${isActive?"rgba(107,53,232,0.3)":"transparent"}`, background:isActive?"rgba(107,53,232,0.1)":"transparent", cursor:"pointer", marginBottom:4, transition:"all 0.15s" }}>
                     <span style={{ fontSize:18, flexShrink:0 }}>{tl.icon}</span>
                     <div style={{ flex:1, textAlign:"left" }}>
-                      <p style={{ fontSize:12, fontWeight:700, color:isActive?V.v200:t.text }}>{tl.label}</p>
+                      <p style={{ fontSize:12, fontWeight:700, color:isActive?"#C4B5FD":t.text }}>{tl.label}</p>
                       <p style={{ fontSize:10, color:t.muted }}>{tl.desc}</p>
                     </div>
                     <span style={{ fontSize:9, fontWeight:700, padding:"2px 7px", borderRadius:99, background:"rgba(107,53,232,0.1)", color:V.v400 }}>{tl.credits}cr</span>

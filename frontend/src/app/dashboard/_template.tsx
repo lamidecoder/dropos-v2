@@ -3,7 +3,7 @@
 
 "use client";
 import { motion } from "framer-motion";
-import { useTheme } from "../../../components/layout/DashboardLayout";
+import { useTheme } from "../../components/layout/DashboardLayout";
 import { Zap, ChevronRight } from "lucide-react";
 import Link from "next/link";
 

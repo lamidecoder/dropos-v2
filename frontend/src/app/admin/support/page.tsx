@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "../../../lib/api";
+import { api, adminAPI} from "../../../lib/api";
 
 import { CheckCircle, MessageSquare, ChevronDown, X } from "lucide-react";
 import toast from "react-hot-toast";
@@ -31,19 +31,19 @@ export default function AdminSupportPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-tickets", filter],
-    queryFn:  () => api.getAll({ status: filter || undefined }).then((r) => r.data.data),
+    queryFn:  () => adminAPI.getTickets({ status: filter || undefined }).then((r) => r.data.data),
   });
 
   const resolveMut = useMutation({
     mutationFn: ({ id, msg }: { id: string; msg: string }) =>
-      api.update(id, { status: "RESOLVED", message: msg }),
+      adminAPI.updateTicket(id, { status: "RESOLVED", message: msg }),
     onSuccess: () => { toast.success("Ticket resolved"); qc.invalidateQueries({ queryKey: ["admin-tickets"] }); setExpand(null); setReply(""); },
     onError:   () => toast.error("Failed to resolve"),
   });
 
   const replyMut = useMutation({
     mutationFn: ({ id, msg }: { id: string; msg: string }) =>
-      api.update(id, { status: "IN_PROGRESS", message: msg }),
+      adminAPI.updateTicket(id, { status: "IN_PROGRESS", message: msg }),
     onSuccess: () => { toast.success("Reply sent"); qc.invalidateQueries({ queryKey: ["admin-tickets"] }); setReply(""); },
     onError:   () => toast.error("Failed to send reply"),
   });

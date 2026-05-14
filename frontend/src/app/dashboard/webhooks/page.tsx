@@ -10,14 +10,14 @@ import Link from"next/link";
 import{Webhook,Plus,Trash2,X,Play,Check,AlertCircle,ExternalLink}from"lucide-react";
 const V={v500:"#6B35E8",v400:"#8B5CF6",v300:"#A78BFA",cyan:"#06B6D4",green:"#10B981",amber:"#F59E0B",red:"#EF4444"};
 const TM={dark:{card:"#181230",border:"rgba(255,255,255,0.06)",text:"#fff",muted:"rgba(255,255,255,0.38)",faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:"#0D0918",muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
-const inp=(t,err)=>({padding:"10px 14px",borderRadius:10,border:`1px solid ${err?"rgba(239,68,68,0.5)":t.border}`,background:"rgba(255,255,255,0.04)",color:t.text,fontSize:13,outline:"none",width:"100%",fontFamily:"inherit"});
+const inp=(t: any, err: any)=>({padding:"10px 14px",borderRadius:10,border:`1px solid ${err?"rgba(239,68,68,0.5)":t.border}`,background:"rgba(255,255,255,0.04)",color:t.text,fontSize:13,outline:"none",width:"100%",fontFamily:"inherit"});
 
 const EVENTS=["order.created","order.paid","order.shipped","order.completed","order.cancelled","product.created","product.updated","customer.created"];
-function Modal({storeId,onClose,t,isDark}){
+function Modal({storeId,onClose,t,isDark}: {storeId:string;onClose:()=>void;t:any;isDark:boolean}){
   const qc=useQueryClient();
   const[url,setUrl]=useState("");
   const[events,setEvents]=useState(["order.created","order.paid"]);
-  const mut=useMutation({mutationFn:()=>api.post(`/webhooks/${storeId}`,{url,events}),onSuccess:()=>{toast.success("Webhook created");qc.invalidateQueries({queryKey:["webhooks"]});onClose();},onError:(e)=>toast.error(e.response?.data?.message||"Failed")});
+  const mut=useMutation<any,any,any>({mutationFn:()=>api.post(`/webhooks/${storeId}`,{url,events}),onSuccess:()=>{toast.success("Webhook created");qc.invalidateQueries({queryKey:["webhooks"]});onClose();},onError:(e: any)=>toast.error((e as any)?.response?.data?.message||"Failed")});
   return(<div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style={{background:"rgba(0,0,0,0.65)",backdropFilter:"blur(8px)"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
     <motion.div initial={{opacity:0,y:40}} animate={{opacity:1,y:0}} className="w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden" style={{background:isDark?"#181230":"#fff",border:`1px solid ${t.border}`}}>
       <div className="flex items-center justify-between px-5 py-4" style={{borderBottom:`1px solid ${t.border}`}}>
@@ -27,18 +27,18 @@ function Modal({storeId,onClose,t,isDark}){
       <div className="p-5 space-y-4" style={{maxHeight:"60vh",overflowY:"auto"}}>
         <div>
           <label className="block text-xs font-semibold mb-1.5" style={{color:t.muted}}>Endpoint URL</label>
-          <input style={inp(t)} value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://yoursite.com/webhook"/>
+          <input style={inp(t, false)} value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://yoursite.com/webhook"/>
         </div>
         <div>
           <label className="block text-xs font-semibold mb-2" style={{color:t.muted}}>Events</label>
           <div className="grid grid-cols-2 gap-1.5">
-            {EVENTS.map(ev=>{const on=events.includes(ev);return(<button key={ev} onClick={()=>setEvents(p=>on?p.filter(e=>e!==ev):[...p,ev])} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-left transition-all" style={{background:on?"rgba(107,53,232,0.12)":t.faint,border:`1px solid ${on?"rgba(107,53,232,0.3)":t.border}`,color:on?V.v300:t.muted}}><div className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0" style={{background:on?V.v500:t.faint,border:`1px solid ${on?V.v500:t.border}`}}>{on&&<Check size={8} color="white" strokeWidth={3}/>}</div>{ev}</button>);})}
+            {EVENTS.map((ev: any)=>{const on=events.includes(ev);return(<button key={ev} onClick={()=>setEvents(p=>on?p.filter(e=>e!==ev):[...p,ev])} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-left transition-all" style={{background:on?"rgba(107,53,232,0.12)":t.faint,border:`1px solid ${on?"rgba(107,53,232,0.3)":t.border}`,color:on?V.v300:t.muted}}><div className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0" style={{background:on?V.v500:t.faint,border:`1px solid ${on?V.v500:t.border}`}}>{on&&<Check size={8} color="white" strokeWidth={3}/>}</div>{ev}</button>);})}
           </div>
         </div>
       </div>
       <div className="flex gap-3 px-5 py-4" style={{borderTop:`1px solid ${t.border}`}}>
         <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm" style={{border:`1px solid ${t.border}`,color:t.muted}}>Cancel</button>
-        <button onClick={()=>mut.mutate()} disabled={!url||mut.isPending} className="flex-[2] py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50" style={{background:`linear-gradient(135deg,${V.v500},#3D1C8A)`}}>{mut.isPending?"Creating...":"Create Webhook"}</button>
+        <button onClick={()=>mut.mutate(undefined as any)} disabled={!url||mut.isPending} className="flex-[2] py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50" style={{background:`linear-gradient(135deg,${V.v500},#3D1C8A)`}}>{mut.isPending?"Creating...":"Create Webhook"}</button>
       </div>
     </motion.div>
   </div>);
@@ -66,12 +66,12 @@ export default function WebhooksPage(){
       <p className="text-xs mb-5" style={{color:t.muted,maxWidth:280,lineHeight:1.6}}>Connect your apps and get notified in real-time when orders, products, or customers change.</p>
       <button onClick={()=>setShow(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white" style={{background:`linear-gradient(135deg,${V.v500},#3D1C8A)`}}><Plus size={13}/>Add Webhook</button>
     </motion.div>):(<div className="space-y-3">
-      {hooks.map((wh,i)=>(<motion.div key={wh.id} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.05}} className="p-4 rounded-2xl" style={{background:t.card,border:`1px solid ${t.border}`}}>
+      {hooks.map((wh: any, i: number) =>(<motion.div key={wh.id} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.05}} className="p-4 rounded-2xl" style={{background:t.card,border:`1px solid ${t.border}`}}>
         <div className="flex items-start gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:"rgba(107,53,232,0.1)"}}><Webhook size={15} style={{color:V.v400}}/></div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold truncate" style={{color:t.text}}>{wh.url}</p>
-            <div className="flex flex-wrap gap-1.5 mt-1.5">{(wh.events||[]).map(ev=>(<span key={ev} className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{background:"rgba(107,53,232,0.08)",color:V.v300,border:"1px solid rgba(107,53,232,0.15)"}}>{ev}</span>))}</div>
+            <div className="flex flex-wrap gap-1.5 mt-1.5">{(wh.events||[]).map((ev: any)=>(<span key={ev} className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{background:"rgba(107,53,232,0.08)",color:V.v300,border:"1px solid rgba(107,53,232,0.15)"}}>{ev}</span>))}</div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <span className="text-[10px] px-2 py-1 rounded-full font-semibold" style={{background:wh.active?"rgba(16,185,129,0.1)":"rgba(239,68,68,0.1)",color:wh.active?V.green:V.red}}>{wh.active?"Active":"Inactive"}</span>
@@ -81,6 +81,6 @@ export default function WebhooksPage(){
         </div>
       </motion.div>))}
     </div>)}
-    <AnimatePresence>{show&&<Modal storeId={storeId} onClose={()=>setShow(false)} t={t} isDark={isDark}/>}</AnimatePresence>
+    <AnimatePresence>{show&&<Modal storeId={storeId || ""} onClose={()=>setShow(false)} t={t} isDark={isDark}/>}</AnimatePresence>
   </div>);
 }

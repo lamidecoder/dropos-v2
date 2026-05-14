@@ -12,7 +12,7 @@ const MOCK = [
 export function RevenueChart({ storeId }: { storeId: string }) {
   const { data } = useQuery({
     queryKey: ["analytics-chart", storeId],
-    queryFn:  () => analyticsAPI.getStore(storeId, { period: "30d" }).then(r => r.data.data),
+    queryFn:  () => analyticsAPI.getSummary(storeId, "30d").then((r: any) => r.data.data),
     enabled: !!storeId,
   });
 

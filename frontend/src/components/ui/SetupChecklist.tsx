@@ -94,7 +94,7 @@ export default function SetupChecklist() {
   if (dismissed || allDone) return null;
 
   // Only show for new users (< 7 days old)
-  const createdAt  = user?.createdAt ? new Date(user.createdAt) : new Date();
+  const createdAt  = (user as any)?.createdAt ? new Date((user as any).createdAt) : new Date();
   const daysSince  = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
   if (daysSince > 7) return null;
 

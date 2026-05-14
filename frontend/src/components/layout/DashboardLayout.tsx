@@ -238,7 +238,7 @@ function NavGroup({ group, pathname, t, onNavClick }: { group: any; pathname: st
 
   return (
     <div style={{ marginBottom: 2 }}>
-      <button onClick={() => setOpen(o => !o)}
+      <button onClick={() => setOpen((o: boolean) => !o)}
         style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "5px 10px 3px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", color: hasActive ? t.text : t.textFaint }}>
         <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", flex: 1, textAlign: "left", fontFamily: "system-ui" }}>
           {group.label}

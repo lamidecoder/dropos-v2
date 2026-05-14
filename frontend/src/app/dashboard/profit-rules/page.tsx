@@ -8,7 +8,7 @@ import { api } from "../../../lib/api";
 import { Shield, Plus, X, Check, ToggleLeft, ToggleRight, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-const V = { v500:"#6B35E8", v400:"#8B5CF6", green:"#10B981", amber:"#F59E0B", red:"#EF4444" };
+const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA", green:"#10B981", amber:"#F59E0B", red:"#EF4444" };
 
 const ACTIONS = [
   { id:"alert",          label:"Alert me only",         emoji:"🔔" },

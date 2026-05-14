@@ -192,12 +192,23 @@ export const analyticsAPI = {
 };
 
 export const adminAPI = {
-  getStats:    () => api.get("/admin/stats"),
-  getUsers:    (p?: any) => api.get("/admin/users", { params: p }),
-  getUser:     (id: string) => api.get(`/admin/users/${id}`),
-  updateUser:  (id: string, d: any) => api.patch(`/admin/users/${id}`, d),
-  deleteUser:  (id: string) => api.delete(`/admin/users/${id}`),
-  getStores:   (p?: any) => api.get("/admin/stores", { params: p }),
-  getOrders:   (p?: any) => api.get("/admin/orders", { params: p }),
-  getRevenue:  () => api.get("/admin/revenue"),
-};
+  getStats:           ()                    => api.get("/admin/stats"),
+  getDashboard:       ()                    => api.get("/admin/stats"),
+  getRevenue:         ()                    => api.get("/admin/revenue"),
+  getUsers:           (p?: any)             => api.get("/admin/users", { params: p }),
+  getUser:            (id: string)          => api.get(`/admin/users/${id}`),
+  banUser:            (id: string)          => api.patch(`/admin/users/${id}/ban`),
+  unbanUser:          (id: string)          => api.patch(`/admin/users/${id}/unban`),
+  deleteUser:         (id: string)          => api.delete(`/admin/users/${id}`),
+  updateSubscription: (id: string, d: any)  => api.patch(`/admin/users/${id}/subscription`, d),
+  getAnalytics:       (p?: any)             => api.get("/admin/analytics", { params: p }),
+  getPayments:        (p?: any)             => api.get("/admin/payments",  { params: p }),
+  getTickets:         (p?: any)             => api.get("/admin/support",   { params: p }),
+  updateTicket:       (id: string, d: any)  => api.patch(`/admin/support/${id}`, d),
+  getErrorLogs:       (p?: any)             => api.get("/admin/error-logs",{ params: p }),
+  resolveError:       (id: string)          => api.patch(`/admin/error-logs/${id}/resolve`),
+  getAuditLogs:       (p?: any)             => api.get("/admin/audit-logs",{ params: p }),
+  getSettings:        ()                    => api.get("/admin/settings"),
+  updateSettings:     (d: any)              => api.patch("/admin/settings", d),
+  getWaitlist:        (p?: any)             => api.get("/admin/waitlist",  { params: p }),
+}

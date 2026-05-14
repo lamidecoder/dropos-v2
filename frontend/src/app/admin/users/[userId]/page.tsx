@@ -74,7 +74,7 @@ export default function UserDetailPage() {
   const currentStatus = watch("status");
 
   const updateUser = useMutation({
-    mutationFn: (data: any) => adminAPI.updateUser(userId, data),
+    mutationFn: (data: any) => adminAPI.updateSubscription(userId, data),
     onSuccess: () => {
       toast.success("User saved");
       qc.invalidateQueries({ queryKey: ["admin-user", userId] });

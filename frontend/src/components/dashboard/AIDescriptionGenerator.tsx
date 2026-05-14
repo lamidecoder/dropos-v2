@@ -47,7 +47,7 @@ export function AIDescriptionGenerator({ productName: initName = "", imageUrl, o
 
   const genMut = useMutation({
     mutationFn: () => api.post("/ai/product-description", {
-      productName:    name || productName,
+      productName:    name || initName || "",
       keywords:       keywords.split(",").map(k => k.trim()).filter(Boolean),
       tone, category,
       imageUrl,

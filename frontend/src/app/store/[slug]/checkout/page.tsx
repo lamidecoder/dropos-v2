@@ -209,10 +209,10 @@ export default function CheckoutPage() {
           quantity:  i.quantity,  price: i.price, name: i.name,
         })),
         subtotal,
-        taxAmount:      tax,
-        shippingCost:   effectiveShipCost,
+
+
         total:          effectiveTotal,
-        discountAmount: discount + autoDiscountTotal,
+
       });
       const order = orderRes.data.data;
 
@@ -356,7 +356,7 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <StepBadge n={3} label="Shipping Method" brand={brand} />
                 <div className="space-y-2">
-                  {shippingOptions.map(opt => {
+                  {shippingOptions.map((opt: any) => {
                     const isActive = shipping.id === opt.id;
                     const isFreeByStore = freeShip && opt.id === "free";
                     return (

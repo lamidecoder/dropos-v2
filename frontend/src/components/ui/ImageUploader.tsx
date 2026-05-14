@@ -39,7 +39,7 @@ export default function ImageUploader({ images, onChange, maxImages = 8 }: Props
 
       setUploading((prev) => [...prev, file.name]);
       try {
-        const res = await uploadAPI.single(file);
+        const res = await uploadAPI.image(file);
         const url = res.data.data.url;
         onChange([...images, url]);
       } catch {

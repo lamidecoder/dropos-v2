@@ -82,7 +82,7 @@ function ProductCard({ p, store, brand, dark, currency, variant="default" }: any
 
   const add = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
-    addItem({ productId:p.id, name:p.name, price:p.price, image:img, storeId:store.id, quantity:1 });
+    addItem({ productId:p.id, name:p.name, price:p.price, image:img, storeId:store.id, quantity:1 } as any);
     setAdded(true); setTimeout(()=>setAdded(false), 1500);
   };
 

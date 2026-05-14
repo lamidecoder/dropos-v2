@@ -66,7 +66,7 @@ export function usePushNotifications() {
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlB64ToUint8Array(vapidKey),
+        applicationServerKey: (urlB64ToUint8Array(vapidKey) as any),
       });
 
       const deviceName = `${navigator.userAgent.includes("iPhone") || navigator.userAgent.includes("iPad") ? "Safari" : "Chrome"} on ${navigator.platform}`;

@@ -70,8 +70,8 @@ export default function InventoryPage() {
           {label:"Out of Stock",   value:out,     color:V.red,  icon:AlertTriangle, id:"out"},
         ].map((s,i) => (
           <motion.div key={s.label} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.06}}
-            onClick={() => setFilter(filter===s.id?"all":s.id)} style={{cursor:"pointer"}}
-            className="p-4 rounded-2xl transition-all" style={{background:filter===s.id?`${s.color}12`:t.card,border:`1px solid ${filter===s.id?s.color+"40":t.border}`}}>
+            onClick={() => setFilter(filter===s.id?"all":s.id)}
+            className="p-4 rounded-2xl transition-all" style={{cursor:"pointer",background:filter===s.id?`${s.color}12`:t.card,border:`1px solid ${filter===s.id?s.color+"40":t.border}`}}>
             <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-2" style={{background:`${s.color}15`}}>
               <s.icon size={14} style={{color:s.color}}/>
             </div>
@@ -121,7 +121,7 @@ export default function InventoryPage() {
               </div>
               <div className="col-span-2 text-center">
                 {isEditing ? (
-                  <input type="number" value={editing.stock} min={0}
+                  <input type="number" value={(editing as any)?.stock ?? 0} min={0}
                     onChange={e => setEditing({id:p.id,stock:Number(e.target.value)})}
                     className="w-16 text-center rounded-lg py-1 text-sm font-bold"
                     style={{background:t.faint,border:`1px solid ${V.v400}`,color:t.text,outline:"none"}}/>
@@ -138,7 +138,7 @@ export default function InventoryPage() {
               <div className="col-span-2 flex justify-center gap-1">
                 {isEditing ? (
                   <>
-                    <button onClick={() => updateMut.mutate({id:p.id,stock:editing!.stock})}
+                    <button onClick={() => updateMut.mutate({id:p.id,stock:(editing as any).stock})}
                       style={{width:28,height:28,borderRadius:8,border:"none",background:"rgba(16,185,129,0.15)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
                       <Check size={13} color={V.green}/>
                     </button>
