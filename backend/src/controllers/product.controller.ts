@@ -9,23 +9,23 @@ import { requireStoreOwner } from "./store.controller";
 
 const productSchema = z.object({
   name:          z.string().min(2).max(200),
-  description:   z.string().optional(),
+  description:   z.string().nullable().optional(),
   price:         z.number().positive(),
-  comparePrice:  z.number().optional(),
-  costPrice:     z.number().optional(),
-  sku:           z.string().optional(),
+  comparePrice:  z.number().nullable().optional(),
+  costPrice:     z.number().nullable().optional(),
+  sku:           z.string().nullable().optional(),
   barcode:       z.string().optional(),
   inventory:     z.number().int().min(0).default(0),
   trackInventory:z.boolean().default(true),
   allowBackorder:z.boolean().default(false),
   images:        z.array(z.string()).default([]),
-  category:      z.string().optional(),
+  category:      z.string().nullable().optional(),
   tags:          z.array(z.string()).default([]),
   status:        z.enum(["ACTIVE","DRAFT","ARCHIVED"]).default("DRAFT"),
   isDigital:     z.boolean().default(false),
-  weight:        z.number().optional(),
-  metaTitle:     z.string().optional(),
-  metaDescription: z.string().optional(),
+  weight:        z.number().nullable().optional(),
+  metaTitle:     z.string().nullable().optional(),
+  metaDescription: z.string().nullable().optional(),
 });
 
 export const createProduct = async (req: AuthRequest, res: Response) => {

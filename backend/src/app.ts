@@ -177,6 +177,7 @@ app.use("/api/shipping",             shippingRoutes);
 app.use("/api/reviews",              reviewRoutes);
 app.use("/api/invoices",             invoiceRoutes);
 app.use("/api/email",                emailRoutes);
+app.use("/api/emails",               emailRoutes); // alias for frontend
 app.use("/api/abandoned-carts",      abandonedCartRoutes);
 app.use("/api/notification-settings",notifSettingsRoutes);
 app.use("/api/currency",             currencyRoutes);
@@ -188,6 +189,7 @@ app.use("/api/funnel",               funnelRoutes);
 app.use("/api/api-keys",             apiKeyRoutes);
 app.use("/api/webhooks",             webhookRoutes);
 app.use("/api/ops",                  returnsRoutes);
+app.use("/api/returns",              returnsRoutes); // alias for frontend
 app.use("/api/2fa",                  twoFARoutes);
 app.use("/api/product-subscriptions",productSubscriptionRoutes);
 app.use("/api/upsell",               upsellRoutes);
@@ -205,6 +207,7 @@ app.use("/api/kai/agent",        kaiAgentRoutes);
 app.use("/api/features",         featuresRoutes);
 app.use("/api/loyalty",          loyaltyRoutes);
 app.use("/api/super",            superchargeRoutes);
+app.use("/api/broadcasts",       superchargeRoutes); // alias for frontend
 app.use("/api/theme",            themeRoutes);
 app.use("/api/products/intel",   productIntelRoutes);
 app.use("/api/intel",            intelRoutes);
