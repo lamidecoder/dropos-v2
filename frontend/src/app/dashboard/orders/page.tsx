@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../../components/layout/DashboardLayout";
 import { useAuthStore } from "../../../store/auth.store";
 import { api } from "../../../lib/api";
+import { useCurrency } from "../../../lib/currency";
 import {
   ShoppingCart, Search, Filter, Download, Zap,
   Package, Truck, Check, X, Clock, RefreshCw,

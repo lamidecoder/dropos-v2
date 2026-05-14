@@ -113,4 +113,28 @@ router.delete("/", async (req: Request, res: Response) => {
   return res.json({ success: true, message: "Deleted" });
 });
 
+
+// POST /api/upload/image — accepts "image" field (frontend compat)
+router.post("/image", upload.single("image"), async (req: Request, res: Response) => {
+  if (!req.file) throw new AppError("No file uploaded", 400);
+  if (USE_CLOUDINARY) {
+    const { url, publicId } = await uploadToCloudinary(req.file.buffer);
+    return res.json({ success: true, data: { url, publicId } });
+  }
+  const url = await saveLocally(req.file);
+  return res.json({ success: true, data: { url, publicId: url } });
+});
+
+// POST /api/upload/images — accepts "images" field (frontend compat)
+router.post("/images", upload.array("images", 10), async (req: Request, res: Response) => {
+  const files = req.files as any[];
+  if (!files?.length) throw new AppError("No files uploaded", 400);
+  if (USE_CLOUDINARY) {
+    const results = await Promise.all(files.map((f) => uploadToCloudinary(f.buffer)));
+    return res.json({ success: true, data: { urls: results.map((r) => r.url) } });
+  }
+  const urls = await Promise.all(files.map(saveLocally));
+  return res.json({ success: true, data: { urls } });
+});
+
 export default router;

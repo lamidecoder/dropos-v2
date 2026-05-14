@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useCurrency } from "../../lib/currency";
 import {
   TrendingUp, ShoppingCart, Users, Package, Zap,
   ChevronRight, Store, Flame, Activity, ArrowUpRight,
@@ -14,9 +15,7 @@ import { api } from "../../lib/api";
 
 const V = { v500: "#6B35E8", v400: "#8B5CF6", v300: "#A78BFA", cyan: "#06B6D4", green: "#10B981", amber: "#F59E0B", red: "#EF4444" };
 
-function fmt(n: number) {
-  return new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(n || 0);
-}
+const fmt = (n: number) => new Intl.NumberFormat("en-NG", { style:"currency", currency:"NGN", maximumFractionDigits:0 }).format(n||0);
 
 function StatCard({ label, value, delta, color, icon: Icon, delay = 0 }: any) {
   const { theme } = useTheme();
@@ -73,6 +72,7 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const isDark = theme === "dark";
   const [greeting, setGreeting] = useState("morning");
+  const { fmt, code, symbol } = useCurrency();
   const firstName = user?.name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
   const storeId = user?.stores?.[0]?.id;
   const storeSlug = user?.stores?.[0]?.slug;
