@@ -168,7 +168,7 @@ function ProductModal({ storeId, product, onClose, t, isDark }: any) {
         weight:      form.weight ? parseFloat(form.weight) : null,
       };
       return isEdit
-        ? api.patch(`/products/${storeId}/${product.id}`, payload)
+        ? api.put(`/products/${storeId}/${product.id}`, payload)
         : api.post(`/products/${storeId}`, payload);
     },
     onSuccess: () => {

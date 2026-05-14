@@ -20,6 +20,7 @@ router.post  ("/:storeId/bulk",                         authenticate, bulkCreate
 router.get   ("/:storeId",                              authenticate, getProducts);
 router.get   ("/:storeId/:productId",                   authenticate, getProduct);
 router.put   ("/:storeId/:productId",                   authenticate, updateProduct);
+router.patch ("/:storeId/:productId",                   authenticate, updateProduct); // alias
 router.delete("/:storeId/:productId",                   authenticate, deleteProduct);
 
 // Variant management
