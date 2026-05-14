@@ -1,35 +1,32 @@
 import { Router, Request, Response } from "express";
 import { authenticate } from "../middleware/auth";
 import prisma from "../lib/prisma";
-import crypto from "crypto";
 
 const router = Router();
 router.use(authenticate);
 
 // GET /api/referral/stats
-router.get("/stats", async (req: any, res: Response) => {
-  try {
-    let referral = await prisma.referral.findUnique({ where: { userId: req.user.userId || req.user.userId } });
-    if (!referral) {
-      const code = crypto.randomBytes(4).toString("hex").toUpperCase();
-      referral = await (prisma.referral as any).create({ data: { userId: req.user.userId || req.user.userId, code } });
-    }
-    res.json({ success: true, data: referral });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+router.get("/stats", async (req: Request, res: Response) => {
+  const userId = (req as any).user.userId;
+  const user   = await prisma.user.findUnique({ where:{ id:userId }, select:{ referralCode:true } }) as any;
+  const referrals = await prisma.user.count({ where:{ referredBy: userId } });
+  const earnings  = referrals * 5000; // ₦5,000 per referral
+  res.json({ success:true, data:{
+    code: user?.referralCode || userId?.slice(-8).toUpperCase(),
+    referrals,
+    earnings,
+    pendingEarnings: 0,
+    paidEarnings: earnings,
+    link: `https://droposhq.com/ref/${user?.referralCode || userId?.slice(-8)}`,
+  }});
 });
 
-// POST /api/referral/click (track referral click)
-router.post("/click", async (req: Request, res: Response) => {
-  try {
-    const { code } = req.body;
-    if (!code) return res.status(400).json({ success: false });
-    await prisma.referral.update({ where: { code }, data: { clicks: { increment: 1 } } }).catch(() => {});
-    res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+// POST /api/referral/apply
+router.post("/apply", async (req: Request, res: Response) => {
+  const { code } = req.body;
+  const referrer = await prisma.user.findFirst({ where:{ referralCode: code } as any });
+  if (!referrer) return res.status(404).json({ success:false, message:"Referral code not found" });
+  res.json({ success:true, message:"Referral code applied!", data:{ referrerId: referrer.id } });
 });
 
 export default router;

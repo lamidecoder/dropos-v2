@@ -57,6 +57,7 @@ import groupBuyRoutes    from "./routes/groupbuy.routes";
 import referralRoutes    from "./routes/referral.routes";
 import navLevelRoutes    from "./routes/navlevel.routes";
 import reportsRoutes     from "./routes/reports.routes";
+import billingRoutes from "./routes/billing.routes";
 import waitlistRoutes      from "./routes/waitlist.routes";
 
 // KAI CORE
@@ -194,6 +195,11 @@ app.use("/api/waitlist",             waitlistRoutes);
 
 // KAI SYSTEM
 app.use("/api/kai",              kaiRoutes);
+app.use("/api/billing",          billingRoutes);
+app.use("/api/fulfillment",       fulfillmentRoutes);
+app.use("/api/referral",          referralRoutes);
+app.use("/api/intel",             intelRoutes);
+
 app.use("/api/kai/power",        kaiPowerRoutes);
 app.use("/api/kai/agent",        kaiAgentRoutes);
 app.use("/api/features",         featuresRoutes);
