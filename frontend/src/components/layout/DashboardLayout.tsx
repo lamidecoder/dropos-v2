@@ -25,7 +25,7 @@ import MilestoneCelebration from "../ui/MilestoneCelebration";
 import { useNavLevel } from "../ui/NavLevel";
 
 // ── CONTEXTS ──────────────────────────────────────────────────────────────────
-const ThemeContext = createContext<{ theme: "dark" | "light"; toggle: () => void }>({ theme: "dark", toggle: () => {} });
+const ThemeContext = createContext<{ theme: "dark" | "light"; toggle: () => void }>({ theme: "light", toggle: () => {} });
 export function useTheme() { return useContext(ThemeContext); }
 
 type ToastType = "success" | "error" | "info" | "warning";
@@ -52,16 +52,16 @@ const T = {
     headerBg:   "rgba(6,4,13,0.94)",
   },
   light: {
-    bg:         "#F0EEFF",
+    bg:         "#F4F2FB",
     surface:    "#FFFFFF",
     card:       "#FFFFFF",
-    border:     "rgba(100,70,200,0.10)",
+    border:     "rgba(100,70,200,0.12)",
     text:       "#130D2E",
-    textMuted:  "rgba(19,13,46,0.60)",
-    textFaint:  "rgba(19,13,46,0.38)",
-    navHover:   "rgba(107,53,232,0.05)",
-    sidebarBg:  "#FFFFFF",
-    headerBg:   "rgba(240,238,255,0.94)",
+    textMuted:  "rgba(19,13,46,0.65)",
+    textFaint:  "rgba(19,13,46,0.42)",
+    navHover:   "rgba(107,53,232,0.06)",
+    sidebarBg:  "#FAFAFE",
+    headerBg:   "rgba(255,255,255,0.96)",
   },
 };
 const V = {
@@ -195,7 +195,7 @@ function NavItem({ item, isActive, t, onClick }: { item: any; isActive: boolean;
         </div>
         <span style={{
           fontSize: 12.5, flex: 1, lineHeight: 1,
-          color: isActive ? (item.ai ? V.v200 : t.text) : t.textMuted,
+          color: isActive ? (item.ai ? V.v400 : t.text) : t.textMuted,
           fontWeight: isActive ? 650 : 450,
           letterSpacing: "-0.01em",
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -347,7 +347,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname  = usePathname();
   const router    = useRouter();
 
-  const [theme,         setTheme]         = useState<"dark"|"light">("dark");
+  const [theme,         setTheme]         = useState<"dark"|"light">("light");
   const [toasts,        setToasts]        = useState<Toast[]>([]);
   const [confirmState,  setConfirmState]  = useState<{ opts: ConfirmOptions; resolve: (v: boolean) => void } | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);

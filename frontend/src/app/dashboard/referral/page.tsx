@@ -75,7 +75,7 @@ export default function ReferralPage() {
         style={{ padding:20, borderRadius:16, background:`linear-gradient(135deg,rgba(107,53,232,0.08),rgba(107,53,232,0.03))`, border:`1px solid rgba(107,53,232,0.2)`, marginBottom:20 }}>
         <p style={{ fontSize:13, fontWeight:700, color:t.text, margin:"0 0 12px" }}>Your Referral Link</p>
         <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-          <div style={{ flex:1, display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:12, background:isDark?"rgba(255,255,255,0.05)":"#F5F3FF", border:`1px solid ${t.border}` }}>
+          <div style={{ flex:1, display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:12, background:isDark?"rgba(255,255,255,0.05)":"#F0EDFF", border:`1px solid ${t.border}` }}>
             <Link2 size={14} color={V.v400} style={{ flexShrink:0 }}/>
             <span style={{ fontSize:13, color:t.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{link}</span>
           </div>

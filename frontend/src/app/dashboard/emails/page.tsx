@@ -79,7 +79,7 @@ function NewCampaignModal({ onClose, storeId, t, isDark }: any) {
     setWriting(false);
   };
 
-  const inp = { width:"100%", padding:"10px 14px", borderRadius:12, border:`1px solid ${t.border}`, background:isDark?"rgba(255,255,255,0.05)":"#F5F3FF", color:t.text, fontSize:13, outline:"none", fontFamily:"inherit" } as const;
+  const inp = { width:"100%", padding:"10px 14px", borderRadius:12, border:`1px solid ${t.border}`, background:isDark?"rgba(255,255,255,0.05)":"#F0EDFF", color:t.text, fontSize:13, outline:"none", fontFamily:"inherit" } as const;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background:"rgba(0,0,0,0.6)", backdropFilter:"blur(8px)" }} onClick={e => e.target === e.currentTarget && onClose()}>

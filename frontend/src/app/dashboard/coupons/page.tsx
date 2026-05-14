@@ -57,7 +57,7 @@ function CouponModal({ onClose, storeId, t, isDark }: any) {
 
   const inp = {
     width:"100%", padding:"10px 14px", borderRadius:12,
-    border:`1px solid ${t.border}`, background:isDark?"rgba(255,255,255,0.05)":"#F5F3FF",
+    border:`1px solid ${t.border}`, background:isDark?"rgba(255,255,255,0.05)":"#F0EDFF",
     color:t.text, fontSize:13, outline:"none", fontFamily:"inherit",
   } as const;
 

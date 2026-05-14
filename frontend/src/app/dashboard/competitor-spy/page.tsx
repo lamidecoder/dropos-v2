@@ -10,7 +10,7 @@ const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA", green:"#10B981", amb
 export default function CompetitorSpyPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const t = { card:isDark?"#181230":"#fff", border:isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)", text:isDark?"#F0ECFF":"#130D2E", muted:isDark?"rgba(240,236,255,0.45)":"rgba(19,13,46,0.55)", faint:isDark?"rgba(255,255,255,0.03)":"rgba(107,53,232,0.03)", input:isDark?"rgba(255,255,255,0.05)":"#F5F3FF" };
+  const t = { card:isDark?"#181230":"#fff", border:isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)", text:isDark?"#F0ECFF":"#130D2E", muted:isDark?"rgba(240,236,255,0.45)":"rgba(19,13,46,0.55)", faint:isDark?"rgba(255,255,255,0.03)":"rgba(107,53,232,0.03)", input:isDark?"rgba(255,255,255,0.05)":"#F0EDFF" };
   const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const [url, setUrl] = useState("");
   const [result, setResult] = useState<string|null>(null);

@@ -26,7 +26,7 @@ export default function TikTokScriptsPage() {
     card: isDark?"#181230":"#fff", border: isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)",
     text: isDark?"#F0ECFF":"#130D2E", muted: isDark?"rgba(240,236,255,0.45)":"rgba(19,13,46,0.55)",
     faint: isDark?"rgba(255,255,255,0.03)":"rgba(107,53,232,0.03)",
-    input: isDark?"rgba(255,255,255,0.05)":"#F5F3FF",
+    input: isDark?"rgba(255,255,255,0.05)":"#F0EDFF",
   };
   const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const [style, setStyle] = useState("viral");
