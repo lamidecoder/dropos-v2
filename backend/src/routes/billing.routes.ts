@@ -29,7 +29,7 @@ router.post("/upgrade", async (req: Request, res: Response) => {
   const userId = (req as any).user.userId;
   const { plan } = req.body;
   if (!PLANS[plan]) throw new AppError("Invalid plan", 400);
-  const updated = await prisma.subscription.upsert({
+  const updated = await (prisma.subscription as any).upsert({
     where: { userId },
     update: { plan: plan.toUpperCase(), status:"ACTIVE" },
     create: { userId, plan: plan.toUpperCase(), status:"ACTIVE" },
