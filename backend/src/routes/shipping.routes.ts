@@ -3,6 +3,7 @@ import { Router, Request, Response } from "express";
 import { authenticate } from "../middleware/auth";
 import prisma from "../lib/prisma";
 import { AppError } from "../utils/AppError";
+import { calculateShippingRates } from "../services/shipping.service";
 
 const router = Router();
 
