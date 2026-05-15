@@ -253,7 +253,7 @@ export async function callClaude(params: {
   if (!apiKey) throw new Error("ANTHROPIC_API_KEY not configured");
 
   const body: any = {
-    model: process.env.KIRO_MODEL || "claude-sonnet-4-5-20251001",
+    model: process.env.KIRO_MODEL || "claude-haiku-4-5-20251001",
     max_tokens: params.maxTokens || 1024,
     system: params.systemPrompt,
     messages: params.messages,

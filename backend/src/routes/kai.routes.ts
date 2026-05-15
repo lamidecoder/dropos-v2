@@ -40,7 +40,7 @@ router.get("/health", async (req: any, res: any) => {
     ok: hasKey && dbOk,
     apiKey: hasKey ? "configured" : "MISSING - add ANTHROPIC_API_KEY to Render env",
     db: dbOk ? "connected" : "error",
-    model: process.env.KIRO_MODEL || "claude-sonnet-4-5-20251001",
+    model: process.env.KIRO_MODEL || "claude-haiku-4-5-20251001",
   });
 });
 
