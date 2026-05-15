@@ -54,7 +54,7 @@ export default function KIROPage() {
 
   const { data: conversations = [] } = useQuery({
     queryKey: ["kiro-conversations"],
-    queryFn:  () => api.get("/kai/conversations").then(r => r.data.data || []),
+    queryFn:  () => api.get(`/kai/conversations?storeId=${storeId}`).then(r => r.data.data || []),
     enabled:  !!user?.id,
     staleTime: 30000,
   });
@@ -228,6 +228,11 @@ export default function KIROPage() {
             key={activeId || "new"}
             className="h-full"
             storeId={storeId}
+            conversationId={activeId || undefined}
+            onConversationCreated={(id) => {
+              setActiveId(id);
+              qc.invalidateQueries({ queryKey: ["kiro-conversations"] });
+            }}
           />
         </div>
       </div>

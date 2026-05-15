@@ -52,12 +52,15 @@ export async function getGreeting(req: Request, res: Response) {
 // ── GET /api/kai/conversations ────────────────────────────────
 export async function getConversations(req: Request, res: Response) {
   try {
-    const { storeId } = req.query as { storeId: string };
-    if (!storeId) return res.status(400).json({ success: false, message: "storeId required" });
-
     const userId = (req as any).user?.userId || (req as any).user?.id;
+    const { storeId } = req.query as { storeId?: string };
+    // Build where clause - use storeId if provided, else find by userId
+    const where: any = { archived: false };
+    if (storeId) where.storeId = storeId;
+    else where.userId = userId;
+
     const conversations = await prisma.kaiConversation.findMany({
-      where: { storeId, userId, archived: false },
+      where,
       orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
       select: {
         id: true, title: true, pinned: true, createdAt: true, updatedAt: true,
@@ -176,13 +179,25 @@ export async function smartChat(req: Request, res: Response) {
       },
     });
 
-    // Save KIRO response
+    // Parse KIRO_ACTION from response
+    const actionMatches = fullResponse.match(/KIRO_ACTION:(\{[^\n]+\})/g) || [];
+    const parsedActions: any[] = [];
+    for (const match of actionMatches) {
+      try {
+        const json = match.replace("KIRO_ACTION:", "");
+        parsedActions.push(JSON.parse(json));
+      } catch {}
+    }
+    // Remove KIRO_ACTION lines from displayed response
+    const cleanResponse = fullResponse.replace(/KIRO_ACTION:\{[^\n]+\}/g, "").trim();
+
+    // Save KIRO response (clean version)
     await (prisma.kaiMessage as any).create({
       data: {
         conversationId: conv.id,
-        role: "assistant",
-        content: fullResponse,
-        metadata: { intent, searched: useSearch },
+        role:     "assistant",
+        content:  cleanResponse,
+        metadata: { intent, searched: useSearch, actions: parsedActions },
       },
     });
 
@@ -197,7 +212,7 @@ export async function smartChat(req: Request, res: Response) {
         .catch(err => console.error("Memory extraction error:", err));
     }
 
-    res.write(`data: ${JSON.stringify({ done: true, conversationId: conv.id })}\n\n`);
+    res.write(`data: ${JSON.stringify({ done: true, conversationId: conv.id, actions: parsedActions, cleanResponse })}\n\n`);
     res.end();
 
   } catch (err: any) {

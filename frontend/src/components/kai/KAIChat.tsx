@@ -377,7 +377,15 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
                 setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, actions:parsed.actions } : m));
               }
               if (parsed.done) {
-                setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, isStreaming:false } : m));
+                // Use clean response (KIRO_ACTION lines removed)
+                const finalContent = parsed.cleanResponse || undefined;
+                const finalActions = parsed.actions || [];
+                setMessages(p => p.map(m => m.id === kiroMsg.id ? {
+                  ...m,
+                  isStreaming: false,
+                  ...(finalContent ? { content: finalContent } : {}),
+                  ...(finalActions.length ? { actions: finalActions } : {}),
+                } : m));
               }
               if (parsed.error) {
                 throw new Error(parsed.message || "KIRO error");
