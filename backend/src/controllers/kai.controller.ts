@@ -110,8 +110,13 @@ export async function smartChat(req: Request, res: Response) {
     }
 
     // Save user message
+    const userContent = message + (
+      req.body.fileName ? `\n\n[User attached file: ${req.body.fileName}]` : ""
+    ) + (
+      req.body.imageUrl ? `\n\n[User attached image: ${req.body.imageUrl}]` : ""
+    );
     await (prisma.kaiMessage as any).create({
-      data: { conversationId: conv.id, role: "user", content: message },
+      data: { conversationId: conv.id, role: "user", content: userContent },
     });
 
     // Get everything in parallel

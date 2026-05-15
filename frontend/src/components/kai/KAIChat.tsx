@@ -1,427 +1,517 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence }                  from "framer-motion";
-import { useAuthStore }                             from "../../store/auth.store";
-import { api }                                      from "../../lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuthStore } from "../../store/auth.store";
+import { api } from "../../lib/api";
 import {
-  Send, Sparkles, Copy, Check, ThumbsUp, RotateCcw,
-  Loader2, Plus, X, Zap, BarChart2, ShoppingCart,
-  Package, TrendingUp, Image, Paperclip, Mic,
+  Send, Paperclip, X, Loader2, Copy, Check, ChevronDown,
+  Image, FileText, Zap, RefreshCw, Trash2
 } from "lucide-react";
 import toast from "react-hot-toast";
 
+const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA" };
+const BASE = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
+
 interface Message {
-  id:          string;
-  role:        "user" | "KIRO";
-  content:     string;
-  timestamp:   Date;
+  id: string;
+  role: "user" | "assistant";
+  content: string;
   isStreaming?: boolean;
-  actions?:    Array<{ label: string; action: string; payload?: any }>;
-  dataCard?:   any;
-  type?:       "text" | "action_result" | "error";
+  imageUrl?: string;
+  fileName?: string;
+  actions?: any[];
+  timestamp?: string;
 }
 
-const QUICK_CHIPS = [
-  { icon: "📊", label: "Sales today",           prompt: "What are my sales today and how do I grow them?" },
-  { icon: "📦", label: "Pending orders",         prompt: "Show me orders that need fulfillment right now" },
-  { icon: "🔥", label: "Trending products",      prompt: "What products are trending right now? Show me demand data." },
-  { icon: "✍️",  label: "TikTok script",          prompt: "Write a TikTok script for my best-selling product" },
-  { icon: "🎟️", label: "Create coupon",          prompt: "Create a 15% off coupon code for new customers" },
-  { icon: "⚡", label: "Flash sale",             prompt: "Set up a 3-hour flash sale on my top products at 20% off" },
-  { icon: "📈", label: "Revenue forecast",       prompt: "Forecast my revenue for next 30 days based on current trends" },
-  { icon: "🎯", label: "Grow my store",          prompt: "Audit my store and tell me the 3 things I should fix right now" },
-];
-
-function KIROAvatar({ size = 32 }: { size?: number }) {
-  return (
-    <div style={{ width: size, height: size, borderRadius: size * 0.3, background: "linear-gradient(145deg,#6B35E8,#1A0D3D)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 12px rgba(107,53,232,0.4)" }}>
-      <Zap size={size * 0.45} color="white" />
-    </div>
-  );
+interface KIROChatProps {
+  className?: string;
+  storeId?: string;
+  initialMessage?: string;
+  compact?: boolean;
+  conversationId?: string;
+  onConversationCreated?: (id: string) => void;
 }
 
-function TypingIndicator() {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "10px 14px", background: "rgba(255,255,255,0.04)", borderRadius: 14, width: "fit-content" }}>
-      {[0, 1, 2].map(i => (
-        <motion.div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: "#8B5CF6" }}
-          animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 0.9, delay: i * 0.18, repeat: Infinity }} />
-      ))}
-    </div>
-  );
-}
-
-function ActionButtons({ actions, onAction }: { actions: Array<{ label: string; action: string; payload?: any }>; onAction: (a: any) => void }) {
-  if (!actions?.length) return null;
-  const ACTION_ICONS: Record<string, string> = {
-    create_coupon:      "🎟️",
-    update_price:       "💰",
-    update_order_status:"📦",
-    create_product:     "➕",
-    send_broadcast:     "📣",
-    run_flash_sale:     "⚡",
-    navigate:           "→",
-    update_goal:        "🎯",
+function ActionCard({ action, onApprove, onDismiss, t }: any) {
+  const [loading, setLoading] = useState(false);
+  const label: Record<string,string> = {
+    add_product: "➕ Add Product to Store",
+    update_price: "💰 Update Price",
+    create_coupon: "🎟 Create Coupon",
+    update_stock: "📦 Update Stock",
+    create_discount: "🏷 Create Discount",
+    update_order_status: "🚚 Update Order",
+    update_shipping: "🌍 Update Shipping",
   };
+
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
-      {actions.map((a, i) => (
-        <button key={i} onClick={() => onAction(a)}
-          style={{ display:"flex", alignItems:"center", gap:5, padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(107,53,232,0.35)", background: "rgba(107,53,232,0.1)", color: "#A78BFA", transition: "all 0.15s" }}>
-          {ACTION_ICONS[a.action] && <span>{ACTION_ICONS[a.action]}</span>}
-          {a.label}
+    <div style={{ padding:"12px 14px", borderRadius:12, background:"rgba(107,53,232,0.06)", border:"1px solid rgba(107,53,232,0.2)", marginTop:8 }}>
+      <p style={{ fontSize:12, fontWeight:700, color:V.v400, margin:"0 0 6px" }}>
+        {label[action.type] || `🤖 ${action.type}`}
+      </p>
+      <pre style={{ fontSize:11, color:t.muted, margin:"0 0 10px", whiteSpace:"pre-wrap", lineHeight:1.5, fontFamily:"monospace" }}>
+        {JSON.stringify(action.payload, null, 2)}
+      </pre>
+      <div style={{ display:"flex", gap:8 }}>
+        <button onClick={async ()=>{ setLoading(true); await onApprove(action); setLoading(false); }}
+          disabled={loading}
+          style={{ padding:"6px 14px", borderRadius:8, border:"none", background:V.v500, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:5 }}>
+          {loading?<Loader2 size={11} style={{animation:"spin 0.8s linear infinite"}}/>:<Check size={11}/>} Approve
         </button>
-      ))}
+        <button onClick={()=>onDismiss(action)}
+          style={{ padding:"6px 12px", borderRadius:8, border:"1px solid rgba(0,0,0,0.1)", background:"transparent", color:t.muted, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
+          Dismiss
+        </button>
+      </div>
     </div>
   );
 }
 
-function MessageBubble({ msg, onAction, onCopy }: { msg: Message; onAction: (a: any) => void; onCopy: (t: string) => void }) {
-  const isKIRO = msg.role === "KIRO";
+function MessageBubble({ msg, onApprove, onDismiss, t, isDark }: any) {
   const [copied, setCopied] = useState(false);
+  const isUser = msg.role === "user";
 
-  const handleCopy = () => {
+  const copy = () => {
     navigator.clipboard.writeText(msg.content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    onCopy(msg.id);
   };
 
-  if (isKIRO) {
-    return (
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", gap: 10, alignItems: "flex-start", maxWidth: "100%" }}>
-        <KIROAvatar size={28} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {msg.isStreaming && msg.content === "" ? <TypingIndicator /> : (
-            <div>
-              {/* Render markdown-ish content cleanly */}
-              <div style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,0.88)", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                {msg.content.split("\n").map((line, i) => {
-                  if (line.startsWith("## ")) return <p key={i} style={{ fontWeight: 800, fontSize: 15, color: "#fff", margin: "12px 0 4px" }}>{line.slice(3)}</p>;
-                  if (line.startsWith("# ")) return <p key={i} style={{ fontWeight: 900, fontSize: 16, color: "#fff", margin: "14px 0 6px" }}>{line.slice(2)}</p>;
-                  if (line.startsWith("**") && line.endsWith("**")) return <p key={i} style={{ fontWeight: 700, color: "#fff" }}>{line.slice(2, -2)}</p>;
-                  if (line.startsWith("- ") || line.startsWith("• ")) return <p key={i} style={{ paddingLeft: 16, position: "relative", color: "rgba(255,255,255,0.75)" }}><span style={{ position: "absolute", left: 4, color: "#8B5CF6" }}>•</span>{line.slice(2)}</p>;
-                  if (/^\d+\./.test(line)) return <p key={i} style={{ paddingLeft: 20, color: "rgba(255,255,255,0.75)" }}>{line}</p>;
-                  if (line === "") return <br key={i} />;
-                  return <span key={i}>{line}{i < msg.content.split("\n").length - 1 ? "\n" : ""}</span>;
-                })}
-                {msg.isStreaming && <motion.span animate={{ opacity: [0, 1] }} transition={{ duration: 0.5, repeat: Infinity }} style={{ display: "inline-block", width: 2, height: 14, background: "#8B5CF6", marginLeft: 2, verticalAlign: "middle" }} />}
-              </div>
-              {!msg.isStreaming && msg.content && (
-                <button onClick={handleCopy} style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "rgba(255,255,255,0.25)", background: "none", border: "none", cursor: "pointer", padding: "2px 0" }}>
-                  {copied ? <><Check size={10} /> Copied</> : <><Copy size={10} /> Copy</>}
-                </button>
-              )}
-              {!msg.isStreaming && msg.actions && <ActionButtons actions={msg.actions} onAction={onAction} />}
-            </div>
+  return (
+    <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+      style={{ display:"flex", flexDirection: isUser?"row-reverse":"row", gap:10, alignItems:"flex-start", marginBottom:16 }}>
+
+      {/* Avatar */}
+      {!isUser && (
+        <div style={{ width:30, height:30, borderRadius:10, background:`linear-gradient(135deg,${V.v500},#3D1C8A)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 4px 12px ${V.v500}40` }}>
+          <Zap size={13} color="#fff" fill="#fff"/>
+        </div>
+      )}
+
+      <div style={{ maxWidth:"82%", minWidth:40 }}>
+        {/* Image attachment */}
+        {msg.imageUrl && (
+          <img src={msg.imageUrl} alt="attachment"
+            style={{ maxWidth:"100%", maxHeight:200, borderRadius:12, marginBottom:6, objectFit:"cover", display:"block" }}/>
+        )}
+        {msg.fileName && !msg.imageUrl && (
+          <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 10px", borderRadius:8, background:isDark?"rgba(255,255,255,0.06)":"#f5f3ff", marginBottom:6, fontSize:11, color:t.muted }}>
+            <FileText size={12}/> {msg.fileName}
+          </div>
+        )}
+
+        {/* Message bubble */}
+        <div style={{
+          padding: isUser?"10px 14px":"2px 0",
+          borderRadius: isUser?"16px 16px 4px 16px":"0",
+          background: isUser?`linear-gradient(135deg,${V.v500},#3D1C8A)`:"transparent",
+          color: isUser?"#fff":t.text,
+          fontSize: 14,
+          lineHeight: 1.65,
+          position:"relative",
+        }}>
+          {msg.isStreaming ? (
+            <span style={{ display:"flex", alignItems:"center", gap:6, color:t.muted }}>
+              <motion.span animate={{ opacity:[1,0.3,1] }} transition={{ duration:1, repeat:Infinity }}>⚡</motion.span>
+              KIRO is thinking...
+            </span>
+          ) : (
+            <p style={{ margin:0, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>{msg.content}</p>
+          )}
+
+          {/* Action cards */}
+          {msg.actions?.map((action: any, i: number) => (
+            <ActionCard key={i} action={action} onApprove={onApprove} onDismiss={onDismiss} t={t}/>
+          ))}
+
+          {/* Copy button */}
+          {!isUser && !msg.isStreaming && msg.content && (
+            <button onClick={copy}
+              style={{ position:"absolute", top:0, right:-28, width:22, height:22, borderRadius:6, border:`1px solid ${t.border}`, background:t.card, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:0.5 }}>
+              {copied ? <Check size={11} color={V.v400}/> : <Copy size={11} color={t.muted}/>}
+            </button>
           )}
         </div>
-      </motion.div>
-    );
-  }
 
-  return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", justifyContent: "flex-end" }}>
-      <div style={{ maxWidth: "75%", padding: "10px 14px", borderRadius: "18px 18px 4px 18px", background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", fontSize: 14, lineHeight: 1.6, color: "#fff", wordBreak: "break-word" }}>
-        {msg.content}
+        {msg.timestamp && !msg.isStreaming && (
+          <p style={{ fontSize:10, color:t.muted, margin:"3px 0 0", textAlign:isUser?"right":"left" }}>
+            {new Date(msg.timestamp).toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})}
+          </p>
+        )}
       </div>
     </motion.div>
   );
 }
 
-interface KIROChatProps {
-  className?:        string;
-  storeId?:          string;
-  initialMessage?:   string;
-  compact?:          boolean;
-}
+export default function KIROChat({ storeId: propStoreId, initialMessage, compact, conversationId: initConvId, onConversationCreated }: KIROChatProps) {
+  const { user } = useAuthStore();
+  const token  = useAuthStore(s => s.accessToken);
+  const storeId = propStoreId || user?.stores?.[0]?.id || "";
 
-export default function KIROChat({ className, storeId: propStoreId, initialMessage, compact }: KIROChatProps) {
-  const { user }           = useAuthStore();
-  const effectiveStoreId   = propStoreId || user?.stores?.[0]?.id || "";
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input,    setInput]    = useState(initialMessage || "");
-  const [loading,  setLoading]  = useState(false);
-  const [sessionId, setSessionId] = useState("");
-  const bottomRef  = useRef<HTMLDivElement>(null);
-  const inputRef   = useRef<HTMLTextAreaElement>(null);
-  const abortRef   = useRef<AbortController | null>(null);
+  const [messages,    setMessages]    = useState<Message[]>([]);
+  const [input,       setInput]       = useState(initialMessage || "");
+  const [loading,     setLoading]     = useState(false);
+  const [convId,      setConvId]      = useState(initConvId || "");
+  const [attachment,  setAttachment]  = useState<{url?:string; base64?:string; type?:string; name?:string}|null>(null);
+  const [uploading,   setUploading]   = useState(false);
+  const [histLoaded,  setHistLoaded]  = useState(false);
+
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef  = useRef<HTMLTextAreaElement>(null);
+  const abortRef  = useRef<AbortController|null>(null);
+  const fileRef   = useRef<HTMLInputElement>(null);
+
+  // Theme detection
+  const isDark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
+  const t = {
+    bg:    isDark?"#07050F":"#F4F2FB",
+    card:  isDark?"#181230":"#fff",
+    border:isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)",
+    text:  isDark?"#F0ECFF":"#130D2E",
+    muted: isDark?"rgba(240,236,255,0.45)":"rgba(19,13,46,0.55)",
+    input: isDark?"rgba(255,255,255,0.05)":"#fff",
+  };
+
+  // ── Load conversation history on mount ──────────────────────────────────────
+  useEffect(() => {
+    if (!storeId || histLoaded) return;
+    setHistLoaded(true);
+
+    // If we have a specific conversationId, load it
+    if (convId) {
+      api.get(`/kai/conversation/${convId}`)
+        .then(r => {
+          const conv = r.data?.data;
+          if (conv?.messages?.length) {
+            setMessages(conv.messages.map((m: any) => ({
+              id:        m.id,
+              role:      m.role,
+              content:   m.content,
+              timestamp: m.createdAt,
+            })));
+          }
+        })
+        .catch(() => {});
+    } else {
+      // Load the most recent conversation for this store
+      api.get(`/kai/conversations?storeId=${storeId}`)
+        .then(r => {
+          const convs = r.data?.data || [];
+          if (convs.length > 0) {
+            const latest = convs[0];
+            setConvId(latest.id);
+            if (latest.messages?.length) {
+              setMessages(latest.messages.map((m: any) => ({
+                id:        m.id,
+                role:      m.role,
+                content:   m.content,
+                timestamp: m.createdAt,
+              })));
+            } else {
+              // Load full conversation
+              api.get(`/kai/conversation/${latest.id}`)
+                .then(r2 => {
+                  const msgs = r2.data?.data?.messages || [];
+                  setMessages(msgs.map((m: any) => ({
+                    id: m.id, role: m.role, content: m.content, timestamp: m.createdAt,
+                  })));
+                })
+                .catch(() => {});
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [storeId, convId, histLoaded]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior:"smooth" });
   }, [messages]);
 
-  useEffect(() => {
-    if (initialMessage) { setInput(initialMessage); inputRef.current?.focus(); }
-  }, [initialMessage]);
+  // ── File upload ──────────────────────────────────────────────────────────────
+  const handleFile = async (file: File) => {
+    const isImage = file.type.startsWith("image/");
+    const isPDF   = file.type === "application/pdf";
+    const isCSV   = file.type === "text/csv" || file.name.endsWith(".csv");
 
-  // ── Execute KIRO action ────────────────────────────────────
-  const executeAction = useCallback(async (action: { action: string; payload?: any; label: string }) => {
-    const confirmMsg: Message = {
-      id: Date.now().toString(), role: "user",
-      content: `Execute: ${action.label}`, timestamp: new Date(),
-    };
-    const resultPlaceholder: Message = {
-      id: (Date.now() + 1).toString(), role: "KIRO",
-      content: "", timestamp: new Date(), isStreaming: true,
-    };
-    setMessages(prev => [...prev, confirmMsg, resultPlaceholder]);
-    setLoading(true);
+    if (!isImage && !isPDF && !isCSV) {
+      toast.error("Only images, PDFs, and CSV files are supported");
+      return;
+    }
 
+    setUploading(true);
+    try {
+      if (isImage) {
+        // Upload to Cloudinary
+        const form = new FormData();
+        form.append("image", file);
+        const res = await api.post("/upload/image", form, { headers:{"Content-Type":"multipart/form-data"} });
+        const url = res.data?.data?.url;
+        setAttachment({ url, type:"image", name:file.name });
+      } else {
+        // Read as base64 for PDF/CSV
+        const base64 = await new Promise<string>((res,rej) => {
+          const r = new FileReader();
+          r.onload  = () => res((r.result as string).split(",")[1]);
+          r.onerror = rej;
+          r.readAsDataURL(file);
+        });
+        setAttachment({ base64, type: isPDF?"pdf":"csv", name:file.name });
+      }
+    } catch {
+      toast.error("Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // ── Execute approved action ──────────────────────────────────────────────────
+  const handleApprove = async (action: any) => {
     try {
       const res = await api.post("/kai/action", {
-        storeId: effectiveStoreId,
-        actions: [{
-          id:       Date.now().toString(),
-          type:     action.action,
-          payload:  action.payload || {},
-          approved: true,
-        }],
+        storeId, conversationId: convId,
+        actions: [{ ...action, approved: true }],
       });
-      const results = res.data?.data || [];
-      const result  = results[0]?.result
-        ? JSON.stringify(results[0].result).slice(0, 200)
-        : results[0]?.error || "Done.";
-      setMessages(prev => prev.map(m =>
-        m.id === resultPlaceholder.id ? { ...m, content: result, isStreaming: false } : m
-      ));
-      toast.success(`KIRO: ${action.label} complete`);
-    } catch (err: any) {
-      setMessages(prev => prev.map(m =>
-        m.id === resultPlaceholder.id ? { ...m, content: "I could not complete that action - the backend may be offline.", isStreaming: false } : m
-      ));
-    } finally {
-      setLoading(false);
+      const result = res.data?.results?.[0];
+      const resultMsg: Message = {
+        id:        `action-${Date.now()}`,
+        role:      "assistant",
+        content:   result?.success
+          ? `Done ✅ — ${action.type} executed successfully.`
+          : `Failed ❌ — ${result?.error || "Something went wrong"}`,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages(p => [...p, resultMsg]);
+    } catch(e:any) {
+      toast.error(e.response?.data?.message || "Action failed");
     }
-  }, [effectiveStoreId]);
+  };
 
-  // ── Send message with real SSE streaming ──────────────────
-  const send = useCallback(async (overrideText?: string) => {
-    const text = (overrideText || input).trim();
-    if (!text || loading) return;
-    setInput("");
+  const handleDismiss = (action: any) => {
+    setMessages(p => p.map(m => ({
+      ...m,
+      actions: m.actions?.filter(a => a !== action),
+    })));
+  };
+
+  // ── Send message ─────────────────────────────────────────────────────────────
+  const send = async () => {
+    const text = input.trim();
+    if (!text && !attachment) return;
+    if (loading || !storeId) return;
+
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
 
     const userMsg: Message = {
-      id: Date.now().toString(), role: "user",
-      content: text, timestamp: new Date(),
+      id:        `u-${Date.now()}`,
+      role:      "user",
+      content:   text,
+      imageUrl:  attachment?.url,
+      fileName:  !attachment?.url ? attachment?.name : undefined,
+      timestamp: new Date().toISOString(),
     };
-    const kiroPlaceholder: Message = {
-      id: (Date.now() + 1).toString(), role: "KIRO",
-      content: "", timestamp: new Date(), isStreaming: true,
+    const kiroMsg: Message = {
+      id:          `k-${Date.now()}`,
+      role:        "assistant",
+      content:     "",
+      isStreaming: true,
+      timestamp:   new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, userMsg, kiroPlaceholder]);
+    setMessages(p => [...p, userMsg, kiroMsg]);
+    setInput("");
+    setAttachment(null);
     setLoading(true);
 
     try {
-      abortRef.current = new AbortController();
+      const body: any = { message: text, storeId, sessionId: convId || undefined };
+      if (attachment?.url)    body.imageUrl    = attachment.url;
+      if (attachment?.base64) body.fileBase64  = attachment.base64;
+      if (attachment?.type)   body.fileType    = attachment.type;
+      if (attachment?.name)   body.fileName    = attachment.name;
 
-      // Try real SSE streaming first
-      const streamRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api"}/kai/smart-chat`,
-        {
-          method:  "POST",
-          headers: {
-            "Content-Type":  "application/json",
-            "Authorization": `Bearer ${useAuthStore.getState().accessToken || ""}`,
-            "Accept":        "text/event-stream",
-          },
-          body:   JSON.stringify({ message: text, storeId: effectiveStoreId, sessionId: sessionId || undefined }),
-          signal: abortRef.current.signal,
-        }
-      );
+      const streamRes = await fetch(`${BASE}/kai/smart-chat`, {
+        method:  "POST",
+        headers: {
+          "Content-Type":  "application/json",
+          "Authorization": `Bearer ${token}`,
+          "Accept":        "text/event-stream",
+        },
+        body:   JSON.stringify(body),
+        signal: abortRef.current.signal,
+      });
 
-      // If not OK, read the error and show it
       if (!streamRes.ok) {
-        let errText = `Server error ${streamRes.status}`;
-        try { const j = await streamRes.json(); errText = j.message || errText; } catch {}
-        throw new Error(errText);
+        const err = await streamRes.json().catch(()=>({message:`Error ${streamRes.status}`}));
+        throw new Error(err.message || `Server error ${streamRes.status}`);
       }
 
-      if (streamRes.ok && streamRes.headers.get("content-type")?.includes("text/event-stream")) {
-        // Real SSE streaming
+      const isStream = streamRes.headers.get("content-type")?.includes("text/event-stream");
+
+      if (isStream) {
         const reader  = streamRes.body!.getReader();
         const decoder = new TextDecoder();
-        let fullText  = "";
-        let actions: any[] = [];
+        let full = "";
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-
-          const chunk = decoder.decode(value, { stream: true });
+          const chunk = decoder.decode(value, { stream:true });
           const lines = chunk.split("\n");
-
           for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const data = line.slice(6).trim();
-              if (data === "[DONE]") break;
-              try {
-                const parsed = JSON.parse(data);
-                // Handle {token} format (backend) OR {type:"text_delta",delta} format
-                const chunk = parsed.token ?? parsed.delta ?? (parsed.type === "text_delta" ? parsed.delta : null);
-                if (chunk) {
-                  fullText += chunk;
-                  setMessages(prev => prev.map(m =>
-                    m.id === kiroPlaceholder.id ? { ...m, content: fullText, isStreaming: true } : m
-                  ));
-                  bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-                } else if (parsed.done || parsed.type === "done") {
-                  setMessages(prev => prev.map(m =>
-                    m.id === kiroPlaceholder.id ? { ...m, content: fullText, isStreaming: false, actions } : m
-                  ));
-                } else if (parsed.actions || parsed.type === "actions") {
-                  actions = parsed.actions || [];
-                } else if (parsed.conversationId && !sessionId) {
-                  setSessionId(parsed.conversationId);
-                } else if (parsed.session_id && !sessionId) {
-                  setSessionId(parsed.session_id);
-                }
-              } catch (_) {
-                // Non-JSON line, skip
+            if (!line.startsWith("data:")) continue;
+            const raw = line.slice(5).trim();
+            if (!raw) continue;
+            try {
+              const parsed = JSON.parse(raw);
+              if (parsed.token) {
+                full += parsed.token;
+                setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, content:full } : m));
               }
+              if (parsed.conversationId && !convId) {
+                setConvId(parsed.conversationId);
+                onConversationCreated?.(parsed.conversationId);
+              }
+              if (parsed.actions?.length) {
+                setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, actions:parsed.actions } : m));
+              }
+              if (parsed.done) {
+                setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, isStreaming:false } : m));
+              }
+              if (parsed.error) {
+                throw new Error(parsed.message || "KIRO error");
+              }
+            } catch(e: any) {
+              if (e.message && !e.message.includes("JSON")) throw e;
             }
           }
         }
-      } else {
-        // Fallback: non-streaming endpoint
-        const res = await api.post("/kai/smart-chat", {
-          message: text, storeId: effectiveStoreId, sessionId: sessionId || undefined,
-        });
-        const { reply, session_id, actions = [] } = res.data.data || res.data;
-        if (session_id && !sessionId) setSessionId(session_id);
 
-        // Animate word-by-word for non-streaming fallback
-        const words = (reply || "I am here. How can I help?").split(" ");
-        let displayed = "";
-        for (let i = 0; i < words.length; i++) {
-          await new Promise(r => setTimeout(r, 15 + Math.random() * 8));
-          displayed += (i === 0 ? "" : " ") + words[i];
-          setMessages(prev => prev.map(m =>
-            m.id === kiroPlaceholder.id ? { ...m, content: displayed, isStreaming: true } : m
-          ));
-          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, isStreaming:false, content:full||m.content } : m));
+
+      } else {
+        // Non-streaming fallback
+        const data = await streamRes.json();
+        const reply = data.data?.message || data.message || "No response";
+        if (data.data?.conversationId && !convId) {
+          setConvId(data.data.conversationId);
+          onConversationCreated?.(data.data.conversationId);
         }
-        setMessages(prev => prev.map(m =>
-          m.id === kiroPlaceholder.id ? { ...m, content: reply || "I am here. How can I help?", isStreaming: false, actions } : m
-        ));
+        setMessages(p => p.map(m => m.id === kiroMsg.id ? {
+          ...m, content:reply, isStreaming:false,
+          actions: data.data?.actions || [],
+        } : m));
       }
-    } catch (err: any) {
-      if (err.name === "AbortError") return;
-      // Get actual error message for debugging
-      let errMsg = "Something went wrong.";
-      if (err instanceof TypeError && err.message.includes("fetch")) {
-        errMsg = "Cannot reach KIRO server. Check your internet connection.";
-      } else if (err.message) {
-        errMsg = `Error: ${err.message}`;
+
+    } catch(e: any) {
+      if (e.name === "AbortError") {
+        setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, content:"Cancelled.", isStreaming:false } : m));
+      } else {
+        const errMsg = e.message || "Something went wrong. Check your connection.";
+        setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, content:errMsg, isStreaming:false } : m));
       }
-      setMessages(prev => prev.map(m =>
-        m.id === kiroPlaceholder.id ? { ...m, content: errMsg, isStreaming: false } : m
-      ));
     } finally {
       setLoading(false);
     }
-  }, [input, loading, effectiveStoreId, sessionId]);
+  };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const clear = () => { setMessages([]); setConvId(""); setHistLoaded(false); };
+
+  const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
-  const clear = () => { setMessages([]); setSessionId(""); };
-  const isEmpty = messages.length === 0;
-
   return (
-    <div className={`flex flex-col ${className || "h-full"}`}
-      style={{ background: "#0a0a14", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
-
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <KIROAvatar size={30} />
-          <div>
-            <p style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>KIRO</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <motion.div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981" }}
-                animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2, repeat: Infinity }} />
-              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>Your AI business partner</p>
-            </div>
-          </div>
-        </div>
-        {messages.length > 0 && (
-          <button onClick={clear} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "rgba(255,255,255,0.35)", fontSize: 11, cursor: "pointer" }}>
-            Clear
-          </button>
-        )}
-      </div>
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", position:"relative", fontFamily:"system-ui,sans-serif" }}>
 
       {/* Messages */}
-      <div className="hide-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 16 }}>
-        {isEmpty ? (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "24px 16px" }}>
-            <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              style={{ width: 64, height: 64, borderRadius: 20, background: "linear-gradient(145deg,#6B35E8,#1A0D3D)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, boxShadow: "0 8px 32px rgba(107,53,232,0.4)" }}>
-              <Zap size={28} color="white" />
-            </motion.div>
-            <p style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8, letterSpacing: "-0.03em" }}>
-              Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"} 👋
+      <div style={{ flex:1, overflowY:"auto", padding:compact?"12px":"16px 20px" }}>
+        {messages.length === 0 && (
+          <div style={{ textAlign:"center", padding:"60px 20px" }}>
+            <div style={{ width:52, height:52, borderRadius:16, background:`linear-gradient(135deg,${V.v500},#3D1C8A)`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", boxShadow:`0 8px 24px ${V.v500}40` }}>
+              <Zap size={22} color="#fff" fill="#fff"/>
+            </div>
+            <p style={{ fontSize:16, fontWeight:800, color:t.text, margin:"0 0 8px", letterSpacing:"-0.03em" }}>Your AI business partner</p>
+            <p style={{ fontSize:13, color:t.muted, margin:"0 0 24px", lineHeight:1.6 }}>
+              Ask me anything — sales, products, orders, marketing, pricing.<br/>I can also add products, create coupons, and update your store directly.
             </p>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.38)", marginBottom: 24, maxWidth: 300, lineHeight: 1.6 }}>
-              I am KIRO. I run your store, find winning products, write your ads, and grow your revenue. What do you need?
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 380 }}>
-              {QUICK_CHIPS.map(chip => (
-                <button key={chip.label} onClick={() => send(chip.prompt)}
-                  style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)", cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(107,53,232,0.4)")}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}>
-                  <span style={{ fontSize: 16, display: "block", marginBottom: 2 }}>{chip.icon}</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>{chip.label}</span>
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
+              {["What are my sales today?","Add a new product","What's trending in Nigeria?","Write me an Instagram caption"].map(s => (
+                <button key={s} onClick={() => setInput(s)}
+                  style={{ padding:"6px 14px", borderRadius:99, border:`1px solid ${t.border}`, background:t.card, color:t.muted, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
+                  {s}
                 </button>
               ))}
             </div>
           </div>
-        ) : (
-          messages.map(msg => (
-            <MessageBubble key={msg.id} msg={msg} onAction={executeAction} onCopy={() => {}} />
-          ))
         )}
-        <div ref={bottomRef} />
+
+        {messages.map(msg => (
+          <MessageBubble key={msg.id} msg={msg} onApprove={handleApprove} onDismiss={handleDismiss} t={t} isDark={isDark}/>
+        ))}
+        <div ref={bottomRef}/>
       </div>
 
-      {/* Input */}
-      <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, padding: "8px 8px 8px 14px", transition: "border-color 0.15s" }}>
+      {/* Attachment preview */}
+      {attachment && (
+        <div style={{ padding:"8px 16px 0", display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 12px", borderRadius:10, background:`${V.v400}12`, border:`1px solid ${V.v400}30`, flex:1 }}>
+            {attachment.type==="image" ? <Image size={13} color={V.v400}/> : <FileText size={13} color={V.v400}/>}
+            <span style={{ fontSize:12, color:t.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{attachment.name}</span>
+            {attachment.url && <img src={attachment.url} alt="" style={{ width:28, height:28, borderRadius:6, objectFit:"cover", flexShrink:0 }}/>}
+          </div>
+          <button onClick={() => setAttachment(null)} style={{ width:26, height:26, borderRadius:8, border:"none", background:"rgba(239,68,68,0.08)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <X size={12} color="#EF4444"/>
+          </button>
+        </div>
+      )}
+
+      {/* Input bar */}
+      <div style={{ padding:compact?"8px":"12px 16px", borderTop:`1px solid ${t.border}`, background:t.card }}>
+        <div style={{ display:"flex", gap:8, alignItems:"flex-end", padding:"10px 12px", borderRadius:16, border:`1.5px solid ${loading?V.v400:t.border}`, background:t.input, transition:"border-color 0.2s" }}>
+          {/* Attach button */}
+          <button onClick={() => fileRef.current?.click()} disabled={uploading}
+            style={{ width:30, height:30, borderRadius:8, border:`1px solid ${t.border}`, background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, opacity:uploading?0.5:1 }}>
+            {uploading ? <Loader2 size={14} color={t.muted} style={{animation:"spin 0.8s linear infinite"}}/> : <Paperclip size={14} color={t.muted}/>}
+          </button>
+
           <textarea
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask KIRO anything about your store..."
+            onKeyDown={handleKey}
+            placeholder="Ask KIRO anything... (Shift+Enter for new line)"
             rows={1}
-            disabled={loading}
-            style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: 14, lineHeight: 1.6, resize: "none", maxHeight: 120, fontFamily: "inherit" }}
+            style={{ flex:1, background:"transparent", border:"none", outline:"none", resize:"none", fontSize:14, color:t.text, fontFamily:"inherit", lineHeight:1.5, maxHeight:120, overflow:"auto", paddingTop:2 }}
             onInput={e => {
-              const t = e.target as HTMLTextAreaElement;
-              t.style.height = "auto";
-              t.style.height = Math.min(t.scrollHeight, 120) + "px";
+              const el = e.target as HTMLTextAreaElement;
+              el.style.height = "auto";
+              el.style.height = Math.min(el.scrollHeight, 120) + "px";
             }}
           />
-          <motion.button
-            onClick={() => send()}
-            disabled={!input.trim() || loading}
-            whileTap={{ scale: 0.92 }}
-            style={{ width: 34, height: 34, borderRadius: 10, border: "none", cursor: input.trim() && !loading ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: input.trim() && !loading ? "linear-gradient(135deg,#6B35E8,#3D1C8A)" : "rgba(255,255,255,0.06)", transition: "all 0.15s" }}>
+
+          {/* Send / Stop */}
+          <button onClick={loading ? () => abortRef.current?.abort() : send}
+            disabled={!loading && !input.trim() && !attachment}
+            style={{ width:34, height:34, borderRadius:10, border:"none", background: loading?"rgba(239,68,68,0.1)": (input.trim()||attachment)?`linear-gradient(135deg,${V.v500},#3D1C8A)`:"rgba(0,0,0,0.05)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s", opacity:(!loading && !input.trim() && !attachment)?0.4:1 }}>
             {loading
-              ? <Loader2 size={15} color="rgba(255,255,255,0.5)" style={{ animation: "spin 1s linear infinite" }} />
-              : <Send size={14} color={input.trim() ? "white" : "rgba(255,255,255,0.25)"} />
-            }
-          </motion.button>
+              ? <X size={14} color="#EF4444"/>
+              : <Send size={14} color={(input.trim()||attachment)?"#fff":t.muted}/>}
+          </button>
         </div>
-        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.15)", textAlign: "center", marginTop: 8 }}>
+
+        <p style={{ fontSize:10, color:t.muted, textAlign:"center", marginTop:6, marginBottom:0 }}>
           KIRO can make mistakes. Always verify important business decisions.
         </p>
       </div>
+
+      {/* Hidden file input */}
+      <input ref={fileRef} type="file" accept="image/*,.pdf,.csv,.xlsx"
+        style={{ display:"none" }}
+        onChange={e => { if(e.target.files?.[0]) handleFile(e.target.files[0]); e.target.value=""; }}/>
+
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }
