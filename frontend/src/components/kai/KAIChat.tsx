@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "../../store/auth.store";
-import { api } from "../../lib/api";
+import { api, uploadAPI } from "../../lib/api";
 import {
   Send, Paperclip, X, Loader2, Copy, Check, ChevronDown,
   Image, FileText, Zap, RefreshCw, Trash2
@@ -243,10 +243,9 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
     try {
       if (isImage) {
         // Upload to Cloudinary
-        const form = new FormData();
-        form.append("image", file);
-        const res = await api.post("/upload/image", form); // No Content-Type — let browser set boundary
-        const url = res.data?.data?.url;
+        // Use uploadAPI which uses raw fetch (avoids axios header interference)
+        const result = await uploadAPI.image(file);
+        const url = result.data?.data?.url;
         setAttachment({ url, type:"image", name:file.name });
       } else {
         // Read as base64 for PDF/CSV

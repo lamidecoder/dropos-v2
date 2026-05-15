@@ -21,6 +21,14 @@ export const publicApi = axios.create({
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken;
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  
+  // CRITICAL: If sending FormData, delete the default Content-Type
+  // so the browser can set it correctly with the multipart boundary
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+    delete (config.headers as any)["content-type"];
+  }
+  
   return config;
 });
 
@@ -169,19 +177,41 @@ export const notificationAPI = {
 };
 
 export const uploadAPI = {
-  image:  (file: File, folder?: string) => {
-    const fd = new FormData();
+  image: async (file: File, folder?: string): Promise<{ data: { data: { url: string; publicId?: string } } }> => {
+    const token = useAuthStore.getState().accessToken;
+    const BASE  = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/api$/, "") + "/api";
+    const fd    = new FormData();
     fd.append("image", file);
     if (folder) fd.append("folder", folder);
-    return api.post("/upload/image", fd); // DO NOT set Content-Type — browser sets it with boundary
+    const res = await fetch(`${BASE}/upload/image`, {
+      method:  "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body:    fd,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: `Upload failed (${res.status})` }));
+      throw new Error(err.message || `Upload failed (${res.status})`);
+    }
+    const json = await res.json();
+    return json;
   },
-  images: (files: File[], folder?: string) => {
-    const fd = new FormData();
+  images: async (files: File[]): Promise<{ data: { data: { urls: string[] } } }> => {
+    const token = useAuthStore.getState().accessToken;
+    const BASE  = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/api$/, "") + "/api";
+    const fd    = new FormData();
     files.forEach(f => fd.append("images", f));
-    if (folder) fd.append("folder", folder);
-    return api.post("/upload/images", fd); // DO NOT set Content-Type — browser sets it with boundary
+    const res = await fetch(`${BASE}/upload/images`, {
+      method:  "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body:    fd,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: `Upload failed (${res.status})` }));
+      throw new Error(err.message || `Upload failed (${res.status})`);
+    }
+    return res.json();
   },
-};
+}
 
 export const analyticsAPI = {
   getSummary:  (storeId: string, period?: string) => api.get(`/analytics/${storeId}`, { params: { period } }),
