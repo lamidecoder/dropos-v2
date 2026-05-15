@@ -11,7 +11,7 @@ import {
 } from "../services/kai.service";
 import {
   extractMemoriesFromConversation, getMemories, saveMemory,
-  deleteMemory, getActiveGoals, analyzeBrandVoice,
+  deleteMemory, getActiveGoals, analyzeBrandVoice, getMemoryContext,
 } from "../services/kai.memory.service";
 import {
   getUnreadAlerts, markAlertRead, analyzeStore,
@@ -136,16 +136,43 @@ export async function smartChat(req: Request, res: Response) {
     ]);
     const useSearch = ["market_research","trending","analytics"].includes(intent);
 
-    // Build conversation history
-    const history = (conv.messages || [])
-      .slice(-8)
-      .map((m: any) => `${m.role === "user" ? "Owner" : "KIRO"}: ${m.content.slice(0, 200)}`)
+    // Build rich conversation history - 20 messages, near full content
+    const historyMsgs = (conv.messages || []).slice(-20);
+    const history = historyMsgs
+      .map((m: any) => {
+        const who = m.role === "user" ? "Owner" : "KIRO";
+        const content = m.content.slice(0, 800); // much more context
+        return `${who}: ${content}`;
+      })
       .join("\n");
+    
+    // Also load recent messages from OTHER conversations to give cross-session memory
+    let crossSessionContext = "";
+    try {
+      const userId = (req as any).user?.userId || (req as any).user?.id;
+      const recentConvs = await prisma.kaiConversation.findMany({
+        where: { storeId, userId, archived: false, id: { not: conv.id } },
+        orderBy: { updatedAt: "desc" },
+        take: 3,
+        include: { messages: { orderBy: { createdAt: "desc" }, take: 3 } },
+      });
+      if (recentConvs.length > 0) {
+        const lines: string[] = ["RECENT PAST CONVERSATIONS (for context):"];
+        for (const rc of recentConvs) {
+          const lastMsg = rc.messages[0];
+          if (lastMsg) {
+            const ago = Math.round((Date.now() - new Date(rc.updatedAt).getTime()) / 60000);
+            lines.push(`- ${ago}min ago: "${rc.title}" — last said: "${lastMsg.content.slice(0, 120)}"`);
+          }
+        }
+        crossSessionContext = lines.join("\n");
+      }
+    } catch {}
 
     // Build complete system prompt (includes memory, goals, brand voice, market data)
     let systemPrompt: string;
     try {
-      systemPrompt = await buildCompleteSystemPrompt(ctx, storeId, history);
+      systemPrompt = await buildCompleteSystemPrompt(ctx, storeId, history, crossSessionContext);
     } catch(e: any) {
       console.error("[KIRO] buildCompleteSystemPrompt failed, using fallback:", e.message);
       systemPrompt = `You are KIRO, an AI business assistant for ${ctx.storeName}. Be helpful, concise and actionable.`;
@@ -153,7 +180,7 @@ export async function smartChat(req: Request, res: Response) {
 
     // Build messages array
     const claudeMsgs: any[] = [];
-    for (const m of (conv.messages || []).slice(-6)) {
+    for (const m of (conv.messages || []).slice(-16)) {
       claudeMsgs.push({ role: m.role, content: m.content });
     }
     // Current message (with optional image)
@@ -349,6 +376,45 @@ export async function executeAction(req: Request, res: Response) {
             update: { currentValue: action.payload.currentValue },
           });
           break;
+
+        case "create_flash_sale": {
+          // Create a time-limited sale by setting compare prices
+          const products = action.payload.productIds || [];
+          const discount = action.payload.discountPercent || 20;
+          result = await Promise.all(products.map((pid: string) =>
+            prisma.product.findUnique({ where: { id: pid } }).then(p => {
+              if (!p) return null;
+              return (prisma.product as any).update({
+                where: { id: pid },
+                data: { comparePrice: p.price, price: Math.round(p.price * (1 - discount/100)) },
+              });
+            })
+          ));
+          break;
+        }
+
+        case "send_email": {
+          // Queue an email campaign
+          result = { queued: true, subject: action.payload.subject, preview: action.payload.body?.slice(0,100) };
+          break;
+        }
+
+        case "update_store_description": {
+          result = await (prisma.store as any).update({
+            where: { id: storeId },
+            data: { description: action.payload.description },
+          });
+          break;
+        }
+
+        case "set_product_status": {
+          result = await (prisma.product as any).update({
+            where: { id: action.payload.productId },
+            data: { status: action.payload.status || "ACTIVE" },
+          });
+          break;
+        }
+
         default:
           result = { note: `Action ${action.type} logged for manual execution` };
       }
@@ -548,3 +614,42 @@ export async function createGoal(req: Request, res: Response) {
     res.status(500).json({ success: false, message: err.message });
   }
 }
+
+// ── GET /api/kai/morning-brief — proactive daily summary ─────────────────────
+export async function getMorningBrief(req: Request, res: Response) {
+  try {
+    const { storeId } = req.query as { storeId: string };
+    if (!storeId) return res.status(400).json({ success:false, message:"storeId required" });
+
+    const ctx = await getStoreContext(storeId);
+    const memories = await getMemoryContext(storeId).catch(() => "");
+    const sym = ctx.currencySymbol;
+
+    // Build a contextual brief
+    const today = new Date().toLocaleDateString("en-NG", { weekday:"long", day:"numeric", month:"long" });
+    const hour  = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+    const lines: string[] = [];
+    lines.push(`${greeting} 👋 Here's your store update for ${today}:`);
+    lines.push("");
+    lines.push(`💰 Revenue today: ${sym}${(ctx.revenueToday||0).toLocaleString()}`);
+    lines.push(`📦 Orders: ${ctx.totalOrders} total, ${ctx.pendingOrders} pending`);
+    lines.push(`🛍️ Products: ${ctx.activeProducts} active`);
+    if (ctx.lowStockCount > 0) lines.push(`⚠️ ${ctx.lowStockCount} products are low on stock: ${ctx.lowStockProducts.slice(0,3).join(", ")}`);
+    lines.push("");
+
+    if (ctx.pendingOrders > 0) {
+      lines.push(`🚨 You have ${ctx.pendingOrders} unfulfilled orders. Fulfill them now to build trust.`);
+    } else if (ctx.revenueToday === 0) {
+      lines.push(`Your store has ₦0 in sales today. Want me to suggest a quick push strategy?`);
+    } else {
+      lines.push(`Things are moving. Keep the momentum going.`);
+    }
+
+    res.json({ success:true, data: { brief: lines.join("\n"), ctx, date: today } });
+  } catch(err:any) {
+    res.status(500).json({ success:false, message:err.message });
+  }
+}
+

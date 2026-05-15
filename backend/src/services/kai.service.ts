@@ -103,7 +103,7 @@ export function generateTitle(message: string): string {
 }
 
 // ── Master System Prompt ──────────────────────────────────────────────────────
-export async function buildCompleteSystemPrompt(ctx: any, storeId: string, history: string): Promise<string> {
+export async function buildCompleteSystemPrompt(ctx: any, storeId: string, history: string, crossSession = ""): Promise<string> {
   const sym  = ctx.currencySymbol || "₦";
   const loc  = ctx.locale || {};
   const plan = ctx.plan || "FREE";

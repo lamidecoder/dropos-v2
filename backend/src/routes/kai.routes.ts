@@ -6,7 +6,7 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { authenticate } from "../middleware/auth";
 import {
-  getGreeting, getConversations, getConversation, smartChat,
+  getMorningBrief, getGreeting, getConversations, getConversation, smartChat,
   executeAction, updateConversation, deleteConversation,
   deleteAllConversations, getKaiMemories, deleteKaiMemory,
   getPulseAlerts, readPulseAlert, getSkills, createSkill,
@@ -48,6 +48,7 @@ router.use(authenticate);
 
 // Core chat
 router.get   ("/greeting",              getGreeting);
+router.get   ("/morning-brief",         authenticate, getMorningBrief);
 router.post  ("/smart-chat",            kaiLimit, smartChat);
 router.post  ("/action",                executeAction);
 

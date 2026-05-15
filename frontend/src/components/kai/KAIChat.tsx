@@ -110,11 +110,21 @@ function MessageBubble({ msg, onApprove, onDismiss, t, isDark }: any) {
           lineHeight: 1.65,
           position:"relative",
         }}>
-          {msg.isStreaming ? (
-            <span style={{ display:"flex", alignItems:"center", gap:6, color:t.muted }}>
-              <motion.span animate={{ opacity:[1,0.3,1] }} transition={{ duration:1, repeat:Infinity }}>⚡</motion.span>
-              KIRO is thinking...
+          {msg.isStreaming && !msg.content ? (
+            <span style={{ display:"flex", alignItems:"center", gap:8, color:t.muted }}>
+              <span style={{ display:"flex", gap:3 }}>
+                {[0,1,2].map(i => (
+                  <motion.span key={i} style={{ width:6, height:6, borderRadius:"50%", background:V.v400, display:"block" }}
+                    animate={{ y:[0,-4,0] }} transition={{ duration:0.6, repeat:Infinity, delay:i*0.15 }}/>
+                ))}
+              </span>
+              <span style={{ fontSize:13 }}>KIRO is thinking</span>
             </span>
+          ) : msg.isStreaming && msg.content ? (
+            <p style={{ margin:0, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>
+              {msg.content}
+              <motion.span animate={{ opacity:[1,0] }} transition={{ duration:0.5, repeat:Infinity }}>▋</motion.span>
+            </p>
           ) : (
             <p style={{ margin:0, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>{msg.content}</p>
           )}
@@ -225,7 +235,9 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
   }, [storeId, convId, histLoaded]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior:"smooth" });
+    // Use requestAnimationFrame for smooth scroll during streaming
+    const el = bottomRef.current;
+    if (el) requestAnimationFrame(() => el.scrollIntoView({ behavior: "smooth", block: "end" }));
   }, [messages]);
 
   // ── File upload ──────────────────────────────────────────────────────────────
@@ -468,9 +480,16 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
               Ask me anything — sales, products, orders, marketing, pricing.<br/>I can also add products, create coupons, and update your store directly.
             </p>
             <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
-              {["What are my sales today?","Add a new product","What's trending in Nigeria?","Write me an Instagram caption"].map(s => (
-                <button key={s} onClick={() => setInput(s)}
-                  style={{ padding:"6px 14px", borderRadius:99, border:`1px solid ${t.border}`, background:t.card, color:t.muted, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
+              {[
+                "📊 What are my sales today?",
+                "📸 Add a product from photo",
+                "🔥 What's trending in Nigeria?",
+                "📝 Write an Instagram caption",
+                "💰 How do I make more sales?",
+                "📦 Show my pending orders",
+              ].map(s => (
+                <button key={s} onClick={() => setInput(s.slice(3))}
+                  style={{ padding:"7px 16px", borderRadius:99, border:`1px solid ${t.border}`, background:t.card, color:t.text, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
                   {s}
                 </button>
               ))}
@@ -512,7 +531,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Ask KIRO anything... (Shift+Enter for new line)"
+            placeholder="Ask KIRO anything — products, sales, marketing, orders..."
             rows={1}
             style={{ flex:1, background:"transparent", border:"none", outline:"none", resize:"none", fontSize:14, color:t.text, fontFamily:"inherit", lineHeight:1.5, maxHeight:120, overflow:"auto", paddingTop:2 }}
             onInput={e => {

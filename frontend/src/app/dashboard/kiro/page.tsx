@@ -52,6 +52,15 @@ export default function KIROPage() {
   const [editingId,   setEditingId]   = useState<string | null>(null);
   const [editTitle,   setEditTitle]   = useState("");
 
+  // Morning brief — loads once per session
+  const { data: briefData } = useQuery({
+    queryKey: ["morning-brief", storeId],
+    queryFn:  () => api.get(`/kai/morning-brief?storeId=${storeId}`).then(r => r.data.data),
+    enabled:  !!storeId,
+    staleTime: 10 * 60 * 1000, // 10 min
+    retry: false,
+  });
+
   const { data: conversations = [] } = useQuery({
     queryKey: ["kiro-conversations"],
     queryFn:  () => api.get(`/kai/conversations?storeId=${storeId}`).then(r => r.data.data || []),
@@ -223,6 +232,14 @@ export default function KIROPage() {
           </button>
         </div>
 
+        {/* Morning brief */}
+        {briefData?.brief && (
+          <div style={{ padding:"8px 16px", borderBottom:`1px solid ${t.border}`, background:`rgba(107,53,232,0.04)` }}>
+            <p style={{ fontSize:11, color:"#8B5CF6", fontWeight:700, margin:"0 0 3px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Daily Brief</p>
+            <p style={{ fontSize:12, color:t.muted, margin:0, whiteSpace:"pre-line", lineHeight:1.6 }}>{briefData.brief}</p>
+          </div>
+        )}
+        
         <div className="flex-1 min-h-0">
           <KIROChat
             key={activeId || "new"}

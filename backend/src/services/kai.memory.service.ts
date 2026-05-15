@@ -83,7 +83,7 @@ export async function extractMemoriesFromConversation(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
+      model: process.env.KIRO_MEMORY_MODEL || "claude-sonnet-4-6",
       max_tokens: 500,
       messages: [{
         role: "user",
@@ -196,7 +196,7 @@ export async function analyzeBrandVoice(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
+      model: process.env.KIRO_MEMORY_MODEL || "claude-sonnet-4-6",
       max_tokens: 300,
       messages: [{
         role: "user",
