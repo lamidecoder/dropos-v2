@@ -280,8 +280,8 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
         id:        `action-${Date.now()}`,
         role:      "assistant",
         content:   result?.success
-          ? `Done ✅ — ${action.type} executed successfully.`
-          : `Failed ❌ — ${result?.error || "Something went wrong"}`,
+          ? `Done ✅ — ${action.type === "add_product" ? `Product "${result?.result?.name || action.payload?.name}" added to your store!` : "Action completed successfully."}`
+          : `Failed ❌ — ${result?.error || "Action failed. Check your store settings and try again."}`,
         timestamp: new Date().toISOString(),
       };
       setMessages(p => [...p, resultMsg]);

@@ -291,11 +291,17 @@ export async function executeAction(req: Request, res: Response) {
           result = await prisma.product.update({ where: { id: action.payload.productId }, data: { price: action.payload.price } });
           break;
 
-        case "add_product":
+        case "add_product": {
+          const pName = action.payload.name || "Product";
+          const pSlug = pName.toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "")
+            .slice(0, 80) + "-" + Date.now().toString(36);
           result = await (prisma.product as any).create({
             data: {
               storeId:     action.payload.storeId || storeId,
-              name:        action.payload.name,
+              name:        pName,
+              slug:        pSlug,
               price:       Number(action.payload.price) || 0,
               description: action.payload.description || "",
               images:      action.payload.images || [],
@@ -305,6 +311,7 @@ export async function executeAction(req: Request, res: Response) {
             },
           });
           break;
+        }
 
         case "update_stock":
           result = await (prisma.product as any).update({
