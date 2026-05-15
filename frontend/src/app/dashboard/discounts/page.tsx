@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
+import { useTheme } from "../../../components/layout/DashboardLayout";
 import { useAuthStore } from "../../../store/auth.store";
 import toast from "react-hot-toast";
 import {
@@ -60,7 +61,7 @@ function StatusBadge({ status }: { status: string }) {
     PAUSED:    { bg: "rgba(245,158,11,0.1)",  color: "#F59E0B", dot: "#F59E0B", label: "Paused"    },
     EXPIRED:   { bg: "rgba(239,68,68,0.1)",   color: "#EF4444", dot: "#EF4444", label: "Expired"   },
     SCHEDULED: { bg: "rgba(59,130,246,0.1)",  color: "#3B82F6", dot: "#3B82F6", label: "Scheduled" },
-  }[status] || { bg: "var(--bg-card)", color: "rgba(255,255,255,0.3)", dot: "rgba(255,255,255,0.3)", label: status };
+  }[status] || { bg: "var(--bg-card,#fff)", color: "var(--text-muted,#666)", dot: "var(--text-muted,#666)", label: status };
 
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
@@ -113,7 +114,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
 
   return (
     <div className="rounded-2xl p-5 transition-all hover:-translate-y-0.5"
-      style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "var(--shadow-sm)" }}>
+      style={{ background: "var(--bg-card,#fff)", border: "1px solid var(--border-color,rgba(107,53,232,0.08))", boxShadow: "var(--shadow-sm)" }}>
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -140,7 +141,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
         </span>
         {d.minOrderValue > 0 && (
           <span className="text-[11px] px-2 py-0.5 rounded-full"
-            style={{ background: "var(--bg-card)", color: "rgba(255,255,255,0.3)", border: "1px solid rgba(255,255,255,0.06)" }}>
+            style={{ background: "var(--bg-card,#fff)", color: "var(--text-muted,#666)", border: "1px solid var(--border-color,rgba(107,53,232,0.08))" }}>
             Min ${d.minOrderValue}
           </span>
         )}
@@ -160,7 +161,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
         <div className="flex gap-1.5 mb-3 flex-wrap">
           {(d.tiers as TierRow[]).map((t, i) => (
             <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded-lg"
-              style={{ background: "var(--bg-card)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              style={{ background: "var(--bg-card,#fff)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.06)" }}>
               {t.minQty}+ → {t.discount}% off
             </span>
           ))}
@@ -174,7 +175,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
             <span>{d.usedCount} uses</span>
             <span>{d.maxUses} max</span>
           </div>
-          <div className="h-1.5 rounded-full" style={{ background: "var(--bg-card)" }}>
+          <div className="h-1.5 rounded-full" style={{ background: "var(--bg-card,#fff)" }}>
             <div className="h-full rounded-full transition-all"
               style={{ width: usedPct + "%", background: usedPct > 80 ? "#EF4444" : typeConf.color }} />
           </div>
@@ -199,7 +200,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
         <div className="flex items-center gap-1">
           <button onClick={() => toggleMut.mutate()}
             className="p-2 rounded-lg transition-all text-xs font-bold flex items-center gap-1"
-            style={{ color: isActive ? "var(--success)" : "rgba(255,255,255,0.3)", background: isActive ? "rgba(16,185,129,0.08)" : "var(--bg-card)" }}>
+            style={{ color: isActive ? "var(--success)" : "rgba(255,255,255,0.3)", background: isActive ? "rgba(16,185,129,0.08)" : "var(--bg-card,#fff)" }}>
             {isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
             {isActive ? "On" : "Off"}
           </button>
@@ -232,12 +233,12 @@ function TierEditor({ tiers, onChange }: { tiers: TierRow[]; onChange: (t: TierR
           <input type="number" value={t.minQty} min={1}
             onChange={e => set(i, "minQty", Number(e.target.value))}
             className="w-20 rounded-lg px-2 py-1.5 text-xs outline-none"
-            style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" }} />
+            style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" }} />
           <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>items →</span>
           <input type="number" value={t.discount} min={1} max={100}
             onChange={e => set(i, "discount", Number(e.target.value))}
             className="w-20 rounded-lg px-2 py-1.5 text-xs outline-none"
-            style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" }} />
+            style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" }} />
           <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>% off</span>
           <button onClick={() => del(i)} className="p-1 rounded" style={{ color: "rgba(255,255,255,0.3)" }}>
             <X size={12} />
@@ -255,6 +256,16 @@ function TierEditor({ tiers, onChange }: { tiers: TierRow[]; onChange: (t: TierR
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function DiscountsPage() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const t = {
+    card:  false ? "var(--bg-card,#fff)" : "#fff",
+    border:false ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.08)",
+    text:  false ? "#F0ECFF" : "#130D2E",
+    muted: false ? "rgba(240,236,255,0.45)" : "rgba(19,13,46,0.55)",
+    faint: false ? "rgba(255,255,255,0.03)" : "rgba(107,53,232,0.03)",
+    input: false ? "rgba(255,255,255,0.05)" : "#F5F3FF",
+  };
   const qc      = useQueryClient();
   const user    = useAuthStore(s => s.user);
   const storeId = user?.stores?.[0]?.id;
@@ -315,7 +326,7 @@ export default function DiscountsPage() {
   const flashSales  = discounts.filter((d: any) => d.type === "FLASH_SALE" && d.status === "ACTIVE").length;
   const autoDiscount = discounts.filter((d: any) => d.isAutomatic).length;
 
-  const inp = { background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" };
+  const inp = { background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" };
 
   return (
     
@@ -343,7 +354,7 @@ export default function DiscountsPage() {
             { label: "Auto Discounts",   value: autoDiscount,  icon: Zap,      color: "#10B981" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="rounded-2xl p-4"
-              style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "var(--shadow-sm)" }}>
+              style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "var(--shadow-sm)" }}>
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                   style={{ background: color + "18", border: `1px solid ${color}30` }}>
@@ -364,7 +375,7 @@ export default function DiscountsPage() {
             <button key={f} onClick={() => setFilter(f)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize"
               style={{
-                background: filter === f ? "rgba(107,53,232,0.12)" : "var(--bg-card)",
+                background: filter === f ? "rgba(107,53,232,0.12)" : "var(--bg-card,#fff)",
                 color:      filter === f ? "#6B35E8"     : "rgba(255,255,255,0.5)",
                 border:     `1px solid ${filter === f ? "var(--accent-border)" : "var(--border-color)"}`,
               }}>
@@ -382,7 +393,7 @@ export default function DiscountsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-2xl p-16 text-center"
-            style={{ background: "var(--bg-card)", border: "1px dashed rgba(255,255,255,0.06)" }}>
+            style={{ background: "var(--bg-card,#fff)", border: "1px dashed rgba(255,255,255,0.06)" }}>
             <Tag size={36} className="mx-auto mb-4" style={{ color: "rgba(255,255,255,0.3)" }} />
             <h3 className="font-bold mb-2" style={{ color: "var(--text-primary)" }}>No discounts yet</h3>
             <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.5)" }}>
@@ -407,7 +418,7 @@ export default function DiscountsPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ background: "var(--bg-overlay)", backdropFilter: "blur(8px)" }}>
             <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl"
-              style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "var(--shadow-xl)" }}>
+              style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "var(--shadow-xl)" }}>
 
               {/* Modal header */}
               <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: "var(--border-color)" }}>
@@ -427,7 +438,7 @@ export default function DiscountsPage() {
                     {TYPES.map(t => (
                       <button key={t.type} onClick={() => { setSelType(t.type); set("type", t.type); }}
                         className="flex flex-col items-start gap-2 p-4 rounded-xl text-left transition-all hover:-translate-y-0.5"
-                        style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)" }}
+                        style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)" }}
                         onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = t.color + "60"}
                         onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-color)"}>
                         <div className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -495,7 +506,7 @@ export default function DiscountsPage() {
                     )}
 
                     {selType === "BOGO" && (
-                      <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)" }}>
                         <div className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>BOGO Configuration</div>
                         <div className="grid grid-cols-3 gap-3">
                           <div>
@@ -524,7 +535,7 @@ export default function DiscountsPage() {
                     )}
 
                     {selType === "TIERED" && (
-                      <div className="rounded-xl p-4" style={{ background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div className="rounded-xl p-4" style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)" }}>
                         <div className="text-xs font-bold mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>Volume Tiers</div>
                         <TierEditor tiers={tiers} onChange={setTiers} />
                       </div>
@@ -595,12 +606,12 @@ export default function DiscountsPage() {
                         <button key={key} onClick={() => set(key, !form[key as keyof DiscountForm])}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                           style={{
-                            background: form[key as keyof DiscountForm] ? "rgba(107,53,232,0.12)" : "var(--bg-card)",
+                            background: form[key as keyof DiscountForm] ? "rgba(107,53,232,0.12)" : "var(--bg-card,#fff)",
                             color:      form[key as keyof DiscountForm] ? "#6B35E8"     : "rgba(255,255,255,0.5)",
                             border:     `1px solid ${form[key as keyof DiscountForm] ? "var(--accent-border)" : "var(--border-color)"}`,
                           }}>
                           <div className="w-3.5 h-3.5 rounded flex items-center justify-center"
-                            style={{ background: form[key as keyof DiscountForm] ? "#6B35E8" : "var(--bg-card)", border: `1px solid ${form[key as keyof DiscountForm] ? "#6B35E8" : "var(--border-color)"}` }}>
+                            style={{ background: form[key as keyof DiscountForm] ? "#6B35E8" : "var(--bg-card,#fff)", border: `1px solid ${form[key as keyof DiscountForm] ? "#6B35E8" : "var(--border-color)"}` }}>
                             {form[key as keyof DiscountForm] && <span className="text-[#ffffff] text-[8px]">✓</span>}
                           </div>
                           {label}
@@ -617,7 +628,7 @@ export default function DiscountsPage() {
                       </button>
                       <button onClick={() => { setModal(false); setSelType(null); }}
                         className="px-5 py-3 rounded-xl text-sm font-semibold transition-all"
-                        style={{ background: "var(--bg-card)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        style={{ background: "var(--bg-card,#fff)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.06)" }}>
                         Cancel
                       </button>
                     </div>

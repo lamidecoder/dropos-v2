@@ -318,8 +318,8 @@ function Sidebar({ t, pathname, plan, user, onNavClick, onLogout, theme }: any) 
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 10px", borderRadius: 11, background: plan === "FREE" ? "rgba(107,53,232,0.07)" : "rgba(16,185,129,0.07)", border: `1px solid ${plan === "FREE" ? "rgba(107,53,232,0.15)" : "rgba(16,185,129,0.2)"}` }}>
             <Wallet size={12} color={plan === "FREE" ? V.v400 : "#10B981"} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: plan === "FREE" ? V.v300 : "#10B981" }}>{plan} Plan</div>
-              {plan === "FREE" && <div style={{ fontSize: 10, color: t.textFaint }}>Upgrade to unlock all</div>}
+              <div style={{ fontSize: 11, fontWeight: 700, color: plan === "FREE" ? V.v500 : "#059669" }}>{plan} Plan</div>
+              {plan === "FREE" && <div style={{ fontSize: 10, color: t.textMuted }}>Upgrade to unlock all</div>}
             </div>
             {plan === "FREE" && <Sparkles size={11} color={V.v400} />}
           </div>

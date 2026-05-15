@@ -7,12 +7,19 @@ router.use(authenticate);
 
 // GET /api/fulfillment/status/:storeId
 router.get("/status/:storeId", async (req: Request, res: Response) => {
-  const { storeId } = req.params;
-  const { status } = req.query;
-  const where: any = { storeId };
-  if (status) where.fulfillmentStatus = status;
-  const orders = await prisma.order.findMany({ where, orderBy:{ createdAt:"desc" }, take:50 });
-  res.json({ success:true, data: orders });
+  try {
+    const { storeId } = req.params;
+    const { status } = req.query;
+    const where: any = { storeId };
+    if (status && status !== "ALL") where.fulfillmentStatus = status as string;
+    const orders = await (prisma.order as any).findMany({
+      where, orderBy:{ createdAt:"desc" }, take:50,
+      include:{ customer:{ select:{ name:true, email:true } } },
+    });
+    res.json({ success:true, data: orders || [] });
+  } catch(err:any) {
+    res.status(500).json({ success:false, message: err.message || "Failed to load orders" });
+  }
 });
 
 // POST /api/fulfillment/:orderId/fulfill
