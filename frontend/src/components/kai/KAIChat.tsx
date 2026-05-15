@@ -242,11 +242,15 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
     setUploading(true);
     try {
       if (isImage) {
-        // Upload to Cloudinary
-        // Use uploadAPI which uses raw fetch (avoids axios header interference)
-        const result = await uploadAPI.image(file);
-        const url = result.data?.data?.url;
-        setAttachment({ url, type:"image", name:file.name });
+        // Read as data URI locally — no network roundtrip, works offline
+        // The base64 is sent directly to KIRO for vision analysis
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload  = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error("Could not read file"));
+          reader.readAsDataURL(file);
+        });
+        setAttachment({ url: dataUrl, type:"image", name:file.name });
       } else {
         // Read as base64 for PDF/CSV
         const base64 = await new Promise<string>((res,rej) => {

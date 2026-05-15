@@ -249,13 +249,14 @@ export async function callClaude(params: {
   messages: any[];
   useSearch?: boolean;
   maxTokens?: number;
+  model?: string;
   onToken?: (token: string) => void;
 }): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error("ANTHROPIC_API_KEY not configured on Render environment variables");
 
   const body: any = {
-    model: process.env.KIRO_MODEL || "claude-haiku-4-5-20251001",
+    model: params.model || process.env.KIRO_MODEL || "claude-sonnet-4-6",
     max_tokens: params.maxTokens || 2048,
     system: params.systemPrompt,
     messages: params.messages,

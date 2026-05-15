@@ -205,7 +205,8 @@ export async function smartChat(req: Request, res: Response) {
       systemPrompt,
       messages: claudeMsgs,
       useSearch,
-      maxTokens: 1024,
+      model: (finalImageBase64 || finalImageBase64) ? "claude-sonnet-4-6" : undefined,
+      maxTokens: finalImageBase64 ? 2048 : 1024,
       onToken: (token) => {
         fullResponse += token;
         res.write(`data: ${JSON.stringify({ token, conversationId: conv.id })}\n\n`);
