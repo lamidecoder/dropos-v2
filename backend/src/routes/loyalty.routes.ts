@@ -15,7 +15,7 @@ router.use(authenticate);
 router.get("/:storeId/stats",  async (req: Request, res: Response) => {
   const { storeId } = req.params;
   const accounts = await prisma.loyaltyAccount.findMany({ where: { storeId } as any, take: 10 }).catch(()=>[]);
-  const points = accounts.reduce((a:number,acc:any) => a+(acc.points||0), 0);
+  const points = (accounts as any[]).reduce((a: number, acc: any) => a + (acc.points || 0), 0);
   const tiers = [
     { name:"Bronze", min:0,    max:999,  members:0, color:"#CD7F32", perks:["5% discount","Birthday bonus"] },
     { name:"Silver", min:1000, max:4999, members:0, color:"#C0C0C0", perks:["10% discount","Free shipping","Priority support"] },
