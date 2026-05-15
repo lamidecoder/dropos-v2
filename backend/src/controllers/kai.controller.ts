@@ -158,8 +158,38 @@ export async function smartChat(req: Request, res: Response) {
     }
     // Current message (with optional image)
     const currentContent: any[] = [];
-    if (imageBase64 && imageMediaType) {
-      currentContent.push({ type: "image", source: { type: "base64", media_type: imageMediaType, data: imageBase64 } });
+    // Handle image — either base64 or URL
+    let finalImageBase64 = imageBase64;
+    let finalImageMediaType = imageMediaType || "image/jpeg";
+    const imageUrl = req.body.imageUrl;
+    
+    // If URL provided but no base64, fetch the image
+    if (!finalImageBase64 && imageUrl && !imageUrl.startsWith("data:")) {
+      try {
+        const imgRes = await fetch(imageUrl);
+        const imgBuf = await imgRes.arrayBuffer();
+        finalImageBase64 = Buffer.from(imgBuf).toString("base64");
+        finalImageMediaType = imgRes.headers.get("content-type") || "image/jpeg";
+      } catch(e) {
+        console.error("[KIRO] Could not fetch image URL:", e);
+      }
+    }
+    
+    // If it's a data URI, strip the prefix
+    if (finalImageBase64?.startsWith("data:")) {
+      const parts = finalImageBase64.split(",");
+      finalImageMediaType = parts[0].split(":")[1]?.split(";")[0] || "image/jpeg";
+      finalImageBase64 = parts[1];
+    }
+    
+    console.log("[KIRO] Image:", {
+      hasBase64: !!finalImageBase64,
+      mediaType: finalImageMediaType,
+      size: finalImageBase64?.length || 0,
+    });
+    
+    if (finalImageBase64 && finalImageMediaType) {
+      currentContent.push({ type: "image", source: { type: "base64", media_type: finalImageMediaType, data: finalImageBase64 } });
     }
     currentContent.push({ type: "text", text: message });
     claudeMsgs.push({ role: "user", content: currentContent.length === 1 ? message : currentContent });

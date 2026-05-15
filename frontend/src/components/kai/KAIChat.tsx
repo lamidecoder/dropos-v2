@@ -152,7 +152,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
   const [input,       setInput]       = useState(initialMessage || "");
   const [loading,     setLoading]     = useState(false);
   const [convId,      setConvId]      = useState(initConvId || "");
-  const [attachment,  setAttachment]  = useState<{url?:string; base64?:string; type?:string; name?:string}|null>(null);
+  const [attachment,  setAttachment]  = useState<{url?:string; cloudUrl?:string; base64?:string; type?:string; name?:string}|null>(null);
   const [uploading,   setUploading]   = useState(false);
   const [histLoaded,  setHistLoaded]  = useState(false);
 
