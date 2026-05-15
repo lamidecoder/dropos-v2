@@ -55,8 +55,9 @@ export async function getConversations(req: Request, res: Response) {
     const { storeId } = req.query as { storeId: string };
     if (!storeId) return res.status(400).json({ success: false, message: "storeId required" });
 
+    const userId = (req as any).user?.userId || (req as any).user?.id;
     const conversations = await prisma.kaiConversation.findMany({
-      where: { storeId, archived: false },
+      where: { storeId, userId, archived: false },
       orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
       select: {
         id: true, title: true, pinned: true, createdAt: true, updatedAt: true,
@@ -100,8 +101,10 @@ export async function smartChat(req: Request, res: Response) {
       : null;
 
     if (!conv) {
+      const userId = (req as any).user?.userId || (req as any).user?.id;
+      if (!userId) return res.status(401).json({ success: false, message: "User not found in token" });
       conv = await (prisma.kaiConversation as any).create({
-        data: { storeId, title: generateTitle(message) },
+        data: { storeId, userId, title: generateTitle(message) },
         include: { messages: true },
       });
     }
