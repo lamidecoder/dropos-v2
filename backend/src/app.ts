@@ -3,6 +3,21 @@ import "express-async-errors";
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 attempts per IP per 15 min
+  message: { success: false, message: "Too many attempts. Try again in 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // 30 uploads per minute
+  message: { success: false, message: "Upload rate limit reached. Slow down." },
+});
 import compression from "compression";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
@@ -124,8 +139,8 @@ app.use("/api/payments/webhook/paystack", express.raw({ type: "application/json"
 app.use("/api/payments/webhook/flutterwave", express.raw({ type: "application/json" }));
 
 // BODY PARSER
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 app.use(compression());
 

@@ -1,7 +1,7 @@
 {
   "name": "dropos-backend",
   "version": "1.0.0",
-  "description": "DropOS SaaS Dropshipping Platform \u2014 Backend API",
+  "description": "DropOS SaaS Dropshipping Platform — Backend API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
@@ -24,7 +24,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
-    "express-rate-limit": "^7.1.5",
+    "express-rate-limit": "^7.5.1",
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",

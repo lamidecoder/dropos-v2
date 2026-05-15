@@ -7,8 +7,7 @@ import { AuthRequest } from "../middleware/auth";
 import { PrismaClient } from "@prisma/client";
 import {
   getStoreContext, buildCompleteSystemPrompt, callClaude,
-  detectIntent, needsWebSearch, generateTitle,
-  buildGreeting, buildQuickActions,
+  detectIntent,  generateTitle, getQuickActions,
 } from "../services/kai.service";
 import {
   extractMemoriesFromConversation, getMemories, saveMemory,
@@ -37,8 +36,11 @@ export async function getGreeting(req: Request, res: Response) {
     const firstName = (user?.name || "there").split(" ")[0];
     const hour      = new Date().getHours();
 
-    const { greeting, contextLine } = buildGreeting(firstName, ctx, hour);
-    const quickActions = buildQuickActions(ctx);
+    const greeting = `Good ${new Date().getHours() < 12 ? "morning" : "afternoon"}! KIRO here.`;
+    const contextLine = ctx.revenueToday > 0 
+      ? `You've made ${ctx.currencySymbol}${ctx.revenueToday.toLocaleString()} today.`
+      : "What are we working on today?";
+    const quickActions = getQuickActions(ctx);
 
     res.json({
       success: true,
@@ -89,7 +91,8 @@ export async function getConversation(req: Request, res: Response) {
 
 // ── POST /api/kai/smart-chat (STREAMING + MEMORY) ────────────
 export async function smartChat(req: Request, res: Response) {
-  const { message, storeId, imageBase64, imageMediaType } = req.body;
+  const { storeId, imageBase64, imageMediaType } = req.body;
+  const message = req.body.message || (imageBase64 ? "Please analyse this image and help me use it in my store." : "");
   const conversationId = req.body.conversationId || req.body.sessionId || null;
   if (!message || !storeId)
     return res.status(400).json({ success: false, message: "message and storeId required" });
@@ -131,7 +134,7 @@ export async function smartChat(req: Request, res: Response) {
       })),
       Promise.resolve(detectIntent(message)),
     ]);
-    const useSearch = needsWebSearch(message, intent);
+    const useSearch = ["market_research","trending","analytics"].includes(intent);
 
     // Build conversation history
     const history = (conv.messages || [])
@@ -179,17 +182,22 @@ export async function smartChat(req: Request, res: Response) {
       },
     });
 
-    // Parse KIRO_ACTION from response
-    const actionMatches = fullResponse.match(/KIRO_ACTION:(\{[^\n]+\})/g) || [];
+    // Parse KIRO_ACTION from response - robust parser
     const parsedActions: any[] = [];
-    for (const match of actionMatches) {
-      try {
-        const json = match.replace("KIRO_ACTION:", "");
-        parsedActions.push(JSON.parse(json));
-      } catch {}
-    }
-    // Remove KIRO_ACTION lines from displayed response
-    const cleanResponse = fullResponse.replace(/KIRO_ACTION:\{[^\n]+\}/g, "").trim();
+    let cleanResponse = fullResponse;
+    try {
+      // Match KIRO_ACTION: followed by JSON object (handles multiline)
+      const actionRegex = /KIRO_ACTION:(\{(?:[^{}]|\{[^{}]*\})*\})/g;
+      let match;
+      while ((match = actionRegex.exec(fullResponse)) !== null) {
+        try {
+          const action = JSON.parse(match[1]);
+          parsedActions.push(action);
+        } catch {}
+      }
+      // Strip all KIRO_ACTION blocks from display
+      cleanResponse = fullResponse.replace(/KIRO_ACTION:(\{(?:[^{}]|\{[^{}]*\})*\})/g, "").trim();
+    } catch {}
 
     // Save KIRO response (clean version)
     await (prisma.kaiMessage as any).create({

@@ -245,7 +245,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
         // Upload to Cloudinary
         const form = new FormData();
         form.append("image", file);
-        const res = await api.post("/upload/image", form, { headers:{"Content-Type":"multipart/form-data"} });
+        const res = await api.post("/upload/image", form); // No Content-Type — let browser set boundary
         const url = res.data?.data?.url;
         setAttachment({ url, type:"image", name:file.name });
       } else {
@@ -303,10 +303,11 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
     abortRef.current?.abort();
     abortRef.current = new AbortController();
 
+    const displayText = text || (attachment ? "📎 " + (attachment.name || "Image") : "");
     const userMsg: Message = {
       id:        `u-${Date.now()}`,
       role:      "user",
-      content:   text,
+      content:   displayText,
       imageUrl:  attachment?.url,
       fileName:  !attachment?.url ? attachment?.name : undefined,
       timestamp: new Date().toISOString(),
@@ -325,10 +326,29 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
     setLoading(true);
 
     try {
-      const body: any = { message: text, storeId, sessionId: convId || undefined };
-      if (attachment?.url)    body.imageUrl    = attachment.url;
-      if (attachment?.base64) body.fileBase64  = attachment.base64;
-      if (attachment?.type)   body.fileType    = attachment.type;
+      // Build message - if only image, add a default prompt
+      const finalMessage = text || (attachment ? "Please analyse this image and help me use it in my store." : "");
+      
+      const body: any = { message: finalMessage, storeId, sessionId: convId || undefined };
+      
+      if (attachment?.url) {
+        if (attachment.url.startsWith("data:image/")) {
+          // Extract base64 from data URI for KIRO vision
+          const parts  = attachment.url.split(",");
+          const mime   = parts[0].split(":")[1]?.split(";")[0] || "image/jpeg";
+          body.imageBase64      = parts[1];
+          body.imageMediaType   = mime;
+          body.imageUrl         = attachment.url; // for display
+        } else {
+          // Cloudinary URL - send as URL reference
+          body.imageUrl         = attachment.url;
+          body.message          = finalMessage + `\n\n[Image: ${attachment.url}]`;
+        }
+      }
+      if (attachment?.base64) {
+        body.fileBase64  = attachment.base64;
+        body.fileType    = attachment.type;
+      }
       if (attachment?.name)   body.fileName    = attachment.name;
 
       const streamRes = await fetch(`${BASE}/kai/smart-chat`, {

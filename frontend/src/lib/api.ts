@@ -173,13 +173,13 @@ export const uploadAPI = {
     const fd = new FormData();
     fd.append("image", file);
     if (folder) fd.append("folder", folder);
-    return api.post("/upload/image", fd, { headers: { "Content-Type": "multipart/form-data" } });
+    return api.post("/upload/image", fd); // DO NOT set Content-Type — browser sets it with boundary
   },
   images: (files: File[], folder?: string) => {
     const fd = new FormData();
     files.forEach(f => fd.append("images", f));
     if (folder) fd.append("folder", folder);
-    return api.post("/upload/images", fd, { headers: { "Content-Type": "multipart/form-data" } });
+    return api.post("/upload/images", fd); // DO NOT set Content-Type — browser sets it with boundary
   },
 };
 

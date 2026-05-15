@@ -1,260 +1,262 @@
-// ============================================================
-// KIRO — Updated Core Service with Locale Engine
-// Path: backend/src/services/kai.service.ts
-// REPLACES previous kai.service.ts
-//
-// KEY CHANGE: Every search query, suggestion, and context
-// is now automatically anchored to the store's country.
-// ============================================================
-import { PrismaClient }       from "@prisma/client";
-import { getLocale, localiseQuery, buildMarketContext, getSeasonalContext } from "../utils/kai.locale";
-import { getMemoryContext, getActiveGoals, getBrandVoice } from "./kai.memory.service";
-import { getFeatureKnowledge }  from "./kai.prompt.additions";
+// KIRO — Core AI Service
+// Built by Darkweb and the DropOS team
 
-const prisma = new PrismaClient();
+import { getLocale as getLocaleEngine } from "../utils/kai.locale";
+import { getMemoryContext } from "./kai.memory.service";
+import prisma from "../lib/prisma";
 
-// ── Store Context ─────────────────────────────────────────────
+// ── Store context ─────────────────────────────────────────────────────────────
 export async function getStoreContext(storeId: string) {
-  const [store, productCount, orders] = await Promise.all([
-    prisma.store.findUnique({
-      where: { id: storeId },
-      include: { owner: { include: { subscription: true } } },
-    }),
-    prisma.product.count({ where: { storeId } }),
-    prisma.order.findMany({
-      where: { storeId },
-      select: { id: true, status: true, total: true, createdAt: true },
-      orderBy: { createdAt: "desc" },
-      take: 200,
-    }),
-  ]);
+  try {
+    const [store, products, orders, revenueData] = await Promise.all([
+      prisma.store.findUnique({ where: { id: storeId }, include: { subscription: true } }),
+      prisma.product.findMany({ where: { storeId }, select: { id:true, name:true, price:true, inventory:true, status:true, category:true, images:true } }),
+      prisma.order.findMany({ where: { storeId }, orderBy: { createdAt: "desc" }, take: 50,
+        include: { customer: { select: { name:true, email:true } } } }),
+      prisma.order.aggregate({ where: { storeId, status: { in: ["PAID","FULFILLED"] } }, _sum: { total: true } }),
+    ]);
 
-  const country  = store?.country || "NG";
-  const locale   = getLocale(country);
-  const now      = new Date();
-  const todayStart  = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const monthStart  = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lmStart     = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lmEnd       = new Date(now.getFullYear(), now.getMonth(), 0);
-  const paid        = ["PAID", "SHIPPED", "DELIVERED"];
+    const today = new Date(); today.setHours(0,0,0,0);
+    const todayOrders  = orders.filter(o => new Date(o.createdAt) >= today);
+    const pendingOrders = orders.filter(o => o.status === "PENDING" || o.status === "PROCESSING");
+    const lowStock      = products.filter(p => (p.inventory || 0) < 5 && p.status === "ACTIVE");
+    const activeProducts = products.filter(p => p.status === "ACTIVE");
+    const revenueToday  = todayOrders.filter(o => ["PAID","FULFILLED"].includes(o.status)).reduce((a,o)=>a+(o.total||0),0);
 
-  const revenueToday      = orders.filter(o => new Date(o.createdAt) >= todayStart && paid.includes(o.status)).reduce((s, o) => s + Number(o.total), 0);
-  const revenueThisMonth  = orders.filter(o => new Date(o.createdAt) >= monthStart && paid.includes(o.status)).reduce((s, o) => s + Number(o.total), 0);
-  const revenueLastMonth  = orders.filter(o => { const d = new Date(o.createdAt); return d >= lmStart && d <= lmEnd && paid.includes(o.status); }).reduce((s, o) => s + Number(o.total), 0);
-  const pendingOrders     = orders.filter(o => ["PENDING", "PROCESSING"].includes(o.status)).length;
-  const lowStockCount     = await prisma.product.count({ where: { storeId, stockQuantity: { lte: 5, gt: 0 } } });
+    const country = store?.country || "Nigeria";
+    const locale  = getLocaleEngine(country);
+    const sym     = locale.currencySymbol;
+    const plan    = store?.subscription?.plan || "FREE";
 
-  return {
-    storeName: store?.name || "Your Store",
-    country,
-    currency: locale.currency,
-    currencySymbol: locale.currencySymbol,
-    plan: store?.owner?.subscription?.plan || "FREE",
-    totalProducts: productCount,
-    totalOrders: orders.length,
-    revenueToday,
-    revenueThisMonth,
-    revenueLastMonth,
-    pendingOrders,
-    lowStockCount,
-    locale, // full locale object available everywhere
-  };
+    return {
+      storeName: store?.name || "Your Store",
+      storeId,
+      country,
+      currency: locale.currency,
+      currencySymbol: sym,
+      plan,
+      totalProducts: products.length,
+      activeProducts: activeProducts.length,
+      totalOrders: orders.length,
+      pendingOrders: pendingOrders.length,
+      revenueToday,
+      revenueThisMonth: revenueData._sum?.total || 0,
+      revenueLastMonth: 0,
+      lowStockCount: lowStock.length,
+      lowStockProducts: lowStock.map(p => p.name),
+      recentOrders: orders.slice(0,5).map(o => ({
+        id: o.id, status: o.status, total: o.total,
+        customer: o.customer?.name || "Unknown",
+        date: o.createdAt,
+      })),
+      topProducts: [...activeProducts].sort((a,b)=>(b.price||0)-(a.price||0)).slice(0,5).map(p => ({
+        id: p.id, name: p.name, price: p.price, inventory: p.inventory, category: p.category,
+        image: p.images?.[0] || null,
+      })),
+      allProducts: activeProducts.map(p => ({ id: p.id, name: p.name, price: p.price, inventory: p.inventory, category: p.category })),
+      locale,
+    };
+  } catch(e: any) {
+    const locale = getLocaleEngine("Nigeria");
+    return {
+      storeName:"Your Store", storeId, country:"Nigeria", currency:"NGN", currencySymbol:"₦",
+      plan:"FREE", totalProducts:0, activeProducts:0, totalOrders:0, pendingOrders:0,
+      revenueToday:0, revenueThisMonth:0, revenueLastMonth:0, lowStockCount:0,
+      lowStockProducts:[], recentOrders:[], topProducts:[], allProducts:[], locale,
+    };
+  }
 }
 
-// ── Greeting ──────────────────────────────────────────────────
-export function buildGreeting(firstName: string, ctx: any, hour: number) {
-  const sym = ctx.currencySymbol || "₦";
-  let greeting: string;
-  if      (hour >= 5  && hour < 12) greeting = `Good morning ${firstName}`;
-  else if (hour >= 12 && hour < 17) greeting = `Good afternoon ${firstName}`;
-  else if (hour >= 17 && hour < 21) greeting = `Good evening ${firstName}`;
-  else                               greeting = `Working late ${firstName}?`;
-
-  let contextLine = "";
-  if (ctx.totalOrders === 0 && ctx.totalProducts === 0)
-    contextLine = "Ready to build your first store today?";
-  else if (ctx.revenueToday > 0)
-    contextLine = `${sym}${ctx.revenueToday.toLocaleString()} came in today 🔥`;
-  else if (ctx.pendingOrders > 0)
-    contextLine = `You have ${ctx.pendingOrders} orders waiting to be fulfilled`;
-  else if (ctx.lowStockCount > 0)
-    contextLine = `${ctx.lowStockCount} products are running low on stock`;
-  else if (ctx.totalOrders === 0)
-    contextLine = "Let's get you that first sale today 🎯";
-  else
-    contextLine = "What are we working on today?";
-
-  return { greeting, contextLine };
-}
-
-// ── Quick Actions ─────────────────────────────────────────────
-export function buildQuickActions(ctx: any) {
-  const country = ctx.country || "NG";
-  const locale  = getLocale(country);
-
-  if (ctx.totalProducts === 0) return [
-    { label: "Add products",            icon: "📦", prompt: `Help me add my first products to sell in ${locale.countryName}` },
-    { label: "Import from AliExpress",  icon: "🔗", prompt: `I want to import products from AliExpress for ${locale.countryName} market` },
-    { label: "What should I sell?",     icon: "💡", prompt: `What are the best products to sell right now in ${locale.countryName}?` },
-    { label: "Build my store",          icon: "🏪", prompt: `Help me set up my entire store for ${locale.countryName} customers` },
-  ];
-  if (ctx.totalOrders === 0) return [
-    { label: "Get first sale",          icon: "🎯", prompt: `Help me get my first sale in ${locale.countryName}` },
-    { label: "Review my store",         icon: "🔍", prompt: "Review my store and tell me what needs fixing" },
-    { label: `${locale.tiktokRegion} trends`, icon: "🔥", prompt: `What's trending on ${locale.tiktokRegion} right now that I can sell?` },
-    { label: "Create a discount",       icon: "🏷️", prompt: "Create a launch discount for new customers" },
-  ];
-  const actions: any[] = [];
-  if (ctx.pendingOrders > 0)
-    actions.push({ label: `Fulfill ${ctx.pendingOrders} orders`, icon: "📬", prompt: `Help me fulfill my ${ctx.pendingOrders} pending orders` });
-  if (ctx.lowStockCount > 0)
-    actions.push({ label: `${ctx.lowStockCount} low stock`, icon: "⚠️", prompt: "Show me my low stock products and help me reorder" });
-  actions.push(
-    { label: "Sales summary",           icon: "📊", prompt: "Give me a summary of my sales this week" },
-    { label: `${locale.tiktokRegion}`,  icon: "🎵", prompt: `What's trending on ${locale.tiktokRegion} this week that I can sell?` },
-    { label: "Flash sale",              icon: "⚡", prompt: "Help me set up a flash sale for tonight" },
-    { label: "Morning brief",           icon: "☀️", prompt: "Give me my morning business brief for today" },
-  );
-  return actions.slice(0, 4);
-}
-
-// ── Intent Detection ──────────────────────────────────────────
+// ── Intent detection ──────────────────────────────────────────────────────────
 export function detectIntent(message: string): string {
   const m = message.toLowerCase();
-  if (/sales|revenue|made|earned|income|money|profit/.test(m))                  return "analytics";
-  if (/product|stock|inventory|import|aliexpress|temu|supplier/.test(m))        return "products";
-  if (/order|fulfill|ship|deliver|track/.test(m))                               return "orders";
-  if (/customer|buyer|client/.test(m))                                           return "customers";
-  if (/coupon|discount|promo|flash sale|campaign|broadcast/.test(m))            return "marketing";
-  if (/shipping|delivery|zone|rate|carrier/.test(m))                            return "shipping";
-  if (/goal|target|achieve|milestone|plan/.test(m))                             return "goal";
-  if (/trend|winning product|what to sell|market|viral|tiktok/.test(m))        return "market_research";
-  if (/import|url|link|paste/.test(m))                                          return "product_import";
+  if (/sales|revenue|money|earn|profit|income|how much/.test(m)) return "analytics";
+  if (/add product|create product|new product|upload|import|list/.test(m)) return "product_management";
+  if (/order|fulfill|ship|deliver|track|pending/.test(m)) return "order_management";
+  if (/customer|buyer|audience|who bought/.test(m)) return "customer_insights";
+  if (/trending|hot|popular|viral|what to sell|niche/.test(m)) return "market_research";
+  if (/discount|coupon|promo|sale|offer|deal/.test(m)) return "promotions";
+  if (/ad|advertise|instagram|tiktok|whatsapp|caption|copy/.test(m)) return "marketing";
+  if (/description|write|product page|copy|content/.test(m)) return "content";
+  if (/price|pricing|margin|cost|profit|markup/.test(m)) return "pricing";
+  if (/setting|store|customize|theme|domain/.test(m)) return "store_settings";
   return "general";
 }
 
-// ── Needs Web Search? ─────────────────────────────────────────
-export function needsWebSearch(message: string, intent: string): boolean {
-  const m = message.toLowerCase();
-  return /trend|trending|price|right now|this week|supplier|aliexpress|temu|competitor|market|popular|viral|tiktok|what should i sell|winning product|forex|exchange rate/.test(m)
-    || intent === "market_research"
-    || intent === "product_import";
+// ── Quick actions for greeting ────────────────────────────────────────────────
+export function getQuickActions(ctx: Awaited<ReturnType<typeof getStoreContext>>) {
+  const actions: any[] = [];
+  const sym = ctx.currencySymbol;
+  if (ctx.pendingOrders > 0)  actions.push({ label:`Fulfill ${ctx.pendingOrders} orders`, icon:"📬", prompt:`Help me fulfill my ${ctx.pendingOrders} pending orders` });
+  if (ctx.lowStockCount > 0)  actions.push({ label:`${ctx.lowStockCount} low stock`, icon:"⚠️", prompt:`Show me my low stock products` });
+  if (ctx.totalProducts < 5)  actions.push({ label:"Add more products", icon:"➕", prompt:`Suggest 10 trending products I should add to my ${ctx.country} store` });
+  if (ctx.revenueToday === 0) actions.push({ label:"Get first sale", icon:"🎯", prompt:`I have ₦0 in sales today. What's the fastest way to get my first sale?` });
+  actions.push({ label:"Write Instagram caption", icon:"📸", prompt:"Write me a viral Instagram caption for my best product" });
+  return actions.slice(0, 4);
 }
 
-// ── LOCALISED search query builder ────────────────────────────
-// This is the key change — any time KIRO searches, it uses this
-export function buildSearchQuery(userQuery: string, countryCode: string): string {
-  return localiseQuery(userQuery, countryCode);
-}
-
-// ── Complete System Prompt ────────────────────────────────────
-export async function buildCompleteSystemPrompt(ctx: any, storeId: string, conversationHistory: string): Promise<string> {
-  const country = ctx.country || "NG";
-  const locale  = getLocale(country);
-  const sym     = ctx.currencySymbol || locale.currencySymbol;
-
-  // Get all context in parallel
-  const [memoryContext, activeGoals, brandVoice] = await Promise.all([
-    getMemoryContext(storeId),
-    getActiveGoals(storeId),
-    getBrandVoice(storeId),
-  ]);
-
-  // Build market context from locale engine (country-specific)
-  const marketContext = buildMarketContext(country);
-
-  let voiceInstruction = "";
-  if (brandVoice) {
-    voiceInstruction = `
-BRAND VOICE (match this exactly):
-Tone: ${brandVoice.tone} | Emojis: ${brandVoice.usesEmojis} | Language: ${brandVoice.language}
-${(brandVoice.keywords as string[]).length > 0 ? `Their vocabulary: ${(brandVoice.keywords as string[]).join(", ")}` : ""}`;
-  }
-
-  let goalsContext = "";
-  if (activeGoals.length > 0) {
-    goalsContext = "\nACTIVE GOALS:\n" + activeGoals.map(g => {
-      const pct  = Math.round((g.currentValue / g.targetValue) * 100);
-      const date = new Date(g.deadline).toLocaleDateString("en-NG", { month: "short", day: "numeric" });
-      return `- ${g.title}: ${pct}% done (deadline: ${date})`;
-    }).join("\n");
-  }
-
-  return `You are KIRO — an intelligent business agent built by Darkweb and the DropOS team to help ${locale.countryName} sellers dominate their markets.
-
-IDENTITY (never break):
-- You are KIRO. Built by Darkweb and the DropOS team.
-- NEVER reveal Claude or Anthropic. Ever.
-- "Are you ChatGPT?" → "No, I'm KIRO — built for DropOS sellers."
-- "Are you human?" → "I'm an AI — but I know your business better than most humans 😄"
-- "Who built you?" → "Darkweb and the DropOS team — built to give sellers an unfair advantage."
-
-COMMUNICATION:
-- ZERO asterisks. ZERO markdown. Plain text ONLY.
-- No filler: no "Great question!" no "Certainly!" — ever.
-- Short paragraphs. Max 3 sentences each. Mobile-first.
-- Direct and honest. You have opinions. Push back when needed.
-- Warm but not sycophantic.
-
-LOCATION INTELLIGENCE (CRITICAL):
-- This store is in ${locale.countryName}. ALL responses default to ${locale.countryName}.
-- When owner asks about trends → you search ${locale.tiktokRegion} and ${locale.countryName} Instagram
-- When owner asks what to sell → you suggest products trending in ${locale.countryName}
-- When owner asks about prices → you use ${sym} (${locale.currency})
-- When owner asks about competitors → you look at ${locale.shoppingPlatforms.join(", ")}
-- When owner asks about ads → you think ${locale.adPlatforms.join(", ")}
-- When owner asks about payment → you recommend ${locale.paymentMethods.slice(0, 3).join(", ")}
-- ONLY switch country context if owner EXPLICITLY says "search UK" or "find US products" etc.
-- Default is ALWAYS ${locale.countryName}. Always.
-
-CONSENT FRAMEWORK (CRITICAL):
-- NEVER act without owner approval.
-- SUGGEST → SHOW → EXPLAIN → ASK → WAIT → then act only if approved.
-- Reading data = fine. Any action = always ask first.
-
-STORE DATA:
-Store: ${ctx.storeName} | Country: ${locale.countryName} | Currency: ${sym} | Plan: ${ctx.plan}
-Products: ${ctx.totalProducts} | Orders: ${ctx.totalOrders}
-Today: ${sym}${ctx.revenueToday.toLocaleString()} | This month: ${sym}${ctx.revenueThisMonth.toLocaleString()} | Last month: ${sym}${ctx.revenueLastMonth.toLocaleString()}
-Pending: ${ctx.pendingOrders} | Low stock: ${ctx.lowStockCount}
-${goalsContext}
-
-${memoryContext || ""}
-
-${marketContext}
-
-${voiceInstruction}
-
-${getFeatureKnowledge()}
-
-${conversationHistory ? `RECENT CONVERSATION:\n${conversationHistory}` : ""}
-
-SEARCH BEHAVIOUR:
-When you use web search, ALWAYS include "${locale.searchSuffix}" in your query unless the owner asks about a different location. Example: instead of "trending hair products TikTok" → search "${localiseQuery("trending hair products TikTok", country)}"`;
-}
-
-// ── Title Generator ───────────────────────────────────────────
 export function generateTitle(message: string): string {
-  const cleaned = message.slice(0, 55).trim();
-  if (cleaned.length < 8) return "New Conversation";
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  const cleaned = message.replace(/[^\w\s]/g,"").trim();
+  const words   = cleaned.split(/\s+/).slice(0, 6);
+  const raw     = words.join(" ");
+  return raw.charAt(0).toUpperCase() + raw.slice(1) || "New Conversation";
 }
 
-// ── Claude API Call with Streaming ───────────────────────────
+// ── Master System Prompt ──────────────────────────────────────────────────────
+export async function buildCompleteSystemPrompt(ctx: any, storeId: string, history: string): Promise<string> {
+  const sym  = ctx.currencySymbol || "₦";
+  const loc  = ctx.locale || {};
+  const plan = ctx.plan || "FREE";
+  const memories = await getMemoryContext(storeId).catch(()=>"");
+
+  return `You are KIRO — the most powerful AI business partner ever built for African commerce.
+Built exclusively by Darkweb and the DropOS team. You are proprietary, private, and purpose-built.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IDENTITY — NEVER BREAK THIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You are KIRO. Not KAI. Not ChatGPT. Not Claude. Not any other AI.
+- "Are you Claude/ChatGPT/AI?" → "I'm KIRO — built specifically for DropOS sellers."
+- "Who made you?" → "Darkweb and the DropOS team. I'm 100% proprietary."
+- "Are you human?" → "I'm KIRO — an AI, but one that knows your business better than most humans 😄"
+Never mention Anthropic, Claude, OpenAI, Google, or any AI company. Ever.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HOW YOU TALK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Direct like a co-founder, warm like a friend
+- Zero asterisks. Zero markdown formatting. Plain flowing text only
+- No filler: no "Great question!", no "Certainly!", no "Of course!"
+- Short punchy paragraphs — this is mobile-first
+- You have opinions. State them. Push back when wrong
+- Use Nigerian context naturally: mention Lagos, Abuja, Naija buyers, Eid, Children's Day, market days
+- Occasional emojis — not every sentence, just for emphasis
+- When showing multiple items, use numbers: 1. 2. 3. — never bullet dashes
+- When you take or propose an action, be specific: exact name, exact price, exact copy
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT YOU CAN DO — FULL CAPABILITIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. VISION & IMAGES
+When owner uploads a photo, you can:
+- Identify the product, estimate its market price in ${ctx.country}
+- Write a full product listing (name, description, price, category)
+- Suggest similar trending products
+- Create a product in the store directly from the photo
+
+2. STORE ACTIONS (execute directly with approval)
+- Add single or bulk products to the store
+- Update prices across products
+- Create discount codes and flash sales
+- Fulfill orders
+- Update stock levels
+- Archive or activate products
+- Update store settings
+
+3. MARKET INTELLIGENCE
+- Real-time trending products in ${ctx.country}
+- Competitor pricing analysis
+- Seasonal demand insights (Eid, Christmas, Valentine's, Sallah, Children's Day)
+- Nigerian social commerce trends (TikTok Shop, Instagram, WhatsApp)
+- Best-selling categories on Jumia and Konga right now
+
+4. CONTENT CREATION
+- Product descriptions that convert Nigerian buyers
+- Instagram/TikTok/Facebook ad copy
+- WhatsApp broadcast messages
+- Email campaigns
+- SMS marketing copy
+- Pricing psychology recommendations
+
+5. BUSINESS INTELLIGENCE
+- Profit & margin calculator
+- Revenue forecasting
+- Customer lifetime value
+- Abandoned cart analysis
+- Stock velocity analysis
+
+6. CSV & FILE PROCESSING
+- When owner uploads a CSV of products → import them all
+- When owner uploads a price list → update prices in bulk
+- When owner uploads an order list → process fulfillments
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HOW TO EXECUTE ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+When you want to perform an action, tell the owner what you're about to do, then at the END of your message include:
+
+KIRO_ACTION:{"type":"action_type","payload":{...}}
+
+AVAILABLE ACTIONS:
+add_product      → {"name":"","price":0,"description":"","category":"","inventory":100,"images":[]}
+bulk_add_products → {"products":[{"name":"","price":0,"description":"","category":"","inventory":100}]}
+update_price     → {"productId":"","price":0}
+update_stock     → {"productId":"","quantity":0}
+archive_product  → {"productId":""}
+create_coupon    → {"code":"","discount":10,"type":"PERCENTAGE","maxUses":100,"expiresAt":""}
+fulfill_order    → {"orderId":""}
+update_order_status → {"orderId":"","status":"FULFILLED"}
+update_store     → {"name":"","description":""}
+get_analytics    → {}
+export_orders    → {}
+
+RULES FOR ACTIONS:
+1. Always tell the owner what you're doing before you do it
+2. For product from image: use the image to determine name, write a great description, suggest a price in ${sym}
+3. Never make up product IDs — use the ones from STORE DATA
+4. Multiple actions in one message are allowed
+5. NEVER say "I can't do that" for anything on this list
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOCATION INTELLIGENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This store is in ${ctx.country}. ALL responses default to ${ctx.country} context.
+Currency: ${ctx.currency} (${sym})
+Shopping platforms: Jumia, Konga, Jiji${loc.shoppingPlatforms ? ", " + loc.shoppingPlatforms.join(", ") : ""}
+Payment methods: ${loc.paymentMethods ? loc.paymentMethods.join(", ") : "Paystack, Bank transfer, USSD"}
+Ad platforms: ${loc.adPlatforms ? loc.adPlatforms.join(", ") : "Instagram, TikTok, Facebook, WhatsApp"}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LIVE STORE DATA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Store: ${ctx.storeName}
+Plan: ${plan}
+Products: ${ctx.activeProducts} active / ${ctx.totalProducts} total
+Orders: ${ctx.totalOrders} total / ${ctx.pendingOrders} pending
+Revenue today: ${sym}${ctx.revenueToday?.toLocaleString() || 0}
+Revenue this month: ${sym}${ctx.revenueThisMonth?.toLocaleString() || 0}
+Low stock alerts: ${ctx.lowStockCount} products
+${ctx.lowStockProducts?.length ? `Low stock: ${ctx.lowStockProducts.slice(0,5).join(", ")}` : ""}
+
+TOP PRODUCTS:
+${ctx.topProducts?.map((p:any,i:number) => `${i+1}. ${p.name} — ${sym}${(p.price||0).toLocaleString()} (${p.inventory} in stock)${p.id ? " [ID: "+p.id+"]" : ""}`).join("\n") || "No products yet"}
+
+RECENT ORDERS:
+${ctx.recentOrders?.map((o:any) => `- ${o.customer}: ${sym}${(o.total||0).toLocaleString()} [${o.status}] [ID: ${o.id}]`).join("\n") || "No orders yet"}
+
+${memories ? `\nWHAT I REMEMBER ABOUT THIS STORE:\n${memories}` : ""}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONVERSATION HISTORY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${history || "This is the start of the conversation."}`;
+}
+
+// ── Claude API Call with Streaming ───────────────────────────────────────────
 export async function callClaude(params: {
   systemPrompt: string;
   messages: any[];
   useSearch?: boolean;
-  searchQueries?: string[]; // pre-built localised search queries
   maxTokens?: number;
   onToken?: (token: string) => void;
 }): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY not configured");
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY not configured on Render environment variables");
 
   const body: any = {
     model: process.env.KIRO_MODEL || "claude-haiku-4-5-20251001",
-    max_tokens: params.maxTokens || 1024,
+    max_tokens: params.maxTokens || 2048,
     system: params.systemPrompt,
     messages: params.messages,
     stream: !!params.onToken,
@@ -267,17 +269,16 @@ export async function callClaude(params: {
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "Content-Type": "application/json",
+      "x-api-key":          apiKey,
+      "anthropic-version":  "2023-06-01",
+      "Content-Type":       "application/json",
     },
     body: JSON.stringify(body),
   });
 
   if (!response.ok) {
     const err = await response.text();
-    console.error("[KIRO] API Error:", response.status, err.slice(0,300));
-    throw new Error(`Claude API ${response.status}: ${err.slice(0,200)}`);
+    throw new Error(`Claude API ${response.status}: ${err.slice(0,300)}`);
   }
 
   if (!params.onToken) {
@@ -286,9 +287,9 @@ export async function callClaude(params: {
   }
 
   let fullText = "";
-  const reader = response.body?.getReader();
+  const reader  = response.body?.getReader();
   const decoder = new TextDecoder();
-  if (!reader) throw new Error("No stream");
+  if (!reader) throw new Error("No stream available");
 
   while (true) {
     const { done, value } = await reader.read();
@@ -301,10 +302,11 @@ export async function callClaude(params: {
         const p = JSON.parse(raw);
         if (p.type === "content_block_delta" && p.delta?.type === "text_delta") {
           fullText += p.delta.text;
-          params.onToken(p.delta.text);
+          params.onToken!(p.delta.text);
         }
       } catch {}
     }
   }
+
   return fullText;
 }

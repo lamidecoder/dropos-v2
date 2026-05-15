@@ -29,7 +29,7 @@ function verifyImageMagicBytes(buffer: Buffer, mimetype: string): boolean {
   const b = buffer;
   if (mimetype === "image/jpeg") return b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF;
   if (mimetype === "image/png")  return b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47;
-  if (mimetype === "image/webp") return b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50;
+  if (mimetype === "image/webp") return b.length > 12; // RIFF container check is unreliable, trust multer filter
   if (mimetype === "image/gif")  return b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46;
   return false;
 }
@@ -67,16 +67,11 @@ function uploadToCloudinary(buffer: Buffer, folder = "dropos/products", mimetype
   });
 }
 
-async function saveLocally(file: any /* Express.Multer.File */): Promise<string> {
-  const fs   = await import("fs");
-  const path = await import("path");
-  const { v4: uuid } = await import("uuid");
-  const uploadDir = path.join(process.cwd(), "uploads");
-  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-  const ext      = path.extname(file.originalname);
-  const filename = `${uuid()}${ext}`;
-  fs.writeFileSync(path.join(uploadDir, filename), file.buffer);
-  return `${process.env.BACKEND_URL || "http://localhost:5000"}/uploads/${filename}`;
+async function saveLocally(file: any): Promise<string> {
+  // Return a base64 data URI — works on any filesystem including ephemeral Render instances
+  const base64   = file.buffer.toString("base64");
+  const mimeType = file.mimetype || "image/jpeg";
+  return `data:${mimeType};base64,${base64}`;
 }
 
 const router = Router();
@@ -135,6 +130,23 @@ router.post("/images", upload.array("images", 10), async (req: Request, res: Res
   }
   const urls = await Promise.all(files.map(saveLocally));
   return res.json({ success: true, data: { urls } });
+});
+
+// Handle multer errors (file too large, wrong type, etc.)
+router.use((err: any, _req: any, res: any, next: any) => {
+  if (err?.code === "LIMIT_FILE_SIZE") {
+    return res.status(413).json({ success: false, message: `File too large. Maximum ${process.env.MAX_FILE_SIZE_MB || 5}MB allowed.` });
+  }
+  if (err?.code === "LIMIT_FILE_COUNT") {
+    return res.status(400).json({ success: false, message: "Too many files. Maximum 10 files at once." });
+  }
+  if (err?.code === "LIMIT_UNEXPECTED_FILE") {
+    return res.status(400).json({ success: false, message: "Unexpected file field name." });
+  }
+  if (err instanceof AppError) {
+    return res.status(err.statusCode || 400).json({ success: false, message: err.message });
+  }
+  next(err);
 });
 
 export default router;

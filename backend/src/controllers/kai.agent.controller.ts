@@ -5,7 +5,7 @@
 import { Request, Response } from "express";
 import prisma                from "../lib/prisma";
 import { detectAgentAction, executeAgentAction, getUserStores } from "../services/kai.agent.service";
-import { getStoreContext, buildCompleteSystemPrompt, callClaude, generateTitle, detectIntent, needsWebSearch } from "../services/kai.service";
+import { getStoreContext, buildCompleteSystemPrompt, callClaude, generateTitle, detectIntent } from "../services/kai.service";
 import { extractMemoriesFromConversation } from "../services/kai.memory.service";
 
 const apiKey = () => process.env.ANTHROPIC_API_KEY || "";
@@ -108,7 +108,7 @@ export async function agentChat(req: Request, res: Response) {
 
     const ctx         = await getStoreContext(activeStoreId);
     const intent      = detectIntent(message);
-    const useSearch   = needsWebSearch(message, intent);
+    const useSearch   = false;
     const history     = (conv.messages || []).slice(-8).map((m: any) =>
       `${m.role === "user" ? "Owner" : "KAI"}: ${m.content.slice(0, 200)}`
     ).join("\n");
