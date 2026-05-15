@@ -1,7 +1,7 @@
 // ============================================================
-// KAI — Memory Service
+// KIRO — Memory Service
 // Path: backend/src/services/kai.memory.service.ts
-// KAI remembers everything across ALL sessions forever
+// KIRO remembers everything across ALL sessions forever
 // ============================================================
 import { PrismaClient } from "@prisma/client";
 
@@ -55,7 +55,7 @@ export async function getMemoryContext(storeId: string): Promise<string> {
     grouped[m.category].push(m);
   }
 
-  const lines: string[] = ["PERSISTENT MEMORY (KAI knows this about this store):"];
+  const lines: string[] = ["PERSISTENT MEMORY (KIRO knows this about this store):"];
   for (const [cat, mems] of Object.entries(grouped)) {
     lines.push(`[${cat.replace(/_/g, " ").toUpperCase()}]`);
     for (const m of mems) {
@@ -91,7 +91,7 @@ export async function extractMemoriesFromConversation(
 Return ONLY a JSON array. Empty array if nothing worth remembering.
 
 User said: "${userMessage.slice(0, 500)}"
-KAI responded: "${kaiResponse.slice(0, 300)}"
+KIRO responded: "${kaiResponse.slice(0, 300)}"
 
 Extract memories like:
 - Business facts (what they sell, where they are, target market)

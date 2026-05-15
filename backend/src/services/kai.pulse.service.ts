@@ -1,5 +1,5 @@
 // ============================================================
-// KAI — Pulse Service
+// KIRO — Pulse Service
 // Path: backend/src/services/kai.pulse.service.ts
 // Runs 24/7 in background, surfaces insights before owner asks
 // ============================================================

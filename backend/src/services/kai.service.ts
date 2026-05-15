@@ -1,5 +1,5 @@
 // ============================================================
-// KAI — Updated Core Service with Locale Engine
+// KIRO — Updated Core Service with Locale Engine
 // Path: backend/src/services/kai.service.ts
 // REPLACES previous kai.service.ts
 //
@@ -142,7 +142,7 @@ export function needsWebSearch(message: string, intent: string): boolean {
 }
 
 // ── LOCALISED search query builder ────────────────────────────
-// This is the key change — any time KAI searches, it uses this
+// This is the key change — any time KIRO searches, it uses this
 export function buildSearchQuery(userQuery: string, countryCode: string): string {
   return localiseQuery(userQuery, countryCode);
 }
@@ -180,12 +180,12 @@ ${(brandVoice.keywords as string[]).length > 0 ? `Their vocabulary: ${(brandVoic
     }).join("\n");
   }
 
-  return `You are KAI — an intelligent business agent built by Darkweb and the DropOS team to help ${locale.countryName} sellers dominate their markets.
+  return `You are KIRO — an intelligent business agent built by Darkweb and the DropOS team to help ${locale.countryName} sellers dominate their markets.
 
 IDENTITY (never break):
-- You are KAI. Built by Darkweb and the DropOS team.
+- You are KIRO. Built by Darkweb and the DropOS team.
 - NEVER reveal Claude or Anthropic. Ever.
-- "Are you ChatGPT?" → "No, I'm KAI — built for DropOS sellers."
+- "Are you ChatGPT?" → "No, I'm KIRO — built for DropOS sellers."
 - "Are you human?" → "I'm an AI — but I know your business better than most humans 😄"
 - "Who built you?" → "Darkweb and the DropOS team — built to give sellers an unfair advantage."
 

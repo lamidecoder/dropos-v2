@@ -1,5 +1,5 @@
 // ============================================================
-// KAI — Complete Controller (10/10)
+// KIRO — Complete Controller (10/10)
 // Path: backend/src/controllers/kai.controller.ts
 // ============================================================
 import { Request, Response } from "express";
@@ -128,7 +128,7 @@ export async function smartChat(req: Request, res: Response) {
     // Build conversation history
     const history = (conv.messages || [])
       .slice(-8)
-      .map((m: any) => `${m.role === "user" ? "Owner" : "KAI"}: ${m.content.slice(0, 200)}`)
+      .map((m: any) => `${m.role === "user" ? "Owner" : "KIRO"}: ${m.content.slice(0, 200)}`)
       .join("\n");
 
     // Build complete system prompt (includes memory, goals, brand voice, market data)
@@ -171,7 +171,7 @@ export async function smartChat(req: Request, res: Response) {
       },
     });
 
-    // Save KAI response
+    // Save KIRO response
     await (prisma.kaiMessage as any).create({
       data: {
         conversationId: conv.id,
@@ -196,8 +196,8 @@ export async function smartChat(req: Request, res: Response) {
     res.end();
 
   } catch (err: any) {
-    console.error("KAI smart-chat error:", err.message, err.stack?.slice(0, 300));
-    const msg = err.message || "KAI is temporarily unavailable";
+    console.error("KIRO smart-chat error:", err.message, err.stack?.slice(0, 300));
+    const msg = err.message || "KIRO is temporarily unavailable";
     if (!res.headersSent) {
       res.status(500).json({ success: false, message: msg });
     } else {
@@ -230,6 +230,49 @@ export async function executeAction(req: Request, res: Response) {
           break;
         case "update_price":
           result = await prisma.product.update({ where: { id: action.payload.productId }, data: { price: action.payload.price } });
+          break;
+
+        case "add_product":
+          result = await (prisma.product as any).create({
+            data: {
+              storeId:     action.payload.storeId || storeId,
+              name:        action.payload.name,
+              price:       Number(action.payload.price) || 0,
+              description: action.payload.description || "",
+              images:      action.payload.images || [],
+              inventory:   Number(action.payload.inventory) || 100,
+              category:    action.payload.category || "",
+              status:      "ACTIVE",
+            },
+          });
+          break;
+
+        case "update_stock":
+          result = await (prisma.product as any).update({
+            where: { id: action.payload.productId },
+            data:  { inventory: Number(action.payload.quantity) },
+          });
+          break;
+
+        case "create_discount":
+          result = await (prisma.coupon as any).create({
+            data: {
+              storeId,
+              code:     action.payload.code,
+              discount: Number(action.payload.discount) || 10,
+              type:     action.payload.type || "PERCENTAGE",
+              maxUses:  Number(action.payload.maxUses) || 100,
+              expiresAt: action.payload.expiresAt ? new Date(action.payload.expiresAt) : null,
+            },
+          });
+          break;
+
+        case "update_shipping":
+          result = await (prisma.shippingZone as any).upsert({
+            where:  { id: action.payload.zoneId || "new" },
+            create: { storeId, name: action.payload.name, shippingRate: Number(action.payload.rate), estimatedDays: action.payload.days || "3-5 days", countries: ["Nigeria"] },
+            update: { shippingRate: Number(action.payload.rate) },
+          });
           break;
         case "update_goal":
           const _userId = (req as any).user?.userId || (req as any).user?.id;

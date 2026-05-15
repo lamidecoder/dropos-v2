@@ -419,7 +419,7 @@ export default function KIROChat({ className, storeId: propStoreId, initialMessa
           </motion.button>
         </div>
         <p style={{ fontSize: 10, color: "rgba(255,255,255,0.15)", textAlign: "center", marginTop: 8 }}>
-          KIRO can make mistakes. Always verify important decisions.
+          KIRO can make mistakes. Always verify important business decisions.
         </p>
       </div>
     </div>

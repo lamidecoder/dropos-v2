@@ -1,5 +1,5 @@
 // ============================================================
-// KAI Market Service — UPDATED WITH LOCALE ENGINE
+// KIRO Market Service — UPDATED WITH LOCALE ENGINE
 // Path: backend/src/services/kai.market.service.ts
 // REPLACES previous version
 // All market data fetched per country
