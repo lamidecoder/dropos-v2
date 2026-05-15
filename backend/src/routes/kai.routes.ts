@@ -53,7 +53,15 @@ router.post  ("/skills/:id/use",        useSkill);
 router.post  ("/analyze-voice",         analyzeVoice);
 
 // Goals
-router.get   ("/goals",                 getGoals);
-router.post  ("/goals",                 createGoal);
+router.get   ("/goals",                 getGoals as any);
+router.post  ("/goals",                 createGoal as any);
+
+// GET /api/kai/test-key — check API key config (no auth required for diagnosis)
+router.get("/test-key", ((req: any, res: any) => {
+  const key = process.env.ANTHROPIC_API_KEY;
+  const model = process.env.KIRO_MODEL || "claude-sonnet-4-5";
+  if (!key) { res.status(500).json({ success: false, message: "ANTHROPIC_API_KEY not set" }); return; }
+  res.json({ success: true, keyPrefix: key.slice(0,10)+"...", model, length: key.length });
+}) as any);
 
 export default router;

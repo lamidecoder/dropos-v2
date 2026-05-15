@@ -109,9 +109,9 @@ function DomainSection({ t, storeId }: { t: any; storeId?: string }) {
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div><p style={{ color: t.muted, marginBottom: 2 }}>Type</p><p className="font-mono font-bold" style={{ color: t.text }}>CNAME</p></div>
             <div><p style={{ color: t.muted, marginBottom: 2 }}>Name</p><p className="font-mono font-bold" style={{ color: t.text }}>{domain.split(".")[0] || "store"}</p></div>
-            <div className="col-span-2"><p style={{ color: t.muted, marginBottom: 2 }}>Value</p><p className="font-mono font-bold text-xs" style={{ color: t.text }}>cname.vercel-dns.com</p></div>
+            <div className="col-span-2"><p style={{ color: t.muted, marginBottom: 2 }}>Value</p><p className="font-mono font-bold text-xs" style={{ color: t.text }}>cname.dropos-dns.com</p></div>
           </div>
-          <p className="text-xs" style={{ color: t.muted }}>DNS changes take 10-60 minutes to propagate. SSL is automatic via Vercel.</p>
+          <p className="text-xs" style={{ color: t.muted }}>DNS changes take 10-60 minutes to propagate. SSL is automatic.</p>
         </div>
       )}
     </div>

@@ -90,7 +90,7 @@ function LoginInner() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-8"
             style={{ background: "rgba(107,53,232,0.15)", border: "1px solid rgba(107,53,232,0.3)", color: "#A78BFA" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse inline-block" />
-            Live on Vercel
+            Live
           </div>
           <h1 className="font-black text-white leading-[0.95] tracking-tight mb-6"
             style={{ fontSize: "clamp(44px, 5vw, 64px)", letterSpacing: "-2px" }}>

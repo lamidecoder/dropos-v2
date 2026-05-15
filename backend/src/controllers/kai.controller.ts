@@ -85,7 +85,8 @@ export async function getConversation(req: Request, res: Response) {
 
 // ── POST /api/kai/smart-chat (STREAMING + MEMORY) ────────────
 export async function smartChat(req: Request, res: Response) {
-  const { message, conversationId, storeId, imageBase64, imageMediaType } = req.body;
+  const { message, storeId, imageBase64, imageMediaType } = req.body;
+  const conversationId = req.body.conversationId || req.body.sessionId || null;
   if (!message || !storeId)
     return res.status(400).json({ success: false, message: "message and storeId required" });
 

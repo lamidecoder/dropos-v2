@@ -196,6 +196,13 @@ app.use("/api/upsell",               upsellRoutes);
 app.use("/api/waitlist",             waitlistRoutes);
 
 // KAI SYSTEM
+// SSE streaming needs special CORS handling
+app.options("/api/kai/smart-chat", (req: any, res: any) => {
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
+  res.status(204).send();
+});
 app.use("/api/kai",              kaiRoutes);
 app.use("/api/billing",          billingRoutes);
 app.use("/api/fulfillment",       fulfillmentRoutes);

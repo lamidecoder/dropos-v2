@@ -14,7 +14,7 @@ const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA" };
 const FAQS = [
   { q:"How do I connect Paystack?",    a:"Go to Settings > Payments > Paystack. Enter your Paystack secret key and public key. Your store will be ready to accept payments instantly." },
   { q:"How does dropshipping work?",   a:"You list products in your store. When a customer orders, KIRO automatically places the order with your supplier who ships directly to your customer. You keep the margin." },
-  { q:"Can I use a custom domain?",    a:"Yes. Go to Settings > Domain. Enter your domain and add the CNAME record pointing to cname.vercel-dns.com. SSL is automatic." },
+  { q:"Can I use a custom domain?",    a:"Yes. Go to Settings > Domain. Enter your domain and add the CNAME record pointing to your CNAME target (provided in Settings). SSL is automatic." },
   { q:"How do I get paid?",            a:"Customers pay via Paystack or Stripe directly into your account. DropOS never holds your money. Payouts happen within 1-3 business days." },
   { q:"Why is KIRO not responding?",   a:"Make sure ANTHROPIC_API_KEY is set in your Render environment variables. Go to Render > Environment and add the key from console.anthropic.com." },
   { q:"How do I import products?",     a:"Go to Import Products. Paste any AliExpress, CJ, or Zendrop product URL and KIRO will import it automatically with description and images." },

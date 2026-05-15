@@ -105,7 +105,7 @@ export default function AboutPage() {
           <h2 className="font-black text-2xl" style={{ letterSpacing:"-1px" }}>Built on solid foundations.</h2>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {["Next.js 14","TypeScript","Anthropic Claude","Tailwind CSS","Prisma","PostgreSQL","Paystack","Fal.ai","Cloudinary","Resend","Render","Vercel"].map(tech => (
+          {["Next.js 14","TypeScript","KIRO AI Engine","Tailwind CSS","Prisma","PostgreSQL","Paystack","Fal.ai","Cloudinary","Resend","Render","Vercel"].map(tech => (
             <div key={tech} className="px-4 py-3 rounded-xl text-center text-sm font-medium" style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.6)" }}>
               {tech}
             </div>

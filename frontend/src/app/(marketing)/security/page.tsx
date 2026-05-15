@@ -11,11 +11,11 @@ const PILLARS = [
   { icon:Lock,   color:"#8B5CF6", title:"Your data is yours",         points:["We never sell your data to third parties","We never use your store data to train AI models","You can export and delete all your data at any time","GDPR and NDPR compliant"] },
   { icon:Shield, color:"#10B981", title:"Payments are secure",         points:["Paystack and Stripe handle all card processing  -  we never see card numbers","PCI DSS compliance handled by our payment processors","All transactions encrypted end-to-end","Instant fraud detection on every transaction"] },
   { icon:Server, color:"#06B6D4", title:"Infrastructure you can trust",points:["Hosted on Render and Vercel  -  enterprise-grade infrastructure","SSL on every store and every API call","Daily automatic backups","99.9% uptime SLA"] },
-  { icon:Eye,    color:"#F59E0B", title:"Full transparency",           points:["We disclose every tool and AI system we use","KIRO is powered by Anthropic Claude  -  we say this openly","No hidden fees, no surprise charges","Pricing is public and never changes without 30 days notice"] },
+  { icon:Eye,    color:"#F59E0B", title:"Full transparency",           points:["We disclose every tool and AI system we use","KIRO is built by the DropOS team — proprietary and purpose-built","No hidden fees, no surprise charges","Pricing is public and never changes without 30 days notice"] },
 ];
 
 const TOOLS = [
-  { name:"Anthropic Claude",  role:"Powers KIRO AI",            why:"Industry-leading AI safety. Your data is not used to train their models." },
+  { name:"KIRO AI Engine",    role:"Powers your store intelligence", why:"Purpose-built for African commerce. Your data stays private and is never used to train external models." },
   { name:"Fal.ai",            role:"Image Studio generation",   why:"Images processed on-demand. Not stored permanently by default."          },
   { name:"Paystack",          role:"Nigerian/African payments",  why:"CBN regulated. PCI DSS Level 1 certified."                               },
   { name:"Stripe",            role:"Global card payments",      why:"Used by millions of businesses globally. PCI DSS Level 1 certified."      },
