@@ -116,7 +116,11 @@ export async function smartChat(req: Request, res: Response) {
 
     // Get everything in parallel
     const [ctx, intent] = await Promise.all([
-      getStoreContext(storeId),
+      getStoreContext(storeId).catch(() => ({
+        storeName:"Your Store", country:"NG", currency:"NGN", currencySymbol:"₦",
+        plan:"FREE", totalProducts:0, totalOrders:0, revenueToday:0, revenueThisMonth:0,
+        revenueLastMonth:0, pendingOrders:0, lowStockCount:0, locale:{},
+      })),
       Promise.resolve(detectIntent(message)),
     ]);
     const useSearch = needsWebSearch(message, intent);
@@ -128,7 +132,13 @@ export async function smartChat(req: Request, res: Response) {
       .join("\n");
 
     // Build complete system prompt (includes memory, goals, brand voice, market data)
-    const systemPrompt = await buildCompleteSystemPrompt(ctx, storeId, history);
+    let systemPrompt: string;
+    try {
+      systemPrompt = await buildCompleteSystemPrompt(ctx, storeId, history);
+    } catch(e: any) {
+      console.error("[KIRO] buildCompleteSystemPrompt failed, using fallback:", e.message);
+      systemPrompt = `You are KIRO, an AI business assistant for ${ctx.storeName}. Be helpful, concise and actionable.`;
+    }
 
     // Build messages array
     const claudeMsgs: any[] = [];
@@ -222,7 +232,8 @@ export async function executeAction(req: Request, res: Response) {
           result = await prisma.product.update({ where: { id: action.payload.productId }, data: { price: action.payload.price } });
           break;
         case "update_goal":
-          result = await prisma.kaiGoal.upsert({
+          const _userId = (req as any).user?.userId || (req as any).user?.id;
+          result = await (prisma.kaiGoal as any).upsert({
             where: { id: action.payload.goalId || "new" },
             create: { storeId, userId: (req as AuthRequest).user?.userId || (req as AuthRequest).user?.id || 'system', title: action.payload.title, targetValue: action.payload.targetValue,
               currentValue: 0, unit: action.payload.unit, deadline: new Date(action.payload.deadline) },
@@ -410,11 +421,12 @@ export async function getGoals(req: Request, res: Response) {
 export async function createGoal(req: Request, res: Response) {
   try {
     const { storeId, title, targetValue, unit, deadline, description } = req.body;
+    const userId = (req as any).user?.userId || (req as any).user?.id;
     if (!storeId || !title || !targetValue || !deadline)
       return res.status(400).json({ success: false, message: "storeId, title, targetValue, deadline required" });
 
     const goal = await (prisma.kaiGoal as any).create({
-      data: { storeId, title, description, targetValue, unit: unit || "NGN", deadline: new Date(deadline) },
+      data: { storeId, userId, title, description, targetValue, unit: unit || "NGN", deadline: new Date(deadline) },
       
     });
 
