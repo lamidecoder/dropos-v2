@@ -232,6 +232,13 @@ export default function KIROChat({ className, storeId: propStoreId, initialMessa
         }
       );
 
+      // If not OK, read the error and show it
+      if (!streamRes.ok) {
+        let errText = `Server error ${streamRes.status}`;
+        try { const j = await streamRes.json(); errText = j.message || errText; } catch {}
+        throw new Error(errText);
+      }
+
       if (streamRes.ok && streamRes.headers.get("content-type")?.includes("text/event-stream")) {
         // Real SSE streaming
         const reader  = streamRes.body!.getReader();
@@ -302,8 +309,15 @@ export default function KIROChat({ className, storeId: propStoreId, initialMessa
       }
     } catch (err: any) {
       if (err.name === "AbortError") return;
+      // Get actual error message for debugging
+      let errMsg = "Something went wrong.";
+      if (err instanceof TypeError && err.message.includes("fetch")) {
+        errMsg = "Cannot reach KIRO server. Check your internet connection.";
+      } else if (err.message) {
+        errMsg = `Error: ${err.message}`;
+      }
       setMessages(prev => prev.map(m =>
-        m.id === kiroPlaceholder.id ? { ...m, content: "Something went wrong. Please check your connection and try again.", isStreaming: false } : m
+        m.id === kiroPlaceholder.id ? { ...m, content: errMsg, isStreaming: false } : m
       ));
     } finally {
       setLoading(false);

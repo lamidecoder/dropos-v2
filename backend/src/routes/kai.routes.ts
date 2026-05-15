@@ -21,6 +21,29 @@ const kaiLimit = rateLimit({
   message: { success: false, message: "Too many KAI requests — slow down a bit" },
 });
 
+
+// GET /api/kai/health — test KIRO is ready (no auth needed)
+router.get("/health", async (req: any, res: any) => {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const hasKey = !!(apiKey && apiKey.startsWith("sk-ant"));
+  
+  let dbOk = false;
+  try {
+    const { PrismaClient } = require("@prisma/client");
+    const p = new PrismaClient();
+    await p.$queryRaw`SELECT 1`;
+    await p.$disconnect();
+    dbOk = true;
+  } catch(e: any) {}
+
+  res.json({
+    ok: hasKey && dbOk,
+    apiKey: hasKey ? "configured" : "MISSING - add ANTHROPIC_API_KEY to Render env",
+    db: dbOk ? "connected" : "error",
+    model: process.env.KIRO_MODEL || "claude-sonnet-4-5-20251001",
+  });
+});
+
 router.use(authenticate);
 
 // Core chat

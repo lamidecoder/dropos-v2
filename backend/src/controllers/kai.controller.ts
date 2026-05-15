@@ -183,11 +183,12 @@ export async function smartChat(req: Request, res: Response) {
     res.end();
 
   } catch (err: any) {
-    console.error("KAI smart-chat error:", err);
+    console.error("KAI smart-chat error:", err.message, err.stack?.slice(0, 300));
+    const msg = err.message || "KAI is temporarily unavailable";
     if (!res.headersSent) {
-      res.status(500).json({ success: false, message: "KAI is temporarily unavailable" });
+      res.status(500).json({ success: false, message: msg });
     } else {
-      res.write(`data: ${JSON.stringify({ error: true })}\n\n`);
+      res.write(`data: ${JSON.stringify({ error: true, message: msg })}\n\n`);
       res.end();
     }
   }
