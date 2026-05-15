@@ -9,11 +9,11 @@ import prisma from "../lib/prisma";
 export async function getStoreContext(storeId: string) {
   try {
     const [store, products, orders, revenueData] = await Promise.all([
-      prisma.store.findUnique({ where: { id: storeId }, include: { subscription: true } }),
+      prisma.store.findUnique({ where: { id: storeId } }),
       prisma.product.findMany({ where: { storeId }, select: { id:true, name:true, price:true, inventory:true, status:true, category:true, images:true } }),
       prisma.order.findMany({ where: { storeId }, orderBy: { createdAt: "desc" }, take: 50,
         include: { customer: { select: { name:true, email:true } } } }),
-      prisma.order.aggregate({ where: { storeId, status: { in: ["PAID","FULFILLED"] } }, _sum: { total: true } }),
+      prisma.order.aggregate({ where: { storeId, status: { in: ["COMPLETED","DELIVERED"] } }, _sum: { total: true } }),
     ]);
 
     const today = new Date(); today.setHours(0,0,0,0);
@@ -26,7 +26,7 @@ export async function getStoreContext(storeId: string) {
     const country = store?.country || "Nigeria";
     const locale  = getLocaleEngine(country);
     const sym     = locale.currencySymbol;
-    const plan    = store?.subscription?.plan || "FREE";
+    const plan    = "FREE"; // Plan fetched via user subscription separately
 
     return {
       storeName: store?.name || "Your Store",
