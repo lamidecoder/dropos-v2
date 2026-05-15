@@ -30,18 +30,17 @@ const DEVICE_WIDTHS = { desktop: "100%", tablet: "768px", mobile: "390px" };
 const DEVICE_ICONS  = { desktop: Monitor, tablet: Tablet, mobile: Smartphone };
 
 const TEMPLATES = [
-  { id: "Classic",     label: "Classic",       preview: "#f5f5f5" },
-  { id: "Lagos Noir",  label: "Lagos Noir",    preview: "#0a0a0a" },
-  { id: "Bold",        label: "Bold",          preview: "#7c3aed" },
-  { id: "Glow",        label: "Glow",          preview: "#f06292" },
-  { id: "Runway",      label: "Runway",        preview: "#1a1a1a" },
-  { id: "Boutique",    label: "Boutique",      preview: "#f8f0eb" },
-  { id: "Cozy",        label: "Cozy",          preview: "#c4956a" },
-  { id: "Circuit",     label: "Circuit",       preview: "#0f3460" },
-  { id: "Suya",        label: "Suya",          preview: "#c0392b" },
-  { id: "Minimal Pro", label: "Minimal Pro",   preview: "#ffffff" },
-  { id: "Neon Tokyo",  label: "Neon Tokyo",    preview: "#0d0221" },
-  { id: "Afro Vibe",   label: "Afro Vibe",     preview: "#2d5a27" },
+  // FREE
+  { id: "aurora",      label: "Aurora",       preview: "#7C3AED", tier:"Free",     emoji:"🌅", desc:"Classic animated" },
+  { id: "obsidian",    label: "Obsidian",     preview: "#07050F", tier:"Free",     emoji:"🌑", desc:"Dark luxury" },
+  // PRO
+  { id: "verdant",     label: "Verdant",      preview: "#f5f5f5", tier:"Pro",      emoji:"◻️", desc:"Swiss minimal" },
+  { id: "atelier",     label: "Atelier",      preview: "#fdf9f6", tier:"Pro",      emoji:"🌸", desc:"Boutique serif" },
+  { id: "voltage",     label: "Voltage",      preview: "#EF4444", tier:"Pro",      emoji:"⚡", desc:"Bold streetwear" },
+  { id: "ember",       label: "Ember",        preview: "#D97706", tier:"Pro",      emoji:"🍂", desc:"Warm artisan" },
+  { id: "nexus",       label: "Nexus",        preview: "#06B6D4", tier:"Pro",      emoji:"🔷", desc:"Futuristic tech" },
+  // ADVANCED
+  { id: "prism",       label: "Prism",        preview: "#7C3AED", tier:"Advanced", emoji:"💎", desc:"Glassmorphic" },
 ];
 
 const GOOGLE_FONTS = [
@@ -373,10 +372,19 @@ export default function CustomizePage() {
                       {TEMPLATES.map(t => (
                         <button key={t.id}
                           onClick={() => { updateSettings({ template: t.id }); setShowTemplates(false); }}
-                          className="flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all"
-                          style={{ background: settings.template === t.id ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.03)", border: settings.template === t.id ? "1px solid rgba(124,58,237,0.4)" : "1px solid rgba(255,255,255,0.06)" }}>
-                          <div className="w-8 h-6 rounded-md" style={{ background: t.preview }} />
-                          <p style={{ color: settings.template === t.id ? "#a78bfa" : "rgba(255,255,255,0.5)", fontSize: "9px", textAlign: "center", lineHeight: "1.2" }}>{t.label}</p>
+                          style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:0, padding:"10px 12px", borderRadius:12, cursor:"pointer", textAlign:"left",
+                            background: settings.template === t.id ? "rgba(124,58,237,0.15)" : "rgba(255,255,255,0.03)",
+                            border: settings.template === t.id ? "1px solid rgba(124,58,237,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                            width:"100%", fontFamily:"inherit" }}>
+                          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", marginBottom:6 }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                              <span style={{ fontSize:16 }}>{(t as any).emoji || "🎨"}</span>
+                              <p style={{ color: settings.template === t.id ? "#a78bfa" : "rgba(255,255,255,0.8)", fontSize:12, fontWeight:700, margin:0 }}>{t.label}</p>
+                            </div>
+                            <span style={{ fontSize:9, fontWeight:700, padding:"2px 6px", borderRadius:99, background: (t as any).tier==="Free"?"rgba(16,185,129,0.15)":(t as any).tier==="Pro"?"rgba(107,53,232,0.15)":"rgba(245,158,11,0.15)", color: (t as any).tier==="Free"?"#10B981":(t as any).tier==="Pro"?"#8B5CF6":"#F59E0B" }}>{(t as any).tier||""}</span>
+                          </div>
+                          <div style={{ width:"100%", height:36, borderRadius:8, background: t.preview, marginBottom:6, border:"1px solid rgba(255,255,255,0.08)" }} />
+                          <p style={{ color:"rgba(255,255,255,0.35)", fontSize:10, margin:0, lineHeight:1.3 }}>{(t as any).desc||""}</p>
                         </button>
                       ))}
                     </div>
