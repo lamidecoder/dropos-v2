@@ -16,6 +16,7 @@ import { buildIntelligencePrompt } from "../services/kai.intelligence";
 import {
   extractMemoriesFromConversation, getMemories, saveMemory,
   deleteMemory, getActiveGoals, analyzeBrandVoice, getMemoryContext,
+  getRelevantMemories, buildCrossSessionContext, summarizeAndSaveConversation,
 } from "../services/kai.memory.service";
 import {
   getUnreadAlerts, markAlertRead, analyzeStore,
@@ -163,32 +164,16 @@ export async function smartChat(req: Request, res: Response) {
       })
       .join("\n");
     
-    // Also load recent messages from OTHER conversations to give cross-session memory
+    // Load cross-session memory (conversation summaries + ongoing tasks)
     let crossSessionContext = "";
     try {
       const userId = (req as any).user?.userId || (req as any).user?.id;
-      const recentConvs = await prisma.kaiConversation.findMany({
-        where: { storeId, userId, archived: false, id: { not: conv.id } },
-        orderBy: { updatedAt: "desc" },
-        take: 3,
-        include: { messages: { orderBy: { createdAt: "desc" }, take: 3 } },
-      });
-      if (recentConvs.length > 0) {
-        const lines: string[] = ["RECENT PAST CONVERSATIONS (for context):"];
-        for (const rc of recentConvs) {
-          const lastMsg = rc.messages[0];
-          if (lastMsg) {
-            const ago = Math.round((Date.now() - new Date(rc.updatedAt).getTime()) / 60000);
-            lines.push(`- ${ago}min ago: "${rc.title}" — last said: "${lastMsg.content.slice(0, 120)}"`);
-          }
-        }
-        crossSessionContext = lines.join("\n");
-      }
+      crossSessionContext = await buildCrossSessionContext(storeId, userId, conv.id, message);
     } catch {}
 
     // Build complete system prompt (includes memory, goals, brand voice, market data)
     let memories = "";
-    try { memories = await getMemoryContext(storeId); } catch {}
+    try { memories = await getRelevantMemories(storeId, message); } catch {}
 
     // Build the store brain
     let brain: any = undefined;
