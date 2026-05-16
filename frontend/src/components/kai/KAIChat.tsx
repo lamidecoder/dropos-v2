@@ -32,38 +32,76 @@ interface KIROChatProps {
   onConversationCreated?: (id: string) => void;
 }
 
-function ActionCard({ action, onApprove, onDismiss, t }: any) {
+// ── Human-readable action descriptions (mirrors kai.actions.ts) ───────────────
+function getActionDesc(type: string, payload: any, symbol = "₦") {
+  const fmt = (n: number) => `${symbol}${(n||0).toLocaleString()}`;
+  const map: Record<string, {title:string; summary:string; icon:string; cta:string}> = {
+    add_product:           { icon:"📦", cta:"Add to Store",   title:"New Product",          summary:`Add "${payload?.name}" at ${fmt(payload?.price)}` },
+    bulk_add_products:     { icon:"📥", cta:"Import All",     title:"Bulk Import",           summary:`Import ${payload?.products?.length || 0} products` },
+    update_price:          { icon:"💰", cta:"Update Price",   title:"Price Change",          summary:`Change price to ${fmt(payload?.price)}` },
+    update_stock:          { icon:"📦", cta:"Update Stock",   title:"Stock Update",          summary:`Set inventory to ${payload?.quantity} units` },
+    archive_product:       { icon:"🔒", cta:"Hide Product",   title:"Hide from Store",       summary:"Remove this product from your public store" },
+    set_product_status:    { icon:payload?.status==="ACTIVE"?"✅":"📴", cta:payload?.status==="ACTIVE"?"Activate":"Archive", title:payload?.status==="ACTIVE"?"Activate Product":"Archive Product", summary:payload?.status==="ACTIVE"?"Make product visible to customers":"Hide product from customers" },
+    create_coupon:         { icon:"🎟️", cta:"Create Code",   title:"Discount Code",         summary:`Create code "${payload?.code}" — ${payload?.discount||payload?.discountValue}% off` },
+    fulfill_order:         { icon:"🚚", cta:"Fulfill Order",  title:"Fulfill Order",         summary:"Mark as fulfilled and notify customer" },
+    update_order_status:   { icon:"📋", cta:"Update Status", title:"Order Update",          summary:`Set status to ${(payload?.status||"").toLowerCase()}` },
+    create_flash_sale:     { icon:"⚡", cta:"Launch Sale",   title:"Flash Sale",            summary:`${payload?.discountPercent}% off on ${payload?.productIds?.length||0} products` },
+    update_store_description:{ icon:"✏️",cta:"Update",       title:"Store Description",     summary:"Update your public store description" },
+    get_analytics:         { icon:"📈", cta:"Run Report",    title:"Analytics Report",      summary:"Pull your latest store performance data" },
+    export_orders:         { icon:"📤", cta:"Export",        title:"Export Orders",         summary:"Download your order history" },
+  };
+  return map[type] || { icon:"⚡", cta:"Execute", title:type.replace(/_/g," ").replace(/\w/g,c=>c.toUpperCase()), summary:"Execute this action" };
+}
+
+function ActionCard({ action, onApprove, onDismiss, t, isDark }: any) {
   const [loading, setLoading] = useState(false);
-  const label: Record<string,string> = {
-    add_product: "➕ Add Product to Store",
-    update_price: "💰 Update Price",
-    create_coupon: "🎟 Create Coupon",
-    update_stock: "📦 Update Stock",
-    create_discount: "🏷 Create Discount",
-    update_order_status: "🚚 Update Order",
-    update_shipping: "🌍 Update Shipping",
+  const [done,    setDone]    = useState(false);
+  const desc = getActionDesc(action.type, action.payload);
+
+  const approve = async () => {
+    setLoading(true);
+    await onApprove(action);
+    setDone(true);
+    setLoading(false);
   };
 
+  if (done) return null; // Remove card after approval — result shown in chat
+
   return (
-    <div style={{ padding:"12px 14px", borderRadius:12, background:"rgba(107,53,232,0.06)", border:"1px solid rgba(107,53,232,0.2)", marginTop:8 }}>
-      <p style={{ fontSize:12, fontWeight:700, color:V.v400, margin:"0 0 6px" }}>
-        {label[action.type] || `🤖 ${action.type}`}
-      </p>
-      <pre style={{ fontSize:11, color:t.muted, margin:"0 0 10px", whiteSpace:"pre-wrap", lineHeight:1.5, fontFamily:"monospace" }}>
-        {JSON.stringify(action.payload, null, 2)}
-      </pre>
-      <div style={{ display:"flex", gap:8 }}>
-        <button onClick={async ()=>{ setLoading(true); await onApprove(action); setLoading(false); }}
-          disabled={loading}
-          style={{ padding:"6px 14px", borderRadius:8, border:"none", background:V.v500, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:5 }}>
-          {loading?<Loader2 size={11} style={{animation:"spin 0.8s linear infinite"}}/>:<Check size={11}/>} Approve
+    <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
+      style={{ marginTop:12, borderRadius:16, overflow:"hidden",
+        border: `1px solid ${isDark?"rgba(107,53,232,0.25)":"rgba(107,53,232,0.15)"}`,
+        background: isDark?"rgba(107,53,232,0.06)":"rgba(107,53,232,0.03)" }}>
+      {/* Header */}
+      <div style={{ padding:"12px 14px 10px", borderBottom:`1px solid ${isDark?"rgba(107,53,232,0.12)":"rgba(107,53,232,0.08)"}` }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ fontSize:18 }}>{desc.icon}</span>
+          <div>
+            <p style={{ fontSize:12, fontWeight:800, color:V.v400, margin:0, letterSpacing:"-0.01em" }}>{desc.title}</p>
+            <p style={{ fontSize:12, color:t.muted, margin:0, lineHeight:1.4, marginTop:2 }}>{desc.summary}</p>
+          </div>
+        </div>
+      </div>
+      {/* Actions */}
+      <div style={{ padding:"10px 14px", display:"flex", gap:8, alignItems:"center" }}>
+        <button onClick={approve} disabled={loading}
+          style={{ padding:"8px 18px", borderRadius:10, border:"none",
+            background:loading?"rgba(107,53,232,0.4)":`linear-gradient(135deg,${V.v500},#3D1C8A)`,
+            color:"#fff", fontSize:12, fontWeight:700, cursor:loading?"not-allowed":"pointer",
+            fontFamily:"inherit", display:"flex", alignItems:"center", gap:6, flexShrink:0,
+            boxShadow:loading?"none":"0 2px 8px rgba(107,53,232,0.3)" }}>
+          {loading
+            ? <><Loader2 size={11} style={{animation:"spin 0.8s linear infinite"}}/> Working...</>
+            : <><Check size={11}/> {desc.cta}</>}
         </button>
         <button onClick={()=>onDismiss(action)}
-          style={{ padding:"6px 12px", borderRadius:8, border:"1px solid rgba(0,0,0,0.1)", background:"transparent", color:t.muted, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
+          style={{ padding:"8px 14px", borderRadius:10, border:`1px solid ${t.border}`,
+            background:"transparent", color:t.muted, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
           Dismiss
         </button>
+        <p style={{ fontSize:11, color:t.muted, margin:"0 0 0 auto", fontStyle:"italic" }}>Review before confirming</p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -131,7 +169,7 @@ function MessageBubble({ msg, onApprove, onDismiss, t, isDark }: any) {
 
           {/* Action cards */}
           {msg.actions?.map((action: any, i: number) => (
-            <ActionCard key={i} action={action} onApprove={onApprove} onDismiss={onDismiss} t={t}/>
+            <ActionCard key={i} action={action} onApprove={onApprove} onDismiss={onDismiss} t={t} isDark={isDark}/>
           ))}
 
           {/* Copy button */}
@@ -288,12 +326,13 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
         actions: [{ ...action, approved: true }],
       });
       const result = (res.data?.data || res.data?.results)?.[0];
+      // Use human-readable messages from the server
       const resultMsg: Message = {
         id:        `action-${Date.now()}`,
         role:      "assistant",
         content:   result?.success
-          ? `Done ✅ — ${action.type === "add_product" ? `Product "${result?.result?.name || action.payload?.name}" added to your store!` : "Action completed successfully."}`
-          : `Failed ❌ — ${result?.error || "Action failed. Check your store settings and try again."}`,
+          ? (result?.message || `Done. ${action.type.replace(/_/g," ")} completed.`)
+          : (result?.error   || "Something didn't go as expected. Let me check what went wrong and try again."),
         timestamp: new Date().toISOString(),
       };
       setMessages(p => [...p, resultMsg]);

@@ -8,6 +8,7 @@ import { PrismaClient } from "@prisma/client";
 import {
   callClaude, detectIntent, generateTitle, getQuickActions,
 } from "../services/kai.service";
+import { validateAction, translateError, describeAction } from "../utils/kai.actions";
 // Note: getStoreContext replaced by getDeepContext globally
 import { getDeepContext } from "../services/kai.context";
 import { buildIntelligencePrompt } from "../services/kai.intelligence";
@@ -464,9 +465,25 @@ export async function executeAction(req: Request, res: Response) {
         data: { storeId, conversationId: conversationId || "", actionType: action.type,
           payload: action.payload, approved: true, executed: true, result },
       });
-      results.push({ actionId: action.id, type: action.type, success: true, result, message: `${action.type} executed` });
+      const desc = describeAction(action.type, action.payload, storeId);
+      results.push({
+        actionId:  action.id,
+        type:      action.type,
+        success:   true,
+        result,
+        message:   desc.successMessage,
+        title:     desc.title,
+        icon:      desc.icon,
+      });
     } catch (err: any) {
-      results.push({ actionId: action.id, success: false, error: err.message });
+      const humanError = translateError(action.type, err.message || "unknown error");
+      results.push({
+        actionId: action.id,
+        type:     action.type,
+        success:  false,
+        error:    humanError,
+        rawError: process.env.NODE_ENV === "development" ? err.message : undefined,
+      });
     }
   }
   res.json({ success: true, data: results, results }); // dual path for frontend compat
