@@ -202,6 +202,24 @@ export async function smartChat(req: Request, res: Response) {
       claudeMsgs.push({ role: m.role, content: m.content });
     }
     // Current message (with optional image)
+    // Intent-aware routing — give KIRO a specific directive based on what the user wants
+    const intentDirective: Record<string, string> = {
+      analytics:        "[DIRECTIVE: User wants analytics. Show real numbers from STORE DATA. Compare periods. Identify trends. End with one growth action.]",
+      product_management:"[DIRECTIVE: User wants product help. Refer to their actual product list. Help them add/edit/improve. Generate content if needed.]",
+      order_management: "[DIRECTIVE: User wants order help. Check their pending orders list. Offer to fulfill. Give tracking advice.]",
+      customer_insights:"[DIRECTIVE: User wants customer intel. Use customer data. Segment by value. Suggest retention actions.]",
+      market_research:  "[DIRECTIVE: User wants market trends. Draw on Nigerian ecommerce knowledge. Give specific product names and price ranges.]",
+      promotions:       "[DIRECTIVE: User wants promotions. Create a coupon or flash sale with specifics. Write the copy too.]",
+      marketing:        "[DIRECTIVE: User wants marketing. Write the actual copy — Instagram caption, WhatsApp message, TikTok script. Make it ready to post.]",
+      content:          "[DIRECTIVE: User wants content. Generate full product description or ad copy. Nigerian audience. Conversion-focused.]",
+      pricing:          "[DIRECTIVE: User wants pricing help. Analyze their current prices vs Nigerian market. Give specific recommended prices with margin calculation.]",
+      general:          "[DIRECTIVE: Look at today's priority actions and proactively surface the most important thing they should know or do right now.]",
+    };
+    const directive = intentDirective[intent] || intentDirective.general;
+    const enhancedMessage = `${message}
+
+${directive}`;
+
     const currentContent: any[] = [];
     // Handle image — either base64 or URL
     let finalImageBase64 = imageBase64;
@@ -236,7 +254,7 @@ export async function smartChat(req: Request, res: Response) {
     if (finalImageBase64 && finalImageMediaType) {
       currentContent.push({ type: "image", source: { type: "base64", media_type: finalImageMediaType, data: finalImageBase64 } });
     }
-    currentContent.push({ type: "text", text: message });
+    currentContent.push({ type: "text", text: enhancedMessage });
     claudeMsgs.push({ role: "user", content: currentContent.length === 1 ? message : currentContent });
 
     // Stream response
