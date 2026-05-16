@@ -47,6 +47,8 @@ function getActionDesc(type: string, payload: any, symbol = "₦") {
     update_order_status:   { icon:"📋", cta:"Update Status", title:"Order Update",          summary:`Set status to ${(payload?.status||"").toLowerCase()}` },
     create_flash_sale:     { icon:"⚡", cta:"Launch Sale",   title:"Flash Sale",            summary:`${payload?.discountPercent}% off on ${payload?.productIds?.length||0} products` },
     update_store_description:{ icon:"✏️",cta:"Update",       title:"Store Description",     summary:"Update your public store description" },
+    update_product_image:      { icon:"📷",cta:"Add Image",      title:"Add Product Image",      summary:`Add image to ${payload?.productId ? "product" : ""}` },
+    update_product:            { icon:"✏️",cta:"Update Product", title:"Update Product",         summary:"Apply changes to this product" },
     get_analytics:         { icon:"📈", cta:"Run Report",    title:"Analytics Report",      summary:"Pull your latest store performance data" },
     export_orders:         { icon:"📤", cta:"Export",        title:"Export Orders",         summary:"Download your order history" },
   };

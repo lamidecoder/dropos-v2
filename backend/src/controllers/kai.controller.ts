@@ -351,12 +351,25 @@ ${directive}`;
     res.end();
 
   } catch (err: any) {
-    console.error("KIRO smart-chat error:", err.message, err.stack?.slice(0, 300));
-    const msg = err.message || "KIRO is temporarily unavailable";
+    console.error("KIRO error:", err.message?.slice(0, 200));
+    
+    // Translate technical errors to human language
+    let humanMsg = "KIRO is having a moment. Try sending that again.";
+    const raw = (err.message || "").toLowerCase();
+    if (raw.includes("429") || raw.includes("rate_limit") || raw.includes("rate limit")) {
+      humanMsg = "I'm getting a lot of requests right now. Give me 30 seconds and ask again.";
+    } else if (raw.includes("anthropic_api_key") || raw.includes("api key")) {
+      humanMsg = "KIRO isn't fully configured yet. The API key needs to be set in Render settings.";
+    } else if (raw.includes("timeout") || raw.includes("econnreset")) {
+      humanMsg = "Connection timed out. Your store data is fine — just try again.";
+    } else if (raw.includes("token") || raw.includes("auth") || raw.includes("401")) {
+      humanMsg = "Session expired. Refresh the page and try again.";
+    }
+    
     if (!res.headersSent) {
-      res.status(500).json({ success: false, message: msg });
+      res.status(500).json({ success: false, message: humanMsg });
     } else {
-      res.write(`data: ${JSON.stringify({ error: true, message: msg })}\n\n`);
+      res.write(`data: ${JSON.stringify({ error: true, message: humanMsg })}\n\n`);
       res.end();
     }
   }
@@ -490,6 +503,36 @@ export async function executeAction(req: Request, res: Response) {
           break;
         }
 
+        case "update_product_image": {
+          // Add image URL to existing product
+          const existing = await prisma.product.findUnique({ where: { id: action.payload.productId } });
+          if (!existing) throw new Error("Product not found");
+          const currentImages: string[] = (existing.images as string[]) || [];
+          const newImages = action.payload.imageUrl
+            ? [...new Set([action.payload.imageUrl, ...currentImages])]
+            : currentImages;
+          result = await prisma.product.update({
+            where: { id: action.payload.productId },
+            data: { images: newImages },
+          });
+          break;
+        }
+
+        case "update_product": {
+          // Update any product fields
+          const updateData: any = {};
+          if (action.payload.name)        updateData.name        = action.payload.name;
+          if (action.payload.price)       updateData.price       = Number(action.payload.price);
+          if (action.payload.description) updateData.description = action.payload.description;
+          if (action.payload.inventory !== undefined) updateData.inventory = Number(action.payload.inventory);
+          if (action.payload.category)    updateData.category    = action.payload.category;
+          result = await prisma.product.update({
+            where: { id: action.payload.productId },
+            data:  updateData,
+          });
+          break;
+        }
+
         default:
           result = { note: `Action ${action.type} logged for manual execution` };
       }
@@ -497,13 +540,35 @@ export async function executeAction(req: Request, res: Response) {
         data: { storeId, conversationId: conversationId || "", actionType: action.type,
           payload: action.payload, approved: true, executed: true, result },
       });
-      const desc = describeAction(action.type, action.payload, storeId);
+      // Get product name from the result if available (avoid UUID leak)
+      const resultName = result?.name || result?.code || action.payload?.name || action.payload?.code || "";
+      const resultPrice = result?.price || action.payload?.price;
+      const sym2 = "₦"; // default; full ctx not in scope here
+      const priceStr = resultPrice ? `${sym2}${Number(resultPrice).toLocaleString()}` : "";
+      
+      let successMsg = "";
+      if (action.type === "update_price" && resultName && priceStr) {
+        successMsg = `${resultName} is now priced at ${priceStr}.`;
+      } else if (action.type === "update_price" && priceStr) {
+        successMsg = `Price updated to ${priceStr}.`;
+      } else if (action.type === "add_product" && resultName) {
+        successMsg = `"${resultName}" is now live in your store${priceStr ? ` at ${priceStr}` : ""}.`;
+      } else if (action.type === "create_coupon" && result?.code) {
+        successMsg = `Discount code "${result.code}" is ready. Customers can use it at checkout.`;
+      } else if (action.type === "fulfill_order") {
+        successMsg = "Order fulfilled. The customer has been notified.";
+      } else {
+        const desc2 = describeAction(action.type, action.payload, "₦");
+        successMsg = desc2.successMessage;
+      }
+      
+      const desc = describeAction(action.type, action.payload, "₦");
       results.push({
         actionId:  action.id,
         type:      action.type,
         success:   true,
         result,
-        message:   desc.successMessage,
+        message:   successMsg || desc.successMessage,
         title:     desc.title,
         icon:      desc.icon,
       });
