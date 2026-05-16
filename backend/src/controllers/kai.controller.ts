@@ -324,6 +324,12 @@ export async function executeAction(req: Request, res: Response) {
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-|-$/g, "")
             .slice(0, 80) + "-" + Date.now().toString(36);
+          // Include image if provided in payload or from context
+          const pImages = action.payload.images?.length
+            ? action.payload.images
+            : action.payload.imageUrl
+            ? [action.payload.imageUrl]
+            : [];
           result = await (prisma.product as any).create({
             data: {
               storeId:     action.payload.storeId || storeId,
@@ -331,7 +337,7 @@ export async function executeAction(req: Request, res: Response) {
               slug:        pSlug,
               price:       Number(action.payload.price) || 0,
               description: action.payload.description || "",
-              images:      action.payload.images || [],
+              images:      pImages,
               inventory:   Number(action.payload.inventory) || 100,
               category:    action.payload.category || "",
               status:      "ACTIVE",
@@ -422,12 +428,12 @@ export async function executeAction(req: Request, res: Response) {
         data: { storeId, conversationId: conversationId || "", actionType: action.type,
           payload: action.payload, approved: true, executed: true, result },
       });
-      results.push({ actionId: action.id, success: true, result });
+      results.push({ actionId: action.id, type: action.type, success: true, result, message: `${action.type} executed` });
     } catch (err: any) {
       results.push({ actionId: action.id, success: false, error: err.message });
     }
   }
-  res.json({ success: true, data: results });
+  res.json({ success: true, data: results, results }); // dual path for frontend compat
 }
 
 // ── PATCH /api/kai/conversation/:id ──────────────────────────

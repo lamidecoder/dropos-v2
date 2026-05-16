@@ -287,7 +287,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
         storeId, conversationId: convId,
         actions: [{ ...action, approved: true }],
       });
-      const result = res.data?.results?.[0];
+      const result = (res.data?.data || res.data?.results)?.[0];
       const resultMsg: Message = {
         id:        `action-${Date.now()}`,
         role:      "assistant",
