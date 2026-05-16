@@ -539,12 +539,12 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
             </p>
             <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
               {[
-                "📊 What are my sales today?",
-                "📸 Add a product from photo",
-                "🔥 What's trending in Nigeria?",
-                "📝 Write an Instagram caption",
-                "💰 How do I make more sales?",
-                "📦 Show my pending orders",
+                "What should I focus on today?",
+                "Upload a product image",
+                "What's trending in Nigeria?",
+                "Write me an Instagram caption",
+                "How do I get more sales?",
+                "Show my pending orders",
               ].map(s => (
                 <button key={s} onClick={() => setInput(s.slice(3))}
                   style={{ padding:"7px 16px", borderRadius:99, border:`1px solid ${t.border}`, background:t.card, color:t.text, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
@@ -589,7 +589,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Ask KIRO anything — products, sales, marketing, orders..."
+            placeholder="Ask KIRO anything..."
             rows={1}
             style={{ flex:1, background:"transparent", border:"none", outline:"none", resize:"none", fontSize:14, color:t.text, fontFamily:"inherit", lineHeight:1.5, maxHeight:120, overflow:"auto", paddingTop:2 }}
             onInput={e => {

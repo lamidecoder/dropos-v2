@@ -210,7 +210,9 @@ export async function smartChat(req: Request, res: Response) {
 
     // Build messages array
     const claudeMsgs: any[] = [];
-    for (const m of (conv.messages || []).slice(-16)) {
+    // Use 8 msgs for simple/text, 12 for complex — saves tokens
+    const historyDepth = (imageBase64 || intent !== "general") ? 12 : 8;
+    for (const m of (conv.messages || []).slice(-historyDepth)) {
       claudeMsgs.push({ role: m.role, content: m.content });
     }
     // Current message (with optional image)
