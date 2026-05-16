@@ -220,7 +220,18 @@ export async function getDeepContext(storeId: string): Promise<KIROBusinessConte
       draftProducts:  products.filter(p => p.status === "DRAFT").length,
       lowStockProducts: lowStock.map(p => ({ id: p.id, name: p.name, inventory: p.inventory || 0, price: p.price || 0 })),
       zeroStockProducts: zeroStock.map(p => ({ id: p.id, name: p.name })),
-      topProducts: topP.map(p => ({ id: p.id, name: p.name, price: p.price || 0, inventory: p.inventory || 0, category: p.category || "", image: p.images?.[0] || null })),
+      topProducts: topP.map(p => {
+        // Velocity: how fast this product sells relative to others
+        const productOrders = allPaid.filter(o => (o.items as any[])?.some((i: any) => i.productId === p.id)).length;
+        const velocity = allPaid.length > 0 ? Math.round(productOrders / allPaid.length * 100) : 0;
+        // Risk: low stock + high velocity = high risk
+        const stockRisk = (p.inventory || 0) < 5 && velocity > 20 ? "HIGH" : (p.inventory || 0) < 10 ? "MEDIUM" : "LOW";
+        return {
+          id: p.id, name: p.name, price: p.price || 0, inventory: p.inventory || 0,
+          category: p.category || "", image: p.images?.[0] || null,
+          velocity, stockRisk,
+        };
+      }),
       recentProducts: recent.map(p => ({ id: p.id, name: p.name, createdAt: p.createdAt })),
       allProducts: products.map(p => ({ id: p.id, name: p.name, price: p.price || 0, inventory: p.inventory || 0, category: p.category || "" })),
       noImageProducts: noImage.map(p => ({ id: p.id, name: p.name })),

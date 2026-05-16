@@ -105,6 +105,17 @@ function ActionCard({ action, onApprove, onDismiss, t, isDark }: any) {
   );
 }
 
+
+// Strip KIRO internal formatting from user-visible text
+function cleanKIROContent(text: string): string {
+  return text
+    .replace(/KIRO_ACTION[:\s]+\{[\s\S]*?\}(?=\n|$)/g, "")   // strip action blocks
+    .replace(/━+/g, "")                                           // strip divider chars
+    .replace(/^[-=]{3,}\s*$/gm, "")                              // strip --- === lines
+    .replace(/\n{3,}/g, "\n\n")                                  // collapse 3+ newlines
+    .trim();
+}
+
 function MessageBubble({ msg, onApprove, onDismiss, t, isDark }: any) {
   const [copied, setCopied] = useState(false);
   const isUser = msg.role === "user";
@@ -160,11 +171,11 @@ function MessageBubble({ msg, onApprove, onDismiss, t, isDark }: any) {
             </span>
           ) : msg.isStreaming && msg.content ? (
             <p style={{ margin:0, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>
-              {msg.content}
+              {cleanKIROContent(msg.content || "")}
               <motion.span animate={{ opacity:[1,0] }} transition={{ duration:0.5, repeat:Infinity }}>▋</motion.span>
             </p>
           ) : (
-            <p style={{ margin:0, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>{msg.content}</p>
+            <p style={{ margin:0, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>{cleanKIROContent(msg.content || "")}</p>
           )}
 
           {/* Action cards */}
@@ -451,8 +462,14 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
                 setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, actions:parsed.actions } : m));
               }
               if (parsed.done) {
-                // Use clean response (KIRO_ACTION lines removed)
-                const finalContent = parsed.cleanResponse || undefined;
+                // Use clean response — strip KIRO_ACTION + ugly divider lines
+                const rawContent = parsed.cleanResponse || "";
+                const finalContent = rawContent
+                  .replace(/━+/g, "")
+                  .replace(/^-{3,}\s*$/gm, "")
+                  .replace(/^={3,}\s*$/gm, "")
+                  .replace(/\n{3,}/g, "\n\n")
+                  .trim() || undefined;
                 const finalActions = parsed.actions || [];
                 setMessages(p => p.map(m => m.id === kiroMsg.id ? {
                   ...m,

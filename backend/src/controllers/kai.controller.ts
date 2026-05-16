@@ -11,6 +11,7 @@ import {
 import { validateAction, translateError, describeAction } from "../utils/kai.actions";
 // Note: getStoreContext replaced by getDeepContext globally
 import { getDeepContext } from "../services/kai.context";
+import { buildStoreBrain, decomposeGoal } from "../services/kai.brain";
 import { buildIntelligencePrompt } from "../services/kai.intelligence";
 import {
   extractMemoriesFromConversation, getMemories, saveMemory,
@@ -189,9 +190,19 @@ export async function smartChat(req: Request, res: Response) {
     let memories = "";
     try { memories = await getMemoryContext(storeId); } catch {}
 
+    // Build the store brain
+    let brain: any = undefined;
+    try { brain = await buildStoreBrain(storeId, ctx); } catch(e: any) {
+      console.error("[KIRO] Brain build failed:", e.message);
+    }
+
+    // Multi-step goal detection — decompose complex requests
+    let goalPlan = "";
+    try { goalPlan = decomposeGoal(message, ctx, brain); } catch {}
+
     let systemPrompt: string;
     try {
-      systemPrompt = buildIntelligencePrompt(ctx, history, crossSessionContext, memories);
+      systemPrompt = buildIntelligencePrompt(ctx, history, crossSessionContext, memories, brain);
     } catch(e: any) {
       console.error("[KIRO] buildCompleteSystemPrompt failed, using fallback:", e.message);
       systemPrompt = `You are KIRO, an AI business assistant for ${ctx.storeName}. Be helpful, concise and actionable.`;
@@ -270,28 +281,49 @@ ${directive}`;
       messages: claudeMsgs,
       useSearch,
       model: (finalImageBase64 || finalImageBase64) ? "claude-sonnet-4-6" : undefined,
-      maxTokens: finalImageBase64 ? 2048 : 1024,
+      maxTokens: finalImageBase64 ? 4096 : 4096,
       onToken: (token) => {
         fullResponse += token;
         res.write(`data: ${JSON.stringify({ token, conversationId: conv.id })}\n\n`);
       },
     });
 
-    // Parse KIRO_ACTION from response - robust parser
+    // Parse KIRO_ACTION — handles every format KIRO might output
     const parsedActions: any[] = [];
     let cleanResponse = fullResponse;
     try {
-      // Match KIRO_ACTION: followed by JSON object (handles multiline)
-      const actionRegex = /KIRO_ACTION:(\{(?:[^{}]|\{[^{}]*\})*\})/g;
-      let match;
-      while ((match = actionRegex.exec(fullResponse)) !== null) {
+      // Step 1: normalize all variants to KIRO_ACTION:{...}
+      let work = fullResponse
+        .replace(/KIRO_ACTION\s*```json?\s*/gi, "KIRO_ACTION:")   // code block start
+        .replace(/```\s*$/gm,                        "")           // code block end
+        .replace(/KIRO_ACTION\s*:\s*\n\s*/g,      "KIRO_ACTION:") // colon + newline
+        .replace(/KIRO_ACTION\s+(?=\{)/g,           "KIRO_ACTION:"); // space instead of colon
+
+      // Step 2: extract all JSON objects after KIRO_ACTION marker
+      const re = /KIRO_ACTION[:\s]+?\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(work)) !== null) {
         try {
-          const action = JSON.parse(match[1]);
-          parsedActions.push(action);
-        } catch {}
+          const obj = JSON.parse(m[1]);
+          if (obj.action && !obj.type) obj.type = obj.action; // normalize field name
+          if (obj.type && obj.payload) parsedActions.push(obj);
+          else if (obj.type) parsedActions.push({ type: obj.type, payload: obj });
+        } catch {
+          // Try extracting from full match if parse fails
+          try {
+            const cleaned = m[1].replace(/\n/g," ").replace(/\s+/g," ");
+            const obj = JSON.parse(cleaned);
+            if (obj.action && !obj.type) obj.type = obj.action;
+            parsedActions.push(obj);
+          } catch {}
+        }
       }
-      // Strip all KIRO_ACTION blocks from display
-      cleanResponse = fullResponse.replace(/KIRO_ACTION:(\{(?:[^{}]|\{[^{}]*\})*\})/g, "").trim();
+      // Step 3: strip all KIRO_ACTION blocks from user-visible text
+      cleanResponse = fullResponse
+        .replace(/KIRO_ACTION\s*```[\s\S]*?```/gi, "")
+        .replace(/KIRO_ACTION[:\s]+\{[\s\S]*?\}(?=\s|$)/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
     } catch {}
 
     // Save KIRO response (clean version)
@@ -475,6 +507,18 @@ export async function executeAction(req: Request, res: Response) {
         title:     desc.title,
         icon:      desc.icon,
       });
+      // Self-evaluation log — KIRO tracks what it does
+      (prisma.kaiActionLog as any).create({
+        data: {
+          storeId,
+          conversationId: req.body.conversationId || null,
+          actionType: action.type,
+          payload: action.payload,
+          approved: true,
+          executed: true,
+          result: { success: true, message: desc.successMessage },
+        }
+      }).catch(() => {});
     } catch (err: any) {
       const humanError = translateError(action.type, err.message || "unknown error");
       results.push({
