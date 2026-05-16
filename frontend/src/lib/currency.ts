@@ -32,6 +32,12 @@ const COUNTRY_CURRENCY: Record<string, CurrencyConfig> = {
   AE: { code:"AED", symbol:"د.إ", name:"UAE Dirham",        locale:"ar-AE", flag:"🇦🇪", timezone:"Asia/Dubai"        },
   SA: { code:"SAR", symbol:"﷼",   name:"Saudi Riyal",       locale:"ar-SA", flag:"🇸🇦", timezone:"Asia/Riyadh"       },
   IN: { code:"INR", symbol:"₹",   name:"Indian Rupee",      locale:"en-IN", flag:"🇮🇳", timezone:"Asia/Kolkata"      },
+  BR: { code:"BRL", symbol:"R$",  name:"Brazilian Real",    locale:"pt-BR", flag:"🇧🇷", timezone:"America/Sao_Paulo"  },
+  AU: { code:"AUD", symbol:"A$",  name:"Australian Dollar", locale:"en-AU", flag:"🇦🇺", timezone:"Australia/Sydney"   },
+  PK: { code:"PKR", symbol:"₨",   name:"Pakistani Rupee",   locale:"ur-PK", flag:"🇵🇰", timezone:"Asia/Karachi"       },
+  ID: { code:"IDR", symbol:"Rp",  name:"Indonesian Rupiah", locale:"id-ID", flag:"🇮🇩", timezone:"Asia/Jakarta"       },
+  PH: { code:"PHP", symbol:"₱",   name:"Philippine Peso",   locale:"en-PH", flag:"🇵🇭", timezone:"Asia/Manila"        },
+  MY: { code:"MYR", symbol:"RM",  name:"Malaysian Ringgit", locale:"ms-MY", flag:"🇲🇾", timezone:"Asia/Kuala_Lumpur"  },
 };
 
 const DEFAULT: CurrencyConfig = COUNTRY_CURRENCY.NG;
@@ -102,7 +108,8 @@ const NGN_RATES: Record<string, number> = {
   USD: 0.00065, GBP: 0.00052,EUR: 0.00060, CAD: 0.00089,
   AED: 0.0024,  SAR: 0.0024, INR: 0.054,  EGP: 0.032,
   XOF: 0.39,    XAF: 0.39,   ETB: 0.036,  TZS: 1.67,
-  UGX: 2.37,
+  UGX: 2.37,   BRL: 0.0032,  AUD: 0.00097,
+  PKR: 0.18,   IDR: 2550,    PHP: 0.092,
 };
 
 export function convertFromNGN(ngnAmount: number, targetCurrency: string): number {

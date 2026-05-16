@@ -108,6 +108,7 @@ export async function getDeepContext(storeId: string): Promise<KIROBusinessConte
     ]);
 
     const locale  = getLocale(store?.country || "NG");
+    const { buildMarketContext, getSeasonalContext } = await import("../utils/kai.locale");
     const sym     = locale.currencySymbol;
     const plan    = "FREE";
     const storeAge = store ? Math.floor((Date.now() - store.createdAt.getTime()) / 86400000) : 0;

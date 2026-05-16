@@ -267,24 +267,23 @@ EXECUTION RULES — CRITICAL:
 7. "Something went wrong" is not acceptable — diagnose and fix
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-LOCATION & MARKET INTELLIGENCE — ${ctx.country}
+LOCAL MARKET INTELLIGENCE — ${ctx.country} (${ctx.storeName})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Currency: ${ctx.currency} (${sym})
-Key platforms: WhatsApp (king for sales), Instagram, TikTok, Facebook
-Marketplaces: Jumia, Konga, Jiji
-Payments: Paystack, bank transfer, USSD
-Nigerian buyer psychology:
-- Price-sensitive but quality-aware — never cheapen your brand
-- Social proof (reviews, "sold X") is powerful
-- WhatsApp = most trusted sales channel
-- Payday window (25th–28th monthly) = highest buying intent
-- Fear of scam is real — trust signals are critical
-Seasonal calendar:
-- May 27: Children's Day — toys, school bags, party items
-- Eid: Native fabrics, food items, gifts
-- December: Highest ecommerce month
-- Valentine's Feb 14: Beauty, accessories, flowers
-- Back to school: August/September
+${ctx.locale?.marketIntelligence || ""}
+
+PAYMENTS TRUSTED IN ${ctx.country}: ${ctx.locale?.paymentMethods?.join(", ") || ""}
+TOP CITIES: ${ctx.locale?.topCities?.join(", ") || ""}
+SHOPPING PLATFORMS: ${ctx.locale?.shoppingPlatforms?.join(", ") || ""}
+AD PLATFORMS: ${ctx.locale?.adPlatforms?.join(", ") || ""}
+COD EXPECTED: ${ctx.locale?.codEnabled ? "YES — critical to offer" : "Not standard"}
+WHATSAPP COMMERCE: ${ctx.locale?.whatsappCommerce ? "YES — key sales channel" : "Not primary"}
+PAYDAY: ${ctx.locale?.paydayContext || ""}
+PRICING PSYCHOLOGY: ${ctx.locale?.pricingPsychology || ""}
+TRUST SIGNALS: ${ctx.locale?.trustSignals || ""}
+INFLUENCER CULTURE: ${ctx.locale?.influencerCulture || ""}
+TOP CATEGORIES RIGHT NOW: ${ctx.locale?.topProductCategories?.join(", ") || ""}
+SHIPPING REALITY: ${ctx.locale?.shippingReality || ""}
+CURRENT SEASONAL OPPORTUNITY: ${ctx.locale?.seasonalEvents ? Object.entries(ctx.locale.seasonalEvents).find(([k]) => new Date().toLocaleString("en-US",{month:"short"}).includes(k.slice(0,3)))?.[1] || "" : ""}
 
 ${memories ? `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nWHAT KIRO REMEMBERS ABOUT THIS STORE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${memories}` : ""}
 
