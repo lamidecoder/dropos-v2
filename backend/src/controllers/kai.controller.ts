@@ -6,9 +6,11 @@ import { Request, Response } from "express";
 import { AuthRequest } from "../middleware/auth";
 import { PrismaClient } from "@prisma/client";
 import {
-  getStoreContext, buildCompleteSystemPrompt, callClaude,
-  detectIntent,  generateTitle, getQuickActions,
+  callClaude, detectIntent, generateTitle, getQuickActions,
 } from "../services/kai.service";
+// Note: getStoreContext replaced by getDeepContext globally
+import { getDeepContext } from "../services/kai.context";
+import { buildIntelligencePrompt } from "../services/kai.intelligence";
 import {
   extractMemoriesFromConversation, getMemories, saveMemory,
   deleteMemory, getActiveGoals, analyzeBrandVoice, getMemoryContext,
@@ -28,7 +30,7 @@ export async function getGreeting(req: Request, res: Response) {
     if (!storeId) return res.status(400).json({ success: false, message: "storeId required" });
 
     const [ctx, alerts] = await Promise.all([
-      getStoreContext(storeId),
+      getDeepContext(storeId),
       getUnreadAlerts(storeId),
     ]);
 
@@ -40,7 +42,12 @@ export async function getGreeting(req: Request, res: Response) {
     const contextLine = ctx.revenueToday > 0 
       ? `You've made ${ctx.currencySymbol}${ctx.revenueToday.toLocaleString()} today.`
       : "What are we working on today?";
-    const quickActions = getQuickActions(ctx);
+    const quickActions = [
+      ...(ctx.pendingOrders > 0 ? [{ label:`Fulfill ${ctx.pendingOrders} orders`, icon:"📬", prompt:`Help me fulfill my ${ctx.pendingOrders} pending orders` }] : []),
+      ...(ctx.lowStockProducts.length > 0 ? [{ label:`${ctx.lowStockProducts.length} low stock`, icon:"⚠️", prompt:`Show me my low stock products` }] : []),
+      ...(ctx.totalProducts < 5 ? [{ label:"Add more products", icon:"➕", prompt:`Suggest 10 trending products for ${ctx.country}` }] : []),
+      ...(ctx.revenueToday === 0 ? [{ label:"Get a sale today", icon:"🎯", prompt:`I have ₦0 in sales today. Fastest way to get a sale?` }] : []),
+    ].slice(0, 4);
 
     res.json({
       success: true,
@@ -127,13 +134,21 @@ export async function smartChat(req: Request, res: Response) {
 
     // Get everything in parallel
     const [ctx, intent] = await Promise.all([
-      getStoreContext(storeId).catch(() => ({
-        storeName:"Your Store", country:"NG", currency:"NGN", currencySymbol:"₦",
-        plan:"FREE", totalProducts:0, totalOrders:0, revenueToday:0, revenueThisMonth:0,
-        revenueLastMonth:0, pendingOrders:0, lowStockCount:0, locale:{},
-      })),
+      getDeepContext(storeId).catch((e) => {
+        console.error("[KIRO] getDeepContext failed:", e.message);
+        return null as any;
+      }),
       Promise.resolve(detectIntent(message)),
     ]);
+    if (!ctx) {
+      res.write(`data: ${JSON.stringify({ token: "KIRO is warming up — store data loading. Try again in a moment." })}
+
+`);
+      res.write(`data: ${JSON.stringify({ done: true, conversationId: conv.id })}
+
+`);
+      res.end(); return;
+    }
     const useSearch = ["market_research","trending","analytics"].includes(intent);
 
     // Build rich conversation history - 20 messages, near full content
@@ -170,9 +185,12 @@ export async function smartChat(req: Request, res: Response) {
     } catch {}
 
     // Build complete system prompt (includes memory, goals, brand voice, market data)
+    let memories = "";
+    try { memories = await getMemoryContext(storeId); } catch {}
+
     let systemPrompt: string;
     try {
-      systemPrompt = await buildCompleteSystemPrompt(ctx, storeId, history, crossSessionContext);
+      systemPrompt = buildIntelligencePrompt(ctx, history, crossSessionContext, memories);
     } catch(e: any) {
       console.error("[KIRO] buildCompleteSystemPrompt failed, using fallback:", e.message);
       systemPrompt = `You are KIRO, an AI business assistant for ${ctx.storeName}. Be helpful, concise and actionable.`;
@@ -627,7 +645,7 @@ export async function getMorningBrief(req: Request, res: Response) {
     const { storeId } = req.query as { storeId: string };
     if (!storeId) return res.status(400).json({ success:false, message:"storeId required" });
 
-    const ctx = await getStoreContext(storeId);
+    const ctx = await getDeepContext(storeId);
     const memories = await getMemoryContext(storeId).catch(() => "");
     const sym = ctx.currencySymbol;
 
@@ -642,7 +660,7 @@ export async function getMorningBrief(req: Request, res: Response) {
     lines.push(`💰 Revenue today: ${sym}${(ctx.revenueToday||0).toLocaleString()}`);
     lines.push(`📦 Orders: ${ctx.totalOrders} total, ${ctx.pendingOrders} pending`);
     lines.push(`🛍️ Products: ${ctx.activeProducts} active`);
-    if (ctx.lowStockCount > 0) lines.push(`⚠️ ${ctx.lowStockCount} products are low on stock: ${ctx.lowStockProducts.slice(0,3).join(", ")}`);
+    if (ctx.lowStockProducts.length > 0) lines.push(`⚠️ ${ctx.lowStockProducts.length} products are low on stock: ${ctx.lowStockProducts.slice(0,3).map((p:any)=>p.name||p).join(", ")}`);
     lines.push("");
 
     if (ctx.pendingOrders > 0) {
