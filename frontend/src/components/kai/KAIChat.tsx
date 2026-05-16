@@ -211,6 +211,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
 
   const [messages,    setMessages]    = useState<Message[]>([]);
   const [input,       setInput]       = useState(initialMessage || "");
+  const [greeting,    setGreeting]    = useState<any>(null);
   const [loading,     setLoading]     = useState(false);
   const [convId,      setConvId]      = useState(initConvId || "");
   const [attachment,  setAttachment]  = useState<{url?:string; cloudUrl?:string; base64?:string; type?:string; name?:string}|null>(null);
@@ -529,26 +530,34 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
       {/* Messages */}
       <div style={{ flex:1, overflowY:"auto", padding:compact?"12px":"16px 20px" }}>
         {messages.length === 0 && (
-          <div style={{ textAlign:"center", padding:"60px 20px" }}>
-            <div style={{ width:52, height:52, borderRadius:16, background:`linear-gradient(135deg,${V.v500},#3D1C8A)`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", boxShadow:`0 8px 24px ${V.v500}40` }}>
-              <Zap size={22} color="#fff" fill="#fff"/>
+          <div style={{ padding:"32px 20px 20px" }}>
+            {/* KIRO greeting */}
+            <div style={{ display:"flex", gap:12, marginBottom:20 }}>
+              <div style={{ width:36, height:36, borderRadius:12, background:`linear-gradient(135deg,${V.v500},#3D1C8A)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Zap size={16} color="#fff" fill="#fff"/>
+              </div>
+              <div style={{ background:isDark?"rgba(107,53,232,0.08)":"#F4F1FF", borderRadius:"4px 16px 16px 16px", padding:"12px 16px", maxWidth:"85%" }}>
+                <p style={{ fontSize:14, color:t.text, margin:"0 0 6px", lineHeight:1.6, fontWeight:500 }}>
+                  {greeting?.contextLine || "What are we working on today?"}
+                </p>
+                {greeting?.storeContext?.pendingOrders > 0 && (
+                  <p style={{ fontSize:13, color:"#EF4444", margin:"4px 0 0", fontWeight:600 }}>
+                    ⚠️ {greeting.storeContext.pendingOrders} order{greeting.storeContext.pendingOrders > 1 ? "s" : ""} pending — needs attention.
+                  </p>
+                )}
+              </div>
             </div>
-            <p style={{ fontSize:16, fontWeight:800, color:t.text, margin:"0 0 8px", letterSpacing:"-0.03em" }}>Your AI business partner</p>
-            <p style={{ fontSize:13, color:t.muted, margin:"0 0 24px", lineHeight:1.6 }}>
-              Ask me anything — sales, products, orders, marketing, pricing.<br/>I can also add products, create coupons, and update your store directly.
-            </p>
-            <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
-              {[
+            {/* Quick action suggestions */}
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap", paddingLeft:48 }}>
+              {(greeting?.quickActions?.length ? greeting.quickActions.map((a: any) => a.prompt) : [
                 "What should I focus on today?",
-                "Upload a product image",
-                "What's trending in Nigeria?",
+                "What products are trending in Nigeria?",
                 "Write me an Instagram caption",
-                "How do I get more sales?",
                 "Show my pending orders",
-              ].map(s => (
-                <button key={s} onClick={() => setInput(s.slice(3))}
-                  style={{ padding:"7px 16px", borderRadius:99, border:`1px solid ${t.border}`, background:t.card, color:t.text, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
-                  {s}
+              ]).map((prompt: string) => (
+                <button key={prompt} onClick={() => setInput(prompt)}
+                  style={{ padding:"6px 14px", borderRadius:99, border:`1px solid ${t.border}`, background:t.card, color:t.text, fontSize:12, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>
+                  {prompt.length > 35 ? prompt.slice(0,35) + "..." : prompt}
                 </button>
               ))}
             </div>
