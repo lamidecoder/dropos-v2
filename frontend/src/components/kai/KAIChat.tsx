@@ -1,4 +1,5 @@
 "use client";
+import { URLImporter, SkillsPanel, GoalsPanel, PulsePanel } from "./KIROPanels";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "../../store/auth.store";
@@ -49,6 +50,7 @@ function getActionDesc(type: string, payload: any, symbol = "₦") {
     update_store_description:{ icon:"✏️",cta:"Update",       title:"Store Description",     summary:"Update your public store description" },
     update_product_image:      { icon:"📷",cta:"Add Image",      title:"Add Product Image",      summary:`Add image to ${payload?.productId ? "product" : ""}` },
     update_product:            { icon:"✏️",cta:"Update Product", title:"Update Product",         summary:"Apply changes to this product" },
+    import_from_url:           { icon:"🌐",cta:"Import Product",  title:"Import from URL",          summary:`Import product from ${payload?.url?.slice(0,40) || "URL"}...` },
     get_analytics:         { icon:"📈", cta:"Run Report",    title:"Analytics Report",      summary:"Pull your latest store performance data" },
     export_orders:         { icon:"📤", cta:"Export",        title:"Export Orders",         summary:"Download your order history" },
   };
@@ -118,7 +120,7 @@ function cleanKIROContent(text: string): string {
     .trim();
 }
 
-function MessageBubble({ msg, onApprove, onDismiss, t, isDark }: any) {
+function MessageBubble({ msg, onApprove, onDismiss, t, isDark, onRate, onRegenerate }: any) {
   const [copied, setCopied] = useState(false);
   const isUser = msg.role === "user";
 
@@ -212,6 +214,38 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
   const [messages,    setMessages]    = useState<Message[]>([]);
   const [input,       setInput]       = useState(initialMessage || "");
   const [greeting,    setGreeting]    = useState<any>(null);
+  const [isListening, setIsListening] = useState(false);
+  const [activeTab,   setActiveTab]   = useState<"chat"|"import"|"skills"|"goals"|"pulse">("chat");
+  const [pulseCount,  setPulseCount]  = useState(0);
+
+  // Load pulse alert count
+  useEffect(() => {
+    if (!storeId) return;
+    const BASE = (process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api");
+    const token = useAuthStore.getState().accessToken;
+    fetch(`${BASE}/kai/pulse?storeId=${storeId}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      .then(r => r.json())
+      .then(d => setPulseCount((d.data || []).filter((a: any) => !a.read).length))
+      .catch(() => {});
+  }, [storeId]);
+  const recogRef = useRef<any>(null);
+
+  const handleVoice = () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    if (isListening) { recogRef.current?.stop(); setIsListening(false); return; }
+    const r = new SR();
+    r.continuous = false;
+    r.interimResults = true;
+    r.onresult = (e: any) => {
+      const t2 = Array.from(e.results).map((r2: any) => r2[0].transcript).join("");
+      setInput(t2);
+    };
+    r.onend = () => setIsListening(false);
+    r.start();
+    recogRef.current = r;
+    setIsListening(true);
+  };
   const [loading,     setLoading]     = useState(false);
   const [convId,      setConvId]      = useState(initConvId || "");
   const [attachment,  setAttachment]  = useState<{url?:string; cloudUrl?:string; base64?:string; type?:string; name?:string}|null>(null);
@@ -333,6 +367,23 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
   };
 
   // ── Execute approved action ──────────────────────────────────────────────────
+  const handleRate = (msgId: string, positive: boolean) => {
+    // Rate limiting feedback - could send to analytics
+    console.log("Message rated:", msgId, positive ? "👍" : "👎");
+  };
+
+  const handleRegenerate = async (msgId: string) => {
+    // Find the user message before this one and resend it
+    const msgIdx = messages.findIndex(m => m.id === msgId);
+    if (msgIdx < 1) return;
+    const prevUserMsg = messages.slice(0, msgIdx).reverse().find(m => m.role === "user");
+    if (prevUserMsg) {
+      // Remove the assistant message and regenerate
+      setMessages(p => p.filter((_, i) => i < msgIdx));
+      await send(prevUserMsg.content);
+    }
+  };
+
   const handleApprove = async (action: any) => {
     try {
       const res = await api.post("/kai/action", {
@@ -449,8 +500,8 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
     } finally { setLoading(false); }
   };
 
-  const send = async () => {
-    const text = input.trim();
+  const send = async (overrideMsg?: string) => {
+    const text = (overrideMsg || input).trim();
     if (!text && !attachment) return;
     if (loading || !storeId) return;
 
@@ -695,7 +746,11 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
           />
 
           {/* Send / Stop */}
-          <button onClick={loading ? () => abortRef.current?.abort() : send}
+          <button onClick={handleVoice} title="Voice input"
+            style={{ padding:"0 10px", borderRadius:10, border:`1px solid ${t.border}`, background:"transparent", color:isListening?"#7C3AED":t.muted, cursor:"pointer", fontSize:16, height:44, flexShrink:0 }}>
+            🎙
+          </button>
+          <button onClick={() => loading ? abortRef.current?.abort() : send()}
             disabled={!loading && !input.trim() && !attachment}
             style={{ width:34, height:34, borderRadius:10, border:"none", background: loading?"rgba(239,68,68,0.1)": (input.trim()||attachment)?`linear-gradient(135deg,${V.v500},#3D1C8A)`:"rgba(0,0,0,0.05)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s", opacity:(!loading && !input.trim() && !attachment)?0.4:1 }}>
             {loading

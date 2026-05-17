@@ -12,6 +12,13 @@ import {
   getPulseAlerts, readPulseAlert, getSkills, createSkill,
   deleteSkill, useSkill, analyzeVoice, getGoals, createGoal,
 } from "../controllers/kai.controller";
+import {
+  scrapeUrlHandler as scrapeUrl,
+  scrapeBatchHandler as scrapeBatch,
+  researchTopicHandler as researchTopic,
+  trendingHandler as trending,
+  profitCalcHandler as profitCalc,
+} from "../controllers/kai.scraper.controller";
 
 const router = Router();
 
@@ -48,7 +55,6 @@ router.use(authenticate);
 
 // Core chat
 router.get   ("/greeting",              getGreeting);
-router.get   ("/morning-brief",         authenticate, getMorningBrief);
 router.post  ("/smart-chat",            kaiLimit, smartChat);
 router.post  ("/action",                executeAction);
 
@@ -81,6 +87,13 @@ router.get   ("/goals",                 getGoals as any);
 router.post  ("/goals",                 createGoal as any);
 
 // GET /api/kai/test-key — check API key config (no auth required for diagnosis)
+// Web scraper & research
+router.post  ("/scrape-url",            scrapeUrl);
+router.post  ("/scrape-batch",          scrapeBatch);
+router.post  ("/research-market",       researchTopic);
+router.get   ("/trending",              trending);
+router.post  ("/profit-calc",           profitCalc);
+
 router.get("/test-key", ((req: any, res: any) => {
   const key = process.env.ANTHROPIC_API_KEY;
   const model = process.env.KIRO_MODEL || "claude-sonnet-4-5";

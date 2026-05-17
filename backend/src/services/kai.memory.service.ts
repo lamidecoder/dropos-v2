@@ -408,3 +408,14 @@ export async function analyzeBrandVoice(storeId: string, sampleContent: string, 
     });
   } catch {}
 }
+
+// Morning brief stub (wired to getMorningBriefHandler)
+export async function generateMorningBrief(storeId: string, _apiKey: string): Promise<string> {
+  const prisma = (await import("../lib/prisma")).default;
+  const ctx = await (await import("./kai.context")).getDeepContext(storeId);
+  const sym = ctx.currencySymbol;
+  if (ctx.pendingOrders > 0) return `You have ${ctx.pendingOrders} pending orders worth ${sym}${ctx.unfulfilledRevenue.toLocaleString()} waiting. Fulfill them first today.`;
+  if (ctx.revenueToday > 0) return `${sym}${ctx.revenueToday.toLocaleString()} already in today. Keep the momentum going.`;
+  if (ctx.lowStockProducts.length > 0) return `${ctx.lowStockProducts[0].name} is running low — restock before it sells out.`;
+  return "Focus on adding products and driving traffic to your store today.";
+}

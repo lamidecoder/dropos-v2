@@ -9,6 +9,7 @@ import {
   callClaude, detectIntent, generateTitle, getQuickActions,
 } from "../services/kai.service";
 import { validateAction, translateError, describeAction } from "../utils/kai.actions";
+import { scrapeAnyUrl, researchMarket, getTrendingProducts, calculateProfit } from "../services/kai.scraper.service";
 // Note: getStoreContext replaced by getDeepContext globally
 import { getDeepContext } from "../services/kai.context";
 import { buildStoreBrain, decomposeGoal } from "../services/kai.brain";
@@ -513,7 +514,6 @@ export async function executeAction(req: Request, res: Response) {
         }
 
         case "update_product": {
-          // Update any product fields
           const updateData: any = {};
           if (action.payload.name)        updateData.name        = action.payload.name;
           if (action.payload.price)       updateData.price       = Number(action.payload.price);
@@ -524,6 +524,30 @@ export async function executeAction(req: Request, res: Response) {
             where: { id: action.payload.productId },
             data:  updateData,
           });
+          break;
+        }
+
+        case "import_from_url": {
+          // Scrape any product URL and import it
+          const store2 = await prisma.store.findUnique({ where: { id: storeId }, select: { country: true, currency: true } });
+          const scraped = await scrapeAnyUrl(action.payload.url, store2?.country || "NG", store2?.currency || "NGN");
+          const slugBase = scraped.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+          const slug = `${slugBase}-${Date.now().toString(36)}`;
+          result = await prisma.product.create({
+            data: {
+              storeId,
+              name:        scraped.name,
+              slug,
+              description: scraped.description,
+              price:       scraped.suggestedLocalPrice,
+              category:    scraped.category,
+              tags:        scraped.tags,
+              images:      scraped.images,
+              inventory:   50,
+              status:      "ACTIVE",
+            } as any,
+          });
+          result.scrapedData = scraped;
           break;
         }
 
