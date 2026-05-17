@@ -1601,6 +1601,7 @@ model KaiSkill {
   name        String
   description String?
   prompt      String
+  icon        String?  @default("⚡")
   useCount    Int      @default(0)
   usageCount  Int      @default(0)
   active      Boolean  @default(true)
