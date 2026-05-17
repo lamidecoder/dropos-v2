@@ -167,7 +167,7 @@ export function SkillsPanel({ storeId, onSend, t, isDark }: any) {
   const addSkill = async () => {
     if (!name.trim() || !prompt.trim()) return;
     try {
-      const r = await api.post("/kai/skills", { storeId, name, prompt, icon });
+      const r = await api.post("/kai/skills", { storeId, name, prompt, icon, description: prompt.slice(0, 60) });
       setSkills(p => [...p, r.data.data]);
       setName(""); setPrompt(""); setIcon("⚡"); setShowAdd(false);
       toast.success("Skill saved!");

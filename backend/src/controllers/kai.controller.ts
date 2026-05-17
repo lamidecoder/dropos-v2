@@ -811,8 +811,15 @@ export async function getSkills(req: Request, res: Response) {
   try {
     const { storeId } = req.query as { storeId: string };
     if (!storeId) return res.status(400).json({ success: false, message: "storeId required" });
-    const skills = await getKaiSkills(storeId);
-    res.json({ success: true, data: skills });
+    // Try to get skills for this store
+    let storeSkills: any[] = [];
+    try {
+      storeSkills = await prisma.kaiSkill.findMany({
+        where: { storeId, active: true },
+        orderBy: { usageCount: "desc" },
+      });
+    } catch {}
+    res.json({ success: true, data: storeSkills });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -821,10 +828,12 @@ export async function getSkills(req: Request, res: Response) {
 // ── POST /api/kai/skills ──────────────────────────────────────
 export async function createSkill(req: Request, res: Response) {
   try {
-    const { storeId, name, prompt, description, icon, variables } = req.body;
+    const { storeId, name, prompt, description, icon } = req.body;
+    const userId = (req as any).user?.userId || (req as any).user?.id;
     if (!storeId || !name || !prompt) return res.status(400).json({ success: false, message: "storeId, name, prompt required" });
-    const skill = await (prisma.kaiSkill as any).create({
-      data: { storeId, name, prompt, description, icon, variables: variables || [] },
+    if (!userId) return res.status(401).json({ success: false, message: "Not authenticated" });
+    const skill = await prisma.kaiSkill.create({
+      data: { storeId, userId, name, prompt, description: description || "", icon: icon || "⚡", isGlobal: false },
     });
     res.json({ success: true, data: skill });
   } catch (err: any) {

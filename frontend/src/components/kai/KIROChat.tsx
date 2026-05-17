@@ -475,11 +475,12 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
       .catch(() => {});
   }, [storeId]);
 
-  // Load conversation history when convId changes
+  // Load conversation history ONLY when a specific conversationId is provided via props
+  // New chats start clean
   useEffect(() => {
-    if (!convId || histLoaded) return;
+    if (!initConvId || histLoaded) return;  // only load if explicitly given a convId
     setHistLoaded(true);
-    api.get(`/kai/conversation/${convId}`)
+    api.get(`/kai/conversation/${initConvId}`)
       .then(r => {
         const conv = r.data?.data;
         const msgs = (conv?.messages || []).map((m: any) => ({
@@ -488,7 +489,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
         }));
         if (msgs.length) setMessages(msgs);
       }).catch(() => {});
-  }, [convId, histLoaded]);
+  }, [initConvId, histLoaded]);
 
   // Generate follow-up suggestions for KIRO responses
   const generateFollowUps = useCallback((responseText: string, userQuery: string): string[] => {
@@ -538,7 +539,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
       if (attachment?.base64) { body.fileBase64 = attachment.base64; body.fileType = attachment.type; }
       if (attachment?.name) body.fileName = attachment.name;
 
-      const res = await fetch(`${BASE}/kai/chat`, {
+      const res = await fetch(`${BASE}/kai/smart-chat`, {
         method:"POST",
         headers: { "Content-Type":"application/json", ...(token ? { Authorization:`Bearer ${token}` } : {}) },
         body: JSON.stringify(body),
@@ -584,8 +585,9 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
       }
     } catch (err: any) {
       if (err.name === "AbortError") return;
+      const errTxt = (err as any).message || "Something went wrong. Type your question again.";
       setMessages(p => p.map(m => m.id === kiroId
-        ? { ...m, isStreaming:false, content:"I ran into a problem. Try again." }
+        ? { ...m, isStreaming:false, content:`${errTxt.includes("fetch") || errTxt.includes("network") ? "Connection issue — check your internet and try again." : "I ran into an issue. Try again or ask something slightly different."}` }
         : m
       ));
     } finally {
@@ -630,7 +632,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
     setMessages(p => p.map(m => m.id === msgId ? { ...m, isStreaming:true, content:"" } : m));
     setLoading(true);
     try {
-      const res = await fetch(`${BASE}/kai/chat`, {
+      const res = await fetch(`${BASE}/kai/smart-chat`, {
         method:"POST",
         headers: { "Content-Type":"application/json", ...(token ? { Authorization:`Bearer ${token}` } : {}) },
         body: JSON.stringify({ message:prevUserMsg.content, storeId, conversationId:convId }),
