@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { scrapeAnyUrl, scrapeMultipleUrls, researchMarket, getTrendingProducts, calculateProfit } from "../services/kai.scraper.service";
+import { scrapeAnyUrl, scrapeMultipleUrls, researchMarket, getTrendingProducts, calculateProfit, searchFacebookAds, spyTikTokAds, detectSaturation } from "../services/kai.scraper.service";
 import { generateMorningBrief } from "../services/kai.memory.service";
 
 const apiKey = () => process.env.ANTHROPIC_API_KEY || "";
@@ -103,6 +103,51 @@ export async function getMorningBriefHandler(req: Request, res: Response) {
   try {
     const opportunity = await generateMorningBrief(storeId, apiKey());
     return res.json({ success: true, data: { opportunity } });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+// ── POST /api/kai/fb-ads ──────────────────────────────────────────────────────
+export async function fbAdsHandler(req: Request, res: Response) {
+  const { product, storeId } = req.body;
+  if (!product) return res.status(400).json({ success: false, message: "product required" });
+  try {
+    const { PrismaClient } = require("@prisma/client");
+    const prisma = new PrismaClient();
+    const store = await prisma.store.findUnique({ where: { id: storeId }, select: { country: true } });
+    const result = await searchFacebookAds({ product, country: store?.country || "NG" });
+    return res.json({ success: true, data: { research: result } });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+// ── POST /api/kai/tiktok-spy ──────────────────────────────────────────────────
+export async function tiktokSpyHandler(req: Request, res: Response) {
+  const { product, storeId } = req.body;
+  if (!product) return res.status(400).json({ success: false, message: "product required" });
+  try {
+    const { PrismaClient } = require("@prisma/client");
+    const prisma = new PrismaClient();
+    const store = await prisma.store.findUnique({ where: { id: storeId }, select: { country: true } });
+    const result = await spyTikTokAds({ product, country: store?.country || "NG" });
+    return res.json({ success: true, data: { research: result } });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+// ── POST /api/kai/saturation ──────────────────────────────────────────────────
+export async function saturationHandler(req: Request, res: Response) {
+  const { product, storeId } = req.body;
+  if (!product) return res.status(400).json({ success: false, message: "product required" });
+  try {
+    const { PrismaClient } = require("@prisma/client");
+    const prisma = new PrismaClient();
+    const store = await prisma.store.findUnique({ where: { id: storeId }, select: { country: true } });
+    const result = await detectSaturation({ product, country: store?.country || "NG" });
+    return res.json({ success: true, data: result });
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message });
   }

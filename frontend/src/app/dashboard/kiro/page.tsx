@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
 import { useTheme } from "../../../components/layout/DashboardLayout";
-import KIROChat from "../../../components/kai/KAIChat";
+import KIROChat from "../../../components/kai/KIROChat";
 import {
   Plus, MessageSquare, Trash2, Pin, Search,
   MoreHorizontal, ChevronLeft, Zap, Edit2

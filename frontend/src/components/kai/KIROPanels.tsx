@@ -430,3 +430,54 @@ export function PulsePanel({ storeId, t, isDark, onSend }: any) {
     </div>
   );
 }
+
+
+// ── Memory Panel ──────────────────────────────────────────────────────────────
+export function MemoryPanel({ storeId, t, isDark }: any) {
+  const [memories, setMemories] = useState<any[]>([]);
+  const [loading,  setLoading]  = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    api.get(`/kai/memories?storeId=${storeId}`)
+      .then(r => setMemories(r.data.data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [storeId]);
+
+  const deleteMemory = async (key: string) => {
+    try {
+      await api.delete(`/kai/memory/${key}`);
+      setMemories(p => p.filter((m: any) => m.key !== key));
+      toast.success("Memory deleted");
+    } catch {}
+  };
+
+  if (loading) return <div style={{ padding:24, textAlign:"center", fontSize:12, color:t.muted }}>Loading memories...</div>;
+
+  return (
+    <div style={{ padding:"12px 16px" }}>
+      <p style={{ fontSize:13, fontWeight:800, color:t.text, margin:"0 0 2px" }}>What KIRO Knows</p>
+      <p style={{ fontSize:11, color:t.muted, margin:"0 0 12px" }}>Tap × to delete a memory and KIRO will forget it.</p>
+      {memories.length === 0 && (
+        <div style={{ textAlign:"center", padding:24 }}>
+          <p style={{ fontSize:13, color:t.muted }}>No memories yet. The more you chat, the more KIRO remembers about your business.</p>
+        </div>
+      )}
+      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+        {memories.map((m: any) => (
+          <div key={m.key} style={{ display:"flex", gap:8, alignItems:"flex-start", padding:"10px 12px", borderRadius:10, background:isDark?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.02)", border:`1px solid ${isDark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.06)"}` }}>
+            <div style={{ flex:1 }}>
+              <p style={{ fontSize:11, fontWeight:700, color:isDark?"rgba(200,190,255,0.5)":"rgba(107,53,232,0.6)", margin:"0 0 3px", textTransform:"uppercase", letterSpacing:"0.08em" }}>{m.category || "Memory"}</p>
+              <p style={{ fontSize:12, color:t.text, margin:0, lineHeight:1.5 }}>{typeof m.value === "string" ? m.value : JSON.stringify(m.value)}</p>
+            </div>
+            <button onClick={() => deleteMemory(m.key)}
+              style={{ padding:"3px 8px", borderRadius:6, border:"none", background:"transparent", color:"#ef4444", fontSize:12, cursor:"pointer", flexShrink:0 }}>
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

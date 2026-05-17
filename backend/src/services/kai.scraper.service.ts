@@ -280,3 +280,130 @@ Plain text only. No markdown. Specific products only, not categories.`,
   const data: any = await response.json();
   return data.content?.filter((b: any) => b.type === "text").map((b: any) => b.text).join("") || "";
 }
+
+// ── Facebook Ad Library search ────────────────────────────────────────────────
+export async function searchFacebookAds(params: {
+  product: string;
+  country: string;
+}): Promise<string> {
+  const locale = getLocale(params.country);
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "x-api-key": apiKey(), "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 2000,
+      tools: [{ type: "web_search_20250305", name: "web_search" }],
+      messages: [{
+        role: "user",
+        content: `Search Facebook Ad Library for ads about "${params.product}" targeting ${locale.countryName} market.
+
+Search for: "Facebook Ad Library ${params.product} ${locale.countryName}" and "site:facebook.com/ads/library ${params.product}"
+
+Find what ads are currently running. For each ad found:
+- Describe the creative angle (what hook they use)
+- Mention how long the ad has been running (if visible)
+- Note the ad format (video/image/carousel)
+- Identify what works about it
+
+Then give a verdict: what angles are saturated and what gaps exist.
+
+Write in plain text, no markdown. Be specific about real ads you find.`,
+      }],
+    }),
+  });
+  if (!response.ok) throw new Error("Ad library search failed");
+  const data: any = await response.json();
+  return data.content?.filter((b: any) => b.type === "text").map((b: any) => b.text).join("") || "";
+}
+
+// ── TikTok Ad Spy ─────────────────────────────────────────────────────────────
+export async function spyTikTokAds(params: {
+  product: string;
+  country: string;
+}): Promise<string> {
+  const locale = getLocale(params.country);
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "x-api-key": apiKey(), "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 2000,
+      tools: [{ type: "web_search_20250305", name: "web_search" }],
+      messages: [{
+        role: "user",
+        content: `Find viral TikTok content and ads about "${params.product}" in ${locale.countryName} right now.
+
+Search: "${params.product} TikTok ${locale.countryName} viral 2026" and "${params.product} tiktok shop ${locale.tiktokRegion}"
+
+For each video or ad trend found:
+- The hook used in the first 3 seconds
+- Why it went viral (emotion, problem, surprise)
+- View count or engagement if visible
+- The exact angle that made it work
+- Which sounds or trends it used
+
+Then: write one winning TikTok script hook for ${locale.countryName} audience selling this product.
+
+Plain text only.`,
+      }],
+    }),
+  });
+  if (!response.ok) throw new Error("TikTok spy failed");
+  const data: any = await response.json();
+  return data.content?.filter((b: any) => b.type === "text").map((b: any) => b.text).join("") || "";
+}
+
+// ── Saturation Detector ───────────────────────────────────────────────────────
+export async function detectSaturation(params: {
+  product: string;
+  country: string;
+}): Promise<{
+  score: number;       // 1-10 (10 = very saturated)
+  verdict: string;     // green/yellow/red
+  label: string;
+  reasons: string[];
+  opportunity: string;
+  raw: string;
+}> {
+  const locale = getLocale(params.country);
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "x-api-key": apiKey(), "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1000,
+      tools: [{ type: "web_search_20250305", name: "web_search" }],
+      messages: [{
+        role: "user",
+        content: `Analyse market saturation for "${params.product}" in ${locale.countryName} dropshipping market.
+
+Search: "${params.product} sellers ${locale.countryName}" and "${params.product} ${locale.shoppingPlatforms[0]}" and "${params.product} dropshipping ${locale.countryName} 2026"
+
+Count how many sellers, how much competition, how much advertising is happening.
+
+Return ONLY JSON:
+{
+  "score": 7,
+  "verdict": "yellow",
+  "label": "Moderate competition",
+  "reasons": ["reason 1", "reason 2", "reason 3"],
+  "opportunity": "What gap exists that a new seller could exploit"
+}
+
+score 1-3 = green (low competition, good entry point)
+score 4-6 = yellow (moderate, differentiation needed)
+score 7-10 = red (very saturated, hard to compete)`,
+      }],
+    }),
+  });
+  if (!response.ok) throw new Error("Saturation check failed");
+  const data: any = await response.json();
+  const text = data.content?.find((b: any) => b.type === "text")?.text || "{}";
+  try {
+    const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+    return { ...parsed, raw: text };
+  } catch {
+    return { score:5, verdict:"yellow", label:"Unable to determine", reasons:["Search returned unclear results"], opportunity:"Try searching manually for current seller count", raw:text };
+  }
+}

@@ -9,7 +9,7 @@ import { useQuery }      from "@tanstack/react-query";
 import { motion }        from "framer-motion";
 import { api }           from "@/lib/api";
 import { useAuthStore }  from "@/store/auth.store";
-import KAIChat           from "@/components/kai/KAIChat";
+import KAIChat           from "@/components/kai/KIROChat";
 import {
   TrendingUp, Package, Users, ShoppingCart,
   ArrowUpRight, ArrowDownRight, Bell,

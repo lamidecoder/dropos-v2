@@ -13,6 +13,11 @@ import {
   deleteSkill, useSkill, analyzeVoice, getGoals, createGoal,
 } from "../controllers/kai.controller";
 import {
+  fbAdsHandler,
+  tiktokSpyHandler,
+  saturationHandler,
+} from "../controllers/kai.scraper.controller";
+import {
   scrapeUrlHandler as scrapeUrl,
   scrapeBatchHandler as scrapeBatch,
   researchTopicHandler as researchTopic,
@@ -89,6 +94,9 @@ router.post  ("/goals",                 createGoal as any);
 // GET /api/kai/test-key — check API key config (no auth required for diagnosis)
 // Web scraper & research
 router.post  ("/scrape-url",            scrapeUrl);
+router.post  ("/fb-ads",               fbAdsHandler);
+router.post  ("/tiktok-spy",           tiktokSpyHandler);
+router.post  ("/saturation",           saturationHandler);
 router.post  ("/scrape-batch",          scrapeBatch);
 router.post  ("/research-market",       researchTopic);
 router.get   ("/trending",              trending);
