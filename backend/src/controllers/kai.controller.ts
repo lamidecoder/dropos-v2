@@ -136,6 +136,96 @@ export async function smartChat(req: Request, res: Response) {
       data: { conversationId: conv.id, role: "user", content: userContent },
     });
 
+
+    
+// URL_INTERCEPT_MARKER_START
+    // ── URL AUTO-IMPORT: detect product URL in message ─────────────────────────
+    const urlMatch = message.match(/https?:\/\/[^\s]+/);
+    const productUrlPatterns = /aliexpress\.com\/item|temu\.com|amazon\.com\/dp|amazon\.com\/product|jumia\.|konga\.com|shein\.com|tiktok\.com\/shop|1688\.com|dhgate\.com\/product|alibaba\.com\/product|ebay\.com\/itm|etsy\.com\/listing/i;
+    
+    if (urlMatch && productUrlPatterns.test(urlMatch[0])) {
+      const productUrl = urlMatch[0].split(/[\s,\n]/)[0];
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      
+      const detectedPlatform = productUrl.toLowerCase().includes("aliexpress") ? "AliExpress"
+        : productUrl.toLowerCase().includes("temu") ? "Temu"
+        : productUrl.toLowerCase().includes("amazon") ? "Amazon"
+        : productUrl.toLowerCase().includes("jumia") ? "Jumia"
+        : productUrl.toLowerCase().includes("shein") ? "Shein"
+        : productUrl.toLowerCase().includes("tiktok") ? "TikTok Shop"
+        : productUrl.toLowerCase().includes("dhgate") ? "DHgate"
+        : productUrl.toLowerCase().includes("alibaba") ? "Alibaba"
+        : "that store";
+      
+      const fetchMsg = `Detected ${detectedPlatform} link. Fetching product now...`;
+      res.write(`data: ${JSON.stringify({ token: fetchMsg })}\n\n`);
+      
+      try {
+        await (prisma.kaiMessage as any).create({
+          data: { conversationId: conv.id, role: "user", content: message },
+        });
+        
+        const storeLocale = await prisma.store.findUnique({ where: { id: storeId }, select: { country: true, currency: true } });
+        const scraped = await scrapeAnyUrl(productUrl, storeLocale?.country || "NG", storeLocale?.currency || "NGN");
+        
+        const sym2 = scraped.currencySymbol || "₦";
+        const profitLocal = scraped.profitPerSale || 0;
+        const sellingPrice = scraped.suggestedLocalPrice || 0;
+        
+        const scrapeReply = [
+          `Found it on ${scraped.platformDetected}. Here is what I got:`,
+          ``,
+          `Product: ${scraped.name}`,
+          `Category: ${scraped.category}`,
+          `Suggested selling price: ${sym2}${sellingPrice.toLocaleString()}`,
+          `Estimated margin: ${scraped.marginPct || 0}%`,
+          `Profit per sale: ${sym2}${profitLocal.toLocaleString()}`,
+          scraped.estimatedShippingDays ? `Shipping: ${scraped.estimatedShippingDays} days` : "",
+          ``,
+          scraped.shortDescription || "",
+          ``,
+          `Want me to add this to your store? I can adjust the price before listing.`,
+        ].filter(Boolean).join("\n");
+        
+        const actionLine = `KIRO_ACTION:{"type":"import_from_url","payload":{"url":"${productUrl.replace(/"/g,"'")}","name":"${scraped.name.replace(/"/g,"'")}","price":${sellingPrice}}}`;
+        
+        for (const char of scrapeReply) {
+          res.write(`data: ${JSON.stringify({ token: char })}\n\n`);
+        }
+        
+        await (prisma.kaiMessage as any).create({
+          data: { conversationId: conv.id, role: "assistant", content: scrapeReply + "\n" + actionLine },
+        });
+        
+        const scrapedAction = {
+          type: "import_from_url",
+          payload: { url: productUrl, name: scraped.name, price: sellingPrice },
+          description: `Import "${scraped.name}" from ${scraped.platformDetected}`,
+          approved: false,
+        };
+        
+        res.write(`data: ${JSON.stringify({ done: true, conversationId: conv.id, actions: [scrapedAction] })}\n\n`);
+        res.end();
+        return;
+        
+      } catch (scrapeErr: any) {
+        const msg = scrapeErr.message?.includes("restricted") || scrapeErr.message?.includes("login")
+          ? "That page requires login or bot protection. Try pasting just the product name and price and I will write the full listing for you."
+          : "Could not fetch that URL. The site may have bot protection. Just paste the product name and price here and I will create the listing instantly.";
+        res.write(`data: ${JSON.stringify({ token: msg })}\n\n`);
+        await (prisma.kaiMessage as any).create({
+          data: { conversationId: conv.id, role: "assistant", content: msg },
+        });
+        res.write(`data: ${JSON.stringify({ done: true, conversationId: conv.id })}\n\n`);
+        res.end();
+        return;
+      }
+    }
+    // ── END URL AUTO-IMPORT ──────────────────────────────────────────────────────
+
+
     // Get everything in parallel
     const [ctx, intent] = await Promise.all([
       getDeepContext(storeId).catch((e) => {
@@ -254,6 +344,15 @@ ${directive}`;
     if (finalImageBase64 && finalImageMediaType) {
       currentContent.push({ type: "image", source: { type: "base64", media_type: finalImageMediaType, data: finalImageBase64 } });
     }
+    // Handle PDF/document upload
+    const fileBase64   = req.body.fileBase64;
+    const fileType     = req.body.fileType;
+    if (fileBase64 && fileType === "pdf") {
+      currentContent.push({
+        type: "document",
+        source: { type: "base64", media_type: "application/pdf", data: fileBase64 }
+      } as any);
+    }
     currentContent.push({ type: "text", text: enhancedMessage });
     claudeMsgs.push({ role: "user", content: currentContent.length === 1 ? message : currentContent });
 
@@ -285,7 +384,13 @@ ${directive}`;
 
     // Parse KIRO_ACTION — handles every format KIRO might output
     const parsedActions: any[] = [];
-    let cleanResponse = fullResponse;
+    // Strip ALL markdown asterisks from KIRO responses
+    let cleanResponse = fullResponse
+      .replace(/\*\*([^*]+)\*\*/g, '$1')   // **bold** → plain
+      .replace(/\*([^*\n]+)\*/g, '$1')       // *italic* → plain
+      .replace(/^\s*[\*\-]\s/gm, '')         // bullet * or - at line start → remove
+      .replace(/#{1,6}\s/g, '')               // ## headings → remove
+      .replace(/\n{3,}/g, '\n\n');            // max 2 newlines
     try {
       // Step 1: normalize all variants to KIRO_ACTION:{...}
       let work = fullResponse

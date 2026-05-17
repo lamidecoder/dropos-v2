@@ -248,6 +248,7 @@ export async function callClaude(params: {
   systemPrompt: string;
   messages: any[];
   useSearch?: boolean;
+  useThinking?: boolean;
   maxTokens?: number;
   model?: string;
   onToken?: (token: string) => void;

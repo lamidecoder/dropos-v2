@@ -532,7 +532,17 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
 
     try {
       // Build message - if only image, add a default prompt
-      const finalMessage = text || (attachment ? "Please analyse this image and help me use it in my store." : "");
+      const isPdfAttachment = attachment?.type === "pdf";
+      const isCsvAttachment = attachment?.type === "csv";
+      const finalMessage = text || (
+        attachment?.type === "image" || attachment?.url
+          ? "Analyse this product image. Identify what it is, write a complete product listing with: name, description (3 paragraphs), suggested selling price in my store currency, category, and 5 bullet points. Then ask if you should add it to my store."
+          : isPdfAttachment
+          ? `Read this PDF document called "${attachment?.name}". Extract all useful information — if it is a supplier catalogue, list all products with prices. If it is an order sheet, show me the data. Give me a clear summary of what is in it.`
+          : isCsvAttachment
+          ? `Analyse this spreadsheet called "${attachment?.name}". Show me what data it contains and give me useful insights.`
+          : ""
+      );
       
       const body: any = { message: finalMessage, storeId, sessionId: convId || undefined };
       
