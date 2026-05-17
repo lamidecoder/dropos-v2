@@ -170,6 +170,13 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const qc = useQueryClient();
+
+  const fulfillMut = useMutation({
+    mutationFn: (orderId: string) => api.patch(`/orders/${storeId}/${orderId}/status`, { status: "SHIPPED" }),
+    onSuccess: () => { toast.success("Order fulfilled!"); qc.invalidateQueries({ queryKey: ["orders"] }); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Failed to fulfill"),
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["orders", storeId, activeTab],

@@ -263,12 +263,19 @@ ${directive}`;
 
     let fullResponse = "";
 
+    // Detect message complexity for model selection
+    const msgLower = message.toLowerCase().trim();
+    const isSimple = /^(hi|hello|hey|thanks|ok|okay|yes|no|sure|great|nice|cool|what.*name|who are you|good\s*(morning|afternoon|evening|night)|my name is)[\s!?.]*$/i.test(message.trim());
+    
+    // Use haiku for simple messages (37x higher rate limit, 5x cheaper)
+    // Use sonnet for complex queries and all vision
+    const useHaiku = isSimple && !finalImageBase64;
     await callClaude({
       systemPrompt,
       messages: claudeMsgs,
       useSearch,
-      model: (finalImageBase64 || finalImageBase64) ? "claude-sonnet-4-6" : undefined,
-      maxTokens: finalImageBase64 ? 4096 : 4096,
+      model: finalImageBase64 ? "claude-sonnet-4-6" : (useHaiku ? "claude-haiku-4-5-20251001" : "claude-sonnet-4-6"),
+      maxTokens: finalImageBase64 ? 4096 : (useHaiku ? 1024 : 4096),
       onToken: (token) => {
         fullResponse += token;
         res.write(`data: ${JSON.stringify({ token, conversationId: conv.id })}\n\n`);

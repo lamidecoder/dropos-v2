@@ -363,6 +363,92 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
   };
 
   // ── Send message ─────────────────────────────────────────────────────────────
+  const sendMessage = async (msg: string) => {
+    if (!msg.trim() || loading) return;
+    setInput("");
+    const syntheticEvent = { target: { value: msg } } as any;
+    // Directly call the send logic with the provided message
+    const text = msg.trim();
+    if (!storeId) { toast.error("No store connected"); return; }
+
+    // Build user message
+    const userMsg: Message = {
+      id:        `u-${Date.now()}`,
+      role:      "user",
+      content:   text,
+      timestamp: new Date().toISOString(),
+    };
+    setMessages(p => [...p, userMsg]);
+
+    const kiroMsg: Message = {
+      id:          `k-${Date.now()}`,
+      role:        "assistant",
+      content:     "",
+      isStreaming: true,
+      timestamp:   new Date().toISOString(),
+    };
+    setMessages(p => [...p, kiroMsg]);
+    setLoading(true);
+
+    // Start KIRO (same as send but with provided text)
+    const convId = initConvId || "";
+    const BASE = (process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api");
+    const token = useAuthStore.getState().accessToken;
+    const body: any = { message: text, storeId, sessionId: convId || undefined };
+
+    try {
+      const streamRes = await fetch(`${BASE}/kai/smart-chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), Accept: "text/event-stream" },
+        body: JSON.stringify(body),
+        signal: abortRef.current?.signal,
+      });
+
+      if (!streamRes.ok) {
+        const err = await streamRes.json().catch(()=>({message:`Error ${streamRes.status}`}));
+        throw new Error(err.message || `Server error ${streamRes.status}`);
+      }
+
+      const isStream = streamRes.headers.get("content-type")?.includes("text/event-stream");
+      let full = "";
+      if (isStream) {
+        const reader = streamRes.body!.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n");
+          for (const line of lines) {
+            if (!line.startsWith("data:")) continue;
+            const raw = line.slice(5).trim();
+            if (!raw) continue;
+            try {
+              const parsed = JSON.parse(raw);
+              if (parsed.token) { full += parsed.token; setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, content: cleanKIROContent(full) } : m)); }
+              if (parsed.conversationId && !convId) { setConvId(parsed.conversationId); onConversationCreated?.(parsed.conversationId); }
+              if (parsed.actions?.length) { setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, actions:parsed.actions } : m)); }
+              if (parsed.done) {
+                const raw2 = parsed.cleanResponse || "";
+                const fc = raw2 ? cleanKIROContent(raw2) : undefined;
+                const fa = parsed.actions || [];
+                setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, isStreaming:false, ...(fc?{content:fc}:{}), ...(fa.length?{actions:fa}:{}) } : m));
+              }
+              if (parsed.error) throw new Error(parsed.message || "KIRO error");
+            } catch(e:any) { if (e.message && !e.message.includes("JSON")) throw e; }
+          }
+        }
+      }
+      setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, isStreaming:false, content:cleanKIROContent(full)||m.content } : m));
+    } catch(e:any) {
+      if (e.name === "AbortError") {
+        setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, content:"Cancelled.", isStreaming:false } : m));
+      } else {
+        setMessages(p => p.map(m => m.id === kiroMsg.id ? { ...m, content:e.message||"Something went wrong.", isStreaming:false } : m));
+      }
+    } finally { setLoading(false); }
+  };
+
   const send = async () => {
     const text = input.trim();
     if (!text && !attachment) return;
@@ -555,9 +641,9 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, compact
                 "Write me an Instagram caption",
                 "Show my pending orders",
               ]).map((prompt: string) => (
-                <button key={prompt} onClick={() => setInput(prompt)}
+                <button key={prompt} onClick={() => sendMessage(prompt)}
                   style={{ padding:"6px 14px", borderRadius:99, border:`1px solid ${t.border}`, background:t.card, color:t.text, fontSize:12, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>
-                  {prompt.length > 35 ? prompt.slice(0,35) + "..." : prompt}
+                  {prompt.length > 38 ? prompt.slice(0,38) + "…" : prompt}
                 </button>
               ))}
             </div>
