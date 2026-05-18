@@ -140,26 +140,49 @@ export default function PublicKIROPage() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("dropos-token") || "";
-      const res = await fetch(`${API}/kai/smart-chat`, {
+      // Use token if available (registered user), otherwise use public endpoint
+      const token = typeof window !== "undefined" ? localStorage.getItem("dropos-token") || "" : "";
+      const endpoint = token ? `${API}/kai/smart-chat` : `${API}/kai/public-chat`;
+      const body = token
+        ? JSON.stringify({ message:msg })
+        : JSON.stringify({ message:msg });
+        
+      const res = await fetch(endpoint, {
         method:"POST",
         headers:{ "Content-Type":"application/json", ...(token ? { Authorization:`Bearer ${token}` } : {}) },
-        body: JSON.stringify({ message:msg, public:true }),
+        body,
       });
-      const data = await res.json();
-      const reply = data.data?.reply || data.reply || "I am here! Tell me what you want to sell and I will build your store right now.";
-      // Animate word by word
-      const words = reply.split(" ");
-      let displayed = "";
-      for (let i = 0; i < words.length; i++) {
-        await new Promise(r => setTimeout(r, 12));
-        displayed += (i === 0 ? "" : " ") + words[i];
-        setMsgs(p => p.map(m => m.id === kid ? { ...m, text:displayed } : m));
-        bottomRef.current?.scrollIntoView({ behavior:"smooth" });
+      
+      if (!res.ok || !res.body) {
+        throw new Error("Connection failed");
       }
-      setMsgs(p => p.map(m => m.id === kid ? { ...m, done:true } : m));
+      
+      // Stream the response
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        for (const line of chunk.split("\n").filter(l => l.startsWith("data: "))) {
+          try {
+            const parsed = JSON.parse(line.slice(6));
+            if (parsed.token) {
+              full += parsed.token;
+              setMsgs(p => p.map(m => m.id === kid ? { ...m, text:full } : m));
+              bottomRef.current?.scrollIntoView({ behavior:"smooth" });
+            }
+            if (parsed.done) {
+              setMsgs(p => p.map(m => m.id === kid ? { ...m, done:true } : m));
+            }
+          } catch {}
+        }
+      }
+      if (!full) setMsgs(p => p.map(m => m.id === kid ? { ...m, text:"I am KIRO. Tell me what you want to sell and I will build your store.", done:true } : m));
     } catch {
-      setMsgs(p => p.map(m => m.id === kid ? { ...m, text:"I am ready to help  -  try again or create your free account to get started.", done:true } : m));
+      setMsgs(p => p.map(m => m.id === kid ? { ...m, text:"I am ready to help — create your free account to get started.", done:true } : m));
     } finally { setLoading(false); }
   }, [input, loading, msgCount, authed]);
 

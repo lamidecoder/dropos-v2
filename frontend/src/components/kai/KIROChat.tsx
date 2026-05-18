@@ -1,6 +1,7 @@
 "use client";
 // ─────────────────────────────────────────────────────────────────────────────
 // KIRO Chat — Complete Rebuild
+import { URLImporter, SkillsPanel, GoalsPanel, PulsePanel, MemoryPanel } from "./KIROPanels";
 // Premium commerce AI interface for DropOS
 // Features: response navigation, edit messages, branch, follow-ups, rate limit
 // ─────────────────────────────────────────────────────────────────────────────

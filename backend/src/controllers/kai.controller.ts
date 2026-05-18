@@ -105,8 +105,9 @@ export async function smartChat(req: Request, res: Response) {
   const { storeId, imageBase64, imageMediaType } = req.body;
   const message = req.body.message || (imageBase64 ? "Please analyse this image and help me use it in my store." : "");
   const conversationId = req.body.conversationId || req.body.sessionId || null;
-  if (!message || !storeId)
-    return res.status(400).json({ success: false, message: "message and storeId required" });
+  const isPublicMode = req.body.public === true || !storeId;
+  if (!message)
+    return res.status(400).json({ success: false, message: "message required" });
 
   try {
     // Get or create conversation
@@ -119,11 +120,11 @@ export async function smartChat(req: Request, res: Response) {
 
     if (!conv) {
       const userId = (req as any).user?.userId || (req as any).user?.id;
-      if (!userId) return res.status(401).json({ success: false, message: "User not found in token" });
+      if (!userId && !isPublicMode) return res.status(401).json({ success: false, message: "User not found in token" });
       conv = await (prisma.kaiConversation as any).create({
-        data: { storeId, userId, title: generateTitle(message) },
+        data: { storeId: storeId || "public", userId: userId || "anon", title: generateTitle(message) },
         include: { messages: true },
-      });
+      }).catch(() => ({ id: "public-" + Date.now(), messages: [] }));
     }
 
     // Save user message
@@ -228,13 +229,13 @@ export async function smartChat(req: Request, res: Response) {
 
     // Get everything in parallel
     const [ctx, intent] = await Promise.all([
-      getDeepContext(storeId).catch((e) => {
+      storeId ? getDeepContext(storeId).catch((e) => {
         console.error("[KIRO] getDeepContext failed:", e.message);
         return null as any;
-      }),
+      }) : Promise.resolve(null),
       Promise.resolve(detectIntent(message)),
     ]);
-    if (!ctx) {
+    if (!ctx && !isPublicMode) {
       res.write(`data: ${JSON.stringify({ token: "KIRO is warming up — store data loading. Try again in a moment." })}
 
 `);
@@ -243,7 +244,16 @@ export async function smartChat(req: Request, res: Response) {
 `);
       res.end(); return;
     }
+    // Public mode fallback context
+    const effectiveCtx = ctx || {
+      storeName: "your store", country: "NG", currency: "NGN", currencySymbol: "₦",
+      plan: "FREE", totalProducts: 0, totalOrders: 0, revenueToday: 0,
+      revenueThisMonth: 0, revenueLastMonth: 0, pendingOrders: 0, lowStockProducts: [],
+      products: [], orders: [], customers: [], healthScore: 0, growthStage: "setup",
+      unfulfilledRevenue: 0, lowStockCount: 0, topProducts: [], recentOrders: [],
+    };
     const useSearch = ["market_research","trending","analytics"].includes(intent);
+    const ctxForPrompt = effectiveCtx ?? ctx ?? { storeName: "your store", country: "NG", currencySymbol: "₦" } as any;
 
     // Build rich conversation history - 20 messages, near full content
     const historyMsgs = (conv.messages || []).slice(-20);
@@ -522,7 +532,7 @@ export async function executeAction(req: Request, res: Response) {
               images:      pImages,
               inventory:   Number(action.payload.inventory) || 100,
               category:    action.payload.category || "",
-              status:      "ACTIVE",
+              status:      "ACTIVE" as any,
             },
           });
           break;
@@ -633,26 +643,30 @@ export async function executeAction(req: Request, res: Response) {
         }
 
         case "import_from_url": {
-          // Scrape any product URL and import it
           const store2 = await prisma.store.findUnique({ where: { id: storeId }, select: { country: true, currency: true } });
-          const scraped = await scrapeAnyUrl(action.payload.url, store2?.country || "NG", store2?.currency || "NGN");
-          const slugBase = scraped.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+          const importUrl = action.payload.url;
+          if (!importUrl) throw new Error("No URL provided for import");
+          const scraped = await scrapeAnyUrl(importUrl, store2?.country || "NG", store2?.currency || "NGN");
+          const slugBase = (scraped.name || "product").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0,60);
           const slug = `${slugBase}-${Date.now().toString(36)}`;
+          const safePrice = Number(action.payload.price || scraped.suggestedLocalPrice || 0);
+          const safeTags  = Array.isArray(scraped.tags) ? scraped.tags.filter((t: any) => typeof t === "string") : [];
+          const safeImages= Array.isArray(scraped.images) ? scraped.images.filter((i: any) => typeof i === "string" && i.startsWith("http")) : [];
           result = await prisma.product.create({
             data: {
               storeId,
-              name:        scraped.name,
+              name:        scraped.name || "Imported Product",
               slug,
-              description: scraped.description,
-              price:       scraped.suggestedLocalPrice,
-              category:    scraped.category,
-              tags:        scraped.tags,
-              images:      scraped.images,
+              description: scraped.description || scraped.shortDescription || "",
+              price:       safePrice,
+              category:    scraped.category || "Other",
+              tags:        safeTags,
+              images:      safeImages,
               inventory:   50,
-              status:      "ACTIVE",
-            } as any,
+              status:      "ACTIVE" as any,
+              sourceUrl:   importUrl,
+            },
           });
-          result.scrapedData = scraped;
           break;
         }
 
@@ -713,6 +727,7 @@ export async function executeAction(req: Request, res: Response) {
         actionId: action.id,
         type:     action.type,
         success:  false,
+        message:  humanError,
         error:    humanError,
         rawError: process.env.NODE_ENV === "development" ? err.message : undefined,
       });
@@ -901,7 +916,7 @@ export async function createGoal(req: Request, res: Response) {
       return res.status(400).json({ success: false, message: "storeId, title, targetValue, deadline required" });
 
     const goal = await (prisma.kaiGoal as any).create({
-      data: { storeId, userId, title, description, targetValue, unit: unit || "NGN", deadline: new Date(deadline) },
+      data: { storeId, userId: userId || "anon", title, description, targetValue, unit: unit || "NGN", deadline: new Date(deadline) },
       
     });
 
@@ -953,3 +968,82 @@ export async function getMorningBrief(req: Request, res: Response) {
   }
 }
 
+
+// ── POST /api/kai/public-chat (no auth, for public /kiro landing page) ───────
+export async function publicChat(req: Request, res: Response) {
+  const { message } = req.body;
+  if (!message?.trim()) return res.status(400).json({ success: false, message: "message required" });
+  
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    res.write(`data: ${JSON.stringify({ token: "KIRO is coming soon. Create your free account to get early access!" })}
+
+`);
+    res.write(`data: ${JSON.stringify({ done: true })}
+
+`);
+    res.end(); return;
+  }
+  
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 300,
+        stream: true,
+        system: `You are KIRO, an AI commerce partner for African dropshippers. You are on a public landing page talking to a potential new user.
+        
+Be warm, energetic, and inspiring. Show them what's possible.
+- If they mention a product/niche: Get excited, describe how KIRO would build their store
+- If they ask what you can do: Highlight 3 specific capabilities with examples
+- Always end by encouraging them to create a free account
+- Keep responses under 100 words
+- NO asterisks, NO markdown, NO bullet points with *
+- Write like a smart friend texting them
+- Never mention Claude or Anthropic`,
+        messages: [{ role: "user", content: message.trim() }],
+      }),
+    });
+    
+    if (!response.ok) throw new Error("API failed");
+    
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    
+    while (reader) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      for (const line of chunk.split("\n").filter((l: string) => l.startsWith("data: "))) {
+        const raw = line.slice(6).trim();
+        if (raw === "[DONE]") continue;
+        try {
+          const p = JSON.parse(raw);
+          if (p.type === "content_block_delta" && p.delta?.type === "text_delta") {
+            res.write(`data: ${JSON.stringify({ token: p.delta.text })}
+
+`);
+          }
+        } catch {}
+      }
+    }
+    
+    res.write(`data: ${JSON.stringify({ done: true })}
+
+`);
+  } catch {
+    res.write(`data: ${JSON.stringify({ token: "I am KIRO. Tell me what you want to sell and I will show you what I can build for you." })}
+
+`);
+    res.write(`data: ${JSON.stringify({ done: true })}
+
+`);
+  }
+  res.end();
+}
