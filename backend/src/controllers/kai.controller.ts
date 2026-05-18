@@ -265,22 +265,13 @@ export async function smartChat(req: Request, res: Response) {
       })
       .join("\n");
     
-    // Load cross-session memory (conversation summaries + ongoing tasks)
-    let crossSessionContext = "";
-    try {
-      const userId = (req as any).user?.userId || (req as any).user?.id;
-      crossSessionContext = await buildCrossSessionContext(storeId, userId, conv.id, message);
-    } catch {}
-
-    // Build complete system prompt (includes memory, goals, brand voice, market data)
-    let memories = "";
-    try { memories = await getRelevantMemories(storeId, message); } catch {}
-
-    // Build the store brain
-    let brain: any = undefined;
-    try { brain = await buildStoreBrain(storeId, ctx); } catch(e: any) {
-      console.error("[KIRO] Brain build failed:", e.message);
-    }
+    // ── SPEED: Run all heavy context fetches in parallel ──────────────────────
+    const userId2 = (req as any).user?.userId || (req as any).user?.id;
+    const [crossSessionContext, memories, brain] = await Promise.all([
+      storeId ? buildCrossSessionContext(storeId, userId2, conv.id, message).catch(() => "") : Promise.resolve(""),
+      storeId ? getRelevantMemories(storeId, message).catch(() => "") : Promise.resolve(""),
+      (storeId && ctx) ? buildStoreBrain(storeId, ctx).catch(() => undefined) : Promise.resolve(undefined),
+    ]);
 
     // Multi-step goal detection — decompose complex requests
     let goalPlan = "";
@@ -379,6 +370,8 @@ ${directive}`;
     const msgLower = message.toLowerCase().trim();
     const isSimple = /^(hi|hello|hey|thanks|ok|okay|yes|no|sure|great|nice|cool|what.*name|who are you|good\s*(morning|afternoon|evening|night)|my name is)[\s!?.]*$/i.test(message.trim());
     const useHaiku = isSimple && !finalImageBase64;
+    // Skip heavy context for ultra-simple messages — saves 500ms
+    const skipHeavyCtx = isSimple;
 
     await callClaude({
       systemPrompt,

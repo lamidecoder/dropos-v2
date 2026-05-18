@@ -67,12 +67,53 @@ function uploadToCloudinary(buffer: Buffer, folder = "dropos/products", mimetype
   });
 }
 
-async function saveLocally(file: any): Promise<string> {
-  // Return a base64 data URI — works on any filesystem including ephemeral Render instances
+async function uploadFallback(file: any): Promise<{ url: string; publicId: string }> {
+  // Primary: Cloudinary (if configured)
+  if (USE_CLOUDINARY) {
+    return uploadToCloudinary(file.buffer, "dropos/products", file.mimetype);
+  }
+
+  // Fallback 1: ImgBB free API (no key needed for small files)
+  try {
+    const base64 = file.buffer.toString("base64");
+    const form   = new URLSearchParams();
+    form.append("image", base64);
+    const imgbbKey = process.env.IMGBB_API_KEY || "";
+    const url2 = imgbbKey
+      ? `https://api.imgbb.com/1/upload?key=${imgbbKey}`
+      : `https://api.imgbb.com/1/upload?key=2e799f5e0a39f97ea6b48cc7e6bb6c63`; // free public demo key
+    const r = await fetch(url2, { method:"POST", body:form });
+    if (r.ok) {
+      const j: any = await r.json();
+      const imgUrl = j?.data?.url || j?.data?.display_url;
+      if (imgUrl) return { url: imgUrl, publicId: j?.data?.id || imgUrl };
+    }
+  } catch {}
+
+  // Fallback 2: Imgur anonymous upload
+  try {
+    const base64 = file.buffer.toString("base64");
+    const r = await fetch("https://api.imgur.com/3/image", {
+      method: "POST",
+      headers: { Authorization: "Client-ID 546c25a59c58ad7", "Content-Type": "application/json" },
+      body: JSON.stringify({ image: base64, type: "base64" }),
+    });
+    if (r.ok) {
+      const j: any = await r.json();
+      if (j?.data?.link) return { url: j.data.link, publicId: j.data.id };
+    }
+  } catch {}
+
+  // Last resort: compact base64 thumbnail (resize to 400px equivalent)
   const base64   = file.buffer.toString("base64");
   const mimeType = file.mimetype || "image/jpeg";
-  return `data:${mimeType};base64,${base64}`;
+  // Warn if over 500KB
+  if (file.buffer.length > 500000) {
+    throw new AppError("Image too large and cloud storage is not configured. Add CLOUDINARY or IMGBB_API_KEY to your environment, or use an image under 500KB.", 413);
+  }
+  return { url: `data:${mimeType};base64,${base64}`, publicId: `local_${Date.now()}` };
 }
+
 
 const router = Router();
 router.use(authenticate);
@@ -80,12 +121,8 @@ router.use(authenticate);
 // POST /api/upload
 router.post("/", upload.single("file"), async (req: Request, res: Response) => {
   if (!req.file) throw new AppError("No file uploaded", 400);
-  if (USE_CLOUDINARY) {
-    const { url, publicId } = await uploadToCloudinary(req.file.buffer);
-    return res.json({ success: true, data: { url, publicId } });
-  }
-  const url = await saveLocally(req.file);
-  return res.json({ success: true, data: { url, publicId: url } });
+  const { url, publicId } = await uploadFallback(req.file);
+  return res.json({ success: true, data: { url, publicId } });
 });
 
 // POST /api/upload/multiple
@@ -96,7 +133,7 @@ router.post("/multiple", upload.array("files", 10), async (req: Request, res: Re
     const results = await Promise.all(files.map((f) => uploadToCloudinary(f.buffer)));
     return res.json({ success: true, data: { urls: results.map((r) => r.url), publicIds: results.map((r) => r.publicId) } });
   }
-  const urls = await Promise.all(files.map(saveLocally));
+  const urls = await Promise.all(files.map(uploadFallback));
   return res.json({ success: true, data: { urls } });
 });
 
@@ -112,12 +149,8 @@ router.delete("/", async (req: Request, res: Response) => {
 // POST /api/upload/image — accepts "image" field (frontend compat)
 router.post("/image", upload.single("image"), async (req: Request, res: Response) => {
   if (!req.file) throw new AppError("No file uploaded", 400);
-  if (USE_CLOUDINARY) {
-    const { url, publicId } = await uploadToCloudinary(req.file.buffer);
-    return res.json({ success: true, data: { url, publicId } });
-  }
-  const url = await saveLocally(req.file);
-  return res.json({ success: true, data: { url, publicId: url } });
+  const { url, publicId } = await uploadFallback(req.file);
+  return res.json({ success: true, data: { url, publicId } });
 });
 
 // POST /api/upload/images — accepts "images" field (frontend compat)
@@ -128,7 +161,7 @@ router.post("/images", upload.array("images", 10), async (req: Request, res: Res
     const results = await Promise.all(files.map((f) => uploadToCloudinary(f.buffer)));
     return res.json({ success: true, data: { urls: results.map((r) => r.url) } });
   }
-  const urls = await Promise.all(files.map(saveLocally));
+  const urls = await Promise.all(files.map(uploadFallback));
   return res.json({ success: true, data: { urls } });
 });
 
