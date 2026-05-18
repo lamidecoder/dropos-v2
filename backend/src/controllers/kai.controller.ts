@@ -363,46 +363,40 @@ ${directive}`;
     res.setHeader("Connection", "keep-alive");
 
         let fullResponse = "";
-    let actionBuffer = "";
-    let inAction = false;
-    let actionDepth = 0;
+    // Track when we've hit KIRO_ACTION to stop streaming those chars to client
+    let actionStartIdx = -1;
 
     const msgLower = message.toLowerCase().trim();
     const isSimple = /^(hi|hello|hey|thanks|ok|okay|yes|no|sure|great|nice|cool|what.*name|who are you|good\s*(morning|afternoon|evening|night)|my name is)[\s!?.]*$/i.test(message.trim());
-    const useHaiku = isSimple && !finalImageBase64;
-    // Skip heavy context for ultra-simple messages — saves 500ms
-    const skipHeavyCtx = isSimple;
+
+    // Smart model selection — haiku for simple chat, sonnet for actions/analysis/images
+    const needsSonnet = !!finalImageBase64 || /import|add product|create|update|delete|refund|email|whatsapp|analytics|revenue|trending|scrape|research|strategy|forecast/i.test(message);
+    const model = needsSonnet ? "claude-sonnet-4-6" : (isSimple ? "claude-haiku-4-5-20251001" : "claude-sonnet-4-6");
+    const maxTok = finalImageBase64 ? 4096 : (isSimple ? 800 : 4096);
 
     await callClaude({
       systemPrompt,
       messages: claudeMsgs,
       useSearch,
-      model: finalImageBase64 ? "claude-sonnet-4-6" : (useHaiku ? "claude-haiku-4-5-20251001" : "claude-sonnet-4-6"),
-      maxTokens: finalImageBase64 ? 4096 : (useHaiku ? 1024 : 4096),
+      model,
+      maxTokens: maxTok,
       onToken: (token) => {
         fullResponse += token;
 
-        // Detect when KIRO_ACTION starts and buffer it (never send to client)
-        if (!inAction && fullResponse.includes("KIRO_ACTION") && actionBuffer === "") {
-          inAction = true;
+        // Once we detect KIRO_ACTION in the accumulated text, stop sending tokens to client
+        if (actionStartIdx === -1 && fullResponse.includes("KIRO_ACTION")) {
+          // Mark where the action starts in the full response
+          actionStartIdx = fullResponse.lastIndexOf("KIRO_ACTION");
         }
 
-        if (inAction) {
-          actionBuffer += token;
-          for (const ch of token) {
-            if (ch === "{") actionDepth++;
-            else if (ch === "}") {
-              actionDepth--;
-              if (actionDepth === 0 && actionBuffer.includes("{")) {
-                inAction = false;
-              }
-            }
-          }
-        } else {
-          // Clean token before sending
-          const cleanTok = token.replace(/\*\*/g, "").replace(/\*/g, "").replace(/^#+\s/gm, "");
+        // Only stream tokens that come BEFORE the KIRO_ACTION block
+        if (actionStartIdx === -1) {
+          // No action yet — stream the clean token
+          const cleanTok = token
+            .replace(/\*\*/g, "").replace(/\*/g, "").replace(/^#+\s/gm, "");
           res.write(`data: ${JSON.stringify({ token: cleanTok, conversationId: conv.id })}\n\n`);
         }
+        // If actionStartIdx is set, suppress remaining tokens (they're part of the action JSON)
       },
     });
 
@@ -424,22 +418,32 @@ ${directive}`;
         .replace(/KIRO_ACTION\s*:\s*\n\s*/g,      "KIRO_ACTION:") // colon + newline
         .replace(/KIRO_ACTION\s+(?=\{)/g,           "KIRO_ACTION:"); // space instead of colon
 
-      // Step 2: extract all JSON objects after KIRO_ACTION marker
-      const re = /KIRO_ACTION[:\s]+?\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})/g;
-      let m: RegExpExecArray | null;
-      while ((m = re.exec(work)) !== null) {
+      // Step 2: extract JSON objects using bracket-depth counter (handles any nesting)
+      const actionMarkerRe = /KIRO_ACTION\s*:?\s*/g;
+      let markerMatch: RegExpExecArray | null;
+      while ((markerMatch = actionMarkerRe.exec(work)) !== null) {
+        const startIdx = work.indexOf("{", markerMatch.index + markerMatch[0].length);
+        if (startIdx === -1) continue;
+        // Walk forward counting brackets
+        let depth = 0, j = startIdx;
+        while (j < work.length) {
+          if (work[j] === "{") depth++;
+          else if (work[j] === "}") { depth--; if (depth === 0) { j++; break; } }
+          j++;
+        }
+        const jsonStr = work.slice(startIdx, j);
         try {
-          const obj = JSON.parse(m[1]);
-          if (obj.action && !obj.type) obj.type = obj.action; // normalize field name
-          if (obj.type && obj.payload) parsedActions.push(obj);
-          else if (obj.type) parsedActions.push({ type: obj.type, payload: obj });
+          const obj = JSON.parse(jsonStr);
+          if (obj.action && !obj.type) obj.type = obj.action;
+          if (obj.type) {
+            parsedActions.push(obj.payload ? obj : { type: obj.type, payload: obj });
+          }
         } catch {
-          // Try extracting from full match if parse fails
+          // Try cleaning whitespace
           try {
-            const cleaned = m[1].replace(/\n/g," ").replace(/\s+/g," ");
-            const obj = JSON.parse(cleaned);
+            const obj = JSON.parse(jsonStr.replace(/\n/g," ").replace(/\s+/g," "));
             if (obj.action && !obj.type) obj.type = obj.action;
-            parsedActions.push(obj);
+            if (obj.type) parsedActions.push(obj.payload ? obj : { type: obj.type, payload: obj });
           } catch {}
         }
       }

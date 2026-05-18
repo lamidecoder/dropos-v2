@@ -756,13 +756,19 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
             }
             if (parsed.conversationId && !convId) { newConvId = parsed.conversationId; }
             if (parsed.actions?.length) {
-              setMessages(p => p.map(m => m.id === kiroId ? { ...m, actions:parsed.actions } : m));
+              setMessages(p => p.map(m => m.id === kiroId ? { ...m, actions:[...(m.actions||[]), ...parsed.actions].filter((a,i,arr) => arr.findIndex(b=>b.type===a.type)===i) } : m));
             }
             if (parsed.done) {
               if (newConvId) { setConvId(newConvId); onConversationCreated?.(newConvId); }
               const followUps = generateFollowUps(full, text);
+              const doneActions = parsed.actions || [];
               setMessages(p => p.map(m => m.id === kiroId
-                ? { ...m, isStreaming:false, variants:[clean(full)], variantIdx:0, followUps }
+                ? { ...m, isStreaming:false, variants:[clean(full)], variantIdx:0, followUps,
+                    // Merge actions from done event with any already set mid-stream
+                    actions: [...(m.actions || []), ...doneActions].filter((a,i,arr) =>
+                      arr.findIndex(b => b.type === a.type) === i  // deduplicate by type
+                    ),
+                  }
                 : m
               ));
             }
