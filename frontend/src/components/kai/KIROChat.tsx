@@ -126,6 +126,121 @@ function KIROAvatar({ size = 32, pulse = false }: { size?: number; pulse?: boole
   );
 }
 
+
+// ── Content renderer — handles markdown-lite, code blocks, tables, inline images ──
+function renderContent(text: string): React.ReactNode {
+  const lines = text.split("\n");
+  const nodes: React.ReactNode[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Code block
+    if (line.startsWith("```")) {
+      const lang = line.slice(3).trim();
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      nodes.push(
+        <div key={i} style={{ margin:"10px 0", borderRadius:10, overflow:"hidden", border:"1px solid rgba(107,53,232,0.2)" }}>
+          {lang && <div style={{ padding:"4px 12px", background:"rgba(107,53,232,0.15)", fontSize:11, color:P.v300, fontWeight:600 }}>{lang}</div>}
+          <pre style={{ margin:0, padding:"12px 14px", background:"rgba(0,0,0,0.3)", overflowX:"auto", fontSize:12, lineHeight:1.6, color:"#e2e8f0", fontFamily:"'Fira Code','Monaco','Consolas',monospace" }}>
+            {codeLines.join("\n")}
+          </pre>
+          <button onClick={() => navigator.clipboard.writeText(codeLines.join("\n"))}
+            style={{ width:"100%", padding:"5px", background:"rgba(107,53,232,0.08)", border:"none", color:"rgba(200,190,255,0.4)", fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>
+            Copy code
+          </button>
+        </div>
+      );
+      i++;
+      continue;
+    }
+
+    // Table (starts with |)
+    if (line.startsWith("|") && lines[i+1]?.match(/^\|[-| ]+\|$/)) {
+      const headers = line.split("|").filter(Boolean).map(h => h.trim());
+      i += 2; // skip separator row
+      const rows: string[][] = [];
+      while (i < lines.length && lines[i].startsWith("|")) {
+        rows.push(lines[i].split("|").filter(Boolean).map(c => c.trim()));
+        i++;
+      }
+      nodes.push(
+        <div key={i} style={{ overflowX:"auto", margin:"10px 0" }}>
+          <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+            <thead>
+              <tr>{headers.map((h, j) => (
+                <th key={j} style={{ padding:"8px 12px", textAlign:"left", borderBottom:"1px solid rgba(107,53,232,0.2)", color:P.v300, fontWeight:700, fontSize:12, whiteSpace:"nowrap" }}>{h}</th>
+              ))}</tr>
+            </thead>
+            <tbody>
+              {rows.map((row, ri) => (
+                <tr key={ri} style={{ borderBottom:"1px solid rgba(107,53,232,0.08)" }}>
+                  {row.map((cell, ci) => (
+                    <td key={ci} style={{ padding:"7px 12px", color:"rgba(200,190,255,0.8)", fontSize:13 }}>{cell}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      continue;
+    }
+
+    // Inline image ![alt](url)
+    const imgMatch = line.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+    if (imgMatch) {
+      nodes.push(
+        <img key={i} src={imgMatch[2]} alt={imgMatch[1]}
+          style={{ maxWidth:"100%", maxHeight:300, borderRadius:10, margin:"8px 0", display:"block", objectFit:"contain" }}/>
+      );
+      i++; continue;
+    }
+
+    // Numbered list
+    const numMatch = line.match(/^(\d+)\.\s+(.+)/);
+    if (numMatch) {
+      nodes.push(
+        <div key={i} style={{ display:"flex", gap:8, margin:"3px 0" }}>
+          <span style={{ color:P.v300, fontWeight:700, flexShrink:0, fontSize:13, minWidth:20 }}>{numMatch[1]}.</span>
+          <span style={{ fontSize:14, lineHeight:1.65, color:"#F0ECFF" }}>{inlineFormat(numMatch[2])}</span>
+        </div>
+      );
+      i++; continue;
+    }
+
+    // Regular paragraph / empty line
+    if (line.trim() === "") {
+      nodes.push(<div key={i} style={{ height:6 }}/>);
+    } else {
+      nodes.push(
+        <p key={i} style={{ margin:"2px 0", fontSize:14, lineHeight:1.7, color:"#F0ECFF" }}>
+          {inlineFormat(line)}
+        </p>
+      );
+    }
+    i++;
+  }
+  return <>{nodes}</>;
+}
+
+function inlineFormat(text: string): React.ReactNode {
+  // Handle inline code `...`
+  const parts = text.split(/(`[^`]+`)/g);
+  return <>{parts.map((p, i) => {
+    if (p.startsWith("`") && p.endsWith("`")) {
+      return <code key={i} style={{ background:"rgba(107,53,232,0.15)", padding:"1px 5px", borderRadius:4, fontSize:12, fontFamily:"'Fira Code','Monaco',monospace", color:P.v300 }}>{p.slice(1,-1)}</code>;
+    }
+    return p;
+  })}</>;
+}
+
 // ── Action Card ───────────────────────────────────────────────────────────────
 function ActionCard({ action, onApprove, onDismiss }: any) {
   const [loading, setLoading] = useState(false);
@@ -279,7 +394,7 @@ function MessageBubble({ msg, onApprove, onDismiss, onRegenerate, onEdit, onBook
             <p style={{ margin:0, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>
               {msg.isStreaming
                 ? <>{clean(msg.content||"")}<motion.span animate={{opacity:[1,0]}} transition={{duration:0.5,repeat:Infinity}}>▋</motion.span></>
-                : clean(currentVariant || msg.content || "")}
+                : renderContent(clean(currentVariant || msg.content || ""))}
             </p>
           )}
 
@@ -341,6 +456,11 @@ function MessageBubble({ msg, onApprove, onDismiss, onRegenerate, onEdit, onBook
               ...(isUser ? [{ icon:"✏️", label:"Edit",      action:()=>setEditing(true) }] : []),
               ...(!isUser ? [
                 { icon:"↻",  label:"Retry",      action:()=>onRegenerate(msg.id, "new") },
+                { icon:"🔊", label:"Listen",     action:()=>{
+                  const u = new SpeechSynthesisUtterance(clean(currentVariant||msg.content||"").slice(0,500));
+                  u.lang="en-NG"; u.rate=1.05;
+                  window.speechSynthesis.speak(u);
+                }},
                 { icon:"🌿", label:"Branch",     action:()=>onBranch(msg.id) },
                 { icon:msg.bookmarked?"⭐":"☆", label:"Star", action:()=>onBookmark(msg.id) },
                 { icon:"📤", label:"Share",      action:shareWA },
@@ -670,10 +790,24 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
       if (result?.success) {
         toast.success(result.message || "Done!");
       } else {
-        toast.error(result?.message || "Action failed");
+        // Self-healing: if backend sent a corrected action, retry automatically
+        if (result?.healedAction) {
+          toast.loading("Retrying with auto-fix...", { id:"heal" });
+          try {
+            const r2 = await api.post("/kai/action", { storeId, actions:[{ ...result.healedAction, approved:true }] });
+            const result2 = r2.data?.results?.[0];
+            if (result2?.success) {
+              toast.success(result2.message || "Fixed and done!", { id:"heal" });
+              return;
+            }
+          } catch {}
+          toast.error(result?.message || "Action failed even after auto-fix", { id:"heal" });
+        } else {
+          toast.error(result?.message || "Action failed");
+        }
       }
     } catch (e: any) {
-      toast.error(e.response?.data?.message || "Failed");
+      toast.error(e.response?.data?.message || "Failed — check your connection");
     }
   };
 
@@ -840,6 +974,28 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
         <RateLimitScreen plan={plan} onUpgrade={() => window.open("/dashboard/settings/billing","_blank")}/>
       ) : (
         <>
+          {/* Stop generation bar */}
+          <AnimatePresence>
+            {loading && messages.length > 0 && !messages[messages.length-1]?.content && (
+              <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}}
+                style={{ position:"absolute", top:0, left:0, right:0, zIndex:10, display:"flex", alignItems:"center", justifyContent:"center", padding:"8px 16px", background:"rgba(10,7,22,0.95)", borderBottom:"1px solid rgba(107,53,232,0.15)", backdropFilter:"blur(8px)" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <motion.div style={{ display:"flex", gap:4 }}>
+                    {[0,1,2].map(i => (
+                      <motion.span key={i} style={{ width:5, height:5, borderRadius:"50%", background:P.v400, display:"block" }}
+                        animate={{ y:[0,-5,0] }} transition={{ duration:0.7, repeat:Infinity, delay:i*0.15 }}/>
+                    ))}
+                  </motion.div>
+                  <span style={{ fontSize:12, color:"rgba(200,190,255,0.6)" }}>KIRO is thinking</span>
+                  <button onClick={() => abortRef.current?.abort()}
+                    style={{ padding:"3px 12px", borderRadius:8, border:"1px solid rgba(239,68,68,0.3)", background:"rgba(239,68,68,0.1)", color:"#ef4444", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit", marginLeft:8 }}>
+                    ⏹ Stop
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Messages area */}
           <div style={{ flex:1, overflowY:"auto", padding:"20px 16px", position:"relative", zIndex:1 }}>
             {messages.length === 0 ? (
@@ -865,6 +1021,17 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
             )}
             <div ref={bottomRef}/>
           </div>
+
+          {/* Scroll to bottom button — appears when user scrolls up */}
+          <AnimatePresence>
+            {messages.length > 4 && (
+              <motion.button initial={{opacity:0,scale:0.8}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.8}}
+                onClick={() => bottomRef.current?.scrollIntoView({ behavior:"smooth" })}
+                style={{ position:"absolute", bottom:280, right:16, width:32, height:32, borderRadius:"50%", border:"1px solid rgba(107,53,232,0.3)", background:"rgba(10,7,22,0.9)", color:P.v300, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, zIndex:5, backdropFilter:"blur(8px)", boxShadow:"0 4px 12px rgba(0,0,0,0.3)" }}>
+                ↓
+              </motion.button>
+            )}
+          </AnimatePresence>
 
           {/* Panel content (Skills / Goals / Pulse / Import) */}
           <AnimatePresence>
@@ -1001,7 +1168,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
             </div>
 
             <p style={{ fontSize:10, color:"rgba(200,190,255,0.15)", textAlign:"center", margin:"6px 0 0" }}>
-              KIRO by Darkweb & DropOS · ⌘K to open anywhere
+              ⌘K to open KIRO anywhere
             </p>
           </div>
         </>

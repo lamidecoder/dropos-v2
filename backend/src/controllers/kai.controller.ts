@@ -804,12 +804,40 @@ export async function executeAction(req: Request, res: Response) {
       }).catch(() => {});
     } catch (err: any) {
       const humanError = translateError(action.type, err.message || "unknown error");
+      // Self-healing: ask Claude to diagnose and fix the error
+      let healedAction: any = null;
+      try {
+        const healPrompt = `A KIRO action failed. Diagnose and provide a corrected action payload.
+
+Action type: ${action.type}
+Failed payload: ${JSON.stringify(action.payload)}
+Error: ${err.message}
+
+Return ONLY a corrected JSON payload object (no explanation, no KIRO_ACTION wrapper):
+{"corrected_payload": {...}, "reason": "one sentence explanation"}`;
+
+        const healRes = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "x-api-key": process.env.ANTHROPIC_API_KEY||"", "anthropic-version":"2023-06-01","Content-Type":"application/json" },
+          body: JSON.stringify({ model:"claude-haiku-4-5-20251001", max_tokens:300, messages:[{role:"user",content:healPrompt}] }),
+        });
+        if (healRes.ok) {
+          const healData: any = await healRes.json();
+          const healText = healData.content?.[0]?.text || "";
+          const healJson = JSON.parse(healText.replace(/```json|```/g,"").trim());
+          if (healJson.corrected_payload) {
+            healedAction = { ...action, payload: { ...action.payload, ...healJson.corrected_payload }, healed: true };
+          }
+        }
+      } catch {}
+
       results.push({
         actionId: action.id,
         type:     action.type,
         success:  false,
         message:  humanError,
         error:    humanError,
+        healedAction,  // frontend can retry with this corrected action
         rawError: process.env.NODE_ENV === "development" ? err.message : undefined,
       });
     }
