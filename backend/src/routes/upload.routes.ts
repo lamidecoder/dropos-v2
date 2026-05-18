@@ -68,50 +68,17 @@ function uploadToCloudinary(buffer: Buffer, folder = "dropos/products", mimetype
 }
 
 async function uploadFallback(file: any): Promise<{ url: string; publicId: string }> {
-  // Primary: Cloudinary (if configured)
+  // Use Cloudinary if configured (production)
   if (USE_CLOUDINARY) {
     return uploadToCloudinary(file.buffer, "dropos/products", file.mimetype);
   }
 
-  // Fallback 1: ImgBB free API (no key needed for small files)
-  try {
-    const base64 = file.buffer.toString("base64");
-    const form   = new URLSearchParams();
-    form.append("image", base64);
-    const imgbbKey = process.env.IMGBB_API_KEY || "";
-    const url2 = imgbbKey
-      ? `https://api.imgbb.com/1/upload?key=${imgbbKey}`
-      : `https://api.imgbb.com/1/upload?key=2e799f5e0a39f97ea6b48cc7e6bb6c63`; // free public demo key
-    const r = await fetch(url2, { method:"POST", body:form });
-    if (r.ok) {
-      const j: any = await r.json();
-      const imgUrl = j?.data?.url || j?.data?.display_url;
-      if (imgUrl) return { url: imgUrl, publicId: j?.data?.id || imgUrl };
-    }
-  } catch {}
-
-  // Fallback 2: Imgur anonymous upload
-  try {
-    const base64 = file.buffer.toString("base64");
-    const r = await fetch("https://api.imgur.com/3/image", {
-      method: "POST",
-      headers: { Authorization: "Client-ID 546c25a59c58ad7", "Content-Type": "application/json" },
-      body: JSON.stringify({ image: base64, type: "base64" }),
-    });
-    if (r.ok) {
-      const j: any = await r.json();
-      if (j?.data?.link) return { url: j.data.link, publicId: j.data.id };
-    }
-  } catch {}
-
-  // Last resort: compact base64 thumbnail (resize to 400px equivalent)
+  // No Cloudinary — store as base64 data URI (works on Render, always succeeds)
+  // This is what was working before. Keep it simple.
   const base64   = file.buffer.toString("base64");
   const mimeType = file.mimetype || "image/jpeg";
-  // Warn if over 500KB
-  if (file.buffer.length > 500000) {
-    throw new AppError("Image too large and cloud storage is not configured. Add CLOUDINARY or IMGBB_API_KEY to your environment, or use an image under 500KB.", 413);
-  }
-  return { url: `data:${mimeType};base64,${base64}`, publicId: `local_${Date.now()}` };
+  const dataUrl  = `data:${mimeType};base64,${base64}`;
+  return { url: dataUrl, publicId: `local_${Date.now()}` };
 }
 
 

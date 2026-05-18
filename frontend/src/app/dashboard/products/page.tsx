@@ -33,7 +33,8 @@ function ImageUploader({ images, onChange, maxImages=8, t, isDark }: any) {
         const res = await uploadAPI.image(file);
         onChange([...images, res.data.data.url]);
       } catch {
-        setErr("Upload failed — check Cloudinary is configured");
+        setErr("Upload failed — please try again or use a different image format");
+      setTimeout(() => setErr(""), 4000);
       } finally {
         setUploading(p => p.filter(n => n !== file.name));
       }
