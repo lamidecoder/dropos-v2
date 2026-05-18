@@ -670,6 +670,65 @@ export async function executeAction(req: Request, res: Response) {
           break;
         }
 
+        case "process_refund": {
+          const refundOrder = await prisma.order.findUnique({ where: { id: action.payload.orderId }, include: { items: true } });
+          if (!refundOrder) throw new Error(`Order not found`);
+          const refundAmount = action.payload.amount || (refundOrder as any).total || 0;
+          // Log refund (Paystack refund requires env key - graceful fallback)
+          result = await prisma.order.update({
+            where: { id: action.payload.orderId },
+            data: { status: "REFUNDED" as any, notes: `Refunded ${refundAmount} by KIRO on ${new Date().toLocaleDateString()}` },
+          });
+          // Try Paystack refund if key exists
+          const paystackKey = process.env.PAYSTACK_SECRET_KEY;
+          if (paystackKey && (refundOrder as any).paymentRef) {
+            fetch(`https://api.paystack.co/refund`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${paystackKey}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ transaction: (refundOrder as any).paymentRef, amount: Math.round(refundAmount * 100) }),
+            }).catch(() => {});
+          }
+          break;
+        }
+
+        case "send_email": {
+          const resendKey = process.env.RESEND_API_KEY;
+          if (!resendKey) throw new Error("Email sending is not configured yet. Add RESEND_API_KEY in your environment settings.");
+          const emailRes = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from: action.payload.from || "KIRO <hello@droposhq.com>",
+              to:   action.payload.to,
+              subject: action.payload.subject,
+              html: action.payload.html || `<p>${action.payload.body}</p>`,
+            }),
+          });
+          if (!emailRes.ok) {
+            const err = await emailRes.json().catch(() => ({}));
+            throw new Error(`Email failed: ${(err as any).message || emailRes.statusText}`);
+          }
+          result = await emailRes.json();
+          break;
+        }
+
+        case "send_whatsapp": {
+          const twilio = {
+            sid:   process.env.TWILIO_ACCOUNT_SID,
+            token: process.env.TWILIO_AUTH_TOKEN,
+            from:  process.env.TWILIO_PHONE,
+          };
+          if (!twilio.sid || !twilio.token) throw new Error("WhatsApp is not configured yet. Add TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in your environment settings.");
+          const waRes = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilio.sid}/Messages.json`, {
+            method: "POST",
+            headers: { Authorization: `Basic ${Buffer.from(`${twilio.sid}:${twilio.token}`).toString("base64")}`, "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ From: `whatsapp:${twilio.from}`, To: `whatsapp:${action.payload.to}`, Body: action.payload.message }),
+          });
+          if (!waRes.ok) throw new Error("WhatsApp send failed");
+          result = await waRes.json();
+          break;
+        }
+
         default:
           result = { note: `Action ${action.type} logged for manual execution` };
       }

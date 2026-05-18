@@ -1,4 +1,5 @@
 "use client";
+import ConnectionBanner from "../ConnectionBanner";
 import { useState, useEffect, createContext, useContext } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -73,7 +74,7 @@ const V = {
 const OWNER_NAV = [
   // Always-visible top links
   { id: "top", label: null, alwaysOpen: true, items: [
-    { href: "/dashboard/kiro",  icon: Zap,            label: "KIRO",     ai: true },
+    { href: "/dashboard/kiro",  icon: Zap,            label: "KIRO",     ai: true, shortcut: "⌘K" },
     { href: "/dashboard",       icon: LayoutDashboard, label: "Overview", exact: true },
   ]},
 
@@ -130,6 +131,7 @@ const OWNER_NAV = [
   // Intelligence & analytics
   { id: "intelligence", label: "Intelligence", items: [
     { href: "/dashboard/analytics",      icon: Activity,     label: "Analytics"       },
+    { href: "/dashboard/winning-products", icon: TrendingUp, label: "Product Intel",  badge: "AI" },
     { href: "/dashboard/top-products",   icon: TrendingUp,   label: "Daily Top 10"   },
     { href: "/dashboard/competitor-spy", icon: Eye,          label: "Competitor Spy"  },
     { href: "/dashboard/products-intel", icon: Cpu,          label: "Products Intel"  },

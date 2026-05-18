@@ -1,4 +1,5 @@
 "use client";
+import { useConnectionStatus } from "../../hooks/useConnectionStatus";
 // ─────────────────────────────────────────────────────────────────────────────
 // KIRO Chat — Complete Rebuild
 import { URLImporter, SkillsPanel, GoalsPanel, PulsePanel, MemoryPanel } from "./KIROPanels";
@@ -58,6 +59,9 @@ function getActionDesc(type: string, payload: any) {
     update_store_description:{ icon:"✏️",cta:"Update",        title:"Store Description",  summary:"Update public store copy" },
     update_product_image:   { icon:"📷", cta:"Add Image",      title:"Product Image",      summary:"Upload image to product" },
     update_product:         { icon:"✏️", cta:"Save Changes",   title:"Update Product",     summary:"Apply edits" },
+    process_refund:         { icon:"💸", cta:"Process Refund",  title:"Refund Order",       summary:payload?.amount ? `Refund ₦${Number(payload.amount).toLocaleString()}` : "Process refund" },
+    send_email:             { icon:"📧", cta:"Send Email",      title:"Send Email",          summary:payload?.subject || "Email campaign" },
+    send_whatsapp:          { icon:"💬", cta:"Send Message",    title:"WhatsApp Message",   summary:(payload?.message||"").slice(0,40) || "WhatsApp broadcast" },
     import_from_url:        { icon:"🌐", cta:"Import Product", title:"Import from URL",    summary:`From ${payload?.platform||"web"}` },
   };
   return map[type] || { icon:"⚡", cta:"Run", title:type.replace(/_/g," "), summary:"Execute action" };
@@ -450,6 +454,17 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
   const [rateLimit,   setRateLimit] = useState(false);
   const [activeTab,   setActiveTab] = useState<"chat"|"import"|"skills"|"goals"|"pulse">("chat");
   const [pulseCount,  setPulseCount]= useState(0);
+  const [lastFailedMsg, setLastFailedMsg] = useState<string | null>(null);
+
+  // Auto-retry last failed message on reconnect
+  useConnectionStatus({
+    onReconnect: () => {
+      if (lastFailedMsg && !loading) {
+        setLastFailedMsg(null);
+        send(lastFailedMsg);
+      }
+    },
+  });
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLTextAreaElement>(null);
@@ -587,6 +602,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
     } catch (err: any) {
       if (err.name === "AbortError") return;
       const errTxt = (err as any).message || "Something went wrong. Type your question again.";
+      setLastFailedMsg(text);  // remember for auto-retry on reconnect
       setMessages(p => p.map(m => m.id === kiroId
         ? { ...m, isStreaming:false, content:`${errTxt.includes("fetch") || errTxt.includes("network") ? "Connection issue — check your internet and try again." : "I ran into an issue. Try again or ask something slightly different."}` }
         : m
