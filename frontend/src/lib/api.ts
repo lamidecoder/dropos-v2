@@ -177,7 +177,7 @@ export const notificationAPI = {
 };
 
 export const uploadAPI = {
-  image: async (file: File, folder?: string): Promise<{ data: { data: { url: string; publicId?: string } } }> => {
+  image: async (file: File, folder?: string): Promise<{ success: boolean; data: { url: string; publicId?: string } }> => {
     const token = useAuthStore.getState().accessToken;
     const BASE  = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/api$/, "") + "/api";
     const fd    = new FormData();

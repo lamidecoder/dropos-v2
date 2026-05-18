@@ -34,15 +34,15 @@ function verifyImageMagicBytes(buffer: Buffer, mimetype: string): boolean {
   return false;
 }
 
-const MAX_FILE_BYTES = (Number(process.env.MAX_FILE_SIZE_MB) || 5) * 1024 * 1024; // 5MB default
+const MAX_FILE_BYTES = (Number(process.env.MAX_FILE_SIZE_MB) || 10) * 1024 * 1024; // 10MB default
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits:  { fileSize: MAX_FILE_BYTES, files: 10 },
   fileFilter: (_req, file, cb) => {
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (!allowed.includes(file.mimetype))
-      return cb(new AppError("Only JPEG, PNG, WebP, GIF images allowed", 400));
+    // Accept any image/* mimetype — browser/OS controls file picker
+    if (!file.mimetype.startsWith("image/"))
+      return cb(new AppError("Only image files are allowed", 400));
     // Sanitize filename
     file.originalname = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100);
     cb(null, true);
@@ -51,10 +51,6 @@ const upload = multer({
 
 // ── Upload buffer to Cloudinary ────────────────────────────────────────────────
 function uploadToCloudinary(buffer: Buffer, folder = "dropos/products", mimetype = "image/jpeg"): Promise<{ url: string; publicId: string }> {
-  // Double-check magic bytes before uploading
-  if (!verifyImageMagicBytes(buffer, mimetype)) {
-    return Promise.reject(new AppError("File content does not match its type", 400));
-  }
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { folder, transformation: [{ quality: "auto", fetch_format: "auto" }] },

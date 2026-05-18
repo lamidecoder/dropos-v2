@@ -26,12 +26,17 @@ function ImageUploader({ images, onChange, maxImages=8, t, isDark }: any) {
     if (!arr.length) return;
     setErr("");
     for (const file of arr) {
-      if (!file.type.startsWith("image/")) { setErr("Only images allowed"); continue; }
+      if (file.type && !file.type.startsWith("image/")) { setErr("Only image files allowed"); continue; }
       if (file.size > 10 * 1024 * 1024) { setErr("Max 10MB per image"); continue; }
       setUploading(p => [...p, file.name]);
       try {
         const res = await uploadAPI.image(file);
-        onChange([...images, res.data.data.url]);
+        // uploadAPI uses fetch (not axios) so backend {success,data:{url}} is returned directly
+        const url = (res as any)?.data?.url   // normal: {success:true, data:{url}}
+                 || (res as any)?.data?.data?.url  // legacy double-wrapped
+                 || (res as any)?.url;         // fallback
+        if (!url) throw new Error("Upload succeeded but no URL returned — check server logs");
+        onChange([...images, url]);
       } catch {
         setErr("Upload failed — please try again or use a different image format");
       setTimeout(() => setErr(""), 4000);
@@ -103,7 +108,7 @@ function ImageUploader({ images, onChange, maxImages=8, t, isDark }: any) {
                   Drop images here or <span style={{ color:V.v400 }}>browse</span>
                 </p>
                 <p style={{ fontSize:12,color:t.muted,margin:0 }}>
-                  JPEG, PNG, WebP · Max 10MB · Up to {maxImages} images
+                  All image formats · Max 10MB · Up to {maxImages} images
                 </p>
               </div>
               <div style={{ display:"flex",alignItems:"center",gap:6,padding:"8px 16px",borderRadius:10,background:`linear-gradient(135deg,${V.v500},#3D1C8A)`,cursor:"pointer" }}>
@@ -126,7 +131,7 @@ function ImageUploader({ images, onChange, maxImages=8, t, isDark }: any) {
       <p style={{ fontSize:11,color:t.muted,marginTop:6 }}>
         {images.length}/{maxImages} images · First image is the main display image
       </p>
-      <input ref={ref} type="file" accept="image/*" multiple style={{ display:"none" }}
+      <input ref={ref} type="file" accept="image/*,image/heic,image/heif" multiple style={{ display:"none" }}
         onChange={e=>{if(e.target.files)upload(e.target.files);e.target.value="";}}/>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
