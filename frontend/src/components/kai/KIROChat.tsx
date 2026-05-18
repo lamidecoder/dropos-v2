@@ -68,15 +68,46 @@ function getActionDesc(type: string, payload: any) {
 }
 
 // ── Clean KIRO response text ──────────────────────────────────────────────────
+function stripKIROAction(text: string): string {
+  // Remove KIRO_ACTION blocks with any nesting depth using a bracket counter
+  let result = "";
+  let i = 0;
+  while (i < text.length) {
+    const markerIdx = text.indexOf("KIRO_ACTION", i);
+    if (markerIdx === -1) { result += text.slice(i); break; }
+    result += text.slice(i, markerIdx);
+    // Skip past "KIRO_ACTION" and optional :, spaces, newlines, code fences
+    let j = markerIdx + 11;
+    while (j < text.length && /[:\s`\n]/.test(text[j])) j++;
+    if (j < text.length && (text[j] === "j" || text.slice(j,j+4) === "json")) {
+      // skip "json" keyword if present
+      while (j < text.length && text[j] !== "{") j++;
+    }
+    if (j < text.length && text[j] === "{") {
+      // Count brackets to find the matching closing brace
+      let depth = 0;
+      while (j < text.length) {
+        if (text[j] === "{") depth++;
+        else if (text[j] === "}") { depth--; if (depth === 0) { j++; break; } }
+        j++;
+      }
+      // Also skip trailing newline + optional ``` fence
+      while (j < text.length && (text[j] === "\n" || text[j] === "`" || text[j] === " ")) j++;
+    }
+    i = j;
+  }
+  return result;
+}
+
 function clean(text: string): string {
-  return text
-    .replace(/KIRO_ACTION[:\s]+\{[\s\S]*?\}(?=\n|$)/g, "")
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\*([^*\n]+)\*/g, "$1")
-    .replace(/^\s*[\*\-]\s/gm, "")
-    .replace(/#{1,6}\s/g, "")
-    .replace(/━+/g, "")
-    .replace(/^[-=]{3,}\s*$/gm, "")
+  return stripKIROAction(text)
+    .replace(/```json[\s\S]*?```/gi, "")          // remove any code blocks
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")            // **bold** → plain
+    .replace(/\*([^*\n]+)\*/g, "$1")               // *italic* → plain
+    .replace(/^\s*[\*\-]\s/gm, "")                // bullet → remove
+    .replace(/#{1,6}\s/g, "")                       // headings → remove
+    .replace(/━+/g, "").replace(/^[-=]{3,}\s*$/gm, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -448,13 +479,32 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
   const [convId,      setConvId]    = useState(initConvId || "");
   const [greeting,    setGreeting]  = useState<any>(null);
   const [storeData,   setStoreData] = useState<any>(null);
-  const [attachment,  setAttach]    = useState<any>(null);
+  const [attachments,  setAttachments] = useState<any[]>([]);
+  const [attachment,   setAttach]     = useState<any>(null); // kept for compat
   const [uploading,   setUploading] = useState(false);
   const [histLoaded,  setHistLoaded]= useState(false);
   const [rateLimit,   setRateLimit] = useState(false);
   const [activeTab,   setActiveTab] = useState<"chat"|"import"|"skills"|"goals"|"pulse">("chat");
   const [pulseCount,  setPulseCount]= useState(0);
   const [lastFailedMsg, setLastFailedMsg] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const recogRef = useRef<any>(null);
+
+  const handleVoice = () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { toast.error("Voice not supported in this browser. Try Chrome."); return; }
+    if (isListening) { recogRef.current?.stop(); setIsListening(false); return; }
+    const r = new SR();
+    r.continuous = false; r.interimResults = true; r.lang = "en-NG";
+    r.onresult = (e: any) => {
+      const t2 = Array.from(e.results).map((res: any) => res[0].transcript).join("");
+      setInput(t2);
+      if (inputRef.current) { inputRef.current.style.height = "auto"; inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 180) + "px"; }
+    };
+    r.onend = () => setIsListening(false);
+    r.onerror = () => setIsListening(false);
+    r.start(); recogRef.current = r; setIsListening(true);
+  };
 
   // Auto-retry last failed message on reconnect
   useConnectionStatus({
@@ -710,23 +760,55 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
 
   // ── File upload ───────────────────────────────────────────────────────────
   const handleFile = async (file: File) => {
+    if (file.size > 20 * 1024 * 1024) { toast.error("File too large — max 20MB"); return; }
     const isImage = file.type.startsWith("image/");
     const isPDF   = file.type === "application/pdf";
     setUploading(true);
     try {
-      if (isImage) {
-        const dataUrl = await new Promise<string>((res,rej) => {
-          const r = new FileReader(); r.onload=()=>res(r.result as string); r.onerror=rej; r.readAsDataURL(file);
-        });
-        setAttach({ url:dataUrl, type:"image", name:file.name });
-      } else {
-        const base64 = await new Promise<string>((res,rej) => {
-          const r = new FileReader(); r.onload=()=>res((r.result as string).split(",")[1]); r.onerror=rej; r.readAsDataURL(file);
-        });
-        setAttach({ base64, type:isPDF?"pdf":"csv", name:file.name });
-      }
+      const dataUrl = await new Promise<string>((res,rej) => {
+        const r = new FileReader(); r.onload=()=>res(r.result as string); r.onerror=rej; r.readAsDataURL(file);
+      });
+      const att = isImage
+        ? { url:dataUrl, type:"image", name:file.name, size:file.size }
+        : { url:dataUrl, base64:dataUrl.split(",")[1], type:isPDF?"pdf":"csv", name:file.name, size:file.size };
+      setAttach(att);     // legacy compat
+      setAttachments(p => [...p.slice(-2), att]); // keep last 3 attachments
     } catch { toast.error("Upload failed"); }
     finally { setUploading(false); }
+  };
+
+  // Drag-and-drop support
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const file = e.clipboardData.files?.[0];
+    if (file) handleFile(file);
+  };
+
+  // Generate image via Replicate/Together AI API through backend
+  const generateImage = async (prompt: string) => {
+    const kiroId = `k-${Date.now()}`;
+    const kiroMsg: Message = { id:kiroId, role:"assistant", content:"Generating image...", isStreaming:true, timestamp:new Date().toISOString() };
+    setMessages(p => [...p, kiroMsg]);
+    setLoading(true);
+    try {
+      const r = await api.post("/kai/generate-image", { prompt, storeId });
+      const imgUrl = r.data?.data?.url;
+      if (imgUrl) {
+        setMessages(p => p.map(m => m.id === kiroId
+          ? { ...m, isStreaming:false, content:`Here's your image. You can use it for your product listing or marketing.\n\n![Generated](${imgUrl})`, imageUrl:imgUrl }
+          : m
+        ));
+      } else {
+        setMessages(p => p.map(m => m.id === kiroId ? { ...m, isStreaming:false, content:"Image generation failed. Make sure REPLICATE_API_TOKEN is set in your environment." } : m));
+      }
+    } catch {
+      setMessages(p => p.map(m => m.id === kiroId ? { ...m, isStreaming:false, content:"Image generation isn't configured yet. Add REPLICATE_API_TOKEN to your Render environment." } : m));
+    } finally { setLoading(false); }
   };
 
   // ── Panels (lazy import) ──────────────────────────────────────────────────
@@ -824,40 +906,102 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
             )}
           </AnimatePresence>
 
-          {/* Input area */}
-          <div style={{ borderTop:"1px solid rgba(107,53,232,0.1)", padding:"12px 16px 16px", background:"rgba(7,5,15,0.97)", position:"relative", zIndex:2 }}>
-            <div style={{ display:"flex", alignItems:"flex-end", gap:8, borderRadius:16, border:`1px solid ${loading?"rgba(107,53,232,0.35)":"rgba(107,53,232,0.18)"}`, background:"rgba(107,53,232,0.06)", padding:"10px 12px", transition:"border-color 0.2s" }}>
-              {/* File button */}
-              <button onClick={() => fileRef.current?.click()} disabled={uploading}
-                title="Attach image or PDF"
-                style={{ width:32, height:32, borderRadius:9, border:"none", background:"transparent", color:"rgba(200,190,255,0.4)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:16 }}>
-                {uploading ? <span style={{ width:14, height:14, border:"2px solid rgba(107,53,232,0.4)", borderTopColor:P.v400, borderRadius:"50%", animation:"spin 0.7s linear infinite", display:"block" }}/> : "📎"}
-              </button>
+          {/* Input area — ChatGPT/Claude style */}
+          <div style={{ borderTop:"1px solid rgba(107,53,232,0.08)", padding:"10px 14px 14px", background:"rgba(7,5,15,0.97)", position:"relative", zIndex:2 }}
+            onDragOver={e => e.preventDefault()}
+            onDrop={handleDrop}>
 
-              {/* Text input */}
+            {/* Attachment chips */}
+            <AnimatePresence>
+              {attachment && (
+                <motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}}
+                  style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:8, overflow:"hidden" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, background:"rgba(107,53,232,0.12)", border:"1px solid rgba(107,53,232,0.2)" }}>
+                    <span style={{ fontSize:14 }}>{attachment.type === "image" ? "🖼" : attachment.type === "pdf" ? "📄" : "📊"}</span>
+                    <span style={{ fontSize:12, color:"rgba(200,190,255,0.8)", maxWidth:160, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{attachment.name}</span>
+                    {attachment.size && <span style={{ fontSize:10, color:"rgba(200,190,255,0.4)" }}>{Math.round(attachment.size/1024)}KB</span>}
+                    <button onClick={() => { setAttach(null); setAttachments([]); }}
+                      style={{ width:16, height:16, borderRadius:"50%", border:"none", background:"rgba(255,255,255,0.1)", color:"rgba(200,190,255,0.6)", cursor:"pointer", fontSize:10, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>×</button>
+                  </div>
+                  {attachment.type === "image" && (
+                    <img src={attachment.url} alt="" style={{ height:40, width:40, objectFit:"cover", borderRadius:8, border:"1px solid rgba(107,53,232,0.2)" }}/>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Main input box */}
+            <div style={{ borderRadius:16, border:`1px solid rgba(107,53,232,${loading?".35":".18"})`, background:"rgba(107,53,232,0.05)", transition:"border-color 0.2s, box-shadow 0.2s" }}
+              onFocus={e => (e.currentTarget.style.boxShadow = "0 0 0 2px rgba(107,53,232,0.15)")}
+              onBlur={e => (e.currentTarget.style.boxShadow = "none")}>
+
+              {/* Textarea */}
               <textarea
                 ref={inputRef}
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={e => {
+                  setInput(e.target.value);
+                  // Auto-grow
+                  e.target.style.height = "auto";
+                  e.target.style.height = Math.min(e.target.scrollHeight, 180) + "px";
+                }}
                 onKeyDown={e => { if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-                placeholder="Ask KIRO anything... or paste a product URL"
+                onPaste={handlePaste}
+                placeholder="Message KIRO... paste a URL, describe a product, ask anything"
                 rows={1}
-                style={{ flex:1, background:"transparent", border:"none", outline:"none", color:"#F0ECFF", fontSize:14, fontFamily:"inherit", lineHeight:1.5, resize:"none", maxHeight:120, overflowY:"auto", padding:"3px 0" }}
+                style={{ width:"100%", background:"transparent", border:"none", outline:"none", color:"#F0ECFF", fontSize:14, fontFamily:"inherit", lineHeight:1.6, resize:"none", maxHeight:180, overflowY:"auto", padding:"12px 14px 4px", boxSizing:"border-box" }}
               />
 
-              {/* Send / stop */}
-              <motion.button
-                onClick={() => loading ? abortRef.current?.abort() : send()}
-                whileTap={{ scale:0.93 }}
-                style={{ width:34, height:34, borderRadius:10, border:"none", background:loading?"rgba(239,68,68,0.15)":(input.trim()||attachment)?`linear-gradient(135deg,${P.v500},${P.v600})`:"rgba(107,53,232,0.15)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}>
-                {loading
-                  ? <span style={{ width:14, height:14, border:"2px solid rgba(239,68,68,0.5)", borderTopColor:"#ef4444", borderRadius:"50%", animation:"spin 0.7s linear infinite", display:"block" }}/>
-                  : <svg width={15} height={15} viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke={(input.trim()||attachment)?"#fff":"rgba(200,190,255,0.3)"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>}
-              </motion.button>
+              {/* Toolbar */}
+              <div style={{ display:"flex", alignItems:"center", gap:4, padding:"6px 10px 8px" }}>
+                {/* Image upload */}
+                <button onClick={() => { fileRef.current!.accept="image/*"; fileRef.current?.click(); }} disabled={uploading}
+                  title="Upload image"
+                  style={{ width:30, height:30, borderRadius:8, border:"none", background:"transparent", color:"rgba(200,190,255,0.4)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>
+                  🖼
+                </button>
+                {/* File upload */}
+                <button onClick={() => { fileRef.current!.accept="image/*,.pdf,.csv,.xlsx"; fileRef.current?.click(); }} disabled={uploading}
+                  title="Attach file (PDF, CSV)"
+                  style={{ width:30, height:30, borderRadius:8, border:"none", background:"transparent", color:"rgba(200,190,255,0.4)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>
+                  {uploading
+                    ? <span style={{ width:12, height:12, border:"2px solid rgba(107,53,232,0.4)", borderTopColor:P.v400, borderRadius:"50%", animation:"spin 0.7s linear infinite", display:"block" }}/>
+                    : "📎"}
+                </button>
+                {/* Voice */}
+                <button onClick={handleVoice} title={isListening?"Stop recording":"Voice input"}
+                  style={{ width:30, height:30, borderRadius:8, border:"none", background:isListening?"rgba(239,68,68,0.12)":"transparent", color:isListening?"#ef4444":"rgba(200,190,255,0.4)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>
+                  {isListening ? "⏹" : "🎙"}
+                </button>
+                {/* Generate image */}
+                <button
+                  onClick={() => { if (input.trim()) generateImage(input.trim()); else toast.error("Describe what to generate first"); }}
+                  title="Generate AI image from description"
+                  style={{ padding:"3px 10px", borderRadius:8, border:"1px solid rgba(107,53,232,0.2)", background:"transparent", color:P.v300, cursor:"pointer", fontSize:11, fontWeight:600, fontFamily:"inherit", flexShrink:0 }}>
+                  ✨ Generate image
+                </button>
+
+                <div style={{ flex:1 }}/>
+
+                {/* Character count */}
+                {input.length > 200 && (
+                  <span style={{ fontSize:10, color:"rgba(200,190,255,0.3)", marginRight:6 }}>{input.length}</span>
+                )}
+
+                {/* Send / Stop */}
+                <motion.button
+                  onClick={() => loading ? abortRef.current?.abort() : send()}
+                  whileTap={{ scale:0.9 }}
+                  style={{ width:32, height:32, borderRadius:10, border:"none", background: loading ? "rgba(239,68,68,0.15)" : (input.trim() || attachment) ? `linear-gradient(135deg,${P.v500},${P.v600})` : "rgba(107,53,232,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s", boxShadow: (input.trim()||attachment) && !loading ? "0 2px 12px rgba(107,53,232,0.4)" : "none" }}>
+                  {loading
+                    ? <span style={{ width:12, height:12, border:"2px solid rgba(239,68,68,0.4)", borderTopColor:"#ef4444", borderRadius:"50%", animation:"spin 0.7s linear infinite", display:"block" }}/>
+                    : <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke={(input.trim()||attachment)?"#fff":"rgba(200,190,255,0.25)"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </motion.button>
+              </div>
             </div>
 
-            <p style={{ fontSize:10, color:"rgba(200,190,255,0.2)", textAlign:"center", margin:"6px 0 0" }}>
-              KIRO · Built by Darkweb & the DropOS team
+            <p style={{ fontSize:10, color:"rgba(200,190,255,0.15)", textAlign:"center", margin:"6px 0 0" }}>
+              KIRO by Darkweb & DropOS · ⌘K to open anywhere
             </p>
           </div>
         </>

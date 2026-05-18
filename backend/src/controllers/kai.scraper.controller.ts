@@ -152,3 +152,57 @@ export async function saturationHandler(req: Request, res: Response) {
     return res.status(500).json({ success: false, message: err.message });
   }
 }
+
+// ── POST /api/kai/generate-image ──────────────────────────────────────────────
+export async function generateImageHandler(req: Request, res: Response) {
+  const { prompt, storeId } = req.body;
+  if (!prompt) return res.status(400).json({ success: false, message: "prompt required" });
+
+  const replicateToken = process.env.REPLICATE_API_TOKEN;
+  if (!replicateToken) {
+    return res.status(503).json({
+      success: false,
+      message: "Image generation not configured. Add REPLICATE_API_TOKEN to your Render environment variables.",
+    });
+  }
+
+  try {
+    // Use Replicate SDXL for fast, high-quality product images
+    const createRes = await fetch("https://api.replicate.com/v1/models/stability-ai/sdxl/predictions", {
+      method: "POST",
+      headers: { Authorization: `Token ${replicateToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input: {
+          prompt: `${prompt}, product photography, white background, professional, high quality, 4k`,
+          negative_prompt: "blurry, low quality, watermark, text, logo",
+          width: 1024, height: 1024, num_inference_steps: 30,
+        },
+      }),
+    });
+
+    if (!createRes.ok) {
+      const err = await createRes.json().catch(() => ({}));
+      throw new Error((err as any).detail || "Replicate API error");
+    }
+
+    const prediction: any = await createRes.json();
+    const pollUrl = prediction.urls?.get || `https://api.replicate.com/v1/predictions/${prediction.id}`;
+
+    // Poll until complete (max 60s)
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      const pollRes = await fetch(pollUrl, { headers: { Authorization: `Token ${replicateToken}` } });
+      const status: any = await pollRes.json();
+      if (status.status === "succeeded") {
+        const url = Array.isArray(status.output) ? status.output[0] : status.output;
+        return res.json({ success: true, data: { url, prompt } });
+      }
+      if (status.status === "failed") {
+        throw new Error(status.error || "Generation failed");
+      }
+    }
+    throw new Error("Image generation timed out");
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}

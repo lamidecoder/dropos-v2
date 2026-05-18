@@ -371,15 +371,15 @@ ${directive}`;
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 
-    let fullResponse = "";
+        let fullResponse = "";
+    let actionBuffer = "";
+    let inAction = false;
+    let actionDepth = 0;
 
-    // Detect message complexity for model selection
     const msgLower = message.toLowerCase().trim();
     const isSimple = /^(hi|hello|hey|thanks|ok|okay|yes|no|sure|great|nice|cool|what.*name|who are you|good\s*(morning|afternoon|evening|night)|my name is)[\s!?.]*$/i.test(message.trim());
-    
-    // Use haiku for simple messages (37x higher rate limit, 5x cheaper)
-    // Use sonnet for complex queries and all vision
     const useHaiku = isSimple && !finalImageBase64;
+
     await callClaude({
       systemPrompt,
       messages: claudeMsgs,
@@ -388,9 +388,31 @@ ${directive}`;
       maxTokens: finalImageBase64 ? 4096 : (useHaiku ? 1024 : 4096),
       onToken: (token) => {
         fullResponse += token;
-        res.write(`data: ${JSON.stringify({ token, conversationId: conv.id })}\n\n`);
+
+        // Detect when KIRO_ACTION starts and buffer it (never send to client)
+        if (!inAction && fullResponse.includes("KIRO_ACTION") && actionBuffer === "") {
+          inAction = true;
+        }
+
+        if (inAction) {
+          actionBuffer += token;
+          for (const ch of token) {
+            if (ch === "{") actionDepth++;
+            else if (ch === "}") {
+              actionDepth--;
+              if (actionDepth === 0 && actionBuffer.includes("{")) {
+                inAction = false;
+              }
+            }
+          }
+        } else {
+          // Clean token before sending
+          const cleanTok = token.replace(/\*\*/g, "").replace(/\*/g, "").replace(/^#+\s/gm, "");
+          res.write(`data: ${JSON.stringify({ token: cleanTok, conversationId: conv.id })}\n\n`);
+        }
       },
     });
+
 
     // Parse KIRO_ACTION — handles every format KIRO might output
     const parsedActions: any[] = [];
