@@ -1,32 +1,21 @@
 "use client";
-// ─────────────────────────────────────────────────────────────
-// /kiro — Smart public KIRO page
-// • Logged-in users get the full dashboard KIRO experience
-// • Visitors get a live streaming demo → auth wall at 3 messages
-// ─────────────────────────────────────────────────────────────
-import { useState, useRef, useEffect, useCallback, Suspense } from "react";
+// /kiro — Smart public KIRO page (completely rewritten)
+// Auth-aware: logged in → full KIRO at /kiro, visitor → live demo with auth wall
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Zap, ArrowRight } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
 
-// Lazy-load the full dashboard KIRO (heavy component, only for authed users)
-const KIROChat = dynamic(() => import("../../../components/kai/KIROChat"), {
-  loading: () => (
-    <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:"#07050F" }}>
-      <motion.div animate={{ rotate:360 }} transition={{ duration:1, repeat:Infinity, ease:"linear" }}
-        style={{ width:32, height:32, border:"2px solid rgba(107,53,232,0.3)", borderTopColor:"#8B5CF6", borderRadius:"50%" }}/>
-    </div>
-  ),
-  ssr: false,
-});
+// Lazy-load full KIRO — only for authed users
+const KIROChat = dynamic(() => import("../../../components/kai/KIROChat"), { ssr: false });
 
-// ── Auth detection ──────────────────────────────────────────────────────────
-async function tryAutoLogin(): Promise<{ user: any; storeId: string; accessToken: string } | null> {
-  const refresh = typeof window !== "undefined" && localStorage.getItem("dropos-refresh-token");
+// ── Try to restore auth session silently ─────────────────────────────────────
+async function tryAutoLogin(): Promise<{ storeId: string; accessToken: string } | null> {
+  if (typeof window === "undefined") return null;
+  const refresh = localStorage.getItem("dropos-refresh-token");
   if (!refresh) return null;
   try {
     const res = await fetch(`${API}/auth/refresh`, {
@@ -36,83 +25,90 @@ async function tryAutoLogin(): Promise<{ user: any; storeId: string; accessToken
     });
     if (!res.ok) return null;
     const data = await res.json();
-    if (data.data?.accessToken) {
-      const { accessToken, user, refreshToken: newRefresh } = data.data;
-      if (newRefresh) localStorage.setItem("dropos-refresh-token", newRefresh);
-      return { user, storeId: user?.stores?.[0]?.id || "", accessToken };
-    }
-  } catch {}
-  return null;
+    const { accessToken, user, refreshToken: newR } = data.data || {};
+    if (!accessToken) return null;
+    if (newR) localStorage.setItem("dropos-refresh-token", newR);
+    try {
+      const { useAuthStore } = await import("../../../store/auth.store");
+      useAuthStore.getState().setUser(user);
+      useAuthStore.getState().setAccessToken(accessToken);
+    } catch {}
+    return { storeId: user?.stores?.[0]?.id || "", accessToken };
+  } catch { return null; }
 }
 
 // ── Auth Modal ───────────────────────────────────────────────────────────────
-function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (token: string, storeId: string) => void }) {
+function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (sid: string) => void }) {
   const [mode, setMode]   = useState<"register"|"login">("register");
   const [name, setName]   = useState("");
   const [email, setEmail] = useState("");
   const [pass, setPass]   = useState("");
   const [err, setErr]     = useState("");
-  const [loading, setLoading] = useState(false);
+  const [busy, setBusy]   = useState(false);
+  const router            = useRouter();
 
   const submit = async () => {
     if (!email || !pass) return;
-    setLoading(true); setErr("");
+    setBusy(true); setErr("");
     try {
       const body = mode === "register" ? { name, email, password: pass } : { email, password: pass };
       const res  = await fetch(`${API}/auth/${mode}`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) { setErr(data.message || "Something went wrong"); return; }
-      if (data.data?.accessToken) {
-        if (data.data.refreshToken) localStorage.setItem("dropos-refresh-token", data.data.refreshToken);
-        onSuccess(data.data.accessToken, data.data.user?.stores?.[0]?.id || "");
+      const { accessToken, refreshToken, user } = data.data || {};
+      if (refreshToken) localStorage.setItem("dropos-refresh-token", refreshToken);
+      if (accessToken) {
+        try {
+          const { useAuthStore } = await import("../../../store/auth.store");
+          useAuthStore.getState().setUser(user);
+          useAuthStore.getState().setAccessToken(accessToken);
+        } catch {}
+        onSuccess(user?.stores?.[0]?.id || "");
       }
     } catch { setErr("Connection failed — try again"); }
-    finally { setLoading(false); }
+    finally { setBusy(false); }
   };
 
-  const inp: React.CSSProperties = { width:"100%", padding:"12px 16px", borderRadius:12, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:14, outline:"none", fontFamily:"inherit", boxSizing:"border-box" };
-
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:16, background:"rgba(0,0,0,0.75)", backdropFilter:"blur(10px)" }}
+    <div style={{ position:"fixed", inset:0, zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:16, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(12px)" }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <motion.div initial={{opacity:0,scale:0.95,y:16}} animate={{opacity:1,scale:1,y:0}}
-        style={{ width:"100%", maxWidth:400, borderRadius:24, background:"#0D0918", border:"1px solid rgba(107,53,232,0.25)", padding:"28px 24px" }}>
-
-        {/* KIRO logo */}
-        <div style={{ textAlign:"center", marginBottom:24 }}>
-          <div style={{ width:44, height:44, borderRadius:14, background:"linear-gradient(135deg,#6B35E8,#3D1C8A)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px", boxShadow:"0 4px 20px rgba(107,53,232,0.4)" }}>
-            <svg width={22} height={22} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14l9 0-1 8 10-12-9 0L13 2z" fill="white" fillOpacity={0.95}/></svg>
+      <motion.div initial={{opacity:0,scale:0.94,y:12}} animate={{opacity:1,scale:1,y:0}} transition={{type:"spring",stiffness:300,damping:26}}
+        style={{ width:"100%", maxWidth:380, borderRadius:20, background:"#0D0918", border:"1px solid rgba(124,58,237,0.25)", padding:"24px 20px", boxShadow:"0 20px 60px rgba(0,0,0,0.6)" }}>
+        {/* KIRO mark */}
+        <div style={{ textAlign:"center", marginBottom:20 }}>
+          <div style={{ width:42, height:42, borderRadius:13, background:"linear-gradient(135deg,#7C3AED,#4C1D95)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 12px", boxShadow:"0 4px 16px rgba(124,58,237,0.5)" }}>
+            <svg width={20} height={20} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14l9 0-1 8 10-12-9 0L13 2z" fill="white"/></svg>
           </div>
-          <h2 style={{ fontSize:20, fontWeight:900, color:"#F0ECFF", margin:"0 0 6px", letterSpacing:"-0.5px" }}>
-            {mode === "register" ? "Save your progress" : "Welcome back"}
+          <h2 style={{ fontSize:18, fontWeight:800, color:"#F0ECFF", margin:"0 0 4px", letterSpacing:"-0.4px" }}>
+            {mode === "register" ? "Create your free account" : "Welcome back"}
           </h2>
-          <p style={{ fontSize:13, color:"rgba(200,190,255,0.5)", margin:0 }}>
-            {mode === "register" ? "Free account · No card · 10 seconds" : "Sign in to continue with KIRO"}
+          <p style={{ fontSize:12, color:"rgba(200,190,255,0.5)", margin:0 }}>
+            {mode === "register" ? "No card · 10 seconds · Full KIRO access" : "Sign in to continue"}
           </p>
         </div>
-
         {/* Toggle */}
-        <div style={{ display:"flex", gap:4, padding:4, borderRadius:12, background:"rgba(255,255,255,0.05)", marginBottom:18 }}>
+        <div style={{ display:"flex", gap:3, padding:3, borderRadius:11, background:"rgba(255,255,255,0.05)", marginBottom:14 }}>
           {(["register","login"] as const).map(m => (
-            <button key={m} onClick={() => setMode(m)}
-              style={{ flex:1, padding:"8px", borderRadius:9, border:"none", cursor:"pointer", fontSize:13, fontWeight:600, background:mode===m?"rgba(107,53,232,0.4)":"transparent", color:mode===m?"#fff":"rgba(255,255,255,0.4)", transition:"all 0.15s", fontFamily:"inherit" }}>
-              {m === "register" ? "Create account" : "Sign in"}
+            <button key={m} onClick={() => { setMode(m); setErr(""); }}
+              style={{ flex:1, padding:"7px", borderRadius:9, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, fontFamily:"inherit", background:mode===m?"rgba(124,58,237,0.45)":"transparent", color:mode===m?"#fff":"rgba(255,255,255,0.4)", transition:"all 0.15s" }}>
+              {m === "register" ? "Sign up" : "Sign in"}
             </button>
           ))}
         </div>
-
-        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
           {mode === "register" && (
-            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name" style={inp} autoFocus/>
+            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name" autoFocus
+              style={{ padding:"11px 14px", borderRadius:11, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:13, outline:"none", fontFamily:"inherit" }}/>
           )}
-          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email address" type="email" style={inp} autoFocus={mode==="login"}/>
-          <input value={pass} onChange={e=>setPass(e.target.value)} placeholder="Password" type="password" style={inp}
-            onKeyDown={e=>e.key==="Enter"&&submit()}/>
-          {err && <p style={{ fontSize:12, color:"#EF4444", textAlign:"center", margin:0 }}>{err}</p>}
-          <button onClick={submit} disabled={loading||!email||!pass}
-            style={{ padding:"14px", borderRadius:13, border:"none", background:loading||!email||!pass?"rgba(107,53,232,0.3)":"linear-gradient(135deg,#6B35E8,#3D1C8A)", color:"#fff", fontSize:15, fontWeight:800, cursor:loading||!email||!pass?"not-allowed":"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:8, boxShadow:"0 4px 20px rgba(107,53,232,0.3)" }}>
-            {loading ? <Loader2 size={16} style={{animation:"spin 1s linear infinite"}}/> : <Zap size={16}/>}
-            {loading ? "Signing in..." : mode==="register" ? "Start free →" : "Sign in →"}
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" type="email" autoFocus={mode==="login"}
+            style={{ padding:"11px 14px", borderRadius:11, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:13, outline:"none", fontFamily:"inherit" }}/>
+          <input value={pass} onChange={e=>setPass(e.target.value)} placeholder="Password" type="password"
+            onKeyDown={e=>e.key==="Enter"&&submit()}
+            style={{ padding:"11px 14px", borderRadius:11, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:13, outline:"none", fontFamily:"inherit" }}/>
+          {err && <p style={{ fontSize:12, color:"#F87171", margin:0, textAlign:"center" }}>{err}</p>}
+          <button onClick={submit} disabled={busy||!email||!pass}
+            style={{ padding:"12px", borderRadius:12, border:"none", background:busy||!email||!pass?"rgba(124,58,237,0.3)":"linear-gradient(135deg,#7C3AED,#4C1D95)", color:"#fff", fontSize:14, fontWeight:800, cursor:busy||!email||!pass?"not-allowed":"pointer", fontFamily:"inherit", marginTop:2, boxShadow:"0 4px 16px rgba(124,58,237,0.4)" }}>
+            {busy ? "…" : mode === "register" ? "Create account →" : "Sign in →"}
           </button>
         </div>
       </motion.div>
@@ -120,27 +116,29 @@ function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (to
   );
 }
 
-// ── Demo chat (public, unauthenticated) ──────────────────────────────────────
+// ── Demo Chat (for unauthenticated visitors) ─────────────────────────────────
 const STARTERS = [
   "What can KIRO do?",
   "I sell hair extensions",
-  "How do I import products?",
-  "What's trending in Nigeria now?",
-  "Help me set up a store",
+  "Help me import a product",
+  "What's trending in Nigeria?",
+  "How do I grow my store?",
 ];
 
-function DemoChat({ onAuthSuccess }: { onAuthSuccess: (token: string, storeId: string) => void }) {
-  const [msgs,      setMsgs]      = useState<{ id:string; role:"user"|"kiro"; text:string; streaming?:boolean }[]>([
-    { id:"0", role:"kiro", text:"Hey — I'm KIRO. I help African dropshippers find winning products, write ad copy, and run their stores from a single chat. What do you want to sell?" }
+function DemoChat({ onAuthSuccess }: { onAuthSuccess: (sid: string) => void }) {
+  const [msgs,     setMsgs]     = useState<{ id:string; role:"user"|"kiro"; text:string }[]>([
+    { id:"0", role:"kiro", text:"Hey — I'm KIRO. I help African dropshippers find products, write ad copy, and run their stores from a single chat. What do you want to sell?" }
   ]);
-  const [input,     setInput]     = useState("");
-  const [loading,   setLoading]   = useState(false);
-  const [showAuth,  setShowAuth]  = useState(false);
-  const [msgCount,  setMsgCount]  = useState(0);
+  const [input,    setInput]    = useState("");
+  const [loading,  setLoading]  = useState(false);
+  const [msgCount, setMsgCount] = useState(0);
+  const [showAuth, setShowAuth] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [msgs]);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior:"smooth" });
+  }, [msgs]);
 
   const send = useCallback(async (text?: string) => {
     const msg = (text || input).trim();
@@ -148,225 +146,211 @@ function DemoChat({ onAuthSuccess }: { onAuthSuccess: (token: string, storeId: s
     setInput("");
     const count = msgCount + 1;
     setMsgCount(count);
-
-    // Auth wall after 4 messages
-    if (count >= 4) {
-      setMsgs(p => [...p, { id:Date.now().toString(), role:"user", text:msg }]);
-      setTimeout(() => setShowAuth(true), 600);
+    if (count >= 5) {
+      setMsgs(p => [...p, { id:`u${Date.now()}`, role:"user", text:msg }]);
+      setTimeout(() => setShowAuth(true), 400);
       return;
     }
-
     const kid = `k${Date.now()}`;
-    setMsgs(p => [...p, { id:`u${Date.now()}`, role:"user", text:msg }, { id:kid, role:"kiro", text:"", streaming:true }]);
+    setMsgs(p => [...p,
+      { id:`u${Date.now()}`, role:"user", text:msg },
+      { id:kid, role:"kiro", text:"" },
+    ]);
     setLoading(true);
-
     try {
       const res = await fetch(`${API}/kai/public-chat`, {
         method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ message:msg }),
       });
       if (!res.ok || !res.body) throw new Error();
       const reader = res.body.getReader();
-      const dec = new TextDecoder();
+      const dec    = new TextDecoder();
       let full = "";
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        for (const line of dec.decode(value,{stream:true}).split("\n").filter(l=>l.startsWith("data: "))) {
+        for (const line of dec.decode(value,{stream:true}).split("\n")) {
+          if (!line.startsWith("data: ")) continue;
           try {
             const p = JSON.parse(line.slice(6));
-            if (p.token) { full += p.token; setMsgs(prev => prev.map(m => m.id===kid ? {...m, text:full} : m)); bottomRef.current?.scrollIntoView({behavior:"smooth"}); }
-            if (p.done) setMsgs(prev => prev.map(m => m.id===kid ? {...m, streaming:false} : m));
+            if (p.token) { full += p.token; setMsgs(prev => prev.map(m => m.id===kid ? {...m,text:full} : m)); bottomRef.current?.scrollIntoView({behavior:"smooth"}); }
           } catch {}
         }
       }
+      setMsgs(prev => prev.map(m => m.id===kid ? {...m,text:full||"I'm ready to help. Create a free account to unlock the full experience."} : m));
     } catch {
-      setMsgs(p => p.map(m => m.id===kid ? {...m, text:"I'm ready to help. Create a free account to unlock the full experience.", streaming:false} : m));
+      setMsgs(p => p.map(m => m.id===kid ? {...m,text:"I'm ready to help — create a free account to get started."} : m));
     } finally { setLoading(false); }
   }, [input, loading, msgCount]);
 
+  const t = { bg:"#07050F", v500:"#7C3AED", v300:"#A78BFA", text:"#F0ECFF", muted:"rgba(200,190,255,0.5)" };
+
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", position:"relative" }}>
+    <>
       {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onSuccess={onAuthSuccess}/>}
-
-      {/* Messages */}
-      <div style={{ flex:1, overflowY:"auto", padding:"20px 16px 8px", scrollbarWidth:"thin" }}>
-        {msgs.map(msg => (
-          <motion.div key={msg.id} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
-            style={{ display:"flex", flexDirection:msg.role==="user"?"row-reverse":"row", gap:8, alignItems:"flex-end", marginBottom:14 }}>
-            {msg.role==="kiro" && (
-              <div style={{ width:28, height:28, borderRadius:9, background:"linear-gradient(135deg,#6B35E8,#3D1C8A)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:"0 2px 8px rgba(107,53,232,0.4)" }}>
-                <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14l9 0-1 8 10-12-9 0L13 2z" fill="white" fillOpacity={0.95}/></svg>
+      <div style={{ display:"flex", flexDirection:"column", height:"100%", minHeight:0 }}>
+        {/* Messages — takes all available space */}
+        <div style={{ flex:1, overflowY:"auto", padding:"16px 14px 8px", minHeight:0, WebkitOverflowScrolling:"touch" }}>
+          {msgs.map(msg => (
+            <motion.div key={msg.id} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
+              style={{ display:"flex", flexDirection:msg.role==="user"?"row-reverse":"row", gap:8, alignItems:"flex-end", marginBottom:12 }}>
+              {msg.role==="kiro" && (
+                <div style={{ width:26, height:26, borderRadius:8, background:`linear-gradient(135deg,${t.v500},#4C1D95)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 2px 8px rgba(124,58,237,0.4)` }}>
+                  <svg width={12} height={12} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14l9 0-1 8 10-12-9 0L13 2z" fill="white"/></svg>
+                </div>
+              )}
+              <div style={{ maxWidth:"80%", padding:msg.role==="user"?"10px 14px":"8px 0",
+                borderRadius:msg.role==="user"?"18px 18px 4px 18px":"0",
+                background:msg.role==="user"?`linear-gradient(135deg,${t.v500},#5B21B6)`:"transparent",
+                color:t.text, fontSize:14, lineHeight:1.65, boxShadow:msg.role==="user"?"0 3px 12px rgba(124,58,237,0.3)":"none" }}>
+                {msg.text || (loading && msg.id===msgs[msgs.length-1]?.id && (
+                  <span style={{display:"flex",gap:4}}>
+                    {[0,1,2].map(i=><motion.span key={i} style={{width:5,height:5,borderRadius:"50%",background:"rgba(167,139,250,0.6)",display:"block"}} animate={{y:[0,-4,0]}} transition={{duration:0.6,repeat:Infinity,delay:i*0.12}}/>)}
+                  </span>
+                ))}
               </div>
-            )}
-            <div style={{ maxWidth:"80%", padding:"10px 14px", borderRadius:msg.role==="user"?"18px 18px 4px 18px":"18px 18px 18px 4px",
-              background:msg.role==="user"?"linear-gradient(135deg,#6B35E8,#4C1D95)":"rgba(255,255,255,0.07)",
-              color:"#F0ECFF", fontSize:14, lineHeight:1.65 }}>
-              {msg.text || (msg.streaming && (
-                <span style={{display:"flex",alignItems:"center",gap:5}}>
-                  {[0,1,2].map(i=><motion.span key={i} style={{width:5,height:5,borderRadius:"50%",background:"rgba(167,139,250,0.6)",display:"block"}} animate={{y:[0,-4,0]}} transition={{duration:0.6,repeat:Infinity,delay:i*0.12}}/>)}
-                </span>
-              ))}
-              {msg.streaming && msg.text && <motion.span animate={{opacity:[1,0]}} transition={{duration:0.5,repeat:Infinity}}>▋</motion.span>}
-            </div>
-          </motion.div>
-        ))}
-
-        {/* Auth nudge card after 2 messages */}
-        {msgCount >= 2 && !showAuth && (
-          <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0.3}}
-            style={{ margin:"12px 0 16px", padding:"14px 16px", borderRadius:16, background:"rgba(107,53,232,0.1)", border:"1px solid rgba(107,53,232,0.25)" }}>
-            <p style={{ fontSize:13, fontWeight:700, color:"#F0ECFF", margin:"0 0 4px" }}>KIRO is better with your store</p>
-            <p style={{ fontSize:12, color:"rgba(200,190,255,0.6)", margin:"0 0 10px" }}>Free account unlocks: product import, sales analytics, AI ad copy, and the full commerce OS.</p>
-            <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"8px 18px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#6B35E8,#4C1D95)", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:6 }}>
-              <Zap size={13}/> Start free — takes 10 seconds
-            </button>
-          </motion.div>
-        )}
-        <div ref={bottomRef}/>
-      </div>
-
-      {/* Starters */}
-      {msgs.length <= 1 && (
-        <div style={{ padding:"0 16px 8px", display:"flex", gap:6, flexWrap:"wrap" }}>
-          {STARTERS.map(s => (
-            <button key={s} onClick={()=>send(s)}
-              style={{ padding:"6px 12px", borderRadius:99, border:"1px solid rgba(107,53,232,0.25)", background:"rgba(107,53,232,0.08)", color:"rgba(200,190,255,0.7)", fontSize:12, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>
-              {s}
-            </button>
+            </motion.div>
           ))}
-        </div>
-      )}
 
-      {/* Input */}
-      <div style={{ padding:"10px 14px 16px", borderTop:"1px solid rgba(107,53,232,0.1)" }}>
-        <div style={{ display:"flex", gap:8, alignItems:"flex-end", borderRadius:16, border:"1px solid rgba(107,53,232,0.2)", background:"rgba(107,53,232,0.05)", padding:"10px 12px" }}>
-          <textarea ref={inputRef} value={input} onChange={e=>setInput(e.target.value)}
-            onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}}
-            placeholder="Ask KIRO anything..."
-            rows={1}
-            style={{ flex:1, background:"transparent", border:"none", outline:"none", color:"#F0ECFF", fontSize:14, fontFamily:"inherit", lineHeight:1.5, resize:"none", padding:"2px 0" }}/>
-          <motion.button onClick={()=>send()} whileTap={{scale:0.9}} disabled={loading||!input.trim()}
-            style={{ width:32, height:32, borderRadius:10, border:"none", background:input.trim()?"linear-gradient(135deg,#6B35E8,#4C1D95)":"rgba(107,53,232,0.15)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-            {loading
-              ? <span style={{width:12,height:12,border:"2px solid rgba(107,53,232,0.4)",borderTopColor:"#8B5CF6",borderRadius:"50%",animation:"spin 0.7s linear infinite",display:"block"}}/>
-              : <svg width={13} height={13} viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke={input.trim()?"#fff":"rgba(200,190,255,0.3)"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          </motion.button>
+          {/* Auth nudge after 2 messages */}
+          {msgCount >= 2 && !showAuth && (
+            <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0.2}}
+              style={{ margin:"10px 0 12px", padding:"12px 14px", borderRadius:14, background:"rgba(124,58,237,0.08)", border:"1px solid rgba(124,58,237,0.2)" }}>
+              <p style={{ fontSize:13, fontWeight:700, color:t.text, margin:"0 0 3px" }}>KIRO is better with your store</p>
+              <p style={{ fontSize:12, color:t.muted, margin:"0 0 10px" }}>Free account → full product import, analytics, AI copy, and more.</p>
+              <button onClick={()=>setShowAuth(true)}
+                style={{ padding:"7px 16px", borderRadius:9, border:"none", background:`linear-gradient(135deg,${t.v500},#4C1D95)`, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
+                Start free — 10 seconds
+              </button>
+            </motion.div>
+          )}
+          <div ref={bottomRef} style={{ height:1 }}/>
         </div>
-        <p style={{ fontSize:10, color:"rgba(200,190,255,0.2)", textAlign:"center", margin:"6px 0 0" }}>
-          KIRO · Built by Darkweb & DropOS
-        </p>
+
+        {/* Quick starters */}
+        {msgs.length <= 1 && (
+          <div style={{ padding:"0 14px 6px", display:"flex", gap:6, overflowX:"auto", flexShrink:0, WebkitOverflowScrolling:"touch" }}>
+            {STARTERS.map(s => (
+              <button key={s} onClick={()=>send(s)}
+                style={{ padding:"6px 12px", borderRadius:99, border:"1px solid rgba(124,58,237,0.2)", background:"rgba(124,58,237,0.07)", color:"rgba(200,190,255,0.7)", fontSize:12, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap", flexShrink:0 }}>
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Input — always at bottom, never pushes up */}
+        <div style={{ padding:"8px 12px 12px", borderTop:"1px solid rgba(124,58,237,0.1)", flexShrink:0, background:"rgba(7,5,15,0.98)" }}>
+          <div style={{ display:"flex", gap:8, alignItems:"flex-end", borderRadius:14, border:"1px solid rgba(124,58,237,0.18)", background:"rgba(124,58,237,0.05)", padding:"8px 10px" }}>
+            <textarea ref={inputRef} value={input}
+              onChange={e => {
+                setInput(e.target.value);
+                e.target.style.height = "auto";
+                e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px";
+              }}
+              onKeyDown={e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();} }}
+              placeholder="Ask KIRO anything..."
+              rows={1}
+              style={{ flex:1, background:"transparent", border:"none", outline:"none", color:"#F0ECFF", fontSize:14, fontFamily:"inherit", lineHeight:1.5, resize:"none", padding:"2px 0", maxHeight:100, overflowY:"auto" }}/>
+            <motion.button onClick={()=>send()} whileTap={{scale:0.9}} disabled={loading||!input.trim()}
+              style={{ width:30, height:30, borderRadius:9, border:"none", background:input.trim()?`linear-gradient(135deg,#7C3AED,#4C1D95)`:"rgba(124,58,237,0.12)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}>
+              {loading
+                ? <span style={{width:11,height:11,border:"2px solid rgba(124,58,237,0.4)",borderTopColor:"#8B5CF6",borderRadius:"50%",animation:"spin 0.7s linear infinite",display:"block"}}/>
+                : <svg width={12} height={12} viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke={input.trim()?"#fff":"rgba(200,190,255,0.25)"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+            </motion.button>
+          </div>
+        </div>
       </div>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-    </div>
+    </>
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// ── Main ─────────────────────────────────────────────────────────────────────
 export default function PublicKIROPage() {
-  const router = useRouter();
   const [authState, setAuthState] = useState<"checking"|"authed"|"guest">("checking");
   const [storeId,   setStoreId]   = useState("");
-  const [accessToken, setAccessToken] = useState("");
 
-  // On mount: try to restore session
   useEffect(() => {
-    tryAutoLogin().then(result => {
-      if (result) {
-        setStoreId(result.storeId);
-        setAccessToken(result.accessToken);
-        // Also sync into zustand store so KIROChat can use it
-        try {
-          const { useAuthStore } = require("../../../store/auth.store");
-          useAuthStore.getState().setUser(result.user);
-          useAuthStore.getState().setAccessToken(result.accessToken);
-        } catch {}
-        setAuthState("authed");
-      } else {
-        setAuthState("guest");
-      }
+    tryAutoLogin().then(r => {
+      if (r) { setStoreId(r.storeId); setAuthState("authed"); }
+      else   { setAuthState("guest"); }
     });
   }, []);
 
-  const handleAuthSuccess = (token: string, sid: string) => {
-    setAccessToken(token);
+  const handleAuthSuccess = (sid: string) => {
     setStoreId(sid);
     setAuthState("authed");
-    // Sync into auth store
-    try {
-      const { useAuthStore } = require("../../../store/auth.store");
-      useAuthStore.getState().setAccessToken(token);
-    } catch {}
+  };
+
+  const C = {
+    bg: "#07050F", v500:"#7C3AED", v300:"#A78BFA", text:"#F0ECFF", border:"rgba(124,58,237,0.1)",
   };
 
   // Loading
-  if (authState === "checking") {
-    return (
-      <div style={{ height:"100dvh", display:"flex", alignItems:"center", justifyContent:"center", background:"#07050F" }}>
-        <motion.div animate={{rotate:360}} transition={{duration:1,repeat:Infinity,ease:"linear"}}
-          style={{width:36,height:36,border:"2px solid rgba(107,53,232,0.2)",borderTopColor:"#8B5CF6",borderRadius:"50%"}}/>
-      </div>
-    );
-  }
+  if (authState === "checking") return (
+    <div style={{ height:"100dvh", display:"flex", alignItems:"center", justifyContent:"center", background:C.bg }}>
+      <motion.div animate={{rotate:360}} transition={{duration:1,repeat:Infinity,ease:"linear"}}
+        style={{width:30,height:30,border:"2px solid rgba(124,58,237,0.2)",borderTopColor:"#8B5CF6",borderRadius:"50%"}}/>
+    </div>
+  );
 
-  // ── Authenticated: show full KIRO dashboard ──────────────────────────────
-  if (authState === "authed") {
-    return (
-      <div style={{ height:"100dvh", background:"#07050F", display:"flex", flexDirection:"column" }}>
-        {/* Minimal top bar with link to full dashboard */}
-        <div style={{ height:48, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", borderBottom:"1px solid rgba(107,53,232,0.1)", background:"rgba(7,5,15,0.95)", flexShrink:0 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <div style={{ width:28, height:28, borderRadius:9, background:"linear-gradient(135deg,#6B35E8,#3D1C8A)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14l9 0-1 8 10-12-9 0L13 2z" fill="white"/></svg>
-            </div>
-            <span style={{ fontSize:15, fontWeight:800, color:"#F0ECFF", letterSpacing:"-0.3px" }}>KIRO</span>
+  // Authed — full KIRO, minimal chrome
+  if (authState === "authed") return (
+    <div style={{ height:"100dvh", display:"flex", flexDirection:"column", background:C.bg, overflow:"hidden" }}>
+      <style>{`*{box-sizing:border-box}`}</style>
+      {/* Slim top bar */}
+      <div style={{ height:46, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 14px", borderBottom:`1px solid ${C.border}`, background:"rgba(7,5,15,0.98)", flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+          <div style={{ width:26, height:26, borderRadius:8, background:`linear-gradient(135deg,${C.v500},#4C1D95)`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <svg width={13} height={13} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14l9 0-1 8 10-12-9 0L13 2z" fill="white"/></svg>
           </div>
-          <Link href="/dashboard" style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 14px", borderRadius:10, background:"rgba(107,53,232,0.15)", color:"#A78BFA", fontSize:12, fontWeight:600, textDecoration:"none", border:"1px solid rgba(107,53,232,0.2)" }}>
-            Full dashboard <ArrowRight size={12}/>
-          </Link>
+          <span style={{ fontSize:14, fontWeight:900, color:C.text, letterSpacing:"-0.3px" }}>KIRO</span>
         </div>
-        {/* Full KIROChat */}
-        <div style={{ flex:1, overflow:"hidden" }}>
-          <KIROChat storeId={storeId}/>
-        </div>
+        <Link href="/dashboard"
+          style={{ display:"flex", alignItems:"center", gap:4, padding:"5px 12px", borderRadius:9, background:`rgba(124,58,237,0.12)`, color:C.v300, fontSize:12, fontWeight:600, textDecoration:"none", border:`1px solid rgba(124,58,237,0.2)` }}>
+          Dashboard →
+        </Link>
       </div>
-    );
-  }
+      {/* Full KIROChat — takes all remaining height */}
+      <div style={{ flex:1, overflow:"hidden", minHeight:0 }}>
+        <KIROChat storeId={storeId}/>
+      </div>
+    </div>
+  );
 
-  // ── Guest: demo chat + social proof ─────────────────────────────────────
+  // Guest — demo + auth conversion
   return (
-    <div style={{ height:"100dvh", background:"#07050F", display:"flex", flexDirection:"column", fontFamily:"'Inter',-apple-system,sans-serif", overflow:"hidden" }}>
+    <div style={{ height:"100dvh", display:"flex", flexDirection:"column", background:C.bg, overflow:"hidden", fontFamily:"'Inter',-apple-system,sans-serif" }}>
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
+        *{box-sizing:border-box}
         ::-webkit-scrollbar{width:3px}
-        ::-webkit-scrollbar-thumb{background:rgba(107,53,232,0.3);border-radius:2px}
-        * { box-sizing: border-box; }
+        ::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.25);border-radius:2px}
       `}</style>
 
       {/* Top bar */}
-      <div style={{ height:52, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", borderBottom:"1px solid rgba(107,53,232,0.1)", flexShrink:0 }}>
+      <div style={{ height:50, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 14px", borderBottom:`1px solid ${C.border}`, background:"rgba(7,5,15,0.98)", flexShrink:0 }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <div style={{ width:30, height:30, borderRadius:10, background:"linear-gradient(135deg,#6B35E8,#3D1C8A)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 10px rgba(107,53,232,0.4)" }}>
-            <svg width={15} height={15} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14l9 0-1 8 10-12-9 0L13 2z" fill="white"/></svg>
+          <div style={{ width:28, height:28, borderRadius:9, background:`linear-gradient(135deg,${C.v500},#4C1D95)`, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 10px rgba(124,58,237,0.4)" }}>
+            <svg width={13} height={13} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14l9 0-1 8 10-12-9 0L13 2z" fill="white"/></svg>
           </div>
-          <span style={{ fontSize:16, fontWeight:900, color:"#F0ECFF", letterSpacing:"-0.5px" }}>KIRO</span>
-          <span style={{ fontSize:10, padding:"2px 7px", borderRadius:99, background:"rgba(107,53,232,0.2)", color:"#A78BFA", fontWeight:700, letterSpacing:"0.05em" }}>DEMO</span>
+          <span style={{ fontSize:15, fontWeight:900, color:C.text, letterSpacing:"-0.4px" }}>KIRO</span>
+          <span style={{ fontSize:9, padding:"2px 6px", borderRadius:99, background:"rgba(124,58,237,0.18)", color:C.v300, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase" }}>Demo</span>
         </div>
         <Link href="/auth/register"
-          style={{ display:"flex", alignItems:"center", gap:5, padding:"7px 14px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#6B35E8,#3D1C8A)", color:"#fff", fontSize:13, fontWeight:700, textDecoration:"none", boxShadow:"0 2px 10px rgba(107,53,232,0.3)" }}>
-          <Zap size={12}/> Get started free
+          style={{ display:"flex", alignItems:"center", gap:5, padding:"7px 14px", borderRadius:10, background:`linear-gradient(135deg,${C.v500},#4C1D95)`, color:"#fff", fontSize:12, fontWeight:700, textDecoration:"none", boxShadow:"0 2px 10px rgba(124,58,237,0.35)" }}>
+          ⚡ Free account
         </Link>
       </div>
 
-      {/* Demo chat */}
-      <div style={{ flex:1, overflow:"hidden" }}>
+      {/* Chat — fills everything between top bar and bottom pills */}
+      <div style={{ flex:1, minHeight:0, overflow:"hidden" }}>
         <DemoChat onAuthSuccess={handleAuthSuccess}/>
       </div>
 
-      {/* Bottom feature pills */}
-      <div style={{ padding:"8px 16px 12px", borderTop:"1px solid rgba(107,53,232,0.08)", display:"flex", gap:8, overflowX:"auto", flexShrink:0 }}>
+      {/* Feature pills — fixed at bottom */}
+      <div style={{ padding:"8px 12px 10px", borderTop:`1px solid rgba(124,58,237,0.08)`, display:"flex", gap:6, overflowX:"auto", flexShrink:0, background:"rgba(7,5,15,0.98)", WebkitOverflowScrolling:"touch" }}>
         {["🌐 Import any product","📊 Live analytics","⚡ Flash sales","🎵 TikTok scripts","📈 Winning products"].map(f => (
-          <span key={f} style={{ padding:"5px 10px", borderRadius:99, border:"1px solid rgba(107,53,232,0.15)", background:"rgba(107,53,232,0.06)", color:"rgba(200,190,255,0.55)", fontSize:11, whiteSpace:"nowrap", flexShrink:0 }}>{f}</span>
+          <span key={f} style={{ padding:"5px 10px", borderRadius:99, border:`1px solid rgba(124,58,237,0.15)`, background:"rgba(124,58,237,0.06)", color:"rgba(200,190,255,0.5)", fontSize:11, whiteSpace:"nowrap", flexShrink:0 }}>{f}</span>
         ))}
       </div>
     </div>

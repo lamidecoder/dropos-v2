@@ -7,11 +7,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { api } from "../../../../lib/api";
-import { useAuthStore } from "../../../../store/auth.store";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../store/auth.store";
 import { useRouter } from "next/navigation";
-import KIROChat from "../../../../components/kai/KIROChat";
-import { KIROOnboarding, useKIROOnboarding } from "../../../../components/kai/KIROOnboarding";
+import KIROChat from "../../../components/kai/KIROChat";
+import { KIROOnboarding, useKIROOnboarding } from "../../../components/kai/KIROOnboarding";
 import Link from "next/link";
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
@@ -203,6 +203,22 @@ export default function KIROPage() {
   const qc      = useQueryClient();
 
   const [activeId,     setActiveId]     = useState<string|null>(null);
+
+  // Auth guard — redirect to login if not authenticated
+  useEffect(() => {
+    if (!user && typeof window !== "undefined") {
+      router.replace("/auth/login?next=/kiro");
+    }
+  }, [user, router]);
+
+  if (!user) {
+    return (
+      <div style={{ height:"100dvh", display:"flex", alignItems:"center", justifyContent:"center", background:"#060412" }}>
+        <motion.div animate={{rotate:360}} transition={{duration:1,repeat:Infinity,ease:"linear"}}
+          style={{width:32,height:32,border:"2px solid rgba(107,53,232,0.2)",borderTopColor:"#8B5CF6",borderRadius:"50%"}}/>
+      </div>
+    );
+  }
   const [showMobSide,  setShowMobSide]  = useState(false);
   const { show: showOnboarding, complete: completeOnboarding } = useKIROOnboarding(storeId);
 

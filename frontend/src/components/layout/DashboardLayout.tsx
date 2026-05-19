@@ -498,7 +498,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Link>
 
               {/* KIRO header shortcut  -  desktop */}
-              <Link href="/dashboard/kiro" className="ds-kiro-btn" style={{ textDecoration:"none" }}>
+              <Link href="/kiro" className="ds-kiro-btn" style={{ textDecoration:"none" }}>
                 <div className="kpulse" style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 12px", borderRadius:11, background:`linear-gradient(135deg,${V.v500},${V.v700})`, color:"#fff", cursor:"pointer" }}>
                   <Zap size={13} color="white" />
                   <span style={{ fontSize:12, fontWeight:700, letterSpacing:"-0.01em" }}>KIRO</span>
