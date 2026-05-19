@@ -39,6 +39,7 @@ interface KIROChatProps {
   conversationId?: string;
   className?: string;
   compact?: boolean;
+  briefMessage?: string;
   onConversationCreated?: (id: string) => void;
 }
 
@@ -595,7 +596,7 @@ function TabBar({ activeTab, setActiveTab, pulseCount }: any) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function KIROChat({ storeId: propStoreId, initialMessage, conversationId: initConvId, onConversationCreated }: KIROChatProps) {
+export default function KIROChat({ storeId: propStoreId, initialMessage, conversationId: initConvId, onConversationCreated, briefMessage }: KIROChatProps) {
   const { user } = useAuthStore();
   const token  = useAuthStore(s => s.accessToken);
   const storeId = propStoreId || user?.stores?.[0]?.id || "";
@@ -1083,30 +1084,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
             )}
           </AnimatePresence>
 
-          {/* Panel content (Skills / Goals / Pulse / Import) */}
-          <AnimatePresence>
-            {activeTab !== "chat" && (
-              <motion.div initial={{height:0,opacity:0}} animate={{height:300,opacity:1}} exit={{height:0,opacity:0}}
-                style={{ overflow:"hidden", borderTop:"1px solid rgba(107,53,232,0.12)", background:"rgba(10,7,22,0.97)", position:"relative", zIndex:2 }}>
-                <div style={{ height:300, overflowY:"auto" }}>
-                  {PanelComponents && (
-                    <>
-                      {activeTab==="import" && <PanelComponents.URLImporter storeId={storeId} t={{text:"#F0ECFF",muted:"rgba(200,190,255,0.5)",border:"rgba(107,53,232,0.2)"}} isDark onImported={() => setActiveTab("chat")}/>}
-                      {activeTab==="skills" && <PanelComponents.SkillsPanel storeId={storeId} t={{text:"#F0ECFF",muted:"rgba(200,190,255,0.5)",border:"rgba(107,53,232,0.2)"}} isDark onSend={(p: string)=>{setActiveTab("chat");send(p);}}/>}
-                      {activeTab==="goals"  && <PanelComponents.GoalsPanel  storeId={storeId} t={{text:"#F0ECFF",muted:"rgba(200,190,255,0.5)",border:"rgba(107,53,232,0.2)"}} isDark onSend={(p: string)=>{setActiveTab("chat");send(p);}}/>}
-                      {activeTab==="pulse"  && <PanelComponents.PulsePanel  storeId={storeId} t={{text:"#F0ECFF",muted:"rgba(200,190,255,0.5)",border:"rgba(107,53,232,0.2)"}} isDark onSend={(p: string)=>{setActiveTab("chat");send(p);}}/> }
-                      {(activeTab as string)==="memory" && PanelComponents.MemoryPanel && <PanelComponents.MemoryPanel storeId={storeId} t={{text:"#F0ECFF",muted:"rgba(200,190,255,0.5)",border:"rgba(107,53,232,0.2)"}} isDark/>}
-                    </>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Tab bar */}
-          <div style={{ position:"relative", zIndex:2 }}>
-            <TabBar activeTab={activeTab} setActiveTab={setActiveTab} pulseCount={pulseCount}/>
-          </div>
+          {/* Panels accessible via ⊕ button in input area — see below */}
 
           {/* Attachment preview */}
           <AnimatePresence>
