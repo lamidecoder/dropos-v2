@@ -125,7 +125,7 @@ function clean(text: string): string {
 function KIROAvatar({ size = 32, pulse = false }: { size?: number; pulse?: boolean }) {
   return (
     <motion.div
-      style={{ width:size, height:size, borderRadius:Math.round(size*0.3), background:`linear-gradient(135deg,${P.v500},${P.v600})`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, position:"relative" }}
+      style={{ width:size, height:size, borderRadius:Math.round(size*0.3), background:`linear-gradient(135deg,${"#6D28D9"},${"#4C1D95"})`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, position:"relative" }}
       animate={pulse ? { boxShadow:["0 0 0 0 rgba(107,53,232,0)", "0 0 0 6px rgba(107,53,232,0.2)", "0 0 0 0 rgba(107,53,232,0)"] } : {}}
       transition={{ duration:2, repeat:Infinity }}>
       <svg width={size*0.55} height={size*0.55} viewBox="0 0 20 20" fill="none">
@@ -156,12 +156,12 @@ function renderContent(text: string): React.ReactNode {
       }
       nodes.push(
         <div key={i} style={{ margin:"10px 0", borderRadius:10, overflow:"hidden", border:"1px solid rgba(107,53,232,0.2)" }}>
-          {lang && <div style={{ padding:"4px 12px", background:"rgba(107,53,232,0.15)", fontSize:11, color:P.v300, fontWeight:600 }}>{lang}</div>}
+          {lang && <div style={{ padding:"4px 12px", background:"rgba(107,53,232,0.15)", fontSize:11, color:"#A78BFA", fontWeight:600 }}>{lang}</div>}
           <pre style={{ margin:0, padding:"12px 14px", background:"rgba(0,0,0,0.3)", overflowX:"auto", fontSize:12, lineHeight:1.6, color:"#e2e8f0", fontFamily:"'Fira Code','Monaco','Consolas',monospace" }}>
             {codeLines.join("\n")}
           </pre>
           <button onClick={() => navigator.clipboard.writeText(codeLines.join("\n"))}
-            style={{ width:"100%", padding:"5px", background:"rgba(107,53,232,0.08)", border:"none", color:"rgba(200,190,255,0.4)", fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>
+            style={{ width:"100%", padding:"5px", background:"rgba(255,255,255,0.04)", border:"none", color:"rgba(200,190,255,0.4)", fontSize:11, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
             Copy code
           </button>
         </div>
@@ -184,12 +184,12 @@ function renderContent(text: string): React.ReactNode {
           <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
             <thead>
               <tr>{headers.map((h, j) => (
-                <th key={j} style={{ padding:"8px 12px", textAlign:"left", borderBottom:"1px solid rgba(107,53,232,0.2)", color:P.v300, fontWeight:700, fontSize:12, whiteSpace:"nowrap" }}>{h}</th>
+                <th key={j} style={{ padding:"8px 12px", textAlign:"left", borderBottom:"1px solid rgba(107,53,232,0.2)", color:"#A78BFA", fontWeight:700, fontSize:12, whiteSpace:"nowrap" }}>{h}</th>
               ))}</tr>
             </thead>
             <tbody>
               {rows.map((row, ri) => (
-                <tr key={ri} style={{ borderBottom:"1px solid rgba(107,53,232,0.08)" }}>
+                <tr key={ri} style={{ borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
                   {row.map((cell, ci) => (
                     <td key={ci} style={{ padding:"7px 12px", color:"rgba(200,190,255,0.8)", fontSize:13 }}>{cell}</td>
                   ))}
@@ -217,7 +217,7 @@ function renderContent(text: string): React.ReactNode {
     if (numMatch) {
       nodes.push(
         <div key={i} style={{ display:"flex", gap:8, margin:"3px 0" }}>
-          <span style={{ color:P.v300, fontWeight:700, flexShrink:0, fontSize:13, minWidth:20 }}>{numMatch[1]}.</span>
+          <span style={{ color:"#A78BFA", fontWeight:700, flexShrink:0, fontSize:13, minWidth:20 }}>{numMatch[1]}.</span>
           <span style={{ fontSize:14, lineHeight:1.65, color:"#F0ECFF" }}>{inlineFormat(numMatch[2])}</span>
         </div>
       );
@@ -244,7 +244,7 @@ function inlineFormat(text: string): React.ReactNode {
   const parts = text.split(/(`[^`]+`)/g);
   return <>{parts.map((p, i) => {
     if (p.startsWith("`") && p.endsWith("`")) {
-      return <code key={i} style={{ background:"rgba(107,53,232,0.15)", padding:"1px 5px", borderRadius:4, fontSize:12, fontFamily:"'Fira Code','Monaco',monospace", color:P.v300 }}>{p.slice(1,-1)}</code>;
+      return <code key={i} style={{ background:"rgba(107,53,232,0.15)", padding:"1px 5px", borderRadius:4, fontSize:12, fontFamily:"'Fira Code','Monaco',monospace", color:"#A78BFA" }}>{p.slice(1,-1)}</code>;
     }
     return p;
   })}</>;
@@ -262,18 +262,18 @@ function ActionCard({ action, onApprove, onDismiss }: any) {
       <div style={{ padding:"11px 14px", display:"flex", alignItems:"flex-start", gap:10 }}>
         <span style={{ fontSize:20, flexShrink:0, lineHeight:1 }}>{desc.icon}</span>
         <div style={{ flex:1, minWidth:0 }}>
-          <p style={{ fontSize:12, fontWeight:700, color:P.v300, margin:0 }}>{desc.title}</p>
+          <p style={{ fontSize:12, fontWeight:700, color:"#A78BFA", margin:0 }}>{desc.title}</p>
           <p style={{ fontSize:12, color:"rgba(200,190,255,0.6)", margin:"2px 0 0" }}>{desc.summary}</p>
         </div>
       </div>
       <div style={{ padding:"0 14px 12px", display:"flex", gap:8 }}>
         <button onClick={async()=>{setLoading(true);await onApprove(action);setDone(true);setLoading(false);}}
           disabled={loading}
-          style={{ padding:"7px 18px", borderRadius:9, border:"none", background:`linear-gradient(135deg,${P.v500},${P.v600})`, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:5 }}>
+          style={{ padding:"7px 18px", borderRadius:9, border:"none", background:`linear-gradient(135deg,${"#6D28D9"},${"#4C1D95"})`, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", display:"flex", alignItems:"center", gap:5 }}>
           {loading ? <><span style={{width:10,height:10,border:"2px solid rgba(255,255,255,0.4)",borderTopColor:"#fff",borderRadius:"50%",animation:"spin 0.7s linear infinite",display:"block"}}/> Working</> : <>{desc.cta}</>}
         </button>
         <button onClick={()=>onDismiss(action)}
-          style={{ padding:"7px 12px", borderRadius:9, border:"1px solid rgba(255,255,255,0.08)", background:"transparent", color:"rgba(200,190,255,0.5)", fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
+          style={{ padding:"7px 12px", borderRadius:9, border:"1px solid rgba(255,255,255,0.08)", background:"transparent", color:"rgba(200,190,255,0.5)", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
           Not now
         </button>
       </div>
@@ -307,13 +307,13 @@ function RateLimitScreen({ plan, onUpgrade }: { plan: string; onUpgrade: () => v
           : "You have hit your monthly KIRO message limit. Upgrade to keep going."}
       </p>
       {plan === "FREE" && (
-        <div style={{ background:"rgba(107,53,232,0.12)", border:"1px solid rgba(107,53,232,0.3)", borderRadius:14, padding:"16px 20px", marginBottom:20, maxWidth:300 }}>
-          <p style={{ fontSize:12, fontWeight:700, color:P.v300, margin:"0 0 4px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Growth Plan — ₦9,500/mo</p>
+        <div style={{ background:"rgba(255,255,255,0.055)", border:"1px solid rgba(107,53,232,0.3)", borderRadius:14, padding:"16px 20px", marginBottom:20, maxWidth:300 }}>
+          <p style={{ fontSize:12, fontWeight:700, color:"#A78BFA", margin:"0 0 4px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Growth Plan — ₦9,500/mo</p>
           <p style={{ fontSize:13, color:"rgba(200,190,255,0.7)", margin:0, lineHeight:1.5 }}>200 KIRO sessions · Unlimited products · All power tools</p>
         </div>
       )}
       <button onClick={onUpgrade}
-        style={{ padding:"12px 28px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${P.v500},${P.v600})`, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 4px 20px rgba(107,53,232,0.4)" }}>
+        style={{ padding:"12px 28px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${"#6D28D9"},${"#4C1D95"})`, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", boxShadow:"0 4px 20px rgba(107,53,232,0.4)" }}>
         Unlock More Sessions
       </button>
       <p style={{ fontSize:11, color:"rgba(200,190,255,0.3)", margin:"16px 0 0" }}>Limit resets on the 1st of every month</p>
@@ -371,7 +371,7 @@ function MessageBubble({ msg, onApprove, onDismiss, onRegenerate, onEdit, onBook
           fontSize: 14,
           lineHeight: 1.75,
           fontFamily: "'Sora', sans-serif",
-          boxShadow: isUser ? "0 4px 16px rgba(124,58,237,0.35)" : "none",
+          boxShadow: isUser ? "0 2px 12px rgba(109,40,217,0.3)" : "none",
         }}>
 
           {/* Streaming */}
@@ -379,7 +379,7 @@ function MessageBubble({ msg, onApprove, onDismiss, onRegenerate, onEdit, onBook
             <div style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
               {[0,1,2].map(i => (
                 <motion.span key={i}
-                  style={{ width:7, height:7, borderRadius:"50%", background:P.v400, display:"block" }}
+                  style={{ width:7, height:7, borderRadius:"50%", background:"#7C3AED", display:"block" }}
                   animate={{ y:[0,-5,0], opacity:[0.4,1,0.4] }}
                   transition={{ duration:0.7, repeat:Infinity, delay:i*0.15 }}/>
               ))}
@@ -388,15 +388,15 @@ function MessageBubble({ msg, onApprove, onDismiss, onRegenerate, onEdit, onBook
           ) : editing && isUser ? (
             <div>
               <textarea value={editText} onChange={e=>setEditText(e.target.value)}
-                style={{ width:"100%", padding:"8px 12px", borderRadius:10, border:"1px solid rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.1)", color:"#fff", fontSize:14, fontFamily:"inherit", resize:"none", outline:"none", minHeight:60 }}
+                style={{ width:"100%", padding:"8px 12px", borderRadius:10, border:"1px solid rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.1)", color:"#fff", fontSize:14, fontFamily:"'DM Sans',sans-serif", resize:"none", outline:"none", minHeight:60 }}
                 autoFocus/>
               <div style={{ display:"flex", gap:8, marginTop:8 }}>
                 <button onClick={() => { onEdit(msg.id, editText); setEditing(false); }}
-                  style={{ padding:"5px 14px", borderRadius:8, border:"none", background:"rgba(255,255,255,0.2)", color:"#fff", fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
+                  style={{ padding:"5px 14px", borderRadius:8, border:"none", background:"rgba(255,255,255,0.2)", color:"#fff", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
                   Resend
                 </button>
                 <button onClick={() => { setEditing(false); setEditText(msg.content); }}
-                  style={{ padding:"5px 12px", borderRadius:8, border:"1px solid rgba(255,255,255,0.15)", background:"transparent", color:"rgba(255,255,255,0.6)", fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
+                  style={{ padding:"5px 12px", borderRadius:8, border:"1px solid rgba(255,255,255,0.15)", background:"transparent", color:"rgba(255,255,255,0.6)", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
                   Cancel
                 </button>
               </div>
@@ -439,9 +439,9 @@ function MessageBubble({ msg, onApprove, onDismiss, onRegenerate, onEdit, onBook
           <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginTop:10 }}>
             {msg.followUps.map((fu: string, i: number) => (
               <button key={i} onClick={() => onFollowUp(fu)}
-                style={{ padding:"5px 12px", borderRadius:99, border:"1px solid rgba(107,53,232,0.3)", background:"rgba(107,53,232,0.08)", color:P.v300, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}
-                onMouseEnter={e => { (e.target as any).style.background = "rgba(107,53,232,0.18)"; }}
-                onMouseLeave={e => { (e.target as any).style.background = "rgba(107,53,232,0.08)"; }}>
+                style={{ padding:"5px 12px", borderRadius:99, border:"1px solid rgba(107,53,232,0.3)", background:"rgba(255,255,255,0.04)", color:"#A78BFA", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all 0.15s" }}
+                onMouseEnter={e => { (e.target as any).style.background = "rgba(109,40,217,0.18)"; }}
+                onMouseLeave={e => { (e.target as any).style.background = "rgba(255,255,255,0.04)"; }}>
                 {fu}
               </button>
             ))}
@@ -478,7 +478,7 @@ function MessageBubble({ msg, onApprove, onDismiss, onRegenerate, onEdit, onBook
               ] : []),
             ].map(btn => (
               <button key={btn.label} onClick={btn.action} title={btn.label}
-                style={{ width:28, height:28, borderRadius:8, border:"1px solid rgba(107,53,232,0.2)", background:"rgba(15,10,30,0.9)", color:"rgba(200,190,255,0.7)", cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", backdropFilter:"blur(8px)" }}>
+                style={{ width:28, height:28, borderRadius:8, border:"1px solid rgba(107,53,232,0.2)", background:"rgba(20,19,37,0.95)", color:"rgba(200,190,255,0.7)", cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", backdropFilter:"blur(8px)" }}>
                 {btn.icon === "↻" ? <span style={{fontSize:14}}>↻</span> : btn.icon}
               </button>
             ))}
@@ -509,7 +509,7 @@ function EmptyState({ greeting, contextLine, storeData, onSend }: any) {
         <motion.div
           animate={{ scale:[1,1.06,1] }}
           transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
-          style={{ width:72, height:72, borderRadius:22, background:`linear-gradient(135deg,${P.v500},${P.v600})`, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 0 40px rgba(107,53,232,0.45), 0 0 80px rgba(107,53,232,0.2)` }}>
+          style={{ width:72, height:72, borderRadius:22, background:`linear-gradient(135deg,${"#6D28D9"},${"#4C1D95"})`, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 0 40px rgba(107,53,232,0.45), 0 0 80px rgba(107,53,232,0.2)` }}>
           <svg width={36} height={36} viewBox="0 0 24 24" fill="none">
             <path d="M13 2L3 14l9 0-1 8 10-12-9 0L13 2z" fill="white" fillOpacity={0.95}/>
           </svg>
@@ -519,7 +519,7 @@ function EmptyState({ greeting, contextLine, storeData, onSend }: any) {
           animate={{ rotate:360 }}
           transition={{ duration:4, repeat:Infinity, ease:"linear" }}
           style={{ position:"absolute", inset:-10, borderRadius:"50%", border:"1px solid transparent" }}>
-          <div style={{ position:"absolute", top:-3, left:"50%", width:8, height:8, borderRadius:"50%", background:P.v300, boxShadow:`0 0 8px ${P.v300}`, transform:"translateX(-50%)" }}/>
+          <div style={{ position:"absolute", top:-3, left:"50%", width:8, height:8, borderRadius:"50%", background:"#A78BFA", boxShadow:`0 0 8px ${"#A78BFA"}`, transform:"translateX(-50%)" }}/>
         </motion.div>
       </div>
 
@@ -540,9 +540,9 @@ function EmptyState({ greeting, contextLine, storeData, onSend }: any) {
             { label:"Health",  value:storeData.health || "--" },
           ].map(s => (
             <div key={s.label}
-              style={{ padding:"8px 16px", borderRadius:12, background:"rgba(107,53,232,0.1)", border:"1px solid rgba(107,53,232,0.2)" }}>
+              style={{ padding:"8px 16px", borderRadius:12, background:"rgba(255,255,255,0.055)", border:"1px solid rgba(107,53,232,0.2)" }}>
               <p style={{ fontSize:10, color:"rgba(200,190,255,0.45)", margin:"0 0 2px", textTransform:"uppercase", letterSpacing:"0.1em" }}>{s.label}</p>
-              <p style={{ fontSize:15, fontWeight:800, color:P.v300, margin:0 }}>{s.value}</p>
+              <p style={{ fontSize:15, fontWeight:800, color:"#A78BFA", margin:0 }}>{s.value}</p>
             </div>
           ))}
         </div>
@@ -554,7 +554,7 @@ function EmptyState({ greeting, contextLine, storeData, onSend }: any) {
           <motion.button key={a.label} onClick={() => onSend(a.prompt)}
             whileHover={{ scale:1.02, background:"rgba(107,53,232,0.16)" }}
             whileTap={{ scale:0.97 }}
-            style={{ padding:"12px 14px", borderRadius:14, border:"1px solid rgba(107,53,232,0.18)", background:"rgba(107,53,232,0.08)", cursor:"pointer", fontFamily:"inherit", textAlign:"left", transition:"all 0.15s" }}>
+            style={{ padding:"12px 14px", borderRadius:14, border:"1px solid rgba(109,40,217,0.18)", background:"rgba(255,255,255,0.04)", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", textAlign:"left", transition:"all 0.15s" }}>
             <span style={{ fontSize:18, display:"block", marginBottom:4 }}>{a.icon}</span>
             <span style={{ fontSize:12, fontWeight:600, color:"rgba(200,190,255,0.8)", display:"block", lineHeight:1.3 }}>{a.label}</span>
           </motion.button>
@@ -579,14 +579,14 @@ function TabBar({ activeTab, setActiveTab, pulseCount }: any) {
     { id:"memory" as Tab, icon:"🧠", label:"Memory" },
   ];
   return (
-    <div style={{ display:"flex", borderTop:"1px solid rgba(107,53,232,0.12)", background:"rgba(7,5,15,0.95)" }}>
+    <div style={{ display:"flex", borderTop:"1px solid rgba(255,255,255,0.055)", background:"rgba(8,8,17,0.95)" }}>
       {TABS.map(tab => (
         <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-          style={{ flex:1, padding:"8px 4px 10px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", gap:2, position:"relative",
-            borderBottom:`2px solid ${activeTab===tab.id ? P.v400 : "transparent"}`,
+          style={{ flex:1, padding:"8px 4px 10px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", display:"flex", flexDirection:"column", alignItems:"center", gap:2, position:"relative",
+            borderBottom:`2px solid ${activeTab===tab.id ? "#7C3AED" : "transparent"}`,
             transition:"border-color 0.15s" }}>
           <span style={{ fontSize:16 }}>{tab.icon}</span>
-          <span style={{ fontSize:9, fontWeight:600, color:activeTab===tab.id ? P.v300 : "rgba(200,190,255,0.3)", textTransform:"uppercase", letterSpacing:"0.08em" }}>{tab.label}</span>
+          <span style={{ fontSize:9, fontWeight:600, color:activeTab===tab.id ? "#A78BFA" : "rgba(200,190,255,0.3)", textTransform:"uppercase", letterSpacing:"0.08em" }}>{tab.label}</span>
           {"badge" in tab && (tab as any).badge > 0 && (
             <span style={{ position:"absolute", top:6, right:"calc(50% - 16px)", minWidth:14, height:14, borderRadius:7, background:"#ef4444", color:"#fff", fontSize:9, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 3px" }}>
               {(tab as any).badge}
@@ -1008,7 +1008,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
   const plan = user?.subscription?.plan || "FREE";
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", background:"#060412", fontFamily:"'Sora','Inter',-apple-system,sans-serif", position:"relative", overflow:"hidden" }}>
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", background:"#080811", fontFamily:"'DM Sans','Inter',sans-serif", position:"relative", overflow:"hidden" }}>
 
       {/* Ambient background glow */}
       <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:0 }}>
@@ -1017,7 +1017,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
         @keyframes spin { to { transform:rotate(360deg); } }
         * { box-sizing:border-box; }
         ::-webkit-scrollbar { width:4px; }
@@ -1034,17 +1034,17 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
           <AnimatePresence>
             {loading && messages.length > 0 && !messages[messages.length-1]?.content && (
               <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}}
-                style={{ position:"absolute", top:0, left:0, right:0, zIndex:10, display:"flex", alignItems:"center", justifyContent:"center", padding:"8px 16px", background:"rgba(10,7,22,0.95)", borderBottom:"1px solid rgba(107,53,232,0.15)", backdropFilter:"blur(8px)" }}>
+                style={{ position:"absolute", top:0, left:0, right:0, zIndex:10, display:"flex", alignItems:"center", justifyContent:"center", padding:"8px 16px", background:"rgba(15,14,28,0.95)", borderBottom:"1px solid rgba(107,53,232,0.15)", backdropFilter:"blur(8px)" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                   <motion.div style={{ display:"flex", gap:4 }}>
                     {[0,1,2].map(i => (
-                      <motion.span key={i} style={{ width:5, height:5, borderRadius:"50%", background:P.v400, display:"block" }}
+                      <motion.span key={i} style={{ width:5, height:5, borderRadius:"50%", background:"#7C3AED", display:"block" }}
                         animate={{ y:[0,-5,0] }} transition={{ duration:0.7, repeat:Infinity, delay:i*0.15 }}/>
                     ))}
                   </motion.div>
                   <span style={{ fontSize:12, color:"rgba(200,190,255,0.6)" }}>KIRO is thinking</span>
                   <button onClick={() => abortRef.current?.abort()}
-                    style={{ padding:"3px 12px", borderRadius:8, border:"1px solid rgba(239,68,68,0.3)", background:"rgba(239,68,68,0.1)", color:"#ef4444", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit", marginLeft:8 }}>
+                    style={{ padding:"3px 12px", borderRadius:8, border:"1px solid rgba(239,68,68,0.3)", background:"rgba(239,68,68,0.1)", color:"#ef4444", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", marginLeft:8 }}>
                     ⏹ Stop
                   </button>
                 </div>
@@ -1079,7 +1079,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
             {messages.length > 4 && (
               <motion.button initial={{opacity:0,scale:0.8}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.8}}
                 onClick={() => bottomRef.current?.scrollIntoView({ behavior:"smooth" })}
-                style={{ position:"absolute", bottom:280, right:16, width:32, height:32, borderRadius:"50%", border:"1px solid rgba(107,53,232,0.3)", background:"rgba(10,7,22,0.9)", color:P.v300, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, zIndex:5, backdropFilter:"blur(8px)", boxShadow:"0 4px 12px rgba(0,0,0,0.3)" }}>
+                style={{ position:"absolute", bottom:280, right:16, width:32, height:32, borderRadius:"50%", border:"1px solid rgba(107,53,232,0.3)", background:"rgba(15,14,28,0.9)", color:"#A78BFA", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, zIndex:5, backdropFilter:"blur(8px)", boxShadow:"0 4px 12px rgba(0,0,0,0.3)" }}>
                 ↓
               </motion.button>
             )}
@@ -1091,7 +1091,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
           <AnimatePresence>
             {attachment && (
               <motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}}
-                style={{ borderTop:"1px solid rgba(107,53,232,0.12)", padding:"8px 16px", background:"rgba(10,7,22,0.95)", display:"flex", alignItems:"center", gap:10, zIndex:2 }}>
+                style={{ borderTop:"1px solid rgba(255,255,255,0.055)", padding:"8px 16px", background:"rgba(15,14,28,0.95)", display:"flex", alignItems:"center", gap:10, zIndex:2 }}>
                 {attachment.url ? <img src={attachment.url} alt="" style={{ width:40, height:40, borderRadius:8, objectFit:"cover" }}/> : <span style={{ fontSize:20 }}>📎</span>}
                 <span style={{ fontSize:12, color:"rgba(200,190,255,0.6)", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{attachment.name}</span>
                 <button onClick={() => setAttach(null)}
@@ -1103,7 +1103,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
           </AnimatePresence>
 
           {/* Input area — ChatGPT/Claude style */}
-          <div style={{ borderTop:"1px solid rgba(107,53,232,0.08)", padding:"10px 14px 14px", background:"rgba(6,4,18,0.97)", position:"relative", zIndex:2 }}
+          <div style={{ borderTop:"1px solid rgba(255,255,255,0.04)", padding:"10px 14px 14px", background:"rgba(8,8,17,0.97)", position:"relative", zIndex:2 }}
             onDragOver={e => e.preventDefault()}
             onDrop={handleDrop}>
 
@@ -1112,7 +1112,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
               {attachment && (
                 <motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}}
                   style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:8, overflow:"hidden" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, background:"rgba(107,53,232,0.12)", border:"1px solid rgba(107,53,232,0.2)" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, background:"rgba(255,255,255,0.055)", border:"1px solid rgba(107,53,232,0.2)" }}>
                     <span style={{ fontSize:14 }}>{attachment.type === "image" ? "🖼" : attachment.type === "pdf" ? "📄" : "📊"}</span>
                     <span style={{ fontSize:12, color:"rgba(200,190,255,0.8)", maxWidth:160, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{attachment.name}</span>
                     {attachment.size && <span style={{ fontSize:10, color:"rgba(200,190,255,0.4)" }}>{Math.round(attachment.size/1024)}KB</span>}
@@ -1127,7 +1127,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
             </AnimatePresence>
 
             {/* Main input box */}
-            <div style={{ borderRadius:16, border:`1px solid rgba(124,58,237,${loading?".4":".2"})`, background:"rgba(107,53,232,0.05)", transition:"border-color 0.2s, box-shadow 0.2s" }}
+            <div style={{ borderRadius:16, border:`1px solid ${loading?"rgba(109,40,217,0.4)":"rgba(255,255,255,0.07)"}`, background:"rgba(107,53,232,0.05)", transition:"border-color 0.2s, box-shadow 0.2s" }}
               onFocus={e => (e.currentTarget.style.boxShadow = "0 0 0 2px rgba(107,53,232,0.15)")}
               onBlur={e => (e.currentTarget.style.boxShadow = "none")}>
 
@@ -1145,7 +1145,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
                 onPaste={handlePaste}
                  placeholder="Message KIRO... paste a URL, describe a product, ask anything"
                 rows={1}
-                style={{ width:"100%", background:"transparent", border:"none", outline:"none", color:"#F0ECFF", fontSize:14, fontFamily:"inherit", lineHeight:1.6, resize:"none", maxHeight:180, overflowY:"auto", padding:"12px 14px 4px", boxSizing:"border-box" }}
+                style={{ width:"100%", background:"transparent", border:"none", outline:"none", color:"#F0ECFF", fontSize:14, fontFamily:"'DM Sans',sans-serif", lineHeight:1.6, resize:"none", maxHeight:180, overflowY:"auto", padding:"12px 14px 4px", boxSizing:"border-box" }}
               />
 
               {/* Toolbar */}
@@ -1161,7 +1161,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
                   title="Attach file (PDF, CSV)"
                   style={{ width:30, height:30, borderRadius:8, border:"none", background:"transparent", color:"rgba(200,190,255,0.4)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>
                   {uploading
-                    ? <span style={{ width:12, height:12, border:"2px solid rgba(107,53,232,0.4)", borderTopColor:P.v400, borderRadius:"50%", animation:"spin 0.7s linear infinite", display:"block" }}/>
+                    ? <span style={{ width:12, height:12, border:"2px solid rgba(107,53,232,0.4)", borderTopColor:"#7C3AED", borderRadius:"50%", animation:"spin 0.7s linear infinite", display:"block" }}/>
                     : "📎"}
                 </button>
                 {/* Voice */}
@@ -1173,7 +1173,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
                 <button
                   onClick={() => { if (input.trim()) generateImage(input.trim()); else toast.error("Describe what to generate first"); }}
                   title="Generate AI image from description"
-                  style={{ padding:"3px 10px", borderRadius:8, border:"1px solid rgba(107,53,232,0.2)", background:"transparent", color:P.v300, cursor:"pointer", fontSize:11, fontWeight:600, fontFamily:"inherit", flexShrink:0 }}>
+                  style={{ padding:"3px 10px", borderRadius:8, border:"1px solid rgba(107,53,232,0.2)", background:"transparent", color:"#A78BFA", cursor:"pointer", fontSize:11, fontWeight:600, fontFamily:"'DM Sans',sans-serif", flexShrink:0 }}>
                   ✨ Generate image
                 </button>
 
@@ -1188,7 +1188,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
                 <motion.button
                   onClick={() => loading ? abortRef.current?.abort() : send()}
                   whileTap={{ scale:0.9 }}
-                  style={{ width:32, height:32, borderRadius:10, border:"none", background: loading ? "rgba(239,68,68,0.15)" : (input.trim() || attachment) ? `linear-gradient(135deg,#8B5CF6,#5B21B6)` : "rgba(107,53,232,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s", boxShadow: (input.trim()||attachment) && !loading ? "0 2px 12px rgba(107,53,232,0.4)" : "none" }}>
+                  style={{ width:32, height:32, borderRadius:10, border:"none", background: loading ? "rgba(239,68,68,0.15)" : (input.trim() || attachment) ? `linear-gradient(135deg,#8B5CF6,#5B21B6)` : "rgba(255,255,255,0.055)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s", boxShadow: (input.trim()||attachment) && !loading ? "0 2px 12px rgba(107,53,232,0.4)" : "none" }}>
                   {loading
                     ? <span style={{ width:12, height:12, border:"2px solid rgba(239,68,68,0.4)", borderTopColor:"#ef4444", borderRadius:"50%", animation:"spin 0.7s linear infinite", display:"block" }}/>
                     : <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke={(input.trim()||attachment)?"#fff":"rgba(200,190,255,0.25)"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>}
@@ -1197,7 +1197,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
             </div>
 
             <p style={{ fontSize:10, color:"rgba(200,190,255,0.15)", textAlign:"center", margin:"6px 0 0" }}>
-              KIRO · Darkweb & DropOS · ⌘K
+              KIRO by DropOS
             </p>
           </div>
         </>

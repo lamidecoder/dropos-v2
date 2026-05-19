@@ -74,7 +74,7 @@ const V = {
 const OWNER_NAV = [
   // Always-visible top links
   { id: "top", label: null, alwaysOpen: true, items: [
-    { href: "/dashboard/kiro",  icon: Zap,            label: "KIRO",     ai: true, shortcut: "⌘K" },
+    { href: "/kiro",            icon: Zap,            label: "KIRO",     ai: true, shortcut: "⌘K" },
     { href: "/dashboard",       icon: LayoutDashboard, label: "Overview", exact: true },
   ]},
 
@@ -169,7 +169,7 @@ const OWNER_NAV = [
 const BOTTOM_NAV = [
   { href: "/dashboard",          icon: LayoutDashboard, label: "Home",     exact: true },
   { href: "/dashboard/products", icon: Package,         label: "Products"             },
-  { href: "/dashboard/kiro",     icon: Zap,             label: "KIRO",     ai: true   },
+  { href: "/kiro",               icon: Zap,             label: "KIRO",     ai: true   },
   { href: "/dashboard/orders",   icon: ShoppingCart,    label: "Orders"               },
   { href: "/dashboard/settings", icon: Settings,        label: "More"                 },
 ];
