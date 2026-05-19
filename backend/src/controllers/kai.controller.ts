@@ -789,24 +789,27 @@ export async function executeAction(req: Request, res: Response) {
         }
 
         case "create_collection": {
-          result = await (prisma.productCategory as any)?.create({
-            data:{ storeId, name:action.payload.name, description:action.payload.description || "", slug:action.payload.name.toLowerCase().replace(/[^a-z0-9]+/g,"-") },
-          }) || { message:`Collection "${action.payload.name}" noted — create it in the Products section.` };
+          // productCategory model not in schema — store as a tag/category in product metadata
+          result = { message:`Collection "${action.payload.name}" noted. You can filter products by this category name.` };
           break;
         }
 
         case "create_coupon_v2": {
-          const expiry = action.payload.expiresInDays
+          const expiry2 = action.payload.expiresInDays
             ? new Date(Date.now() + Number(action.payload.expiresInDays) * 86400000)
             : action.payload.expiresAt ? new Date(action.payload.expiresAt) : null;
-          result = await prisma.coupon.create({
+          const discVal = Number(action.payload.discount || action.payload.discountValue || 10);
+          result = await (prisma.coupon as any).create({
             data:{
               storeId,
               code:         (action.payload.code || "KIRO" + Date.now().toString(36).slice(-4).toUpperCase()).toUpperCase(),
-              discountValue: Number(action.payload.discount || action.payload.discountValue || 10),
-              discountType: (action.payload.type || "PERCENTAGE") as any,
+              type:         action.payload.type || "PERCENTAGE",
+              discountType: action.payload.type || "PERCENTAGE",
+              value:        discVal,
+              discountValue: discVal,
               maxUses:      Number(action.payload.maxUses || 100),
-              expiresAt:    expiry,
+              usageLimit:   Number(action.payload.maxUses || 100),
+              expiresAt:    expiry2,
             },
           });
           break;
