@@ -887,7 +887,7 @@ export async function getKaiMemories(req: Request, res: Response) {
   try {
     const { storeId, category } = req.query as { storeId: string; category?: string };
     if (!storeId) return res.status(400).json({ success: false, message: "storeId required" });
-    const memories = await getMemories(storeId, category);
+    const memories = await getMemories(storeId, category).catch(() => []);
     res.json({ success: true, data: memories });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
@@ -909,11 +909,24 @@ export async function deleteKaiMemory(req: Request, res: Response) {
 export async function getPulseAlerts(req: Request, res: Response) {
   try {
     const { storeId } = req.query as { storeId: string };
-    if (!storeId) return res.status(400).json({ success: false, message: "storeId required" });
-    const alerts = await getUnreadAlerts(storeId);
+    if (!storeId) return res.json({ success: true, data: [] }); // graceful empty
+    const alerts = await getUnreadAlerts(storeId).catch(() => []);
+    // Auto-generate smart pulse alerts from store context
+    if (alerts.length === 0 && storeId) {
+      try {
+        const ctx = await getDeepContext(storeId).catch(() => null);
+        const auto: any[] = [];
+        if (ctx) {
+          if (ctx.pendingOrders > 0) auto.push({ id:`auto-1`, severity:"warning", title:`${ctx.pendingOrders} Unfulfilled Order${ctx.pendingOrders>1?"s":""}`, message:`You have ${ctx.pendingOrders} pending orders worth ${ctx.currencySymbol}${ctx.unfulfilledRevenue?.toLocaleString()||0}. Customers are waiting.`, read:false, actionable:true, suggestedPrompt:"Show me my unfulfilled orders and help me fulfill them" });
+          if (ctx.lowStockCount > 0) auto.push({ id:`auto-2`, severity:"warning", title:`${ctx.lowStockCount} Product${ctx.lowStockCount>1?"s":""}  Running Low`, message:`Restock before you run out and lose sales.`, read:false, actionable:true, suggestedPrompt:"Which products need restocking urgently?" });
+          if (ctx.revenueToday === 0) auto.push({ id:`auto-3`, severity:"opportunity", title:"No Sales Yet Today", message:"Time to drive traffic. A flash sale or WhatsApp blast could flip this.", read:false, actionable:true, suggestedPrompt:"Help me drive sales today" });
+        }
+        return res.json({ success: true, data: auto });
+      } catch {}
+    }
     res.json({ success: true, data: alerts });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
+  } catch {
+    res.json({ success: true, data: [] }); // never 500 — always return empty
   }
 }
 

@@ -302,7 +302,7 @@ export function GoalsPanel({ storeId, t, isDark, onSend }: any) {
                 <option value="customers">Customers</option>
               </select>
             </div>
-            <input value={deadline} onChange={e => setDeadline(e.target.value)} type="date"
+            <input value={deadline} onChange={e => setDeadline(e.target.value)} type="date" min={new Date().toISOString().split("T")[0]}
               style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.1)"}`, background:"transparent", color:t.muted, fontSize:12, outline:"none", fontFamily:"inherit", marginBottom:8, boxSizing:"border-box" }}
             />
             <div style={{ display:"flex", gap:8 }}>

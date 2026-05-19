@@ -612,7 +612,10 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
 
   const handleVoice = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { toast.error("Voice not supported in this browser. Try Chrome."); return; }
+    if (!SR) {
+      toast.error("Voice input works best in Chrome. Try Chrome or Edge.", { duration:4000 });
+      return;
+    }
     if (isListening) { recogRef.current?.stop(); setIsListening(false); return; }
     const r = new SR();
     r.continuous = false; r.interimResults = true; r.lang = "en-NG";
@@ -695,6 +698,17 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
   const send = useCallback(async (overrideMsg?: string) => {
     const text = (overrideMsg || input).trim();
     if ((!text && !attachment) || loading || !storeId) return;
+
+    // Intercept image generation requests before calling LLM
+    const imgTrigger = text.match(/^(generate|create|make|draw|show me)\s+(an?\s+)?(image|photo|picture|visual|graphic)\s+(of\s+|for\s+)?(.+)/i);
+    if (imgTrigger && !attachment) {
+      const imgPrompt = imgTrigger[5] || text;
+      const userMsg: Message = { id:`u-${Date.now()}`, role:"user", content:text, timestamp:new Date().toISOString() };
+      setMessages(p => [...p, userMsg]);
+      if (!overrideMsg) setInput("");
+      generateImage(imgPrompt);
+      return;
+    }
 
     const userMsg: Message = {
       id: `u-${Date.now()}`, role:"user", content: text || (attachment ? `📎 ${attachment.name||"Image"}` : ""),
@@ -929,26 +943,49 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
     if (file) handleFile(file);
   };
 
-  // Generate image via Replicate/Together AI API through backend
+  // Generate image using Pollinations.ai — completely free, no API key, works from browser
   const generateImage = async (prompt: string) => {
     const kiroId = `k-${Date.now()}`;
-    const kiroMsg: Message = { id:kiroId, role:"assistant", content:"Generating image...", isStreaming:true, timestamp:new Date().toISOString() };
-    setMessages(p => [...p, kiroMsg]);
-    setLoading(true);
-    try {
-      const r = await api.post("/kai/generate-image", { prompt, storeId });
-      const imgUrl = r.data?.data?.url;
-      if (imgUrl) {
-        setMessages(p => p.map(m => m.id === kiroId
-          ? { ...m, isStreaming:false, content:`Here's your image. You can use it for your product listing or marketing.\n\n![Generated](${imgUrl})`, imageUrl:imgUrl }
-          : m
-        ));
-      } else {
-        setMessages(p => p.map(m => m.id === kiroId ? { ...m, isStreaming:false, content:"Image generation failed. Make sure REPLICATE_API_TOKEN is set in your environment." } : m));
-      }
-    } catch {
-      setMessages(p => p.map(m => m.id === kiroId ? { ...m, isStreaming:false, content:"Image generation isn't configured yet. Add REPLICATE_API_TOKEN to your Render environment." } : m));
-    } finally { setLoading(false); }
+    // Build the image URL directly — Pollinations renders it from the browser
+    const cleanPrompt = prompt
+      .replace(/generate an? (image|photo|picture) (of |for )?/gi, "")
+      .replace(/product photo of/gi, "")
+      .trim();
+    const encodedPrompt = encodeURIComponent(
+      cleanPrompt + ", product photography, white background, professional, high quality, 4k, sharp"
+    );
+    const seed = Math.floor(Math.random() * 9999);
+    const imgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=768&seed=${seed}&nologo=true&enhance=true&model=flux`;
+
+    // Show loading message immediately
+    setMessages(p => [...p, {
+      id: kiroId, role:"assistant" as const,
+      content: `Generating image for "${cleanPrompt}"...`,
+      isStreaming: true,
+      timestamp: new Date().toISOString(),
+    }]);
+
+    // Preload the image to confirm it loaded
+    const img = new Image();
+    img.onload = () => {
+      setMessages(p => p.map(m => m.id === kiroId ? {
+        ...m,
+        isStreaming: false,
+        content: `Here is your image for "${cleanPrompt}". Right-click to save it.`,
+        imageUrl: imgUrl,
+      } : m));
+    };
+    img.onerror = () => {
+      // Try alternate model on failure
+      const altUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${seed+1}&nologo=true&model=flux-realism`;
+      setMessages(p => p.map(m => m.id === kiroId ? {
+        ...m,
+        isStreaming: false,
+        content: `Here is your image for "${cleanPrompt}".`,
+        imageUrl: altUrl,
+      } : m));
+    };
+    img.src = imgUrl;
   };
 
   // ── Panels (lazy import) ──────────────────────────────────────────────────
