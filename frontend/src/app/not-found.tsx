@@ -22,7 +22,7 @@ export default function NotFound() {
           <Link href="/dashboard" style={{ padding:"12px 28px", borderRadius:14, background:"linear-gradient(135deg,#6B35E8,#3D1C8A)", color:"#fff", fontSize:14, fontWeight:700, textDecoration:"none", boxShadow:"0 8px 24px rgba(107,53,232,0.35)" }}>
             Back to Dashboard →
           </Link>
-          <Link href="/dashboard/kiro" style={{ padding:"12px 28px", borderRadius:14, border:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.6)", fontSize:14, fontWeight:600, textDecoration:"none" }}>
+          <Link href="/kiro" style={{ padding:"12px 28px", borderRadius:14, border:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.6)", fontSize:14, fontWeight:600, textDecoration:"none" }}>
             Ask KIRO
           </Link>
         </div>

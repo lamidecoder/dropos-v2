@@ -59,7 +59,7 @@ export default function SupportPage() {
       <div className="grid grid-cols-3 gap-3 mb-8">
         {[
           { icon:"📚", label:"Docs",      href:"https://docs.droposhq.com",      desc:"Full documentation" },
-          { icon:"💬", label:"Ask KIRO",  href:"/dashboard/kiro",                 desc:"AI help instantly"  },
+          { icon:"💬", label:"Ask KIRO",  href:"/kiro",                 desc:"AI help instantly"  },
           { icon:"📧", label:"Email",     href:"mailto:hello@droposhq.com",       desc:"hello@droposhq.com" },
         ].map(item => (
           <a key={item.label} href={item.href} target={item.href.startsWith("http") ? "_blank" : undefined}

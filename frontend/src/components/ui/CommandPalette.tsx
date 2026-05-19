@@ -10,7 +10,7 @@ import {
 
 const NAV_ITEMS = [
   { label: "Dashboard",        href: "/dashboard",                    icon: LayoutDashboard,  group: "Pages"    },
-  { label: "KIRO",             href: "/dashboard/kiro",               icon: Zap,              group: "Pages"    },
+  { label: "KIRO",             href: "/kiro",               icon: Zap,              group: "Pages"    },
   { label: "Products",         href: "/dashboard/products",           icon: Package,          group: "Pages"    },
   { label: "Orders",           href: "/dashboard/orders",             icon: ShoppingCart,     group: "Pages"    },
   { label: "Customers",        href: "/dashboard/customers",          icon: Users,            group: "Pages"    },
@@ -30,11 +30,11 @@ const NAV_ITEMS = [
   { label: "Top Products",     href: "/dashboard/top-products",       icon: TrendingUp,       group: "Pages"    },
   { label: "Affiliates",       href: "/dashboard/affiliates",         icon: Users,            group: "Pages"    },
   // KIRO quick prompts
-  { label: "Ask KIRO: Sales today",           href: "/dashboard/kiro?q=What+are+my+sales+today%3F",           icon: Zap, group: "Ask KIRO" },
-  { label: "Ask KIRO: Write TikTok script",   href: "/dashboard/kiro?q=Write+a+TikTok+script+for+my+best+product", icon: Zap, group: "Ask KIRO" },
-  { label: "Ask KIRO: Trending products",     href: "/dashboard/kiro?q=What+products+are+trending+right+now%3F", icon: Zap, group: "Ask KIRO" },
-  { label: "Ask KIRO: Revenue forecast",      href: "/dashboard/kiro?q=Forecast+my+revenue+for+next+30+days",  icon: Zap, group: "Ask KIRO" },
-  { label: "Ask KIRO: Improve my store",      href: "/dashboard/kiro?q=How+can+I+improve+my+store+score%3F",   icon: Zap, group: "Ask KIRO" },
+  { label: "Ask KIRO: Sales today",           href: "/kiro?q=What+are+my+sales+today%3F",           icon: Zap, group: "Ask KIRO" },
+  { label: "Ask KIRO: Write TikTok script",   href: "/kiro?q=Write+a+TikTok+script+for+my+best+product", icon: Zap, group: "Ask KIRO" },
+  { label: "Ask KIRO: Trending products",     href: "/kiro?q=What+products+are+trending+right+now%3F", icon: Zap, group: "Ask KIRO" },
+  { label: "Ask KIRO: Revenue forecast",      href: "/kiro?q=Forecast+my+revenue+for+next+30+days",  icon: Zap, group: "Ask KIRO" },
+  { label: "Ask KIRO: Improve my store",      href: "/kiro?q=How+can+I+improve+my+store+score%3F",   icon: Zap, group: "Ask KIRO" },
 ];
 
 export default function CommandPalette() {

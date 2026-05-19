@@ -41,7 +41,7 @@ const STEPS: ChecklistStep[] = [
     icon:   Zap,
     label:  "Chat with KIRO",
     desc:   "Ask KIRO to help set up your store",
-    href:   "/dashboard/kiro",
+    href:   "/kiro",
     points: 20,
     check:  d => (d?.kiroMessageCount || 0) > 0,
   },

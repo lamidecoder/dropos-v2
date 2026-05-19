@@ -291,7 +291,7 @@ function RateLimitScreen({ plan, onUpgrade }: { plan: string; onUpgrade: () => v
   const dotStr = ".".repeat(dots);
   return (
     <motion.div initial={{opacity:0}} animate={{opacity:1}}
-      style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"40px 24px", textAlign:"center" }}>
+      style={{ flex:1, minHeight:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"40px 24px", textAlign:"center" }}>
       <motion.div
         animate={{ rotate:[0,10,-10,0], scale:[1,1.05,1] }}
         transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
@@ -1007,8 +1007,28 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
 
   const plan = user?.subscription?.plan || "FREE";
 
+  // Read mode from localStorage for consistent theming with /kiro page
+  const [chatMode, setChatMode] = useState<"light"|"dark">("dark");
+  useEffect(()=>{
+    const saved = localStorage.getItem("kiro-mode") as "light"|"dark"|null;
+    if (saved) setChatMode(saved);
+    // Listen for changes
+    const handler = ()=>{
+      const m = localStorage.getItem("kiro-mode") as "light"|"dark"|null;
+      if (m) setChatMode(m);
+    };
+    window.addEventListener("storage", handler);
+    return ()=>window.removeEventListener("storage", handler);
+  },[]);
+
+  const isLight = chatMode === "light";
+  const chatBg   = isLight ? "#FAFAF8" : "#080811";
+  const chatText = isLight ? "#1A1A2E" : "#F0EFFF";
+  const chatMuted= isLight ? "#7A7A9A" : "rgba(240,239,255,0.38)";
+  const chatBorder=isLight ? "rgba(26,26,46,0.08)" : "rgba(255,255,255,0.06)";
+
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", background:"#080811", fontFamily:"'DM Sans','Inter',sans-serif", position:"relative", overflow:"hidden" }}>
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", minHeight:0, background:isLight?"#FAFAF8":"#080811", color:isLight?"#1A1A2E":"#F0EFFF", fontFamily:"'DM Sans','Inter',sans-serif", position:"relative", overflow:"hidden" }}>
 
       {/* Ambient background glow */}
       <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:0 }}>
@@ -1027,7 +1047,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
       `}</style>
 
       {rateLimit ? (
-        <RateLimitScreen plan={plan} onUpgrade={() => window.open("/dashboard/settings/billing","_blank")}/>
+        <RateLimitScreen plan={plan} onUpgrade={() => window.open("/dashboard/billing","_blank")}/>
       ) : (
         <>
           {/* Stop generation bar */}
@@ -1053,7 +1073,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
           </AnimatePresence>
 
           {/* Messages area */}
-          <div style={{ flex:1, overflowY:"auto", padding:"20px 16px", position:"relative", zIndex:1 }}>
+          <div style={{ flex:1, overflowY:"auto", padding:"20px 16px", position:"relative", zIndex:1, minHeight:0 }}>
             {messages.length === 0 ? (
               <KIROWelcome storeId={storeId||""} onSend={send}/>
             ) : (

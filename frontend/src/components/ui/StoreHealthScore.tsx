@@ -31,7 +31,7 @@ function deriveChecks(data: any, user: any): HealthCheck[] {
     { id: "payment",       label: "Paystack connected",             passed: !!store?.paystackConnected,                 impact: "high",   href: "/dashboard/settings" },
     { id: "domain",        label: "Custom domain set up",           passed: !!store?.customDomain,                     impact: "medium", href: "/dashboard/settings" },
     { id: "social",        label: "Social links added",             passed: !!(store?.instagramUrl || store?.whatsappNumber), impact: "low", href: "/dashboard/stores" },
-    { id: "first_sale",    label: "First sale made",                passed: (data?.orderCount || 0) > 0,               impact: "high",   href: "/dashboard/kiro" },
+    { id: "first_sale",    label: "First sale made",                passed: (data?.orderCount || 0) > 0,               impact: "high",   href: "/kiro" },
   ];
 }
 
@@ -100,7 +100,7 @@ export default function StoreHealthScore() {
         </div>
 
         {/* KIRO fix button */}
-        <Link href="/dashboard/kiro" onClick={e => e.stopPropagation()}>
+        <Link href="/kiro" onClick={e => e.stopPropagation()}>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: "rgba(107,53,232,0.12)", color: "#A78BFA", border: "1px solid rgba(107,53,232,0.2)", whiteSpace: "nowrap" }}>
             <Zap size={10} /> Ask KIRO to fix
           </div>

@@ -18,7 +18,7 @@ export default function ReplayPage() {
         <div style={{width:64,height:64,borderRadius:20,background:"rgba(107,53,232,0.1)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",fontSize:28}}>🎬</div>
         <h2 style={{fontSize:18,fontWeight:800,color:t.text,margin:"0 0 8px",letterSpacing:"-0.03em"}}>Coming in Phase 2</h2>
         <p style={{fontSize:13,color:t.muted,margin:"0 0 24px",maxWidth:400,marginLeft:"auto",marginRight:"auto",lineHeight:1.6}}>Session replay lets you watch real customer journeys — where they click, scroll, hesitate, and drop off. KIRO will automatically flag the moments that cost you sales.</p>
-        <Link href="/dashboard/kiro" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 20px",borderRadius:12,background:`linear-gradient(135deg,${V.v500},#3D1C8A)`,textDecoration:"none",color:"#fff",fontSize:13,fontWeight:700}}>
+        <Link href="/kiro" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 20px",borderRadius:12,background:`linear-gradient(135deg,${V.v500},#3D1C8A)`,textDecoration:"none",color:"#fff",fontSize:13,fontWeight:700}}>
           <Zap size={13}/> Ask KIRO for analytics instead
         </Link>
       </div>

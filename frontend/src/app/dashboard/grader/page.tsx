@@ -37,7 +37,7 @@ export default function GraderPage() {
     { label:"Products", score:Math.min(100,((stats.products||0)/20)*100)||45, fix:"Add more products", href:"/dashboard/products", icon:Package },
     { label:"Sales",    score:Math.min(100,((stats.orders||0)/50)*100)||22,   fix:"Run a flash sale",  href:"/dashboard/flash-sales", icon:TrendingUp },
     { label:"Customers",score:Math.min(100,((stats.customers||0)/100)*100)||38,fix:"Send a broadcast", href:"/dashboard/broadcasts", icon:Users },
-    { label:"KIRO Usage",score:72, fix:"Ask KIRO daily",  href:"/dashboard/kiro", icon:Zap },
+    { label:"KIRO Usage",score:72, fix:"Ask KIRO daily",  href:"/kiro", icon:Zap },
   ];
   const overall = Math.round(grades.reduce((a,g)=>a+g.score,0)/grades.length);
   const grade = overall>=80?"A":overall>=70?"B":overall>=60?"C":overall>=50?"D":"F";

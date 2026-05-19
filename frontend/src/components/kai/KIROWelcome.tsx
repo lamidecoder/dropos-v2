@@ -82,7 +82,7 @@ export function KIROWelcome({ storeId, onSend }:P) {
   ];
 
   return (
-    <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"28px 20px", overflowY:"auto", position:"relative" }}>
+    <div style={{ flex:1, minHeight:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"28px 20px", overflowY:"auto", position:"relative" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');`}</style>
 
       {/* Subtle bg glow */}

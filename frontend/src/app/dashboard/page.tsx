@@ -214,7 +214,7 @@ export default function DashboardPage() {
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginBottom: 14, lineHeight: 1.5 }}>
               Import products, write copy, run a sale, or just ask anything about your store.
             </p>
-            <Link href="/dashboard/kiro">
+            <Link href="/kiro">
               <button style={{ width: "100%", padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", background: "rgba(107,53,232,0.4)", color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                 <Zap size={12} /> Chat with KIRO
               </button>
