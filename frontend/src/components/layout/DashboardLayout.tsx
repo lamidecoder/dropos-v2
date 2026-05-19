@@ -599,7 +599,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 function getPageTitle(pathname: string): string {
   const MAP: Record<string, string> = {
     "/dashboard":                    "Overview",
-    "/dashboard/kiro":               "KIRO",
+    "/kiro":                         "KIRO",
     "/dashboard/stores":             "My Stores",
     "/dashboard/products":           "Products",
     "/dashboard/orders":             "Orders",

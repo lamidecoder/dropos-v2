@@ -15,7 +15,7 @@ import toast from "react-hot-toast";
 
 type Tab = "chat"|"import"|"skills"|"goals"|"pulse"|"memory";
 const BASE = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
-const P = { v600:"#5B21B6", v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA", v200:"#C4B5FD", v100:"#EDE9FE" };
+const P = { v600:"#4C1D95", v500:"#6D28D9", v400:"#7C3AED", v300:"#A78BFA", v200:"#C4B5FD", v100:"#EDE9FE" };
 
 interface Message {
   id: string;
@@ -258,7 +258,7 @@ function ActionCard({ action, onApprove, onDismiss }: any) {
   if (done) return null;
   return (
     <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
-      style={{ marginTop:10, borderRadius:14, overflow:"hidden", border:`1px solid rgba(107,53,232,0.25)`, background:"rgba(107,53,232,0.06)" }}>
+      style={{ marginTop:10, borderRadius:14, overflow:"hidden", border:"1px solid rgba(109,40,217,0.2)", background:"rgba(20,19,37,0.8)" }}>
       <div style={{ padding:"11px 14px", display:"flex", alignItems:"flex-start", gap:10 }}>
         <span style={{ fontSize:20, flexShrink:0, lineHeight:1 }}>{desc.icon}</span>
         <div style={{ flex:1, minWidth:0 }}>
