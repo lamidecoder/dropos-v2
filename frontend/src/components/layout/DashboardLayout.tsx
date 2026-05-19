@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import CreditWallet from "../ui/CreditWallet";
-import KIROPulse from "../ui/KIROPulse";
 import CommandPalette from "../ui/CommandPalette";
 import PushNotificationPrompt from "../ui/PushNotificationPrompt";
 import MilestoneCelebration from "../ui/MilestoneCelebration";
@@ -312,8 +311,7 @@ function Sidebar({ t, pathname, plan, user, onNavClick, onLogout, theme }: any) 
 
       {/* Bottom */}
       <div style={{ flexShrink: 0, padding: "6px 6px 8px", borderTop: `1px solid ${t.border}` }}>
-        <KIROPulse t={t} />
-        <div style={{ marginBottom: 6 }}><CreditWallet /></div>
+<div style={{ marginBottom: 6 }}><CreditWallet /></div>
 
         {/* Plan badge */}
         <Link href="/dashboard/billing" onClick={onNavClick} style={{ textDecoration: "none", display: "block", marginBottom: 4 }}>

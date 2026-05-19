@@ -1,736 +1,560 @@
 "use client";
-import { useConnectionStatus } from "../../hooks/useConnectionStatus";
-// ─────────────────────────────────────────────────────────────────────────────
-// KIRO Chat — Complete Rebuild
-import { URLImporter, SkillsPanel, GoalsPanel, PulsePanel, MemoryPanel } from "./KIROPanels";
-import { KIROWelcome } from "./KIROWelcome";
-// Premium commerce AI interface for DropOS
-// Features: response navigation, edit messages, branch, follow-ups, rate limit
-// ─────────────────────────────────────────────────────────────────────────────
-import { useState, useRef, useEffect, useCallback } from "react";
+/**
+ * KIROChat — DropOS Commerce AI
+ * Fresh build. No legacy. Clean design system.
+ *
+ * DESIGN: "Warm Precision"
+ * Light default: Linen #F7F6F3 → Ink #111827, Violet #7C3AED accent
+ * Dark:          Obsidian #0D0D14 → Snow #F9F8FF, same accent
+ * Font: Geist (display) + Inter (body) — loaded from CDN
+ *
+ * LAYOUT: Column flex, height:100%, minHeight:0 everywhere.
+ * No absolute positioning in the main flow.
+ * KIRO_ACTION: buffered server-side, stripped client-side.
+ */
+
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "../../store/auth.store";
 import { api, uploadAPI } from "../../lib/api";
 import toast from "react-hot-toast";
 
-type Tab = "chat"|"import"|"skills"|"goals"|"pulse"|"memory";
-const BASE = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
-const P = { v600:"#4C1D95", v500:"#6D28D9", v400:"#7C3AED", v300:"#A78BFA", v200:"#C4B5FD", v100:"#EDE9FE" };
+// ── constants ──────────────────────────────────────────────────────────────────
+const BASE   = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
+const ACCENT = "#7C3AED";
+const ACCENT_D = "#5B21B6";
 
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  isStreaming?: boolean;
-  imageUrl?: string;
-  fileName?: string;
-  actions?: any[];
-  timestamp?: string;
-  // Response variants (regenerated versions)
-  variants?: string[];
-  variantIdx?: number;
-  // Follow-up suggestions
-  followUps?: string[];
-  bookmarked?: boolean;
+// ── types ──────────────────────────────────────────────────────────────────────
+type Mode = "light" | "dark";
+interface Msg {
+  id:         string;
+  role:       "user" | "assistant";
+  content:    string;
+  streaming?: boolean;
+  imageUrl?:  string;
+  actions?:   Action[];
+  ts?:        string;
+  thumbs?:    "up" | "down";
+}
+interface Action {
+  type:     string;
+  payload:  Record<string,unknown>;
+  approved?: boolean;
 }
 
-interface KIROChatProps {
-  storeId?: string;
-  initialMessage?: string;
-  conversationId?: string;
-  className?: string;
-  compact?: boolean;
-  briefMessage?: string;
-  onConversationCreated?: (id: string) => void;
-}
+// ── theme tokens ───────────────────────────────────────────────────────────────
+const T = {
+  light: {
+    bg:       "#F7F6F3",
+    surface:  "#FFFFFF",
+    elevated: "#F0EFE9",
+    border:   "rgba(0,0,0,0.08)",
+    borderFocus: ACCENT + "60",
+    text:     "#111827",
+    sub:      "#6B7280",
+    muted:    "#9CA3AF",
+    accent:   ACCENT,
+    accentD:  ACCENT_D,
+    accentBg: ACCENT + "12",
+    userBg:   `linear-gradient(145deg, ${ACCENT}, ${ACCENT_D})`,
+    userText: "#ffffff",
+    shadow:   "0 1px 4px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04)",
+    shadowMd: "0 4px 24px rgba(0,0,0,0.10)",
+    green:    "#059669",
+    amber:    "#D97706",
+    red:      "#DC2626",
+    scrollbar: "rgba(0,0,0,0.12)",
+  },
+  dark: {
+    bg:       "#0D0D14",
+    surface:  "#13131F",
+    elevated: "#1A1A2A",
+    border:   "rgba(255,255,255,0.07)",
+    borderFocus: ACCENT + "70",
+    text:     "#F9F8FF",
+    sub:      "#A0A0C0",
+    muted:    "#606080",
+    accent:   "#9061F9",
+    accentD:  ACCENT,
+    accentBg: ACCENT + "18",
+    userBg:   `linear-gradient(145deg, ${ACCENT}, ${ACCENT_D})`,
+    userText: "#ffffff",
+    shadow:   "0 1px 4px rgba(0,0,0,0.4)",
+    shadowMd: "0 4px 24px rgba(0,0,0,0.5)",
+    green:    "#10B981",
+    amber:    "#F59E0B",
+    red:      "#F87171",
+    scrollbar: "rgba(255,255,255,0.1)",
+  },
+};
 
-// ── Action descriptions ───────────────────────────────────────────────────────
-function getActionDesc(type: string, payload: any) {
-  const fmt = (n: number) => `₦${(n||0).toLocaleString()}`;
-  const map: Record<string, any> = {
-    add_product:            { icon:"📦", cta:"Add to Store",   title:"Add Product",        summary:`"${payload?.name}" at ${fmt(payload?.price)}` },
-    bulk_add_products:      { icon:"📥", cta:"Import All",     title:"Bulk Import",        summary:`${payload?.products?.length||0} products` },
-    update_price:           { icon:"💰", cta:"Update Price",   title:"Price Change",       summary:`→ ${fmt(payload?.price)}` },
-    update_stock:           { icon:"📦", cta:"Update Stock",   title:"Stock Update",       summary:`${payload?.quantity} units` },
-    archive_product:        { icon:"🔒", cta:"Hide Product",   title:"Archive Product",    summary:"Remove from public store" },
-    set_product_status:     { icon:"✅", cta:"Update",         title:"Product Status",     summary:payload?.status },
-    create_coupon:          { icon:"🎟", cta:"Create Code",    title:"Discount Code",      summary:`${payload?.code} — ${payload?.discount||payload?.discountValue}% off` },
-    fulfill_order:          { icon:"🚚", cta:"Fulfill",        title:"Fulfill Order",      summary:"Mark fulfilled, notify customer" },
-    update_order_status:    { icon:"📋", cta:"Update",         title:"Order Status",       summary:(payload?.status||"").toLowerCase() },
-    create_flash_sale:      { icon:"⚡", cta:"Launch Sale",    title:"Flash Sale",         summary:`${payload?.discountPercent}% off` },
-    update_store_description:{ icon:"✏️",cta:"Update",        title:"Store Description",  summary:"Update public store copy" },
-    update_product_image:   { icon:"📷", cta:"Add Image",      title:"Product Image",      summary:"Upload image to product" },
-    update_product:         { icon:"✏️", cta:"Save Changes",   title:"Update Product",     summary:"Apply edits" },
-    bulk_update_prices:     { icon:"💰", cta:"Update Prices",    title:"Bulk Price Update",  summary:`${payload?.multiplier ? `×${payload.multiplier}` : payload?.fixedPrice ? `Set to ${payload.fixedPrice}` : "Update all"}` },
-    delete_product:         { icon:"🗑",  cta:"Delete",            title:"Delete Product",    summary:payload?.productId?.slice(-8) },
-    duplicate_product:      { icon:"📋", cta:"Duplicate",          title:"Duplicate Product", summary:"Creates a draft copy" },
-    add_tracking:           { icon:"📦", cta:"Add Tracking",       title:"Add Tracking Number", summary:payload?.trackingNumber },
-    create_coupon_v2:       { icon:"🎟", cta:"Create Code",        title:"Discount Code",     summary:`${payload?.code || "New code"} — ${payload?.discount}% off` },
-    send_abandoned_cart:    { icon:"🛒", cta:"Send Emails",        title:"Abandoned Cart Recovery", summary:`Email customers who left without buying` },
-    create_collection:      { icon:"📁", cta:"Create",             title:"Create Collection", summary:payload?.name },
-    process_refund:         { icon:"💸", cta:"Process Refund",  title:"Refund Order",       summary:payload?.amount ? `Refund ₦${Number(payload.amount).toLocaleString()}` : "Process refund" },
-    send_email:             { icon:"📧", cta:"Send Email",      title:"Send Email",          summary:payload?.subject || "Email campaign" },
-    send_whatsapp:          { icon:"💬", cta:"Send Message",    title:"WhatsApp Message",   summary:(payload?.message||"").slice(0,40) || "WhatsApp broadcast" },
-    import_from_url:        { icon:"🌐", cta:"Import Product", title:"Import from URL",    summary:`From ${payload?.platform||"web"}` },
-  };
-  return map[type] || { icon:"⚡", cta:"Run", title:type.replace(/_/g," "), summary:"Execute action" };
-}
-
-// ── Clean KIRO response text ──────────────────────────────────────────────────
-function stripKIROAction(text: string): string {
-  // Remove KIRO_ACTION blocks with any nesting depth using a bracket counter
+// ── clean KIRO_ACTION from text ────────────────────────────────────────────────
+function cleanText(raw: string): string {
+  if (!raw) return "";
   let result = "";
   let i = 0;
-  while (i < text.length) {
-    const markerIdx = text.indexOf("KIRO_ACTION", i);
-    if (markerIdx === -1) { result += text.slice(i); break; }
-    result += text.slice(i, markerIdx);
-    // Skip past "KIRO_ACTION" and optional :, spaces, newlines, code fences
+  while (i < raw.length) {
+    const markerIdx = raw.indexOf("KIRO_ACTION", i);
+    if (markerIdx === -1) { result += raw.slice(i); break; }
+    result += raw.slice(i, markerIdx);
     let j = markerIdx + 11;
-    while (j < text.length && /[:\s`\n]/.test(text[j])) j++;
-    if (j < text.length && (text[j] === "j" || text.slice(j,j+4) === "json")) {
-      // skip "json" keyword if present
-      while (j < text.length && text[j] !== "{") j++;
-    }
-    if (j < text.length && text[j] === "{") {
-      // Count brackets to find the matching closing brace
+    while (j < raw.length && /[\s:`]/.test(raw[j])) j++;
+    if (j < raw.length && raw[j] === "{") {
       let depth = 0;
-      while (j < text.length) {
-        if (text[j] === "{") depth++;
-        else if (text[j] === "}") { depth--; if (depth === 0) { j++; break; } }
+      while (j < raw.length) {
+        if (raw[j] === "{") depth++;
+        else if (raw[j] === "}") { depth--; if (depth === 0) { j++; break; } }
         j++;
       }
-      // Also skip trailing newline + optional ``` fence
-      while (j < text.length && (text[j] === "\n" || text[j] === "`" || text[j] === " ")) j++;
+      while (j < raw.length && (raw[j] === "\n" || raw[j] === "`" || raw[j] === " ")) j++;
     }
     i = j;
   }
-  return result;
-}
-
-function clean(text: string): string {
-  return stripKIROAction(text)
-    .replace(/```json[\s\S]*?```/gi, "")          // remove any code blocks
+  return result
+    .replace(/```json[\s\S]*?```/gi, "")
     .replace(/```[\s\S]*?```/g, "")
-    .replace(/\*\*([^*]+)\*\*/g, "$1")            // **bold** → plain
-    .replace(/\*([^*\n]+)\*/g, "$1")               // *italic* → plain
-    .replace(/^\s*[\*\-]\s/gm, "")                // bullet → remove
-    .replace(/#{1,6}\s/g, "")                       // headings → remove
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*\n]+)\*/g, "$1")
+    .replace(/^#{1,6}\s/gm, "")
     .replace(/━+/g, "").replace(/^[-=]{3,}\s*$/gm, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+    .replace(/\n{3,}/g, "\n\n").trim();
 }
 
-// ── KIRO Avatar (animated) ────────────────────────────────────────────────────
-function KIROAvatar({ size = 32, pulse = false }: { size?: number; pulse?: boolean }) {
-  return (
-    <motion.div
-      style={{ width:size, height:size, borderRadius:Math.round(size*0.3), background:`linear-gradient(135deg,${"#6D28D9"},${"#4C1D95"})`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, position:"relative" }}
-      animate={pulse ? { boxShadow:["0 0 0 0 rgba(107,53,232,0)", "0 0 0 6px rgba(107,53,232,0.2)", "0 0 0 0 rgba(107,53,232,0)"] } : {}}
-      transition={{ duration:2, repeat:Infinity }}>
-      <svg width={size*0.55} height={size*0.55} viewBox="0 0 20 20" fill="none">
-        <path d="M10 2L3 8l4 1-2 9 5-6-4-1 4-9z" fill="white" fillOpacity={0.9}/>
-      </svg>
-    </motion.div>
-  );
-}
-
-
-// ── Content renderer — handles markdown-lite, code blocks, tables, inline images ──
-function renderContent(text: string): React.ReactNode {
-  const lines = text.split("\n");
-  const nodes: React.ReactNode[] = [];
-  let i = 0;
-
-  while (i < lines.length) {
-    const line = lines[i];
-
-    // Code block
-    if (line.startsWith("```")) {
-      const lang = line.slice(3).trim();
-      const codeLines: string[] = [];
-      i++;
-      while (i < lines.length && !lines[i].startsWith("```")) {
-        codeLines.push(lines[i]);
-        i++;
-      }
-      nodes.push(
-        <div key={i} style={{ margin:"10px 0", borderRadius:10, overflow:"hidden", border:"1px solid rgba(107,53,232,0.2)" }}>
-          {lang && <div style={{ padding:"4px 12px", background:"rgba(107,53,232,0.15)", fontSize:11, color:"#A78BFA", fontWeight:600 }}>{lang}</div>}
-          <pre style={{ margin:0, padding:"12px 14px", background:"rgba(0,0,0,0.3)", overflowX:"auto", fontSize:12, lineHeight:1.6, color:"#e2e8f0", fontFamily:"'Fira Code','Monaco','Consolas',monospace" }}>
-            {codeLines.join("\n")}
-          </pre>
-          <button onClick={() => navigator.clipboard.writeText(codeLines.join("\n"))}
-            style={{ width:"100%", padding:"5px", background:"rgba(255,255,255,0.04)", border:"none", color:"rgba(200,190,255,0.4)", fontSize:11, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
-            Copy code
-          </button>
-        </div>
-      );
-      i++;
-      continue;
+// ── parse actions from text ────────────────────────────────────────────────────
+function parseActions(text: string): Action[] {
+  const actions: Action[] = [];
+  const re = /KIRO_ACTION\s*:?\s*/g;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(text)) !== null) {
+    const start = text.indexOf("{", match.index + match[0].length);
+    if (start === -1) continue;
+    let depth = 0, j = start;
+    while (j < text.length) {
+      if (text[j] === "{") depth++;
+      else if (text[j] === "}") { depth--; if (depth === 0) { j++; break; } }
+      j++;
     }
-
-    // Table (starts with |)
-    if (line.startsWith("|") && lines[i+1]?.match(/^\|[-| ]+\|$/)) {
-      const headers = line.split("|").filter(Boolean).map(h => h.trim());
-      i += 2; // skip separator row
-      const rows: string[][] = [];
-      while (i < lines.length && lines[i].startsWith("|")) {
-        rows.push(lines[i].split("|").filter(Boolean).map(c => c.trim()));
-        i++;
-      }
-      nodes.push(
-        <div key={i} style={{ overflowX:"auto", margin:"10px 0" }}>
-          <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
-            <thead>
-              <tr>{headers.map((h, j) => (
-                <th key={j} style={{ padding:"8px 12px", textAlign:"left", borderBottom:"1px solid rgba(107,53,232,0.2)", color:"#A78BFA", fontWeight:700, fontSize:12, whiteSpace:"nowrap" }}>{h}</th>
-              ))}</tr>
-            </thead>
-            <tbody>
-              {rows.map((row, ri) => (
-                <tr key={ri} style={{ borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
-                  {row.map((cell, ci) => (
-                    <td key={ci} style={{ padding:"7px 12px", color:"rgba(200,190,255,0.8)", fontSize:13 }}>{cell}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
-      continue;
-    }
-
-    // Inline image ![alt](url)
-    const imgMatch = line.match(/!\[([^\]]*)\]\(([^)]+)\)/);
-    if (imgMatch) {
-      nodes.push(
-        <img key={i} src={imgMatch[2]} alt={imgMatch[1]}
-          style={{ maxWidth:"100%", maxHeight:300, borderRadius:10, margin:"8px 0", display:"block", objectFit:"contain" }}/>
-      );
-      i++; continue;
-    }
-
-    // Numbered list
-    const numMatch = line.match(/^(\d+)\.\s+(.+)/);
-    if (numMatch) {
-      nodes.push(
-        <div key={i} style={{ display:"flex", gap:8, margin:"3px 0" }}>
-          <span style={{ color:"#A78BFA", fontWeight:700, flexShrink:0, fontSize:13, minWidth:20 }}>{numMatch[1]}.</span>
-          <span style={{ fontSize:14, lineHeight:1.65, color:"#F0ECFF" }}>{inlineFormat(numMatch[2])}</span>
-        </div>
-      );
-      i++; continue;
-    }
-
-    // Regular paragraph / empty line
-    if (line.trim() === "") {
-      nodes.push(<div key={i} style={{ height:6 }}/>);
-    } else {
-      nodes.push(
-        <p key={i} style={{ margin:"2px 0", fontSize:14, lineHeight:1.7, color:"#F0ECFF" }}>
-          {inlineFormat(line)}
-        </p>
-      );
-    }
-    i++;
+    try {
+      const obj = JSON.parse(text.slice(start, j));
+      if (obj.type) actions.push({ type: obj.type, payload: obj.payload || obj });
+    } catch {}
   }
-  return <>{nodes}</>;
+  return actions;
 }
 
-function inlineFormat(text: string): React.ReactNode {
-  // Handle inline code `...`
-  const parts = text.split(/(`[^`]+`)/g);
-  return <>{parts.map((p, i) => {
-    if (p.startsWith("`") && p.endsWith("`")) {
-      return <code key={i} style={{ background:"rgba(107,53,232,0.15)", padding:"1px 5px", borderRadius:4, fontSize:12, fontFamily:"'Fira Code','Monaco',monospace", color:"#A78BFA" }}>{p.slice(1,-1)}</code>;
-    }
-    return p;
-  })}</>;
+// ── action card labels ─────────────────────────────────────────────────────────
+const ACTION_META: Record<string, { icon: string; label: string; cta: string }> = {
+  add_product:           { icon:"📦", label:"Add product",         cta:"Add to store"    },
+  import_from_url:       { icon:"🌐", label:"Import product",      cta:"Import"          },
+  update_price:          { icon:"💰", label:"Update price",        cta:"Update"          },
+  update_stock:          { icon:"📋", label:"Update stock",        cta:"Update"          },
+  create_coupon:         { icon:"🎟", label:"Create coupon",       cta:"Create"          },
+  create_coupon_v2:      { icon:"🎟", label:"Create coupon",       cta:"Create"          },
+  fulfill_order:         { icon:"🚚", label:"Fulfill order",       cta:"Fulfill"         },
+  update_order_status:   { icon:"📬", label:"Update order",        cta:"Update"          },
+  create_flash_sale:     { icon:"⚡", label:"Flash sale",          cta:"Launch"          },
+  archive_product:       { icon:"🔒", label:"Archive product",     cta:"Archive"         },
+  delete_product:        { icon:"🗑", label:"Delete product",      cta:"Delete"          },
+  duplicate_product:     { icon:"📋", label:"Duplicate product",   cta:"Duplicate"       },
+  add_tracking:          { icon:"📦", label:"Add tracking",        cta:"Add"             },
+  process_refund:        { icon:"💸", label:"Process refund",      cta:"Refund"          },
+  send_email:            { icon:"📧", label:"Send email",          cta:"Send"            },
+  send_whatsapp:         { icon:"💬", label:"Send WhatsApp",       cta:"Send"            },
+  bulk_update_prices:    { icon:"💰", label:"Bulk price update",   cta:"Update all"      },
+  update_store_description:{ icon:"✏️", label:"Update store",     cta:"Update"          },
+  update_product:        { icon:"✏️", label:"Update product",      cta:"Save"            },
+};
+
+// ── Time greeting ──────────────────────────────────────────────────────────────
+function getGreeting(name: string) {
+  const h = new Date().getHours();
+  const firstName = name.split(" ")[0];
+  if (h < 5)  return `Still up, ${firstName}?`;
+  if (h < 12) return `Good morning, ${firstName}.`;
+  if (h < 17) return `Good afternoon, ${firstName}.`;
+  if (h < 21) return `Good evening, ${firstName}.`;
+  return `Late night, ${firstName}.`;
 }
 
-// ── Action Card ───────────────────────────────────────────────────────────────
-function ActionCard({ action, onApprove, onDismiss }: any) {
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
-  const desc = getActionDesc(action.type, action.payload);
-  if (done) return null;
+// ── KIRO Logo ──────────────────────────────────────────────────────────────────
+function KIROLogo({ size = 28 }: { size?: number }) {
   return (
-    <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
-      style={{ marginTop:10, borderRadius:14, overflow:"hidden", border:"1px solid rgba(109,40,217,0.2)", background:"rgba(20,19,37,0.8)" }}>
-      <div style={{ padding:"11px 14px", display:"flex", alignItems:"flex-start", gap:10 }}>
-        <span style={{ fontSize:20, flexShrink:0, lineHeight:1 }}>{desc.icon}</span>
-        <div style={{ flex:1, minWidth:0 }}>
-          <p style={{ fontSize:12, fontWeight:700, color:"#A78BFA", margin:0 }}>{desc.title}</p>
-          <p style={{ fontSize:12, color:"rgba(200,190,255,0.6)", margin:"2px 0 0" }}>{desc.summary}</p>
-        </div>
-      </div>
-      <div style={{ padding:"0 14px 12px", display:"flex", gap:8 }}>
-        <button onClick={async()=>{setLoading(true);await onApprove(action);setDone(true);setLoading(false);}}
-          disabled={loading}
-          style={{ padding:"7px 18px", borderRadius:9, border:"none", background:`linear-gradient(135deg,${"#6D28D9"},${"#4C1D95"})`, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", display:"flex", alignItems:"center", gap:5 }}>
-          {loading ? <><span style={{width:10,height:10,border:"2px solid rgba(255,255,255,0.4)",borderTopColor:"#fff",borderRadius:"50%",animation:"spin 0.7s linear infinite",display:"block"}}/> Working</> : <>{desc.cta}</>}
-        </button>
-        <button onClick={()=>onDismiss(action)}
-          style={{ padding:"7px 12px", borderRadius:9, border:"1px solid rgba(255,255,255,0.08)", background:"transparent", color:"rgba(200,190,255,0.5)", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
-          Not now
-        </button>
-      </div>
-    </motion.div>
-  );
-}
-
-// ── Rate Limit Screen ─────────────────────────────────────────────────────────
-function RateLimitScreen({ plan, onUpgrade }: { plan: string; onUpgrade: () => void }) {
-  const [dots, setDots] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setDots(d => (d+1)%4), 500);
-    return () => clearInterval(t);
-  }, []);
-  const dotStr = ".".repeat(dots);
-  return (
-    <motion.div initial={{opacity:0}} animate={{opacity:1}}
-      style={{ flex:1, minHeight:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"40px 24px", textAlign:"center" }}>
-      <motion.div
-        animate={{ rotate:[0,10,-10,0], scale:[1,1.05,1] }}
-        transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
-        style={{ fontSize:56, marginBottom:20 }}>
-        🔥
-      </motion.div>
-      <p style={{ fontSize:20, fontWeight:800, color:"#F0ECFF", margin:"0 0 8px", letterSpacing:"-0.5px" }}>
-        KIRO ran hot{dotStr}
-      </p>
-      <p style={{ fontSize:14, color:"rgba(200,190,255,0.6)", margin:"0 0 24px", maxWidth:280, lineHeight:1.6 }}>
-        {plan === "FREE"
-          ? "Free accounts get 5 KIRO sessions per month. You have hit your limit for now."
-          : "You have hit your monthly KIRO message limit. Upgrade to keep going."}
-      </p>
-      {plan === "FREE" && (
-        <div style={{ background:"rgba(255,255,255,0.055)", border:"1px solid rgba(107,53,232,0.3)", borderRadius:14, padding:"16px 20px", marginBottom:20, maxWidth:300 }}>
-          <p style={{ fontSize:12, fontWeight:700, color:"#A78BFA", margin:"0 0 4px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Growth Plan — ₦9,500/mo</p>
-          <p style={{ fontSize:13, color:"rgba(200,190,255,0.7)", margin:0, lineHeight:1.5 }}>200 KIRO sessions · Unlimited products · All power tools</p>
-        </div>
-      )}
-      <button onClick={onUpgrade}
-        style={{ padding:"12px 28px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${"#6D28D9"},${"#4C1D95"})`, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", boxShadow:"0 4px 20px rgba(107,53,232,0.4)" }}>
-        Unlock More Sessions
-      </button>
-      <p style={{ fontSize:11, color:"rgba(200,190,255,0.3)", margin:"16px 0 0" }}>Limit resets on the 1st of every month</p>
-    </motion.div>
-  );
-}
-
-// ── Message Bubble ────────────────────────────────────────────────────────────
-function MessageBubble({ msg, onApprove, onDismiss, onRegenerate, onEdit, onBookmark, onFollowUp, onBranch }: any) {
-  const [showTools, setShowTools] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [editText, setEditText] = useState(msg.content);
-  const isUser = msg.role === "user";
-  const content = clean(msg.content || "");
-  const currentVariant = msg.variants?.[msg.variantIdx ?? 0] ?? content;
-
-  const copy = () => {
-    navigator.clipboard.writeText(clean(currentVariant));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const shareWA = () => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(clean(currentVariant).slice(0,500))}`, "_blank");
-  };
-
-  return (
-    <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
-      style={{ display:"flex", flexDirection:isUser?"row-reverse":"row", gap:10, alignItems:"flex-end", marginBottom:18, position:"relative" }}
-      onMouseEnter={() => setShowTools(true)}
-      onMouseLeave={() => setShowTools(false)}>
-
-      {/* KIRO avatar */}
-      {!isUser && <KIROAvatar size={30} pulse={!!msg.isStreaming}/>}
-
-      <div style={{ maxWidth:"82%", minWidth:40 }}>
-
-        {/* Image attachment */}
-        {msg.imageUrl && (
-          <img src={msg.imageUrl} alt="" style={{ maxWidth:"100%", maxHeight:180, borderRadius:12, marginBottom:6, objectFit:"cover", display:"block" }}/>
-        )}
-        {msg.fileName && !msg.imageUrl && (
-          <div style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, background:"rgba(255,255,255,0.06)", marginBottom:6, fontSize:11, color:"rgba(200,190,255,0.5)" }}>
-            📎 {msg.fileName}
-          </div>
-        )}
-
-        {/* Main bubble */}
-        <div style={{
-          padding: isUser ? "11px 18px" : "0",
-          borderRadius: isUser ? "20px 20px 4px 20px" : "0",
-          background: isUser ? `linear-gradient(135deg, #7C3AED, #5B21B6)` : "transparent",
-          color: isUser ? "#fff" : "#F0ECFF",
-          fontSize: 14,
-          lineHeight: 1.75,
-          fontFamily: "'Sora', sans-serif",
-          boxShadow: isUser ? "0 2px 12px rgba(109,40,217,0.3)" : "none",
-        }}>
-
-          {/* Streaming */}
-          {msg.isStreaming && !msg.content ? (
-            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0" }}>
-              {[0,1,2].map(i => (
-                <motion.span key={i}
-                  style={{ width:7, height:7, borderRadius:"50%", background:"#7C3AED", display:"block" }}
-                  animate={{ y:[0,-5,0], opacity:[0.4,1,0.4] }}
-                  transition={{ duration:0.7, repeat:Infinity, delay:i*0.15 }}/>
-              ))}
-              <span style={{ fontSize:12, color:"rgba(200,190,255,0.5)", marginLeft:4 }}>KIRO is thinking</span>
-            </div>
-          ) : editing && isUser ? (
-            <div>
-              <textarea value={editText} onChange={e=>setEditText(e.target.value)}
-                style={{ width:"100%", padding:"8px 12px", borderRadius:10, border:"1px solid rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.1)", color:"#fff", fontSize:14, fontFamily:"'DM Sans',sans-serif", resize:"none", outline:"none", minHeight:60 }}
-                autoFocus/>
-              <div style={{ display:"flex", gap:8, marginTop:8 }}>
-                <button onClick={() => { onEdit(msg.id, editText); setEditing(false); }}
-                  style={{ padding:"5px 14px", borderRadius:8, border:"none", background:"rgba(255,255,255,0.2)", color:"#fff", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
-                  Resend
-                </button>
-                <button onClick={() => { setEditing(false); setEditText(msg.content); }}
-                  style={{ padding:"5px 12px", borderRadius:8, border:"1px solid rgba(255,255,255,0.15)", background:"transparent", color:"rgba(255,255,255,0.6)", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <p style={{ margin:0, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>
-              {msg.isStreaming
-                ? <>{clean(msg.content||"")}<motion.span animate={{opacity:[1,0]}} transition={{duration:0.5,repeat:Infinity}}>▋</motion.span></>
-                : renderContent(clean(currentVariant || msg.content || ""))}
-            </p>
-          )}
-
-          {/* Action cards */}
-          {!isUser && msg.actions?.map((action: any, i: number) => (
-            <ActionCard key={i} action={action} onApprove={onApprove} onDismiss={onDismiss}/>
-          ))}
-        </div>
-
-        {/* Response navigation (variants) */}
-        {!isUser && !msg.isStreaming && (msg.variants?.length ?? 0) > 1 && (
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:6 }}>
-            <button onClick={() => onRegenerate(msg.id, "prev")}
-              disabled={(msg.variantIdx ?? 0) === 0}
-              style={{ width:22, height:22, borderRadius:6, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(200,190,255,0.5)", cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", opacity:(msg.variantIdx??0)===0?0.3:1 }}>
-              ‹
-            </button>
-            <span style={{ fontSize:11, color:"rgba(200,190,255,0.4)" }}>
-              {(msg.variantIdx ?? 0) + 1} / {msg.variants.length}
-            </span>
-            <button onClick={() => onRegenerate(msg.id, "next")}
-              disabled={(msg.variantIdx ?? 0) >= (msg.variants?.length||1) - 1}
-              style={{ width:22, height:22, borderRadius:6, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(200,190,255,0.5)", cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", opacity:(msg.variantIdx??0)>=(msg.variants?.length||1)-1?0.3:1 }}>
-              ›
-            </button>
-          </div>
-        )}
-
-        {/* Suggested follow-ups */}
-        {!isUser && !msg.isStreaming && msg.followUps && msg.followUps.length > 0 && (
-          <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginTop:10 }}>
-            {msg.followUps.map((fu: string, i: number) => (
-              <button key={i} onClick={() => onFollowUp(fu)}
-                style={{ padding:"5px 12px", borderRadius:99, border:"1px solid rgba(107,53,232,0.3)", background:"rgba(255,255,255,0.04)", color:"#A78BFA", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all 0.15s" }}
-                onMouseEnter={e => { (e.target as any).style.background = "rgba(109,40,217,0.18)"; }}
-                onMouseLeave={e => { (e.target as any).style.background = "rgba(255,255,255,0.04)"; }}>
-                {fu}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Timestamp */}
-        {msg.timestamp && !msg.isStreaming && (
-          <p style={{ fontSize:10, color:"rgba(200,190,255,0.25)", margin:"4px 0 0", textAlign:isUser?"right":"left" }}>
-            {new Date(msg.timestamp).toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})}
-            {msg.bookmarked && " · ⭐"}
-          </p>
-        )}
-      </div>
-
-      {/* Message toolbar — appears on hover */}
-      <AnimatePresence>
-        {showTools && !msg.isStreaming && (
-          <motion.div initial={{opacity:0,scale:0.9}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.9}}
-            style={{ position:"absolute", [isUser?"left":"right"]:-90, bottom:0, display:"flex", flexDirection:"column", gap:4, zIndex:10 }}>
-            {[
-              { icon:"📋", label:"Copy",      action: copy },
-              ...(isUser ? [{ icon:"✏️", label:"Edit",      action:()=>setEditing(true) }] : []),
-              ...(!isUser ? [
-                { icon:"↻",  label:"Retry",      action:()=>onRegenerate(msg.id, "new") },
-                { icon:"🔊", label:"Listen",     action:()=>{
-                  const u = new SpeechSynthesisUtterance(clean(currentVariant||msg.content||"").slice(0,500));
-                  u.lang="en-NG"; u.rate=1.05;
-                  window.speechSynthesis.speak(u);
-                }},
-                { icon:"🌿", label:"Branch",     action:()=>onBranch(msg.id) },
-                { icon:msg.bookmarked?"⭐":"☆", label:"Star", action:()=>onBookmark(msg.id) },
-                { icon:"📤", label:"Share",      action:shareWA },
-              ] : []),
-            ].map(btn => (
-              <button key={btn.label} onClick={btn.action} title={btn.label}
-                style={{ width:28, height:28, borderRadius:8, border:"1px solid rgba(107,53,232,0.2)", background:"rgba(20,19,37,0.95)", color:"rgba(200,190,255,0.7)", cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", backdropFilter:"blur(8px)" }}>
-                {btn.icon === "↻" ? <span style={{fontSize:14}}>↻</span> : btn.icon}
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-}
-
-// ── Beautiful empty state ─────────────────────────────────────────────────────
-function EmptyState({ greeting, contextLine, storeData, onSend }: any) {
-  const QUICK = [
-    { icon:"📊", label:"Store summary",       prompt:"Give me my full store summary — revenue, orders, what needs attention today." },
-    { icon:"🔥", label:"What's trending now",  prompt:"What products are trending right now in Nigeria that I can add to my store?" },
-    { icon:"⚡", label:"Launch flash sale",     prompt:"Help me set up a flash sale tonight on my best products." },
-    { icon:"🌐", label:"Import a product",      prompt:"I want to import a product from AliExpress or Temu. How do I start?" },
-    { icon:"📣", label:"WhatsApp broadcast",    prompt:"Write a WhatsApp broadcast message I can send to customers today to drive sales." },
-    { icon:"🚀", label:"Grow my store",         prompt:"Give me a 5-step action plan to grow my store revenue this month." },
-  ];
-
-  return (
-    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.4}}
-      style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"32px 20px 20px", overflowY:"auto" }}>
-
-      {/* Animated KIRO orb */}
-      <div style={{ position:"relative", marginBottom:28 }}>
-        <motion.div
-          animate={{ scale:[1,1.06,1] }}
-          transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}
-          style={{ width:72, height:72, borderRadius:22, background:`linear-gradient(135deg,${"#6D28D9"},${"#4C1D95"})`, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 0 40px rgba(107,53,232,0.45), 0 0 80px rgba(107,53,232,0.2)` }}>
-          <svg width={36} height={36} viewBox="0 0 24 24" fill="none">
-            <path d="M13 2L3 14l9 0-1 8 10-12-9 0L13 2z" fill="white" fillOpacity={0.95}/>
-          </svg>
-        </motion.div>
-        {/* Orbiting dot */}
-        <motion.div
-          animate={{ rotate:360 }}
-          transition={{ duration:4, repeat:Infinity, ease:"linear" }}
-          style={{ position:"absolute", inset:-10, borderRadius:"50%", border:"1px solid transparent" }}>
-          <div style={{ position:"absolute", top:-3, left:"50%", width:8, height:8, borderRadius:"50%", background:"#A78BFA", boxShadow:`0 0 8px ${"#A78BFA"}`, transform:"translateX(-50%)" }}/>
-        </motion.div>
-      </div>
-
-      {/* Greeting */}
-      <h2 style={{ fontSize:24, fontWeight:800, color:"#F0ECFF", margin:"0 0 6px", textAlign:"center", letterSpacing:"-0.5px" }}>
-        {greeting || "Welcome back"}
-      </h2>
-      <p style={{ fontSize:14, color:"rgba(200,190,255,0.55)", margin:"0 0 6px", textAlign:"center" }}>
-        {contextLine || "Your commerce intelligence is ready."}
-      </p>
-
-      {/* Live store pulse */}
-      {storeData && (
-        <div style={{ display:"flex", gap:10, margin:"16px 0 24px", flexWrap:"wrap", justifyContent:"center" }}>
-          {[
-            { label:"Today",   value:storeData.today || "₦0" },
-            { label:"Orders",  value:storeData.orders || "0" },
-            { label:"Health",  value:storeData.health || "--" },
-          ].map(s => (
-            <div key={s.label}
-              style={{ padding:"8px 16px", borderRadius:12, background:"rgba(255,255,255,0.055)", border:"1px solid rgba(107,53,232,0.2)" }}>
-              <p style={{ fontSize:10, color:"rgba(200,190,255,0.45)", margin:"0 0 2px", textTransform:"uppercase", letterSpacing:"0.1em" }}>{s.label}</p>
-              <p style={{ fontSize:15, fontWeight:800, color:"#A78BFA", margin:0 }}>{s.value}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Quick action grid */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:8, width:"100%", maxWidth:380, marginBottom:16 }}>
-        {QUICK.map(a => (
-          <motion.button key={a.label} onClick={() => onSend(a.prompt)}
-            whileHover={{ scale:1.02, background:"rgba(107,53,232,0.16)" }}
-            whileTap={{ scale:0.97 }}
-            style={{ padding:"12px 14px", borderRadius:14, border:"1px solid rgba(109,40,217,0.18)", background:"rgba(255,255,255,0.04)", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", textAlign:"left", transition:"all 0.15s" }}>
-            <span style={{ fontSize:18, display:"block", marginBottom:4 }}>{a.icon}</span>
-            <span style={{ fontSize:12, fontWeight:600, color:"rgba(200,190,255,0.8)", display:"block", lineHeight:1.3 }}>{a.label}</span>
-          </motion.button>
-        ))}
-      </div>
-
-      <p style={{ fontSize:11, color:"rgba(200,190,255,0.2)", textAlign:"center" }}>
-        Paste a product URL · Upload an image · Ask anything
-      </p>
-    </motion.div>
-  );
-}
-
-// ── Tab bar ───────────────────────────────────────────────────────────────────
-function TabBar({ activeTab, setActiveTab, pulseCount }: any) {
-  const TABS = [
-    { id:"chat" as Tab,   icon:"💬", label:"Chat" },
-    { id:"import" as Tab, icon:"🌐", label:"Import" },
-    { id:"skills" as Tab, icon:"⚡", label:"Skills" },
-    { id:"goals" as Tab,  icon:"🎯", label:"Goals" },
-    { id:"pulse" as Tab,  icon:"🔔", label:"Pulse", badge:pulseCount },
-    { id:"memory" as Tab, icon:"🧠", label:"Memory" },
-  ];
-  return (
-    <div style={{ display:"flex", borderTop:"1px solid rgba(255,255,255,0.055)", background:"rgba(8,8,17,0.95)" }}>
-      {TABS.map(tab => (
-        <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-          style={{ flex:1, padding:"8px 4px 10px", border:"none", background:"transparent", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", display:"flex", flexDirection:"column", alignItems:"center", gap:2, position:"relative",
-            borderBottom:`2px solid ${activeTab===tab.id ? "#7C3AED" : "transparent"}`,
-            transition:"border-color 0.15s" }}>
-          <span style={{ fontSize:16 }}>{tab.icon}</span>
-          <span style={{ fontSize:9, fontWeight:600, color:activeTab===tab.id ? "#A78BFA" : "rgba(200,190,255,0.3)", textTransform:"uppercase", letterSpacing:"0.08em" }}>{tab.label}</span>
-          {"badge" in tab && (tab as any).badge > 0 && (
-            <span style={{ position:"absolute", top:6, right:"calc(50% - 16px)", minWidth:14, height:14, borderRadius:7, background:"#ef4444", color:"#fff", fontSize:9, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 3px" }}>
-              {(tab as any).badge}
-            </span>
-          )}
-        </button>
-      ))}
+    <div style={{
+      width: size, height: size, borderRadius: Math.round(size * 0.27),
+      background: `linear-gradient(145deg, ${ACCENT}, ${ACCENT_D})`,
+      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+      boxShadow: `0 2px 8px ${ACCENT}40`,
+    }}>
+      <svg width={size * 0.44} height={size * 0.44} viewBox="0 0 24 24" fill="none">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="white" fillOpacity={0.95}/>
+      </svg>
     </div>
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-export default function KIROChat({ storeId: propStoreId, initialMessage, conversationId: initConvId, onConversationCreated, briefMessage }: KIROChatProps) {
-  const { user } = useAuthStore();
-  const token  = useAuthStore(s => s.accessToken);
+// ── Spinner ────────────────────────────────────────────────────────────────────
+function Spinner({ size = 16, color = ACCENT }: { size?: number; color?: string }) {
+  return <div style={{ width: size, height: size, borderRadius: "50%", border: `2px solid ${color}30`, borderTopColor: color, animation: "ks 0.7s linear infinite", flexShrink: 0 }}/>;
+}
+
+// ── Action card ────────────────────────────────────────────────────────────────
+function ActionCard({ action, onApprove, onDismiss, t }: { action: Action; onApprove:(a:Action)=>void; onDismiss:(a:Action)=>void; t: typeof T.light }) {
+  const [loading, setLoading] = useState(false);
+  const [done,    setDone]    = useState(false);
+  const meta = ACTION_META[action.type] || { icon:"⚡", label: action.type.replace(/_/g," "), cta:"Run" };
+  if (done) return null;
+
+  const p = action.payload as any;
+  const summary = p?.name || p?.url?.slice(0,35) || p?.code || p?.trackingNumber || p?.message?.slice(0,40) || p?.status || "";
+
+  return (
+    <motion.div initial={{ opacity:0, y:4 }} animate={{ opacity:1, y:0 }}
+      style={{ marginTop: 10, borderRadius: 12, border: `1px solid ${t.border}`, background: t.surface, overflow: "hidden" }}>
+      <div style={{ padding: "10px 14px 8px", display: "flex", alignItems: "flex-start", gap: 8 }}>
+        <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1 }}>{meta.icon}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: t.text, margin: 0 }}>{meta.label}</p>
+          {summary && <p style={{ fontSize: 11, color: t.sub, margin: "2px 0 0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{summary}</p>}
+        </div>
+      </div>
+      <div style={{ padding: "0 14px 12px", display: "flex", gap: 8 }}>
+        <button
+          onClick={async () => { setLoading(true); await onApprove(action); setDone(true); setLoading(false); }}
+          disabled={loading}
+          style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: t.accent, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+          {loading ? <Spinner size={12} color="#fff"/> : meta.cta}
+        </button>
+        <button onClick={() => { onDismiss(action); setDone(true); }}
+          style={{ padding: "6px 12px", borderRadius: 8, border: `1px solid ${t.border}`, background: "transparent", color: t.sub, fontSize: 12, cursor: "pointer" }}>
+          Dismiss
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Message bubble ─────────────────────────────────────────────────────────────
+function MsgBubble({ msg, onApprove, onDismiss, onRate, onRegen, t }: {
+  msg: Msg; onApprove:(a:Action)=>void; onDismiss:(a:Action)=>void;
+  onRate:(id:string,v:"up"|"down")=>void; onRegen:(id:string)=>void; t: typeof T.light;
+}) {
+  const [show, setShow] = useState(false);
+  const isUser = msg.role === "user";
+  const text   = cleanText(msg.content || "");
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+      style={{ display: "flex", flexDirection: isUser ? "row-reverse" : "row", gap: 8, alignItems: "flex-end", marginBottom: 20, position: "relative" }}>
+
+      {!isUser && <KIROLogo size={26}/>}
+
+      <div style={{ maxWidth: "80%", minWidth: 0 }}>
+        {/* Image */}
+        {msg.imageUrl && (
+          <img src={msg.imageUrl} alt="" style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 10, marginBottom: 6, display: "block", objectFit: "cover" }} onError={e=>(e.currentTarget.style.display="none")}/>
+        )}
+
+        {/* Text bubble */}
+        <div style={{
+          padding: isUser ? "10px 15px" : "0",
+          borderRadius: isUser ? "18px 18px 4px 18px" : "0",
+          background: isUser ? t.userBg : "transparent",
+          color: isUser ? t.userText : t.text,
+          fontSize: 14, lineHeight: 1.7,
+          boxShadow: isUser ? `0 2px 10px ${ACCENT}30` : "none",
+        }}>
+          {msg.streaming && !msg.content ? (
+            <div style={{ display:"flex", gap:4, alignItems:"center", padding:"3px 0" }}>
+              {[0,1,2].map(i=>(
+                <motion.div key={i} style={{ width:5, height:5, borderRadius:"50%", background: t.muted }}
+                  animate={{ y:[0,-4,0], opacity:[0.4,1,0.4] }}
+                  transition={{ duration:0.6, repeat:Infinity, delay:i*0.13 }}/>
+              ))}
+              <span style={{ fontSize:12, color: t.muted, marginLeft:6 }}>KIRO is thinking</span>
+            </div>
+          ) : (
+            <span style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+              {text}
+              {msg.streaming && <motion.span animate={{ opacity:[1,0] }} transition={{ duration:0.5, repeat:Infinity }} style={{ display:"inline-block", marginLeft:1 }}>▋</motion.span>}
+            </span>
+          )}
+
+          {/* Action cards */}
+          {!isUser && msg.actions?.map((a,i) => (
+            <ActionCard key={i} action={a} onApprove={onApprove} onDismiss={onDismiss} t={t}/>
+          ))}
+        </div>
+
+        {/* Toolbar */}
+        <AnimatePresence>
+          {show && !msg.streaming && (
+            <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+              style={{ display:"flex", gap:3, marginTop:5, padding:"0 2px" }}>
+              {["📋","👍","👎","↻","🔊"].map((icon, i) => (
+                <button key={i} title={["Copy","Helpful","Not helpful","Retry","Listen"][i]}
+                  onClick={() => {
+                    if (i===0) navigator.clipboard.writeText(text);
+                    if (i===1) onRate(msg.id,"up");
+                    if (i===2) onRate(msg.id,"down");
+                    if (i===3) onRegen(msg.id);
+                    if (i===4) { const u = new SpeechSynthesisUtterance(text.slice(0,500)); u.lang="en-NG"; window.speechSynthesis.speak(u); }
+                  }}
+                  style={{ width:24, height:24, borderRadius:6, border:`1px solid ${t.border}`, background: t.surface, color: t.sub, cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {icon}
+                </button>
+              ))}
+              {!isUser && (
+                <button title="Share to WhatsApp"
+                  onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(text.slice(0,500))}`, "_blank")}
+                  style={{ width:24, height:24, borderRadius:6, border:`1px solid ${t.border}`, background: t.surface, color:"#25D366", cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  📤
+                </button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Timestamp */}
+        {msg.ts && !msg.streaming && (
+          <p style={{ fontSize:10, color: t.muted, margin:"3px 0 0", textAlign: isUser?"right":"left" }}>
+            {new Date(msg.ts).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
+            {msg.thumbs && (msg.thumbs==="up"?" · 👍":" · 👎")}
+          </p>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Welcome screen ─────────────────────────────────────────────────────────────
+function Welcome({ name, storeData, onSend, t }: { name:string; storeData:any; onSend:(m:string)=>void; t: typeof T.light }) {
+  const greeting = getGreeting(name || "there");
+  const sym      = storeData?.currencySymbol || "₦";
+
+  const QUICK = [
+    { icon:"📊", title:"Store pulse",       sub:"Revenue · Health · What needs action",  prompt:"Give me my full store summary — revenue, orders, health score, and what I should focus on today." },
+    { icon:"🔥", title:"Trending products", sub:"Live market research",                   prompt:"What products are trending right now in my market this week?" },
+    { icon:"🌐", title:"Import product",    sub:"Any URL — AliExpress, Temu, Amazon",     prompt:"I want to import a product. Paste a link and I'll handle everything." },
+    { icon:"⚡", title:"Flash sale",        sub:"Drive sales right now",                  prompt:"Help me set up a flash sale on my best products today." },
+    { icon:"📣", title:"Write ad copy",     sub:"TikTok · WhatsApp · Instagram",          prompt:"Write high-converting ad copy for my top product across TikTok, WhatsApp, and Instagram." },
+    { icon:"🚀", title:"Growth plan",       sub:"Specific 5-step plan",                   prompt:"Give me a specific 5-step plan to grow my store revenue this month based on my current data." },
+  ];
+
+  return (
+    <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"28px 20px 20px", overflowY:"auto", minHeight:0 }}>
+
+      {/* Orb */}
+      <motion.div initial={{ opacity:0, scale:0.7 }} animate={{ opacity:1, scale:1 }}
+        transition={{ type:"spring", stiffness:200, damping:18 }}
+        style={{ marginBottom:22, position:"relative" }}>
+        <motion.div animate={{ scale:[1,1.08,1] }} transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}>
+          <KIROLogo size={64}/>
+        </motion.div>
+        <motion.div animate={{ rotate:360 }} transition={{ duration:7, repeat:Infinity, ease:"linear" }}
+          style={{ position:"absolute", inset:-8, borderRadius:"50%", border:`1px dashed ${ACCENT}30` }}>
+          <div style={{ position:"absolute", top:-3, left:"50%", width:7, height:7, borderRadius:"50%", background: ACCENT, boxShadow:`0 0 6px ${ACCENT}`, transform:"translateX(-50%)" }}/>
+        </motion.div>
+      </motion.div>
+
+      {/* Greeting */}
+      <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1 }}
+        style={{ textAlign:"center", marginBottom:24 }}>
+        <h2 style={{ fontSize:22, fontWeight:700, color: t.text, margin:"0 0 5px", letterSpacing:"-0.4px" }}>
+          {greeting}
+        </h2>
+        <p style={{ fontSize:13, color: t.sub, margin:0 }}>Your commerce AI is ready.</p>
+      </motion.div>
+
+      {/* Store metrics */}
+      {storeData && (
+        <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15 }}
+          style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center", marginBottom:24 }}>
+          {[
+            { label:"Today", value: storeData.revenueToday > 0 ? `${sym}${storeData.revenueToday.toLocaleString()}` : `${sym}0`, alert: false },
+            { label:"Pending", value: String(storeData.pendingOrders||0), alert: storeData.pendingOrders > 0 },
+            { label:"Health",  value: storeData.healthScore ? `${storeData.healthScore}/100` : "–", alert: false },
+          ].map(m => (
+            <div key={m.label} style={{ padding:"7px 14px", borderRadius:9, background: t.surface, border:`1px solid ${m.alert ? t.amber+"40" : t.border}`, boxShadow: m.alert ? `0 0 10px ${t.amber}18` : "none" }}>
+              <p style={{ fontSize:13, fontWeight:700, color: m.alert ? t.amber : t.accent, margin:0 }}>{m.value}</p>
+              <p style={{ fontSize:9, color: t.muted, margin:0, textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:600 }}>{m.label}</p>
+            </div>
+          ))}
+        </motion.div>
+      )}
+
+      {/* Quick actions */}
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.2 }}
+        style={{ width:"100%", maxWidth:480 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, marginBottom:12 }}>
+          {QUICK.map((q,i) => (
+            <motion.button key={q.title}
+              initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.22+i*0.05 }}
+              whileHover={{ y:-2, transition:{ duration:0.12 } }} whileTap={{ scale:0.97 }}
+              onClick={() => onSend(q.prompt)}
+              style={{ padding:"11px 10px", borderRadius:11, border:`1px solid ${t.border}`, background: t.surface, cursor:"pointer", textAlign:"left", boxShadow: t.shadow }}>
+              <span style={{ fontSize:17, display:"block", marginBottom:4 }}>{q.icon}</span>
+              <span style={{ fontSize:11, fontWeight:600, color: t.text, display:"block", lineHeight:1.3 }}>{q.title}</span>
+              <span style={{ fontSize:10, color: t.sub, display:"block", lineHeight:1.4, marginTop:1 }}>{q.sub}</span>
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Pending orders urgent card */}
+      {storeData?.pendingOrders > 0 && (
+        <motion.button initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.6 }}
+          whileHover={{ y:-1 }} whileTap={{ scale:0.98 }}
+          onClick={() => onSend(`Help me fulfill my ${storeData.pendingOrders} pending orders right now.`)}
+          style={{ width:"100%", maxWidth:480, padding:"10px 14px", borderRadius:10, border:`1px solid ${t.amber}35`, background:`${t.amber}0A`, cursor:"pointer", display:"flex", alignItems:"center", gap:10 }}>
+          <span style={{ fontSize:18 }}>📬</span>
+          <div style={{ flex:1, textAlign:"left" }}>
+            <p style={{ fontSize:13, fontWeight:600, color: t.amber, margin:0 }}>{storeData.pendingOrders} unfulfilled order{storeData.pendingOrders>1?"s":""}</p>
+            <p style={{ fontSize:11, color:`${t.amber}90`, margin:0 }}>Customers are waiting — tap to act now</p>
+          </div>
+          <span style={{ color: t.amber, opacity:0.6 }}>→</span>
+        </motion.button>
+      )}
+
+      <p style={{ fontSize:11, color: t.muted, margin:"14px 0 0", textAlign:"center" }}>
+        Paste any product URL · Upload image or PDF · ⌘K
+      </p>
+    </div>
+  );
+}
+
+// ── Props ──────────────────────────────────────────────────────────────────────
+interface KIROChatProps {
+  storeId?:               string;
+  conversationId?:        string;
+  briefMessage?:          string;
+  className?:             string;
+  onConversationCreated?: (id: string) => void;
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
+export default function KIROChat({ storeId: propStoreId, conversationId: initConvId, onConversationCreated }: KIROChatProps) {
+  const user    = useAuthStore(s => s.user);
+  const token   = useAuthStore(s => s.accessToken);
   const storeId = propStoreId || user?.stores?.[0]?.id || "";
 
-  const [messages,    setMessages]  = useState<Message[]>([]);
-  const [input,       setInput]     = useState(initialMessage || "");
-  const [loading,     setLoading]   = useState(false);
-  const [convId,      setConvId]    = useState(initConvId || "");
-  const [greeting,    setGreeting]  = useState<any>(null);
-  const [storeData,   setStoreData] = useState<any>(null);
-  const [attachments,  setAttachments] = useState<any[]>([]);
-  const [attachment,   setAttach]     = useState<any>(null); // kept for compat
-  const [uploading,   setUploading] = useState(false);
-  const [histLoaded,  setHistLoaded]= useState(false);
-  const [rateLimit,   setRateLimit] = useState(false);
-  const [activeTab,   setActiveTab] = useState<"chat"|"import"|"skills"|"goals"|"pulse">("chat");
-  const [pulseCount,  setPulseCount]= useState(0);
-  const [lastFailedMsg, setLastFailedMsg] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
-  const recogRef = useRef<any>(null);
-
-  const handleVoice = () => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      toast.error("Voice input works best in Chrome. Try Chrome or Edge.", { duration:4000 });
-      return;
-    }
-    if (isListening) { recogRef.current?.stop(); setIsListening(false); return; }
-    const r = new SR();
-    r.continuous = false; r.interimResults = true; r.lang = "en-NG";
-    r.onresult = (e: any) => {
-      const t2 = Array.from(e.results).map((res: any) => res[0].transcript).join("");
-      setInput(t2);
-      if (inputRef.current) { inputRef.current.style.height = "auto"; inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 180) + "px"; }
-    };
-    r.onend = () => setIsListening(false);
-    r.onerror = () => setIsListening(false);
-    r.start(); recogRef.current = r; setIsListening(true);
-  };
-
-  // Auto-retry last failed message on reconnect
-  useConnectionStatus({
-    onReconnect: () => {
-      if (lastFailedMsg && !loading) {
-        setLastFailedMsg(null);
-        send(lastFailedMsg);
-      }
-    },
-  });
+  // ── state ──────────────────────────────────────────────────────────────────
+  const [mode,      setMode]      = useState<Mode>("light");
+  const [messages,  setMessages]  = useState<Msg[]>([]);
+  const [input,     setInput]     = useState("");
+  const [loading,   setLoading]   = useState(false);
+  const [convId,    setConvId]    = useState(initConvId || "");
+  const [storeData, setStoreData] = useState<any>(null);
+  const [attach,    setAttach]    = useState<any>(null);
+  const [uploading, setUploading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [rateLimit, setRateLimit] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLTextAreaElement>(null);
-  const abortRef  = useRef<AbortController|null>(null);
+  const abortRef  = useRef<AbortController | null>(null);
   const fileRef   = useRef<HTMLInputElement>(null);
+  const recogRef  = useRef<any>(null);
 
-  // Auto-scroll
+  const t = T[mode];
+
+  // ── sync mode from localStorage ────────────────────────────────────────────
+  useEffect(() => {
+    const saved = localStorage.getItem("kiro-mode") as Mode | null;
+    if (saved) setMode(saved);
+    const handler = () => { const m = localStorage.getItem("kiro-mode") as Mode|null; if (m) setMode(m); };
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
+
+  // ── auto scroll ────────────────────────────────────────────────────────────
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages]);
 
-  // Load greeting + store data
+  // ── load store greeting ────────────────────────────────────────────────────
   useEffect(() => {
     if (!storeId) return;
     api.get(`/kai/greeting?storeId=${storeId}`)
-      .then(r => {
-        setGreeting(r.data?.data);
-        setStoreData({
-          today:   r.data?.data?.revenueToday ? `₦${r.data.data.revenueToday.toLocaleString()}` : "₦0",
-          orders:  r.data?.data?.pendingOrders || "0",
-          health:  r.data?.data?.healthScore ? `${r.data.data.healthScore}/100` : "--",
-        });
-      }).catch(() => {});
-    api.get(`/kai/pulse?storeId=${storeId}`)
-      .then(r => setPulseCount((r.data?.data || []).filter((a: any) => !a.read).length))
+      .then(r => setStoreData(r.data?.data?.storeContext || r.data?.data))
       .catch(() => {});
   }, [storeId]);
 
-  // Load conversation history ONLY when a specific conversationId is provided via props
-  // New chats start clean
+  // ── load conversation history ──────────────────────────────────────────────
   useEffect(() => {
-    if (!initConvId || histLoaded) return;  // only load if explicitly given a convId
-    setHistLoaded(true);
+    if (!initConvId) return;
     api.get(`/kai/conversation/${initConvId}`)
       .then(r => {
-        const conv = r.data?.data;
-        const msgs = (conv?.messages || []).map((m: any) => ({
-          id: m.id, role: m.role, content: m.content,
-          timestamp: m.createdAt, actions: m.actions || [],
+        const msgs = (r.data?.data?.messages || []).map((m: any) => ({
+          id: m.id, role: m.role === "user" ? "user" : "assistant",
+          content: m.content, ts: m.createdAt, actions: m.actions || [],
         }));
         if (msgs.length) setMessages(msgs);
       }).catch(() => {});
-  }, [initConvId, histLoaded]);
+  }, [initConvId]);
 
-  // Generate follow-up suggestions for KIRO responses
-  const generateFollowUps = useCallback((responseText: string, userQuery: string): string[] => {
-    const t = (responseText + userQuery).toLowerCase();
-    if (t.includes("sales") || t.includes("revenue"))
-      return ["Show me which products drove this", "What should I do differently next week?", "Compare to last month"];
-    if (t.includes("product") || t.includes("inventory"))
-      return ["Price this for maximum profit", "Write a TikTok script for it", "What else should I add?"];
-    if (t.includes("trend") || t.includes("sell"))
-      return ["How do I source this?", "What margin can I expect?", "Who is buying this in Nigeria?"];
-    if (t.includes("order") || t.includes("fulfill"))
-      return ["Send a shipping update to the customer", "Show all pending orders", "Mark as fulfilled"];
-    return ["Tell me more", "What should I do first?", "Give me a specific action plan"];
+  // ── voice ──────────────────────────────────────────────────────────────────
+  const handleVoice = () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { toast.error("Voice works best in Chrome"); return; }
+    if (listening) { recogRef.current?.stop(); setListening(false); return; }
+    const r = new SR(); r.lang = "en-NG"; r.interimResults = true; r.continuous = false;
+    r.onresult = (e: any) => {
+      const text = Array.from(e.results).map((x: any) => x[0].transcript).join("");
+      setInput(text);
+    };
+    r.onend = () => setListening(false);
+    r.start(); recogRef.current = r; setListening(true);
+  };
+
+  // ── file upload ────────────────────────────────────────────────────────────
+  const handleFile = async (file: File) => {
+    if (file.size > 20 * 1024 * 1024) { toast.error("Max 20MB"); return; }
+    setUploading(true);
+    try {
+      const dataUrl = await new Promise<string>((res, rej) => {
+        const r = new FileReader(); r.onload=()=>res(r.result as string); r.onerror=rej; r.readAsDataURL(file);
+      });
+      const isImage = file.type.startsWith("image/");
+      const isPDF   = file.type === "application/pdf";
+      setAttach({ url: isImage ? dataUrl : undefined, base64: isPDF ? dataUrl.split(",")[1] : undefined, type: isImage ? "image" : isPDF ? "pdf" : "csv", name: file.name, size: file.size });
+    } catch { toast.error("Upload failed"); } finally { setUploading(false); }
+  };
+
+  // ── image generation ───────────────────────────────────────────────────────
+  const generateImage = useCallback((prompt: string) => {
+    const kid = `k${Date.now()}`;
+    const clean = prompt.replace(/^(generate|create|make|draw)\s+(a[n]?\s+)?(image|photo|picture|visual)\s+(of\s+|for\s+)?/i,"").trim();
+    const encoded = encodeURIComponent(`${clean}, product photography, clean background, professional, high quality`);
+    const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&seed=${Math.random()*9999|0}&nologo=true&model=flux`;
+    setMessages(p => [...p, { id:kid, role:"assistant", content:`Generating image for "${clean}"…`, streaming:true, ts:new Date().toISOString() }]);
+    const img = new Image();
+    img.onload  = () => setMessages(p => p.map(m => m.id===kid ? { ...m, streaming:false, content:`Here's your image.`, imageUrl:url } : m));
+    img.onerror = () => setMessages(p => p.map(m => m.id===kid ? { ...m, streaming:false, content:"Image generation unavailable. Try describing the product to me instead." } : m));
+    img.src = url;
   }, []);
 
-  // ── Core send function ────────────────────────────────────────────────────
-  const send = useCallback(async (overrideMsg?: string) => {
-    const text = (overrideMsg || input).trim();
-    if ((!text && !attachment) || loading || !storeId) return;
+  // ── send ───────────────────────────────────────────────────────────────────
+  const send = useCallback(async (override?: string) => {
+    const text = (override || input).trim();
+    if ((!text && !attach) || loading || !storeId) return;
 
-    // Intercept image generation requests before calling LLM
-    const imgTrigger = text.match(/^(generate|create|make|draw|show me)\s+(an?\s+)?(image|photo|picture|visual|graphic)\s+(of\s+|for\s+)?(.+)/i);
-    if (imgTrigger && !attachment) {
-      const imgPrompt = imgTrigger[5] || text;
-      const userMsg: Message = { id:`u-${Date.now()}`, role:"user", content:text, timestamp:new Date().toISOString() };
-      setMessages(p => [...p, userMsg]);
-      if (!overrideMsg) setInput("");
-      generateImage(imgPrompt);
+    // Image gen intercept
+    if (text && /^(generate|create|make|draw|show)\s+(a[n]?\s+)?(image|photo|picture|visual)/i.test(text) && !attach) {
+      setMessages(p => [...p, { id:`u${Date.now()}`, role:"user", content:text, ts:new Date().toISOString() }]);
+      if (!override) setInput("");
+      generateImage(text);
       return;
     }
 
-    const userMsg: Message = {
-      id: `u-${Date.now()}`, role:"user", content: text || (attachment ? `📎 ${attachment.name||"Image"}` : ""),
-      imageUrl: attachment?.url, fileName: !attachment?.url ? attachment?.name : undefined,
-      timestamp: new Date().toISOString(),
-    };
-    const kiroId = `k-${Date.now()}`;
-    const kiroMsg: Message = { id:kiroId, role:"assistant", content:"", isStreaming:true, timestamp:new Date().toISOString() };
+    const userMsg: Msg = { id:`u${Date.now()}`, role:"user", content: text || (attach ? `📎 ${attach.name}` : ""), imageUrl: attach?.type==="image" ? attach.url : undefined, ts:new Date().toISOString() };
+    const kiroId = `k${Date.now()}`;
+    const kiroMsg: Msg = { id:kiroId, role:"assistant", content:"", streaming:true, ts:new Date().toISOString() };
 
     setMessages(p => [...p, userMsg, kiroMsg]);
-    if (!overrideMsg) setInput("");
+    if (!override) setInput("");
     setAttach(null);
     setLoading(true);
 
@@ -738,493 +562,218 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
     abortRef.current = new AbortController();
 
     try {
-      const body: any = { message:text||"", storeId, conversationId:convId||undefined };
-      if (attachment?.url?.startsWith("data:image/")) {
-        const parts = attachment.url.split(",");
-        body.imageBase64 = parts[1];
-        body.imageMediaType = parts[0].split(":")[1]?.split(";")[0] || "image/jpeg";
-        body.imageUrl = attachment.url;
-      } else if (attachment?.url) {
-        body.imageUrl = attachment.url;
-      }
-      if (attachment?.base64) { body.fileBase64 = attachment.base64; body.fileType = attachment.type; }
-      if (attachment?.name) body.fileName = attachment.name;
+      const body: any = { message: text || "", storeId, conversationId: convId || undefined };
+      if (attach?.type === "image" && attach.url?.startsWith("data:")) {
+        body.imageBase64    = attach.url.split(",")[1];
+        body.imageMediaType = attach.url.split(":")[1]?.split(";")[0] || "image/jpeg";
+        body.imageUrl       = attach.url;
+      } else if (attach?.url) body.imageUrl = attach.url;
+      if (attach?.base64) { body.fileBase64 = attach.base64; body.fileType = attach.type; }
+      if (attach?.name)   body.fileName = attach.name;
 
       const res = await fetch(`${BASE}/kai/smart-chat`, {
-        method:"POST",
+        method: "POST",
         headers: { "Content-Type":"application/json", ...(token ? { Authorization:`Bearer ${token}` } : {}) },
         body: JSON.stringify(body),
         signal: abortRef.current.signal,
       });
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        if (res.status === 429 || errData?.code === "RATE_LIMIT") { setRateLimit(true); return; }
-        throw new Error(errData?.message || "Request failed");
+        const d = await res.json().catch(()=>({}));
+        if (res.status === 429 || d?.code === "RATE_LIMIT") { setRateLimit(true); return; }
+        throw new Error(d?.message || "Request failed");
       }
 
-      const reader = res.body?.getReader();
+      const reader = res.body!.getReader();
       const dec = new TextDecoder();
       let full = "";
       let newConvId = "";
 
-      while (reader) {
+      while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = dec.decode(value, { stream:true });
-        for (const line of chunk.split("\n").filter(l => l.startsWith("data: "))) {
+        for (const line of dec.decode(value,{stream:true}).split("\n").filter(l=>l.startsWith("data: "))) {
           try {
-            const parsed = JSON.parse(line.slice(6));
-            if (parsed.token) {
-              full += parsed.token;
-              setMessages(p => p.map(m => m.id === kiroId ? { ...m, content:full } : m));
-            }
-            if (parsed.conversationId && !convId) { newConvId = parsed.conversationId; }
-            if (parsed.actions?.length) {
-              setMessages(p => p.map(m => m.id === kiroId ? { ...m, actions:[...(m.actions||[]), ...parsed.actions].filter((a,i,arr) => arr.findIndex(b=>b.type===a.type)===i) } : m));
-            }
-            if (parsed.done) {
+            const p = JSON.parse(line.slice(6));
+            if (p.token) { full += p.token; setMessages(m => m.map(x => x.id===kiroId ? {...x,content:full} : x)); }
+            if (p.conversationId && !convId) newConvId = p.conversationId;
+            if (p.actions?.length) setMessages(m => m.map(x => x.id===kiroId ? {...x, actions:[...(x.actions||[]),...p.actions].filter((a,i,arr)=>arr.findIndex(b=>b.type===a.type)===i)} : x));
+            if (p.done) {
               if (newConvId) { setConvId(newConvId); onConversationCreated?.(newConvId); }
-              const followUps = generateFollowUps(full, text);
-              const doneActions = parsed.actions || [];
-              setMessages(p => p.map(m => m.id === kiroId
-                ? { ...m, isStreaming:false, variants:[clean(full)], variantIdx:0, followUps,
-                    // Merge actions from done event with any already set mid-stream
-                    actions: [...(m.actions || []), ...doneActions].filter((a,i,arr) =>
-                      arr.findIndex(b => b.type === a.type) === i  // deduplicate by type
-                    ),
-                  }
-                : m
-              ));
+              // Parse any inline actions from text
+              const inlineActions = parseActions(full);
+              setMessages(m => m.map(x => x.id===kiroId ? {
+                ...x, streaming:false,
+                actions: [...(x.actions||[]), ...inlineActions].filter((a,i,arr)=>arr.findIndex(b=>b.type===a.type)===i),
+              } : x));
             }
           } catch {}
         }
       }
     } catch (err: any) {
       if (err.name === "AbortError") return;
-      const errTxt = (err as any).message || "Something went wrong. Type your question again.";
-      setLastFailedMsg(text);  // remember for auto-retry on reconnect
-      setMessages(p => p.map(m => m.id === kiroId
-        ? { ...m, isStreaming:false, content:`${errTxt.includes("fetch") || errTxt.includes("network") ? "Connection issue — check your internet and try again." : "I ran into an issue. Try again or ask something slightly different."}` }
-        : m
-      ));
-    } finally {
-      setLoading(false);
-    }
-  }, [input, attachment, loading, storeId, convId, token, generateFollowUps, onConversationCreated]);
+      setMessages(m => m.map(x => x.id===kiroId ? {...x, streaming:false, content:"Something went wrong. Check your connection and try again." } : x));
+    } finally { setLoading(false); }
+  }, [input, attach, loading, storeId, convId, token, generateImage, onConversationCreated]);
 
-  // ── Approve action ────────────────────────────────────────────────────────
-  const handleApprove = async (action: any) => {
+  // ── action handlers ────────────────────────────────────────────────────────
+  const handleApprove = async (action: Action) => {
     try {
-      const r = await api.post("/kai/action", { storeId, actions:[{ ...action, approved:true }] });
+      const r = await api.post("/kai/action", { storeId, actions:[{...action,approved:true}] });
       const result = r.data?.results?.[0];
-      if (result?.success) {
-        toast.success(result.message || "Done!");
-      } else {
-        // Self-healing: if backend sent a corrected action, retry automatically
-        if (result?.healedAction) {
-          toast.loading("Retrying with auto-fix...", { id:"heal" });
-          try {
-            const r2 = await api.post("/kai/action", { storeId, actions:[{ ...result.healedAction, approved:true }] });
-            const result2 = r2.data?.results?.[0];
-            if (result2?.success) {
-              toast.success(result2.message || "Fixed and done!", { id:"heal" });
-              return;
-            }
-          } catch {}
-          toast.error(result?.message || "Action failed even after auto-fix", { id:"heal" });
-        } else {
-          toast.error(result?.message || "Action failed");
-        }
-      }
-    } catch (e: any) {
-      toast.error(e.response?.data?.message || "Failed — check your connection");
-    }
+      if (result?.success) toast.success(result.message || "Done!");
+      else if (result?.healedAction) {
+        toast.loading("Auto-fixing…", {id:"heal"});
+        const r2 = await api.post("/kai/action",{storeId,actions:[{...result.healedAction,approved:true}]});
+        const r2res = r2.data?.results?.[0];
+        if (r2res?.success) toast.success(r2res.message||"Fixed and done!",{id:"heal"});
+        else toast.error(result?.message||"Action failed",{id:"heal"});
+      } else toast.error(result?.message||"Action failed");
+    } catch (e: any) { toast.error(e.response?.data?.message||"Failed"); }
   };
 
-  // ── Regenerate / navigate variants ───────────────────────────────────────
-  const handleRegenerate = async (msgId: string, direction: "prev"|"next"|"new") => {
-    const msgIdx = messages.findIndex(m => m.id === msgId);
-    if (msgIdx < 0) return;
-    const msg = messages[msgIdx];
-
-    if (direction === "prev") {
-      setMessages(p => p.map(m => m.id === msgId ? { ...m, variantIdx:Math.max(0,(m.variantIdx??0)-1) } : m));
-      return;
-    }
-    if (direction === "next" && (msg.variantIdx??0) < (msg.variants?.length||1)-1) {
-      setMessages(p => p.map(m => m.id === msgId ? { ...m, variantIdx:(m.variantIdx??0)+1 } : m));
-      return;
-    }
-
-    // Generate new variant
-    const prevUserMsg = messages.slice(0, msgIdx).reverse().find(m => m.role === "user");
-    if (!prevUserMsg) return;
-
-    setMessages(p => p.map(m => m.id === msgId ? { ...m, isStreaming:true, content:"" } : m));
-    setLoading(true);
-    try {
-      const res = await fetch(`${BASE}/kai/smart-chat`, {
-        method:"POST",
-        headers: { "Content-Type":"application/json", ...(token ? { Authorization:`Bearer ${token}` } : {}) },
-        body: JSON.stringify({ message:prevUserMsg.content, storeId, conversationId:convId }),
-      });
-      const reader = res.body?.getReader();
-      const dec = new TextDecoder();
-      let full = "";
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = dec.decode(value, { stream:true });
-        for (const line of chunk.split("\n").filter(l => l.startsWith("data: "))) {
-          try {
-            const p2 = JSON.parse(line.slice(6));
-            if (p2.token) {
-              full += p2.token;
-              setMessages(p => p.map(m => m.id === msgId ? { ...m, content:full } : m));
-            }
-          } catch {}
-        }
-      }
-      setMessages(p => p.map(m => m.id === msgId ? {
-        ...m, isStreaming:false,
-        variants:[...(m.variants||[clean(m.content||"")]), clean(full)],
-        variantIdx:(m.variants?.length||1),
-      } : m));
-    } catch {}
-    finally { setLoading(false); }
+  const handleRate = (id: string, v: "up"|"down") => {
+    setMessages(m => m.map(x => x.id===id ? {...x,thumbs:v} : x));
   };
 
-  // ── Edit user message ─────────────────────────────────────────────────────
-  const handleEdit = (msgId: string, newText: string) => {
-    const msgIdx = messages.findIndex(m => m.id === msgId);
-    if (msgIdx < 0) return;
-    // Remove all messages after this one, update this one, then resend
-    const trimmed = messages.slice(0, msgIdx);
-    setMessages(trimmed);
-    send(newText);
+  const handleRegen = async (id: string) => {
+    const idx = messages.findIndex(m => m.id===id);
+    if (idx < 1) return;
+    const prev = messages.slice(0,idx).reverse().find(m=>m.role==="user");
+    if (prev) { setMessages(m=>m.filter((_,i)=>i<idx)); send(prev.content); }
   };
 
-  // ── Branch conversation ───────────────────────────────────────────────────
-  const handleBranch = (msgId: string) => {
-    const msgIdx = messages.findIndex(m => m.id === msgId);
-    if (msgIdx < 0) return;
-    // Open new tab/window with same messages up to this point
-    const branchData = encodeURIComponent(JSON.stringify(messages.slice(0, msgIdx+1)));
-    toast.success("Branch saved — start a new chat from this point", { duration:3000 });
-    // For now, copy the context up to this point
-    const ctx = messages.slice(0, msgIdx+1).map(m => `${m.role === "user" ? "You" : "KIRO"}: ${m.content}`).join("\n\n");
-    navigator.clipboard.writeText(ctx).catch(() => {});
-  };
-
-  // ── Bookmark ──────────────────────────────────────────────────────────────
-  const handleBookmark = (msgId: string) => {
-    setMessages(p => p.map(m => m.id === msgId ? { ...m, bookmarked:!m.bookmarked } : m));
-    toast.success("Message starred");
-  };
-
-  // ── File upload ───────────────────────────────────────────────────────────
-  const handleFile = async (file: File) => {
-    if (file.size > 20 * 1024 * 1024) { toast.error("File too large — max 20MB"); return; }
-    const isImage = file.type.startsWith("image/");
-    const isPDF   = file.type === "application/pdf";
-    setUploading(true);
-    try {
-      const dataUrl = await new Promise<string>((res,rej) => {
-        const r = new FileReader(); r.onload=()=>res(r.result as string); r.onerror=rej; r.readAsDataURL(file);
-      });
-      const att = isImage
-        ? { url:dataUrl, type:"image", name:file.name, size:file.size }
-        : { url:dataUrl, base64:dataUrl.split(",")[1], type:isPDF?"pdf":"csv", name:file.name, size:file.size };
-      setAttach(att);     // legacy compat
-      setAttachments(p => [...p.slice(-2), att]); // keep last 3 attachments
-    } catch { toast.error("Upload failed"); }
-    finally { setUploading(false); }
-  };
-
-  // Drag-and-drop support
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleFile(file);
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    const file = e.clipboardData.files?.[0];
-    if (file) handleFile(file);
-  };
-
-  // Generate image using Pollinations.ai — completely free, no API key, works from browser
-  const generateImage = async (prompt: string) => {
-    const kiroId = `k-${Date.now()}`;
-    // Build the image URL directly — Pollinations renders it from the browser
-    const cleanPrompt = prompt
-      .replace(/generate an? (image|photo|picture) (of |for )?/gi, "")
-      .replace(/product photo of/gi, "")
-      .trim();
-    const encodedPrompt = encodeURIComponent(
-      cleanPrompt + ", product photography, white background, professional, high quality, 4k, sharp"
-    );
-    const seed = Math.floor(Math.random() * 9999);
-    const imgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=768&seed=${seed}&nologo=true&enhance=true&model=flux`;
-
-    // Show loading message immediately
-    setMessages(p => [...p, {
-      id: kiroId, role:"assistant" as const,
-      content: `Generating image for "${cleanPrompt}"...`,
-      isStreaming: true,
-      timestamp: new Date().toISOString(),
-    }]);
-
-    // Preload the image to confirm it loaded
-    const img = new Image();
-    img.onload = () => {
-      setMessages(p => p.map(m => m.id === kiroId ? {
-        ...m,
-        isStreaming: false,
-        content: `Here is your image for "${cleanPrompt}". Right-click to save it.`,
-        imageUrl: imgUrl,
-      } : m));
-    };
-    img.onerror = () => {
-      // Try alternate model on failure
-      const altUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${seed+1}&nologo=true&model=flux-realism`;
-      setMessages(p => p.map(m => m.id === kiroId ? {
-        ...m,
-        isStreaming: false,
-        content: `Here is your image for "${cleanPrompt}".`,
-        imageUrl: altUrl,
-      } : m));
-    };
-    img.src = imgUrl;
-  };
-
-  // ── Panels (lazy import) ──────────────────────────────────────────────────
-  const [PanelComponents, setPanelComponents] = useState<any>(null);
-  useEffect(() => {
-    import("./KIROPanels").then(m => setPanelComponents(m)).catch(() => {});
-  }, []);
-
-  const plan = user?.subscription?.plan || "FREE";
-
-  // Read mode from localStorage for consistent theming with /kiro page
-  const [chatMode, setChatMode] = useState<"light"|"dark">("dark");
-  useEffect(()=>{
-    const saved = localStorage.getItem("kiro-mode") as "light"|"dark"|null;
-    if (saved) setChatMode(saved);
-    // Listen for changes
-    const handler = ()=>{
-      const m = localStorage.getItem("kiro-mode") as "light"|"dark"|null;
-      if (m) setChatMode(m);
-    };
-    window.addEventListener("storage", handler);
-    return ()=>window.removeEventListener("storage", handler);
-  },[]);
-
-  const isLight = chatMode === "light";
-  const chatBg   = isLight ? "#FAFAF8" : "#080811";
-  const chatText = isLight ? "#1A1A2E" : "#F0EFFF";
-  const chatMuted= isLight ? "#7A7A9A" : "rgba(240,239,255,0.38)";
-  const chatBorder=isLight ? "rgba(26,26,46,0.08)" : "rgba(255,255,255,0.06)";
-
+  // ── render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", minHeight:0, background:isLight?"#FAFAF8":"#080811", color:isLight?"#1A1A2E":"#F0EFFF", fontFamily:"'DM Sans','Inter',sans-serif", position:"relative", overflow:"hidden" }}>
-
-      {/* Ambient background glow */}
-      <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:0 }}>
-        <div style={{ position:"absolute", top:"-20%", left:"30%", width:"60vw", height:"60vw", borderRadius:"50%", background:"radial-gradient(circle,rgba(91,33,182,0.2) 0%,transparent 65%)", filter:"blur(40px)" }}/>
-        <div style={{ position:"absolute", bottom:"-10%", right:"20%", width:"50vw", height:"50vw", borderRadius:"50%", background:"radial-gradient(circle,rgba(124,58,237,0.12) 0%,transparent 65%)", filter:"blur(60px)" }}/>
-      </div>
-
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", minHeight:0, background: t.bg, fontFamily:"'Inter',system-ui,sans-serif", overflow:"hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
-        @keyframes spin { to { transform:rotate(360deg); } }
-        * { box-sizing:border-box; }
-        ::-webkit-scrollbar { width:4px; }
-        ::-webkit-scrollbar-track { background:transparent; }
-        ::-webkit-scrollbar-thumb { background:rgba(107,53,232,0.3); border-radius:2px; }
-        textarea { scrollbar-width:thin; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @keyframes ks { to { transform: rotate(360deg); } }
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: ${t.scrollbar}; border-radius: 2px; }
       `}</style>
 
+      {/* Rate limit screen */}
       {rateLimit ? (
-        <RateLimitScreen plan={plan} onUpgrade={() => window.open("/dashboard/billing","_blank")}/>
+        <div style={{ flex:1, minHeight:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:32, textAlign:"center" }}>
+          <div style={{ fontSize:48, marginBottom:16 }}>🔥</div>
+          <h2 style={{ fontSize:20, fontWeight:700, color:t.text, margin:"0 0 8px" }}>You've hit your limit</h2>
+          <p style={{ fontSize:14, color:t.sub, margin:"0 0 20px", maxWidth:280, lineHeight:1.6 }}>
+            Free accounts get 5 KIRO sessions per month. Upgrade to keep going.
+          </p>
+          <button onClick={()=>window.open("/dashboard/billing","_blank")}
+            style={{ padding:"11px 24px", borderRadius:10, border:"none", background:`linear-gradient(135deg,${t.accent},${t.accentD})`, color:"#fff", fontSize:14, fontWeight:600, cursor:"pointer" }}>
+            Unlock more sessions
+          </button>
+          <p style={{ fontSize:11, color:t.muted, margin:"12px 0 0" }}>Resets on the 1st of every month</p>
+        </div>
       ) : (
         <>
-          {/* Stop generation bar */}
-          <AnimatePresence>
-            {loading && messages.length > 0 && !messages[messages.length-1]?.content && (
-              <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}}
-                style={{ position:"absolute", top:0, left:0, right:0, zIndex:10, display:"flex", alignItems:"center", justifyContent:"center", padding:"8px 16px", background:"rgba(15,14,28,0.95)", borderBottom:"1px solid rgba(107,53,232,0.15)", backdropFilter:"blur(8px)" }}>
-                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <motion.div style={{ display:"flex", gap:4 }}>
-                    {[0,1,2].map(i => (
-                      <motion.span key={i} style={{ width:5, height:5, borderRadius:"50%", background:"#7C3AED", display:"block" }}
-                        animate={{ y:[0,-5,0] }} transition={{ duration:0.7, repeat:Infinity, delay:i*0.15 }}/>
-                    ))}
-                  </motion.div>
-                  <span style={{ fontSize:12, color:"rgba(200,190,255,0.6)" }}>KIRO is thinking</span>
-                  <button onClick={() => abortRef.current?.abort()}
-                    style={{ padding:"3px 12px", borderRadius:8, border:"1px solid rgba(239,68,68,0.3)", background:"rgba(239,68,68,0.1)", color:"#ef4444", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", marginLeft:8 }}>
-                    ⏹ Stop
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Messages area */}
-          <div style={{ flex:1, overflowY:"auto", padding:"20px 16px", position:"relative", zIndex:1, minHeight:0 }}>
+          {/* Messages */}
+          <div style={{ flex:1, overflowY:"auto", padding:"20px 16px", minHeight:0, position:"relative" }}>
             {messages.length === 0 ? (
-              <KIROWelcome storeId={storeId||""} onSend={send}/>
+              <Welcome name={user?.name||"there"} storeData={storeData} onSend={send} t={t}/>
             ) : (
               messages.map(msg => (
-                <MessageBubble
-                  key={msg.id}
-                  msg={msg}
-                  onApprove={handleApprove}
-                  onDismiss={(action: any) => setMessages(p => p.map(m => ({ ...m, actions:(m.actions||[]).filter(a => a !== action) })))}
-                  onRegenerate={handleRegenerate}
-                  onEdit={handleEdit}
-                  onBookmark={handleBookmark}
-                  onFollowUp={send}
-                  onBranch={handleBranch}
-                />
+                <MsgBubble key={msg.id} msg={msg} onApprove={handleApprove}
+                  onDismiss={a=>setMessages(m=>m.map(x=>({...x,actions:(x.actions||[]).filter(b=>b!==a)})))}
+                  onRate={handleRate} onRegen={handleRegen} t={t}/>
               ))
             )}
             <div ref={bottomRef}/>
           </div>
 
-          {/* Scroll to bottom button — appears when user scrolls up */}
-          <AnimatePresence>
-            {messages.length > 4 && (
-              <motion.button initial={{opacity:0,scale:0.8}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.8}}
-                onClick={() => bottomRef.current?.scrollIntoView({ behavior:"smooth" })}
-                style={{ position:"absolute", bottom:280, right:16, width:32, height:32, borderRadius:"50%", border:"1px solid rgba(107,53,232,0.3)", background:"rgba(15,14,28,0.9)", color:"#A78BFA", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, zIndex:5, backdropFilter:"blur(8px)", boxShadow:"0 4px 12px rgba(0,0,0,0.3)" }}>
-                ↓
-              </motion.button>
-            )}
-          </AnimatePresence>
+          {/* Stop bar */}
+          {loading && (
+            <div style={{ padding:"8px 16px", borderTop:`1px solid ${t.border}`, background:t.surface, display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
+              <Spinner size={14} color={t.accent}/>
+              <span style={{ fontSize:12, color:t.sub, flex:1 }}>KIRO is thinking</span>
+              <button onClick={()=>abortRef.current?.abort()}
+                style={{ padding:"4px 12px", borderRadius:7, border:`1px solid ${t.border}`, background:"transparent", color:t.red, fontSize:12, cursor:"pointer" }}>
+                ⏹ Stop
+              </button>
+            </div>
+          )}
 
-          {/* Panels accessible via ⊕ button in input area — see below */}
-
-          {/* Attachment preview */}
+          {/* Attachment chip */}
           <AnimatePresence>
-            {attachment && (
+            {attach && (
               <motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}}
-                style={{ borderTop:"1px solid rgba(255,255,255,0.055)", padding:"8px 16px", background:"rgba(15,14,28,0.95)", display:"flex", alignItems:"center", gap:10, zIndex:2 }}>
-                {attachment.url ? <img src={attachment.url} alt="" style={{ width:40, height:40, borderRadius:8, objectFit:"cover" }}/> : <span style={{ fontSize:20 }}>📎</span>}
-                <span style={{ fontSize:12, color:"rgba(200,190,255,0.6)", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{attachment.name}</span>
-                <button onClick={() => setAttach(null)}
-                  style={{ width:22, height:22, borderRadius:6, border:"none", background:"rgba(255,255,255,0.08)", color:"rgba(200,190,255,0.5)", cursor:"pointer", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  ×
-                </button>
+                style={{ padding:"6px 14px", borderTop:`1px solid ${t.border}`, background:t.surface, display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+                {attach.type==="image" && attach.url && (
+                  <img src={attach.url} alt="" style={{ width:32, height:32, borderRadius:6, objectFit:"cover" }}/>
+                )}
+                {attach.type!=="image" && <span style={{ fontSize:18 }}>{attach.type==="pdf"?"📄":"📊"}</span>}
+                <span style={{ fontSize:12, color:t.sub, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{attach.name}</span>
+                <button onClick={()=>setAttach(null)} style={{ width:20, height:20, borderRadius:"50%", border:"none", background:t.elevated, color:t.sub, cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>×</button>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Input area — ChatGPT/Claude style */}
-          <div style={{ borderTop:"1px solid rgba(255,255,255,0.04)", padding:"10px 14px 14px", background:"rgba(8,8,17,0.97)", position:"relative", zIndex:2 }}
-            onDragOver={e => e.preventDefault()}
-            onDrop={handleDrop}>
+          {/* Input */}
+          <div style={{ padding:"10px 14px 14px", borderTop:`1px solid ${t.border}`, background:t.surface, flexShrink:0 }}>
+            <div style={{ borderRadius:14, border:`1px solid ${t.border}`, background:t.bg, overflow:"hidden", boxShadow:t.shadow, transition:"border-color 0.15s, box-shadow 0.15s" }}
+              onFocusCapture={e=>{(e.currentTarget as HTMLDivElement).style.borderColor=t.accent;(e.currentTarget as HTMLDivElement).style.boxShadow=`0 0 0 3px ${t.accentBg}`;}}
+              onBlurCapture={e=>{(e.currentTarget as HTMLDivElement).style.borderColor=t.border;(e.currentTarget as HTMLDivElement).style.boxShadow=t.shadow;}}>
 
-            {/* Attachment chips */}
-            <AnimatePresence>
-              {attachment && (
-                <motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}}
-                  style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:8, overflow:"hidden" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, background:"rgba(255,255,255,0.055)", border:"1px solid rgba(107,53,232,0.2)" }}>
-                    <span style={{ fontSize:14 }}>{attachment.type === "image" ? "🖼" : attachment.type === "pdf" ? "📄" : "📊"}</span>
-                    <span style={{ fontSize:12, color:"rgba(200,190,255,0.8)", maxWidth:160, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{attachment.name}</span>
-                    {attachment.size && <span style={{ fontSize:10, color:"rgba(200,190,255,0.4)" }}>{Math.round(attachment.size/1024)}KB</span>}
-                    <button onClick={() => { setAttach(null); setAttachments([]); }}
-                      style={{ width:16, height:16, borderRadius:"50%", border:"none", background:"rgba(255,255,255,0.1)", color:"rgba(200,190,255,0.6)", cursor:"pointer", fontSize:10, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>×</button>
-                  </div>
-                  {attachment.type === "image" && (
-                    <img src={attachment.url} alt="" style={{ height:40, width:40, objectFit:"cover", borderRadius:8, border:"1px solid rgba(107,53,232,0.2)" }}/>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+              <textarea ref={inputRef} value={input}
+                onChange={e=>{ setInput(e.target.value); e.target.style.height="auto"; e.target.style.height=Math.min(e.target.scrollHeight,160)+"px"; }}
+                onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();} }}
+                onPaste={e=>{ const f=e.clipboardData.files?.[0]; if(f){handleFile(f);} }}
+                placeholder="Message KIRO… paste a URL, describe a product, or ask anything"
+                rows={1} style={{ width:"100%", background:"transparent", border:"none", outline:"none", color:t.text, fontSize:14, lineHeight:1.6, resize:"none", padding:"12px 14px 4px", maxHeight:160, overflowY:"auto" }}/>
 
-            {/* Main input box */}
-            <div style={{ borderRadius:16, border:`1px solid ${loading?"rgba(109,40,217,0.4)":"rgba(255,255,255,0.07)"}`, background:"rgba(107,53,232,0.05)", transition:"border-color 0.2s, box-shadow 0.2s" }}
-              onFocus={e => (e.currentTarget.style.boxShadow = "0 0 0 2px rgba(107,53,232,0.15)")}
-              onBlur={e => (e.currentTarget.style.boxShadow = "none")}>
-
-              {/* Textarea */}
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={e => {
-                  setInput(e.target.value);
-                  // Auto-grow
-                  e.target.style.height = "auto";
-                  e.target.style.height = Math.min(e.target.scrollHeight, 180) + "px";
-                }}
-                onKeyDown={e => { if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-                onPaste={handlePaste}
-                 placeholder="Message KIRO... paste a URL, describe a product, ask anything"
-                rows={1}
-                style={{ width:"100%", background:"transparent", border:"none", outline:"none", color:"#F0ECFF", fontSize:14, fontFamily:"'DM Sans',sans-serif", lineHeight:1.6, resize:"none", maxHeight:180, overflowY:"auto", padding:"12px 14px 4px", boxSizing:"border-box" }}
-              />
-
-              {/* Toolbar */}
-              <div style={{ display:"flex", alignItems:"center", gap:4, padding:"6px 10px 8px" }}>
+              {/* Toolbar row */}
+              <div style={{ display:"flex", alignItems:"center", gap:4, padding:"4px 10px 8px" }}>
                 {/* Image upload */}
-                <button onClick={() => { fileRef.current!.accept="image/*"; fileRef.current?.click(); }} disabled={uploading}
-                  title="Upload image"
-                  style={{ width:30, height:30, borderRadius:8, border:"none", background:"transparent", color:"rgba(200,190,255,0.4)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>
-                  🖼
+                <button onClick={()=>{ fileRef.current!.accept="image/*"; fileRef.current?.click(); }} disabled={uploading} title="Upload image"
+                  style={{ width:28, height:28, borderRadius:7, border:"none", background:"transparent", color:t.sub, cursor:"pointer", fontSize:15, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {uploading ? <Spinner size={12} color={t.accent}/> : "🖼"}
                 </button>
                 {/* File upload */}
-                <button onClick={() => { fileRef.current!.accept="image/*,.pdf,.csv,.xlsx"; fileRef.current?.click(); }} disabled={uploading}
-                  title="Attach file (PDF, CSV)"
-                  style={{ width:30, height:30, borderRadius:8, border:"none", background:"transparent", color:"rgba(200,190,255,0.4)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>
-                  {uploading
-                    ? <span style={{ width:12, height:12, border:"2px solid rgba(107,53,232,0.4)", borderTopColor:"#7C3AED", borderRadius:"50%", animation:"spin 0.7s linear infinite", display:"block" }}/>
-                    : "📎"}
+                <button onClick={()=>{ fileRef.current!.accept="image/*,.pdf,.csv"; fileRef.current?.click(); }} disabled={uploading} title="Attach file"
+                  style={{ width:28, height:28, borderRadius:7, border:"none", background:"transparent", color:t.sub, cursor:"pointer", fontSize:15, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  📎
                 </button>
                 {/* Voice */}
-                <button onClick={handleVoice} title={isListening?"Stop recording":"Voice input"}
-                  style={{ width:30, height:30, borderRadius:8, border:"none", background:isListening?"rgba(239,68,68,0.12)":"transparent", color:isListening?"#ef4444":"rgba(200,190,255,0.4)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>
-                  {isListening ? "⏹" : "🎙"}
+                <button onClick={handleVoice} title={listening?"Stop listening":"Voice input"}
+                  style={{ width:28, height:28, borderRadius:7, border:"none", background:listening?`${t.red}15`:"transparent", color:listening?t.red:t.sub, cursor:"pointer", fontSize:15, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {listening ? "⏹" : "🎙"}
                 </button>
                 {/* Generate image */}
-                <button
-                  onClick={() => { if (input.trim()) generateImage(input.trim()); else toast.error("Describe what to generate first"); }}
-                  title="Generate AI image from description"
-                  style={{ padding:"3px 10px", borderRadius:8, border:"1px solid rgba(107,53,232,0.2)", background:"transparent", color:"#A78BFA", cursor:"pointer", fontSize:11, fontWeight:600, fontFamily:"'DM Sans',sans-serif", flexShrink:0 }}>
-                  ✨ Generate image
+                <button onClick={()=>input.trim()?generateImage(input.trim()):toast.error("Describe what to generate")} title="Generate AI image"
+                  style={{ padding:"3px 8px", borderRadius:6, border:`1px solid ${t.border}`, background:"transparent", color:t.accent, cursor:"pointer", fontSize:11, fontWeight:600 }}>
+                  ✨ Image
                 </button>
 
                 <div style={{ flex:1 }}/>
 
-                {/* Character count */}
-                {input.length > 200 && (
-                  <span style={{ fontSize:10, color:"rgba(200,190,255,0.3)", marginRight:6 }}>{input.length}</span>
+                {input.length > 300 && (
+                  <span style={{ fontSize:10, color:t.muted }}>{input.length}</span>
                 )}
 
-                {/* Send / Stop */}
-                <motion.button
-                  onClick={() => loading ? abortRef.current?.abort() : send()}
-                  whileTap={{ scale:0.9 }}
-                  style={{ width:32, height:32, borderRadius:10, border:"none", background: loading ? "rgba(239,68,68,0.15)" : (input.trim() || attachment) ? `linear-gradient(135deg,#8B5CF6,#5B21B6)` : "rgba(255,255,255,0.055)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s", boxShadow: (input.trim()||attachment) && !loading ? "0 2px 12px rgba(107,53,232,0.4)" : "none" }}>
+                {/* Send / stop */}
+                <motion.button onClick={()=>loading?abortRef.current?.abort():send()} whileTap={{scale:0.9}}
+                  style={{ width:32, height:32, borderRadius:9, border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.18s",
+                    background:loading?"rgba(220,38,38,0.12)":(input.trim()||attach)?`linear-gradient(135deg,${t.accent},${t.accentD})`:`${t.accent}18`,
+                    boxShadow:(input.trim()||attach)&&!loading?`0 2px 10px ${t.accent}35`:"none" }}>
                   {loading
-                    ? <span style={{ width:12, height:12, border:"2px solid rgba(239,68,68,0.4)", borderTopColor:"#ef4444", borderRadius:"50%", animation:"spin 0.7s linear infinite", display:"block" }}/>
-                    : <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke={(input.trim()||attachment)?"#fff":"rgba(200,190,255,0.25)"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    ? <Spinner size={12} color={t.red}/>
+                    : <svg width={13} height={13} viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke={(input.trim()||attach)?"#fff":t.accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </motion.button>
               </div>
             </div>
 
-            <p style={{ fontSize:10, color:"rgba(200,190,255,0.15)", textAlign:"center", margin:"6px 0 0" }}>
-              KIRO by DropOS
+            <p style={{ fontSize:10, color:t.muted, textAlign:"center", margin:"6px 0 0" }}>
+              KIRO · Built by Darkweb & DropOS
             </p>
           </div>
         </>
       )}
 
       <input ref={fileRef} type="file" accept="image/*,.pdf,.csv" style={{ display:"none" }}
-        onChange={e => { if(e.target.files?.[0]) handleFile(e.target.files[0]); e.target.value=""; }}/>
+        onChange={e=>{ if(e.target.files?.[0]) handleFile(e.target.files[0]); e.target.value=""; }}/>
     </div>
   );
 }
