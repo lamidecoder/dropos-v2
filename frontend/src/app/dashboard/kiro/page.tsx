@@ -6,6 +6,7 @@ import { api } from "../../../lib/api";
 import { useAuthStore } from "../../../store/auth.store";
 import { useTheme } from "../../../components/layout/DashboardLayout";
 import KIROChat from "../../../components/kai/KIROChat";
+import { KIROOnboarding, useKIROOnboarding } from "../../../components/kai/KIROOnboarding";
 import {
   Plus, MessageSquare, Trash2, Pin, Search,
   MoreHorizontal, ChevronLeft, Zap, Edit2
@@ -51,6 +52,7 @@ export default function KIROPage() {
   const [search,      setSearch]      = useState("");
   const [editingId,   setEditingId]   = useState<string | null>(null);
   const [editTitle,   setEditTitle]   = useState("");
+  const { show: showOnboarding, complete: completeOnboarding } = useKIROOnboarding(storeId || "");
 
   // Morning brief — loads once per session
   const { data: briefData } = useQuery({

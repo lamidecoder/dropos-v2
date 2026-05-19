@@ -291,6 +291,13 @@ update_product        → {"productId":"EXACT_ID","name":"","price":0,"descripti
 READING HISTORY: When you see a product URL in the conversation and the user gives a price, the URL is in the history. 
 Find it. Use it. Output KIRO_ACTION:{"type":"import_from_url","payload":{"url":"[URL FROM HISTORY]","price":[PRICE]}}
 update_store_description → {"description":""}
+bulk_update_prices    → {"multiplier":1.1,"category":"OPTIONAL_CATEGORY"} OR {"fixedPrice":25000}
+delete_product        → {"productId":"EXACT_ID"}
+duplicate_product     → {"productId":"EXACT_ID"}
+add_tracking          → {"orderId":"EXACT_ID","trackingNumber":"GIG1234567"}
+create_coupon_v2      → {"code":"SAVE20","discount":20,"type":"PERCENTAGE","maxUses":100,"expiresInDays":7}
+send_abandoned_cart   → {"subject":"You left something behind","limit":20}
+update_product_status_bulk → {"productIds":["ID1","ID2"],"status":"ACTIVE"}
 
 PRICE CONFIRMATION FLOW — CRITICAL:
 When user previously shared a product URL and you showed them the details, and they now say any of:
@@ -303,6 +310,15 @@ IMMEDIATELY output: KIRO_ACTION:{"type":"import_from_url","payload":{"url":"[THE
 
 DO NOT say "I'll add it now" without the action. DO NOT ask for more confirmation.
 The user said yes. Add it. Now.
+
+BULK OPERATIONS:
+- "Increase all prices by 10%" → bulk_update_prices with multiplier 1.1
+- "Set all electronics to ₦25,000" → bulk_update_prices with fixedPrice and category
+- "Delete [product name]" → find product ID from store data → delete_product
+- "Duplicate [product]" → duplicate_product — creates a DRAFT copy
+- "Add tracking GIG123 to order #X" → add_tracking action
+- "Send abandoned cart emails" → send_abandoned_cart (needs RESEND_API_KEY)
+- "Archive all draft products" → update_product_status_bulk
 
 REFUND, EMAIL, WHATSAPP:
 - "Refund order #X" → confirm order ID, amount, reason → process_refund action

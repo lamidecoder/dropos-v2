@@ -748,6 +748,107 @@ export async function executeAction(req: Request, res: Response) {
           break;
         }
 
+        case "bulk_update_prices": {
+          const mult = Number(action.payload.multiplier || 1);
+          const cat  = action.payload.category || null;
+          const where: any = { storeId };
+          if (cat) where.category = cat;
+          const products = await prisma.product.findMany({ where, select: { id:true, price:true } });
+          let updated = 0;
+          for (const p of products) {
+            const newPrice = action.payload.fixedPrice
+              ? Number(action.payload.fixedPrice)
+              : Math.round(p.price * mult);
+            await prisma.product.update({ where:{ id:p.id }, data:{ price:newPrice } });
+            updated++;
+          }
+          result = { message:`Updated ${updated} products` };
+          break;
+        }
+
+        case "delete_product": {
+          result = await prisma.product.delete({ where:{ id:action.payload.productId } });
+          break;
+        }
+
+        case "duplicate_product": {
+          const orig = await prisma.product.findUnique({ where:{ id:action.payload.productId } });
+          if (!orig) throw new Error("Product not found");
+          const { id:_id, createdAt:_c, updatedAt:_u, slug:_s, ...rest } = orig as any;
+          const newSlug = `${_s}-copy-${Date.now().toString(36)}`;
+          result = await prisma.product.create({ data:{ ...rest, slug:newSlug, name:`${orig.name} (Copy)`, status:"DRAFT" as any } });
+          break;
+        }
+
+        case "add_tracking": {
+          result = await prisma.order.update({
+            where: { id: action.payload.orderId },
+            data:  { trackingNumber: action.payload.trackingNumber, status:"SHIPPED" as any },
+          });
+          break;
+        }
+
+        case "create_collection": {
+          result = await (prisma.productCategory as any)?.create({
+            data:{ storeId, name:action.payload.name, description:action.payload.description || "", slug:action.payload.name.toLowerCase().replace(/[^a-z0-9]+/g,"-") },
+          }) || { message:`Collection "${action.payload.name}" noted — create it in the Products section.` };
+          break;
+        }
+
+        case "create_coupon_v2": {
+          const expiry = action.payload.expiresInDays
+            ? new Date(Date.now() + Number(action.payload.expiresInDays) * 86400000)
+            : action.payload.expiresAt ? new Date(action.payload.expiresAt) : null;
+          result = await prisma.coupon.create({
+            data:{
+              storeId,
+              code:         (action.payload.code || "KIRO" + Date.now().toString(36).slice(-4).toUpperCase()).toUpperCase(),
+              discountValue: Number(action.payload.discount || action.payload.discountValue || 10),
+              discountType: (action.payload.type || "PERCENTAGE") as any,
+              maxUses:      Number(action.payload.maxUses || 100),
+              expiresAt:    expiry,
+            },
+          });
+          break;
+        }
+
+        case "send_abandoned_cart": {
+          const store3 = await prisma.store.findUnique({ where:{ id:storeId }, select:{ name:true } });
+          const resendKey = process.env.RESEND_API_KEY;
+          if (!resendKey) throw new Error("Email sending not configured. Add RESEND_API_KEY to your environment.");
+          const carts = await (prisma.abandonedCart as any)?.findMany({
+            where:{ storeId, recoveryEmailSent:false },
+            take: action.payload.limit || 20,
+          }) || [];
+          let sent = 0;
+          for (const cart of carts) {
+            if (!cart.customerEmail) continue;
+            await fetch("https://api.resend.com/emails", {
+              method:"POST",
+              headers:{ Authorization:`Bearer ${resendKey}`, "Content-Type":"application/json" },
+              body: JSON.stringify({
+                from:`${store3?.name || "DropOS"} <hello@droposhq.com>`,
+                to:  [cart.customerEmail],
+                subject: action.payload.subject || `You left something behind 👀`,
+                html: action.payload.body || `<p>Hi there,</p><p>You left items in your cart at ${store3?.name}. Come back and complete your order.</p>`,
+              }),
+            });
+            await (prisma.abandonedCart as any)?.update({ where:{id:cart.id}, data:{recoveryEmailSent:true} });
+            sent++;
+          }
+          result = { message:`Sent recovery emails to ${sent} customers` };
+          break;
+        }
+
+        case "update_product_status_bulk": {
+          const { productIds, status } = action.payload;
+          result = await prisma.product.updateMany({
+            where:{ id:{ in: productIds }, storeId },
+            data:{ status: status as any },
+          });
+          break;
+        }
+
         default:
           result = { note: `Action ${action.type} logged for manual execution` };
       }
