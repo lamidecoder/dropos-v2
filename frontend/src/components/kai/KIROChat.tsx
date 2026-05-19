@@ -3,6 +3,7 @@ import { useConnectionStatus } from "../../hooks/useConnectionStatus";
 // ─────────────────────────────────────────────────────────────────────────────
 // KIRO Chat — Complete Rebuild
 import { URLImporter, SkillsPanel, GoalsPanel, PulsePanel, MemoryPanel } from "./KIROPanels";
+import { KIROWelcome } from "./KIROWelcome";
 // Premium commerce AI interface for DropOS
 // Features: response navigation, edit messages, branch, follow-ups, rate limit
 // ─────────────────────────────────────────────────────────────────────────────
@@ -363,12 +364,14 @@ function MessageBubble({ msg, onApprove, onDismiss, onRegenerate, onEdit, onBook
 
         {/* Main bubble */}
         <div style={{
-          padding: isUser ? "10px 16px" : "2px 0",
-          borderRadius: isUser ? "18px 18px 4px 18px" : "0",
-          background: isUser ? `linear-gradient(135deg,${P.v500},${P.v600})` : "transparent",
+          padding: isUser ? "11px 18px" : "0",
+          borderRadius: isUser ? "20px 20px 4px 20px" : "0",
+          background: isUser ? `linear-gradient(135deg, #7C3AED, #5B21B6)` : "transparent",
           color: isUser ? "#fff" : "#F0ECFF",
           fontSize: 14,
-          lineHeight: 1.7,
+          lineHeight: 1.75,
+          fontFamily: "'Sora', sans-serif",
+          boxShadow: isUser ? "0 4px 16px rgba(124,58,237,0.35)" : "none",
         }}>
 
           {/* Streaming */}
@@ -1005,14 +1008,16 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
   const plan = user?.subscription?.plan || "FREE";
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", background:"#07050F", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", position:"relative", overflow:"hidden" }}>
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", background:"#060412", fontFamily:"'Sora','Inter',-apple-system,sans-serif", position:"relative", overflow:"hidden" }}>
 
       {/* Ambient background glow */}
       <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:0 }}>
-        <div style={{ position:"absolute", top:-200, left:"50%", transform:"translateX(-50%)", width:600, height:600, borderRadius:"50%", background:"radial-gradient(circle,rgba(107,53,232,0.12) 0%,transparent 70%)" }}/>
+        <div style={{ position:"absolute", top:"-20%", left:"30%", width:"60vw", height:"60vw", borderRadius:"50%", background:"radial-gradient(circle,rgba(91,33,182,0.2) 0%,transparent 65%)", filter:"blur(40px)" }}/>
+        <div style={{ position:"absolute", bottom:"-10%", right:"20%", width:"50vw", height:"50vw", borderRadius:"50%", background:"radial-gradient(circle,rgba(124,58,237,0.12) 0%,transparent 65%)", filter:"blur(60px)" }}/>
       </div>
 
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800;900&display=swap');
         @keyframes spin { to { transform:rotate(360deg); } }
         * { box-sizing:border-box; }
         ::-webkit-scrollbar { width:4px; }
@@ -1050,11 +1055,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
           {/* Messages area */}
           <div style={{ flex:1, overflowY:"auto", padding:"20px 16px", position:"relative", zIndex:1 }}>
             {messages.length === 0 ? (
-              <EmptyState
-                greeting={greeting?.greeting}
-                contextLine={greeting?.contextLine}
-                storeData={storeData}
-                onSend={send}/>
+              <KIROWelcome storeId={storeId||""} onSend={send}/>
             ) : (
               messages.map(msg => (
                 <MessageBubble
@@ -1102,7 +1103,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
           </AnimatePresence>
 
           {/* Input area — ChatGPT/Claude style */}
-          <div style={{ borderTop:"1px solid rgba(107,53,232,0.08)", padding:"10px 14px 14px", background:"rgba(7,5,15,0.97)", position:"relative", zIndex:2 }}
+          <div style={{ borderTop:"1px solid rgba(107,53,232,0.08)", padding:"10px 14px 14px", background:"rgba(6,4,18,0.97)", position:"relative", zIndex:2 }}
             onDragOver={e => e.preventDefault()}
             onDrop={handleDrop}>
 
@@ -1126,7 +1127,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
             </AnimatePresence>
 
             {/* Main input box */}
-            <div style={{ borderRadius:16, border:`1px solid rgba(107,53,232,${loading?".35":".18"})`, background:"rgba(107,53,232,0.05)", transition:"border-color 0.2s, box-shadow 0.2s" }}
+            <div style={{ borderRadius:16, border:`1px solid rgba(124,58,237,${loading?".4":".2"})`, background:"rgba(107,53,232,0.05)", transition:"border-color 0.2s, box-shadow 0.2s" }}
               onFocus={e => (e.currentTarget.style.boxShadow = "0 0 0 2px rgba(107,53,232,0.15)")}
               onBlur={e => (e.currentTarget.style.boxShadow = "none")}>
 
@@ -1142,7 +1143,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
                 }}
                 onKeyDown={e => { if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                 onPaste={handlePaste}
-                placeholder="Message KIRO... paste a URL, describe a product, ask anything"
+                 placeholder="Message KIRO... paste a URL, describe a product, ask anything"
                 rows={1}
                 style={{ width:"100%", background:"transparent", border:"none", outline:"none", color:"#F0ECFF", fontSize:14, fontFamily:"inherit", lineHeight:1.6, resize:"none", maxHeight:180, overflowY:"auto", padding:"12px 14px 4px", boxSizing:"border-box" }}
               />
@@ -1187,7 +1188,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
                 <motion.button
                   onClick={() => loading ? abortRef.current?.abort() : send()}
                   whileTap={{ scale:0.9 }}
-                  style={{ width:32, height:32, borderRadius:10, border:"none", background: loading ? "rgba(239,68,68,0.15)" : (input.trim() || attachment) ? `linear-gradient(135deg,${P.v500},${P.v600})` : "rgba(107,53,232,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s", boxShadow: (input.trim()||attachment) && !loading ? "0 2px 12px rgba(107,53,232,0.4)" : "none" }}>
+                  style={{ width:32, height:32, borderRadius:10, border:"none", background: loading ? "rgba(239,68,68,0.15)" : (input.trim() || attachment) ? `linear-gradient(135deg,#8B5CF6,#5B21B6)` : "rgba(107,53,232,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s", boxShadow: (input.trim()||attachment) && !loading ? "0 2px 12px rgba(107,53,232,0.4)" : "none" }}>
                   {loading
                     ? <span style={{ width:12, height:12, border:"2px solid rgba(239,68,68,0.4)", borderTopColor:"#ef4444", borderRadius:"50%", animation:"spin 0.7s linear infinite", display:"block" }}/>
                     : <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke={(input.trim()||attachment)?"#fff":"rgba(200,190,255,0.25)"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>}
@@ -1196,7 +1197,7 @@ export default function KIROChat({ storeId: propStoreId, initialMessage, convers
             </div>
 
             <p style={{ fontSize:10, color:"rgba(200,190,255,0.15)", textAlign:"center", margin:"6px 0 0" }}>
-              ⌘K to open KIRO anywhere
+              KIRO · Darkweb & DropOS · ⌘K
             </p>
           </div>
         </>
