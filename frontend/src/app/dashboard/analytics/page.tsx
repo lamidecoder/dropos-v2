@@ -87,15 +87,16 @@ export default function AnalyticsPage() {
   });
 
   const chartData = analytics?.chart || generateDemo(Math.min(days, 30));
-  const stats = analytics?.summary || { revenue:0, orders:0, customers:0, avgOrder:0, ltv:0, convRate:0 };
-  const isDemo = !analytics;
+  const hasData  = !!analytics?.summary;
+  const stats    = analytics?.summary || {};
+  const isDemo   = !hasData;
 
   return (
     <div className="max-w-6xl mx-auto">
       <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} className="flex items-start justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{color:t.text}}>Analytics</h1>
-          {isDemo && <span className="text-xs px-2 py-0.5 rounded-full" style={{background:t.faint,color:t.muted}}>Demo data</span>}
+          {isDemo && <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{background:"rgba(245,158,11,0.1)",color:"#D97706",border:"1px solid rgba(245,158,11,0.2)"}}>⚠ Sample data — make your first sale to see real numbers</span>}
         </div>
         <div className="flex items-center gap-2">
           <div className="flex p-1 rounded-xl gap-1 overflow-x-auto" style={{background:t.faint,border:`1px solid ${t.border}`}}>

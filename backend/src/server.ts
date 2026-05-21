@@ -4,6 +4,7 @@ import "express-async-errors";
 import app from "./app";
 import { prisma } from "./config/database";
 import { logger } from "./utils/logger";
+import "./jobs/kai.jobs";  // KIRO autopilot — pulse, market, reviews, price-drop
 
 const PORT = Number(process.env.PORT) || 5000;
 
