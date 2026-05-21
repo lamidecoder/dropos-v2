@@ -452,6 +452,7 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
   const [attach,    setAttach]    = useState<any>(null);
   const [uploading, setUploading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [voiceInterim, setVoiceInterim] = useState("");
   const [rateLimit, setRateLimit] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -498,15 +499,39 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
   // ── voice ──────────────────────────────────────────────────────────────────
   const handleVoice = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { toast.error("Voice works best in Chrome"); return; }
-    if (listening) { recogRef.current?.stop(); setListening(false); return; }
-    const r = new SR(); r.lang = "en-NG"; r.interimResults = true; r.continuous = false;
+    if (!SR) { toast.error("Voice works best in Chrome or Edge"); return; }
+    if (listening) {
+      recogRef.current?.stop();
+      setListening(false);
+      setVoiceInterim("");
+      return;
+    }
+    const r = new SR();
+    r.lang = "en-NG";
+    r.interimResults = true;
+    r.continuous = true;
     r.onresult = (e: any) => {
-      const text = Array.from(e.results).map((x: any) => x[0].transcript).join("");
-      setInput(text);
+      let interim = "";
+      let final   = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      // Show live interim in the bubble
+      setVoiceInterim(interim);
+      // Append final text to input
+      if (final) setInput(prev => (prev ? prev + " " + final : final).trim());
     };
-    r.onend = () => setListening(false);
-    r.start(); recogRef.current = r; setListening(true);
+    r.onerror = (e: any) => {
+      if (e.error !== "aborted") toast.error("Voice error — try again");
+      setListening(false);
+      setVoiceInterim("");
+    };
+    r.onend = () => { setListening(false); setVoiceInterim(""); };
+    r.start();
+    recogRef.current = r;
+    setListening(true);
   };
 
   // ── file upload ────────────────────────────────────────────────────────────
@@ -649,6 +674,7 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         @keyframes ks { to { transform: rotate(360deg); } }
+        @keyframes voiceBar { 0%,100%{transform:scaleY(1);opacity:.5} 50%{transform:scaleY(2);opacity:1} }
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: ${t.scrollbar}; border-radius: 2px; }
@@ -736,11 +762,29 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
                   style={{ width:28, height:28, borderRadius:7, border:"none", background:"transparent", color:t.sub, cursor:"pointer", fontSize:15, display:"flex", alignItems:"center", justifyContent:"center" }}>
                   📎
                 </button>
-                {/* Voice */}
-                <button onClick={handleVoice} title={listening?"Stop listening":"Voice input"}
-                  style={{ width:28, height:28, borderRadius:7, border:"none", background:listening?`${t.red}15`:"transparent", color:listening?t.red:t.sub, cursor:"pointer", fontSize:15, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  {listening ? "⏹" : "🎙"}
-                </button>
+                {/* Voice — animated bars + live transcript */}
+                <div style={{ position:"relative", display:"flex", alignItems:"center", gap:4 }}>
+                  {listening && voiceInterim && (
+                    <div style={{ position:"absolute", bottom:"calc(100% + 8px)", right:0, background:t.surface, border:`1px solid ${t.border}`, borderRadius:10, padding:"7px 12px", fontSize:12, color:t.text, whiteSpace:"nowrap", maxWidth:220, overflow:"hidden", textOverflow:"ellipsis", boxShadow:t.shadow, zIndex:20, pointerEvents:"none" }}>
+                      <span style={{ color:t.muted, fontSize:10, display:"block", marginBottom:2 }}>Listening…</span>
+                      {voiceInterim}
+                    </div>
+                  )}
+                  {listening && (
+                    <div style={{ display:"flex", alignItems:"center", gap:2 }}>
+                      {[0,1,2,3,4].map(i => (
+                        <div key={i} style={{ width:3, height:14, borderRadius:99, background:t.red, animation:`voiceBar 0.6s ease-in-out ${i*0.1}s infinite`, opacity:0.85 }}/>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={handleVoice} title={listening ? "Stop recording" : "Voice input"}
+                    style={{ width:30, height:30, borderRadius:8, border:`1px solid ${listening ? t.red : t.border}`, background:listening ? `${t.red}15` : "transparent", color:listening ? t.red : t.sub, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s", flexShrink:0 }}>
+                    {listening
+                      ? <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                      : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    }
+                  </button>
+                </div>
                 {/* Generate image */}
                 <button onClick={()=>input.trim()?generateImage(input.trim()):toast.error("Describe what to generate")} title="Generate AI image"
                   style={{ padding:"3px 8px", borderRadius:6, border:`1px solid ${t.border}`, background:"transparent", color:t.accent, cursor:"pointer", fontSize:11, fontWeight:600 }}>

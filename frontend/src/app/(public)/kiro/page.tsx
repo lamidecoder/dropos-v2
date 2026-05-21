@@ -624,7 +624,16 @@ export default function KIROPage() {
 
       {/* key={sessionId} forces full remount on new chat */}
       <div style={{flex:1,overflow:"hidden",minHeight:0}} key={sessionId}>
-        <KIROChatFull storeId={storeId}/>
+        <KIROChatFull
+          storeId={storeId}
+          conversationId={history.find(h=>h.id===sessionId)?.id === sessionId && sessionId.length > 8 ? sessionId : undefined}
+          onConversationCreated={(convId) => {
+            // Backend returned a real conversationId — save it as the session
+            pushHist(convId, "KIRO conversation");
+            setSessionId(convId);
+            refreshHist();
+          }}
+        />
       </div>
 
       {showAuth && <AuthModal T={T} onClose={()=>setShowAuth(false)} onSuccess={handleAuth}/>}
