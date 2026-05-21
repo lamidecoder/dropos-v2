@@ -2538,10 +2538,10 @@ function NovaTemplate({ store, products = [], search, onSearch, category, onCate
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
         @keyframes flicker{0%,100%{opacity:1}92%{opacity:1}94%{opacity:0.3}96%{opacity:1}98%{opacity:0.5}}
         @keyframes scan{0%{background-position:0 0}100%{background-position:0 100vh}}
-        @keyframes glow{0%,100%{box-shadow:0 0 8px ${store.primaryColor||"#BF5AF2"},0 0 24px ${store.primaryColor||"#BF5AF2"}30}50%{box-shadow:0 0 16px ${store.primaryColor||"#BF5AF2"},0 0 48px ${store.primaryColor||"#BF5AF2"}50}}
+        @keyframes glow{0%,100%{box-shadow:0 0 8px ${brand},0 0 24px ${brand}30}50%{box-shadow:0 0 16px ${brand},0 0 48px ${brand}50}}
         .nova-card{transition:all 0.3s;border:1px solid rgba(191,90,242,0.1)}
-        .nova-card:hover{border-color:${store.primaryColor||"#BF5AF2"};transform:translateY(-4px);animation:glow 2s ease-in-out infinite}
-        .nova-btn{background:linear-gradient(135deg,${store.primaryColor||"#BF5AF2"},#7F33D3);border:none;color:#fff;cursor:pointer;font-family:inherit;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;transition:all 0.2s}
+        .nova-card:hover{border-color:${brand};transform:translateY(-4px);animation:glow 2s ease-in-out infinite}
+        .nova-btn{background:linear-gradient(135deg,${brand},#7F33D3);border:none;color:#fff;cursor:pointer;font-family:inherit;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;transition:all 0.2s}
         .nova-btn:hover{opacity:0.9;box-shadow:0 0 32px rgba(191,90,242,0.5)}
         .glitch{animation:flicker 0.1s 2}
       `}</style>
@@ -2624,7 +2624,7 @@ function NovaTemplate({ store, products = [], search, onSearch, category, onCate
           <span style={{fontSize:11,color:brand,fontFamily:"monospace",letterSpacing:"0.08em"}}>[{products.length} ITEMS]</span>
         </div>
 
-        <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw","220px"},1fr))`,gap:16}}>
+        <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"220px"},1fr))`,gap:16}}>
           {isLoading?Array.from({length:8}).map((_,i)=>(
             <div key={i} style={{borderRadius:12,background:"rgba(191,90,242,0.04)",aspectRatio:"1",animation:"pulse 1.5s infinite",border:"1px solid rgba(191,90,242,0.08)"}}/>
           )):products.map(p=>{
@@ -2886,7 +2886,7 @@ function KidsTemplate({ store, products = [], search, onSearch, category, onCate
           <p style={{fontSize:14,color:"rgba(26,26,46,0.5)",margin:0,fontWeight:600}}>Kids go crazy for these!</p>
         </div>
 
-        <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw","220px"},1fr))`,gap:20}}>
+        <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"220px"},1fr))`,gap:20}}>
           {isLoading?Array.from({length:8}).map((_,i)=>(
             <div key={i} style={{borderRadius:20,background:"rgba(255,107,157,0.06)",aspectRatio:"1",animation:"pulse 1.5s infinite"}}/>
           )):products.map((p,idx)=>{
