@@ -234,9 +234,11 @@ function ActionCard({ action, onApprove, onDismiss, t }: { action: Action; onApp
 }
 
 // ── Message bubble ─────────────────────────────────────────────────────────────
-function MsgBubble({ msg, onApprove, onDismiss, onRate, onRegen, t }: {
+function MsgBubble({ msg, onApprove, onDismiss, onRate, onRegen, onPin, isPinned, onEdit, t }: {
   msg: Msg; onApprove:(a:Action)=>void; onDismiss:(a:Action)=>void;
-  onRate:(id:string,v:"up"|"down")=>void; onRegen:(id:string)=>void; t: typeof T.light;
+  onRate:(id:string,v:"up"|"down")=>void; onRegen:(id:string)=>void;
+  onPin:(id:string)=>void; isPinned:boolean; onEdit:(id:string,txt:string)=>void;
+  t: typeof T.light;
 }) {
   const [show, setShow] = useState(false);
   const isUser = msg.role === "user";
@@ -308,6 +310,18 @@ function MsgBubble({ msg, onApprove, onDismiss, onRate, onRegen, t }: {
                   {icon}
                 </button>
               ))}
+              {/* Pin */}
+              <button title={isPinned?"Unpin":"Pin message"} onClick={()=>onPin(msg.id)}
+                style={{ width:24, height:24, borderRadius:6, border:`1px solid ${isPinned?t.accent:t.border}`, background:isPinned?`${t.accent}18`:t.surface, color:isPinned?t.accent:t.sub, cursor:"pointer", fontSize:11, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                📌
+              </button>
+              {/* Edit (user messages only) */}
+              {isUser && (
+                <button title="Edit message" onClick={()=>onEdit(msg.id,text)}
+                  style={{ width:24, height:24, borderRadius:6, border:`1px solid ${t.border}`, background:t.surface, color:t.sub, cursor:"pointer", fontSize:11, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  ✏️
+                </button>
+              )}
               {!isUser && (
                 <button title="Share to WhatsApp"
                   onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(text.slice(0,500))}`, "_blank")}
@@ -454,13 +468,24 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
   const [uploading, setUploading] = useState(false);
   const [listening, setListening] = useState(false);
   const [voiceInterim, setVoiceInterim] = useState("");
-  const [rateLimit, setRateLimit] = useState(false);
+  const [rateLimit,    setRateLimit]    = useState(false);
+  const [showSearch,   setShowSearch]   = useState(false);
+  const [searchQuery,  setSearchQuery]  = useState("");
+  const [pinnedMsgs,   setPinnedMsgs]   = useState<string[]>([]);
+  const [showPinned,   setShowPinned]   = useState(false);
+  const [showScrollBtn,setShowScrollBtn]= useState(false);
+  const [editingId,    setEditingId]    = useState<string|null>(null);
+  const [editText,     setEditText]     = useState("");
+  const [slashMenu,    setSlashMenu]    = useState(false);
+  const [suggestions,  setSuggestions]  = useState<string[]>([]);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLTextAreaElement>(null);
   const abortRef  = useRef<AbortController | null>(null);
   const fileRef   = useRef<HTMLInputElement>(null);
-  const recogRef  = useRef<any>(null);
+  const recogRef   = useRef<any>(null);
+  const msgListRef  = useRef<HTMLDivElement>(null);
+  const searchRef   = useRef<HTMLInputElement>(null);
 
   const t = T[mode];
 
@@ -496,6 +521,42 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
         if (msgs.length) setMessages(msgs);
       }).catch(() => {});
   }, [initConvId]);
+
+  // ── keyboard shortcuts ─────────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey||e.ctrlKey) && e.key==="k") { e.preventDefault(); setShowSearch(s=>!s); setTimeout(()=>searchRef.current?.focus(),80); }
+      if (e.key==="Escape") { setShowSearch(false); setSlashMenu(false); setEditingId(null); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  // ── scroll-to-bottom detector ──────────────────────────────────────────────
+  useEffect(() => {
+    const el = msgListRef.current;
+    if (!el) return;
+    const handler = () => setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 120);
+    el.addEventListener("scroll", handler);
+    return () => el.removeEventListener("scroll", handler);
+  }, []);
+
+  // ── smart follow-up suggestions after KIRO responds ───────────────────────
+  useEffect(() => {
+    const last = messages[messages.length-1];
+    if (!last || last.role !== "assistant" || last.streaming) { setSuggestions([]); return; }
+    const t = last.content.toLowerCase();
+    if (t.includes("product") || t.includes("import"))
+      setSuggestions(["Write ad copy for this","Set a price for it","Find similar products"]);
+    else if (t.includes("order") || t.includes("fulfill"))
+      setSuggestions(["How do I contact the supplier?","Mark as fulfilled","Show pending orders"]);
+    else if (t.includes("revenue") || t.includes("sales") || t.includes("analytics"))
+      setSuggestions(["What should I focus on today?","Which products are top sellers?","Create a flash sale"]);
+    else if (t.includes("ad") || t.includes("copy") || t.includes("tiktok"))
+      setSuggestions(["Make a WhatsApp version","Make it shorter","Generate an image for it"]);
+    else
+      setSuggestions([]);
+  }, [messages]);
 
   // ── voice ──────────────────────────────────────────────────────────────────
   const handleVoice = () => {
@@ -534,6 +595,16 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
     recogRef.current = r;
     setListening(true);
   };
+
+  // ── slash commands ────────────────────────────────────────────────────────
+  const SLASH_CMDS = [
+    { cmd:"/import",   label:"Import product",  prompt:"I want to import a product. Paste the URL:" },
+    { cmd:"/sale",     label:"Flash sale",      prompt:"Help me set up a flash sale right now." },
+    { cmd:"/ad",       label:"Write ad copy",   prompt:"Write high-converting ad copy for my top product." },
+    { cmd:"/research", label:"Market research", prompt:"What products are trending in my market this week?" },
+    { cmd:"/plan",     label:"Growth plan",     prompt:"Give me a 5-step plan to grow my store this month." },
+    { cmd:"/orders",   label:"Pending orders",  prompt:"Show me all pending orders that need action." },
+  ];
 
   // ── file upload ────────────────────────────────────────────────────────────
   const handleFile = async (file: File) => {
@@ -702,19 +773,71 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
         </div>
       ) : (
         <>
+          {/* ── Search bar ── */}
+          {showSearch && (
+            <div style={{ padding:"8px 14px", borderBottom:`1px solid ${t.border}`, background:t.surface, display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={t.muted} strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input ref={searchRef} value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
+                placeholder="Search conversation…"
+                style={{ flex:1, background:"transparent", border:"none", outline:"none", fontSize:13, color:t.text, fontFamily:"inherit" }}/>
+              {searchQuery && <button onClick={()=>setSearchQuery("")} style={{ background:"none", border:"none", color:t.muted, cursor:"pointer", fontSize:12 }}>✕</button>}
+              <button onClick={()=>{setShowSearch(false);setSearchQuery("");}} style={{ background:"none", border:"none", color:t.muted, cursor:"pointer", fontSize:11 }}>Close</button>
+            </div>
+          )}
+
+          {/* ── Pinned messages panel ── */}
+          {showPinned && pinnedMsgs.length > 0 && (
+            <div style={{ padding:"10px 14px", borderBottom:`1px solid ${t.border}`, background:t.surface, maxHeight:140, overflowY:"auto", flexShrink:0 }}>
+              <p style={{ fontSize:11, fontWeight:700, color:t.muted, marginBottom:6, textTransform:"uppercase", letterSpacing:"0.07em" }}>📌 Pinned</p>
+              {messages.filter(m=>pinnedMsgs.includes(m.id)).map(m=>(
+                <div key={m.id} style={{ fontSize:12, color:t.text, padding:"5px 0", borderBottom:`1px solid ${t.border}`, lineHeight:1.5 }}>
+                  {cleanText(m.content).slice(0,120)}{m.content.length>120?"…":""}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Messages */}
-          <div style={{ flex:1, overflowY:"auto", padding:"20px 16px", minHeight:0, position:"relative" }}>
+          <div ref={msgListRef} style={{ flex:1, overflowY:"auto", padding:"20px 16px", minHeight:0, position:"relative" }}>
             {messages.length === 0 ? (
               <Welcome name={user?.name||"there"} storeData={storeData} onSend={send} t={t}/>
             ) : (
-              messages.map(msg => (
+              messages
+                .filter(m => !searchQuery || m.content.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map(msg => (
                 <MsgBubble key={msg.id} msg={msg} onApprove={handleApprove}
                   onDismiss={a=>setMessages(m=>m.map(x=>({...x,actions:(x.actions||[]).filter(b=>b!==a)})))}
-                  onRate={handleRate} onRegen={handleRegen} t={t}/>
+                  onRate={handleRate} onRegen={handleRegen}
+                  onPin={(id)=>setPinnedMsgs(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id])}
+                  isPinned={pinnedMsgs.includes(msg.id)}
+                  onEdit={(id,txt)=>{setEditingId(id);setEditText(txt);inputRef.current?.focus();}}
+                  t={t}/>
               ))
             )}
             <div ref={bottomRef}/>
           </div>
+
+          {/* ── Scroll to bottom ── */}
+          {showScrollBtn && (
+            <button onClick={()=>bottomRef.current?.scrollIntoView({behavior:"smooth"})}
+              style={{ position:"absolute", bottom:80, right:18, width:32, height:32, borderRadius:"50%", border:`1px solid ${t.border}`, background:t.surface, boxShadow:"0 2px 10px rgba(0,0,0,0.12)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", zIndex:10, color:t.sub }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            </button>
+          )}
+
+          {/* ── Smart follow-up suggestions ── */}
+          {suggestions.length > 0 && !loading && (
+            <div style={{ padding:"8px 14px 4px", display:"flex", gap:6, flexWrap:"wrap", flexShrink:0 }}>
+              {suggestions.map(s=>(
+                <button key={s} onClick={()=>{setInput(s);inputRef.current?.focus();}}
+                  style={{ padding:"5px 11px", borderRadius:99, border:`1px solid ${t.border}`, background:t.surface, color:t.sub, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", whiteSpace:"nowrap" }}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=t.accent;e.currentTarget.style.color=t.accent;}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor=t.border;e.currentTarget.style.color=t.sub;}}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Stop bar */}
           {loading && (
@@ -743,6 +866,34 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
             )}
           </AnimatePresence>
 
+          {/* ── Slash command menu ── */}
+          {slashMenu && (
+            <div style={{ padding:"6px 10px", borderTop:`1px solid ${t.border}`, background:t.surface, display:"flex", flexDirection:"column", gap:2, flexShrink:0 }}>
+              {SLASH_CMDS.filter(c=>input==="/" || c.cmd.includes(input)).map(c=>(
+                <button key={c.cmd} onClick={()=>{setInput(c.prompt);setSlashMenu(false);inputRef.current?.focus();}}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 10px", borderRadius:8, border:"none", background:"transparent", cursor:"pointer", textAlign:"left", fontFamily:"inherit" }}
+                  onMouseEnter={e=>(e.currentTarget.style.background=t.elevated)}
+                  onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
+                  <span style={{ fontSize:11, fontWeight:700, color:t.accent, minWidth:80, fontFamily:"monospace" }}>{c.cmd}</span>
+                  <span style={{ fontSize:12, color:t.sub }}>{c.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ── Edit mode banner ── */}
+          {editingId && (
+            <div style={{ padding:"6px 14px", borderTop:`1px solid ${t.border}`, background:`${t.accent}10`, display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={t.accent} strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span style={{ fontSize:12, color:t.accent, flex:1 }}>Editing message</span>
+              <button onClick={()=>{setEditingId(null);setEditText("");setInput("");}} style={{ background:"none", border:"none", color:t.muted, cursor:"pointer", fontSize:11 }}>Cancel</button>
+              <button onClick={()=>{
+                setMessages(m=>m.map(x=>x.id===editingId?{...x,content:input}:x));
+                setEditingId(null); setEditText(""); setInput("");
+              }} style={{ background:t.accent, border:"none", color:"#fff", cursor:"pointer", fontSize:11, padding:"3px 10px", borderRadius:6, fontFamily:"inherit" }}>Save</button>
+            </div>
+          )}
+
           {/* Input */}
           <div style={{ padding:"10px 14px 14px", borderTop:`1px solid ${t.border}`, background:t.surface, flexShrink:0 }}>
             <div style={{ borderRadius:14, border:`1px solid ${t.border}`, background:t.bg, overflow:"hidden", boxShadow:t.shadow, transition:"border-color 0.15s, box-shadow 0.15s" }}
@@ -750,7 +901,14 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
               onBlurCapture={e=>{(e.currentTarget as HTMLDivElement).style.borderColor=t.border;(e.currentTarget as HTMLDivElement).style.boxShadow=t.shadow;}}>
 
               <textarea ref={inputRef} value={input}
-                onChange={e=>{ setInput(e.target.value); e.target.style.height="auto"; e.target.style.height=Math.min(e.target.scrollHeight,160)+"px"; }}
+                onChange={e=>{
+                  const v = e.target.value;
+                  setInput(v);
+                  e.target.style.height="auto";
+                  e.target.style.height=Math.min(e.target.scrollHeight,160)+"px";
+                  setSlashMenu(v.startsWith("/") && v.length <= 12);
+                  if (editingId) setEditText(v);
+                }}
                 onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();} }}
                 onPaste={e=>{ const f=e.clipboardData.files?.[0]; if(f){handleFile(f);} }}
                 placeholder="Message KIRO… paste a URL, describe a product, or ask anything"
@@ -791,6 +949,29 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
                     }
                   </button>
                 </div>
+                {/* Search */}
+                <button onClick={()=>{setShowSearch(s=>!s);setTimeout(()=>searchRef.current?.focus(),80);}} title="Search chat (⌘K)"
+                  style={{ width:28, height:28, borderRadius:7, border:"none", background:showSearch?`${t.accent}15`:"transparent", color:showSearch?t.accent:t.sub, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                </button>
+                {/* Pinned */}
+                {pinnedMsgs.length > 0 && (
+                  <button onClick={()=>setShowPinned(p=>!p)} title="Pinned messages"
+                    style={{ width:28, height:28, borderRadius:7, border:"none", background:showPinned?`${t.accent}15`:"transparent", color:showPinned?t.accent:t.sub, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <span style={{ position:"absolute", top:2, right:2, width:7, height:7, borderRadius:"50%", background:t.accent, fontSize:8, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>{pinnedMsgs.length}</span>
+                  </button>
+                )}
+                {/* Export */}
+                <button title="Export conversation"
+                  onClick={()=>{
+                    const txt = messages.map(m=>`${m.role==="user"?"You":"KIRO"}: ${cleanText(m.content)}`).join("\n\n");
+                    const blob = new Blob([txt],{type:"text/plain"});
+                    const a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="kiro-chat.txt"; a.click();
+                  }}
+                  style={{ width:28, height:28, borderRadius:7, border:"none", background:"transparent", color:t.sub, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
                 {/* Generate image */}
                 <button onClick={()=>input.trim()?generateImage(input.trim()):toast.error("Describe what to generate")} title="Generate AI image"
                   style={{ padding:"3px 8px", borderRadius:6, border:`1px solid ${t.border}`, background:"transparent", color:t.accent, cursor:"pointer", fontSize:11, fontWeight:600 }}>
