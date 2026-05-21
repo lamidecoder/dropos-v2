@@ -526,6 +526,7 @@ export default function KIROPage() {
   const [history,   setHistory]   = useState<Session[]>([]);
   const [sessionId, setSessionId] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const firstMsgRef = useRef<string>("");
   const T = mode==="light" ? TL : TD;
 
   // History helpers
@@ -627,9 +628,10 @@ export default function KIROPage() {
         <KIROChatFull
           storeId={storeId}
           conversationId={history.find(h=>h.id===sessionId)?.id === sessionId && sessionId.length > 8 ? sessionId : undefined}
+          onFirstMessage={(text) => { firstMsgRef.current = text; }}
           onConversationCreated={(convId) => {
-            // Backend returned a real conversationId — save it as the session
-            pushHist(convId, "KIRO conversation");
+            const title = firstMsgRef.current || "KIRO conversation";
+            pushHist(convId, title);
             setSessionId(convId);
             refreshHist();
           }}

@@ -434,10 +434,11 @@ interface KIROChatProps {
   briefMessage?:          string;
   className?:             string;
   onConversationCreated?: (id: string) => void;
+  onFirstMessage?:        (text: string) => void;
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export default function KIROChat({ storeId: propStoreId, conversationId: initConvId, onConversationCreated }: KIROChatProps) {
+export default function KIROChat({ storeId: propStoreId, conversationId: initConvId, onConversationCreated, onFirstMessage }: KIROChatProps) {
   const user    = useAuthStore(s => s.user);
   const token   = useAuthStore(s => s.accessToken);
   const storeId = propStoreId || user?.stores?.[0]?.id || "";
@@ -577,6 +578,11 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
     const userMsg: Msg = { id:`u${Date.now()}`, role:"user", content: text || (attach ? `📎 ${attach.name}` : ""), imageUrl: attach?.type==="image" ? attach.url : undefined, ts:new Date().toISOString() };
     const kiroId = `k${Date.now()}`;
     const kiroMsg: Msg = { id:kiroId, role:"assistant", content:"", streaming:true, ts:new Date().toISOString() };
+
+    // Fire onFirstMessage so parent can title the session properly
+    if (messages.length === 0 && onFirstMessage) {
+      onFirstMessage(text || (attach?.name ? `📎 ${attach.name}` : 'New conversation'));
+    }
 
     setMessages(p => [...p, userMsg, kiroMsg]);
     if (!override) setInput("");
