@@ -1,6 +1,7 @@
 // backend/src/routes/store.routes.ts
 import { Router } from "express";
 import { authenticate } from "../middleware/auth";
+import prisma from "../lib/prisma";
 import {
   createStore, getMyStores, getStore,
   updateStore, deleteStore, updateDomain,
