@@ -404,7 +404,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
-        html, body { height: 100%; margin: 0; padding: 0; }
+        html, body { height: 100%; margin: 0; padding: 0; overscroll-behavior: none; }
         body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
         .hide-scroll { scrollbar-width: none; }
         .hide-scroll::-webkit-scrollbar { display: none; }
@@ -416,7 +416,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         @media (max-width:767px){
           .ds-sidebar { display:none!important; }
           .ds-bottom  { display:flex!important; }
-          .ds-main    { padding-bottom:72px!important; }
+          .ds-main    { padding-bottom:100px!important; }
           .ds-header  { padding:0 12px!important; }
         }
         @media (min-width:768px){
@@ -506,7 +506,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </header>
 
           {/* PAGE CONTENT  -  no AnimatePresence (causes freeze on refresh) */}
-          <main className="thin-scroll ds-main" style={{ flex:1, overflowY:"auto", overflowX:"hidden", padding:"20px 16px 24px" }}>
+          <main className="thin-scroll ds-main" style={{ flex:1, overflowY:"auto", overflowX:"hidden", padding:"20px 16px 40px", WebkitOverflowScrolling:"touch" }}>
             {children}
           </main>
 

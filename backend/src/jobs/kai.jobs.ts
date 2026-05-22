@@ -1,189 +1,197 @@
-// ============================================================
-// KAI Jobs — Complete Autopilot Schedule
 // Path: backend/src/jobs/kai.jobs.ts
-// REPLACES all previous versions
-// ============================================================
-import { PrismaClient }              from "@prisma/client";
-import { runPulseForAllStores }      from "../services/kai.pulse.service";
-import { runDailyMarketFetch }       from "../services/kai.market.service";
-import { processReviewRequests }     from "../services/kai.reviews.service";
-import { runPriceDropCheckAll }      from "../services/kai.pricedrop.service";
-import { evaluateProfitRules }       from "../services/kai.intelligence.service";
-import {
-  syncAndNotifyTracking,
-  syncSupplierStock,
-} from "../services/kai.autopilot.service";
+// KIRO Autopilot Jobs — morning brief, order notifications, pulse alerts
+// Imported in server.ts on startup
 
-const prisma = new PrismaClient();
-const apiKey = process.env.ANTHROPIC_API_KEY || "";
+import prisma from "../lib/prisma";
+import { sendWhatsApp } from "../services/whatsapp.service";
+import { sendEmail } from "../services/email.service";
+import { logger } from "../utils/logger";
 
-function schedule(ms: number, fn: () => Promise<void>, label: string) {
-  const run = async () => {
-    try {
-      await fn();
-    } catch (err) {
-      console.error(`[Job: ${label}]`, err);
-    }
-  };
-  // Small random offset per job so they don't all hit at once
-  const offset = Math.floor(Math.random() * 60000);
-  setTimeout(() => {
-    run();
-    setInterval(run, ms);
-  }, offset);
+const fmt = (n: number, cur = "NGN") =>
+  new Intl.NumberFormat("en-NG", { style:"currency", currency:cur, maximumFractionDigits:0 }).format(n||0);
+
+function scheduleDaily(hour: number, fn: () => void) {
+  const now  = new Date();
+  const next = new Date();
+  next.setHours(hour, 0, 0, 0);
+  if (next <= now) next.setDate(next.getDate() + 1);
+  const delay = next.getTime() - now.getTime();
+  setTimeout(() => { fn(); setInterval(fn, 24 * 60 * 60 * 1000); }, delay);
 }
 
-async function getAllActiveStores(limit = 100) {
-  return prisma.store.findMany({
-    where:  { status: "ACTIVE" },
-    select: { id: true, country: true },
-    take:   limit,
-  });
-}
-
-async function getStoresWithCJ(limit = 100) {
-  return prisma.store.findMany({
-    where: {
-      status:       "ACTIVE",
-      integrations: { some: { provider: "cjdropshipping", isActive: true } },
-    },
-    select: { id: true, country: true },
-    take:   limit,
-  });
-}
-
-if (!apiKey) {
-  console.warn("[KAI Jobs] ANTHROPIC_API_KEY not set — AI jobs disabled");
-} else {
-
-  // ══════════════════════════════════════════════════════════
-  // EVERY 15 MINUTES — Auto-fulfill new paid orders
-  // Most important job — keeps sellers hands-free
-  // ══════════════════════════════════════════════════════════
-  schedule(15 * 60 * 1000, async () => {
-    const { syncAndNotifyTracking } = await import("../services/kai.autopilot.service");
-    const stores = await getStoresWithCJ();
-    for (const store of stores) {
-      await syncAndNotifyTracking(store.id);
-      await new Promise(r => setTimeout(r, 1000));
-    }
-  }, "Auto Fulfillment");
-
-  // ══════════════════════════════════════════════════════════
-  // EVERY 2 HOURS — Sync tracking numbers + notify customers
-  // ══════════════════════════════════════════════════════════
-  schedule(2 * 60 * 60 * 1000, async () => {
-    const stores = await getStoresWithCJ();
-    let totalNotified = 0;
-    for (const store of stores) {
-      const n = await syncAndNotifyTracking(store.id);
-      totalNotified += n;
-      await new Promise(r => setTimeout(r, 500));
-    }
-    if (totalNotified > 0) {
-      console.log(`[Tracking Sync] Notified ${totalNotified} customers`);
-    }
-  }, "Tracking + Customer Notify");
-
-  // ══════════════════════════════════════════════════════════
-  // EVERY 2 HOURS — KAI Pulse (store health monitoring)
-  // ══════════════════════════════════════════════════════════
-  schedule(2 * 60 * 60 * 1000, async () => {
-    await runPulseForAllStores();
-  }, "KAI Pulse");
-
-  // ══════════════════════════════════════════════════════════
-  // EVERY 6 HOURS — Supplier stock + price sync
-  // Hides out-of-stock, adjusts prices to protect margins
-  // ══════════════════════════════════════════════════════════
-  schedule(6 * 60 * 60 * 1000, async () => {
-    const stores = await getStoresWithCJ(50);
-    for (const store of stores) {
-      await syncSupplierStock(store.id);
-      await new Promise(r => setTimeout(r, 2000));
-    }
-  }, "Supplier Stock Sync");
-
-  // ══════════════════════════════════════════════════════════
-  // EVERY 6 HOURS — Profit protection rules
-  // Auto-hides products, adjusts prices per seller's rules
-  // ══════════════════════════════════════════════════════════
-  schedule(6 * 60 * 60 * 1000, async () => {
-    const stores = await getAllActiveStores();
-    for (const store of stores) {
-      await evaluateProfitRules(store.id);
-      await new Promise(r => setTimeout(r, 500));
-    }
-  }, "Profit Rules");
-
-  // ══════════════════════════════════════════════════════════
-  // EVERY HOUR — Review request emails (5 days post-delivery)
-  // ══════════════════════════════════════════════════════════
-  schedule(60 * 60 * 1000, async () => {
-    await processReviewRequests();
-  }, "Review Requests");
-
-  // ══════════════════════════════════════════════════════════
-  // DAILY — Market intelligence per country
-  // Fetches trending products for each country
-  // ══════════════════════════════════════════════════════════
-  schedule(24 * 60 * 60 * 1000, async () => {
-    await runDailyMarketFetch(apiKey);
-  }, "Market Intelligence");
-
-  // ══════════════════════════════════════════════════════════
-  // DAILY — Price drop alerts (compares to supplier)
-  // ══════════════════════════════════════════════════════════
-  schedule(24 * 60 * 60 * 1000, async () => {
-    await runPriceDropCheckAll(apiKey);
-  }, "Price Drop Alerts");
-
-  // ══════════════════════════════════════════════════════════
-  // 7AM DAILY — Morning brief generation
-  // ══════════════════════════════════════════════════════════
-  schedule(60 * 60 * 1000, async () => {
-    const hour = new Date().getHours();
-    if (hour !== 7) return;
-
-    const { generateMorningBrief } = await import("../services/kai.pulse.service");
-    const { sendMorningBrief }     = await import("../services/whatsapp.service");
-
-    const stores = await prisma.store.findMany({
-      where:   { status: "ACTIVE" },
-      include: { owner: { select: { phone: true, name: true } } },
-      take:    200,
+// ── Morning Brief — runs at 7:30 AM WAT every day ─────────────────────────────
+async function sendMorningBriefs() {
+  logger.info("[KIRO Jobs] Sending morning briefs…");
+  try {
+    const stores = await (prisma as any).store.findMany({
+      where: { isActive: true },
+      include: {
+        owner: { select: { name:true, phone:true, email:true, subscription:true } },
+        orders: {
+          where: {
+            createdAt: { gte: new Date(Date.now() - 24*60*60*1000) },
+          },
+          select: { total:true, status:true },
+        },
+      },
     });
 
     for (const store of stores) {
       try {
-        const brief = await generateMorningBrief(store.id, apiKey);
+        const orders    = store.orders || [];
+        const revenue   = orders.reduce((s: number, o: any) => s + (o.total||0), 0);
+        const pending   = orders.filter((o: any) => o.status === "PENDING").length;
+        const fulfilled = orders.filter((o: any) => o.status === "FULFILLED").length;
+        const currency  = store.currency || "NGN";
+        const ownerName = store.owner?.name?.split(" ")[0] || "Boss";
+
+        const msg = [
+          `🌅 *Good morning, ${ownerName}!*`,
+          `Here's your KIRO daily brief for *${store.name}*:`,
+          ``,
+          `📦 *Yesterday's Summary*`,
+          `• Revenue: ${fmt(revenue, currency)}`,
+          `• Total Orders: ${orders.length}`,
+          `• Pending: ${pending} orders need action`,
+          `• Fulfilled: ${fulfilled} orders`,
+          ``,
+          pending > 0
+            ? `⚠️ *Action needed:* You have ${pending} pending order${pending>1?"s":""} waiting. Login to process them.`
+            : `✅ All orders are up to date!`,
+          ``,
+          `🔗 Dashboard: https://droposhq.com/dashboard`,
+          ``,
+          `_Powered by KIRO — Built by Darkweb & DropOS_`,
+        ].join("\n");
+
+        // Send WhatsApp if phone available
         if (store.owner?.phone) {
-          await sendMorningBrief({
-            ownerPhone: store.owner.phone,
-            storeName:  store.name,
-            message:    brief,
+          await sendWhatsApp({ to: store.owner.phone, message: msg });
+        }
+
+        // Send email brief
+        if (store.owner?.email) {
+          await sendEmail({
+            to:      store.owner.email,
+            subject: `☀️ Your KIRO Morning Brief — ${store.name}`,
+            html: `
+              <div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
+                <div style="background:linear-gradient(135deg,#6B35E8,#4C1D95);borderRadius:16px;padding:24px;marginBottom:24px;color:#fff;">
+                  <h1 style="margin:0 0 4px;fontSize:22px;fontWeight:900">Good morning, ${ownerName}! ☀️</h1>
+                  <p style="margin:0;opacity:.75;fontSize:13px">Your daily KIRO brief</p>
+                </div>
+                <div style="background:#F9F8FF;borderRadius:12px;padding:20px;marginBottom:16px;">
+                  <h3 style="margin:0 0 12px;fontSize:14px;color:#666;textTransform:uppercase;letterSpacing:.06em">Yesterday</h3>
+                  <div style="display:flex;gap:16px;">
+                    ${[
+                      ["Revenue", fmt(revenue,currency)],
+                      ["Orders",  orders.length.toString()],
+                      ["Pending", pending.toString()],
+                    ].map(([l,v])=>`<div style="flex:1;background:#fff;borderRadius:10px;padding:12px;textAlign:center"><p style="fontSize:11px;color:#999;margin:0 0 4px">${l}</p><p style="fontSize:20px;fontWeight:900;color:#6B35E8;margin:0">${v}</p></div>`).join("")}
+                  </div>
+                </div>
+                ${pending > 0 ? `<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);borderRadius:12px;padding:16px;marginBottom:16px;"><p style="margin:0;fontSize:13px;color:#92400E;fontWeight:600">⚠️ ${pending} order${pending>1?"s":""} need your attention</p></div>` : `<div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);borderRadius:12px;padding:16px;marginBottom:16px;"><p style="margin:0;fontSize:13px;color:#065F46;fontWeight:600">✅ All orders are up to date!</p></div>`}
+                <a href="https://droposhq.com/dashboard" style="display:block;background:linear-gradient(135deg,#6B35E8,#4C1D95);color:#fff;textDecoration:none;textAlign:center;padding:14px;borderRadius:12px;fontWeight:700;fontSize:14px">Open Dashboard →</a>
+                <p style="textAlign:center;fontSize:11px;color:#aaa;marginTop:16px">KIRO · Built by Darkweb & DropOS</p>
+              </div>
+            `,
           });
         }
-      } catch {}
+      } catch (err: any) {
+        logger.error(`[KIRO Jobs] Brief failed for store ${store.id}:`, err.message);
+      }
     }
-    console.log(`[Morning Brief] Generated for ${stores.length} stores`);
-  }, "Morning Brief");
-
-  console.log(`
-╔════════════════════════════════════════╗
-║   KAI Autopilot — All Jobs Active     ║
-╠════════════════════════════════════════╣
-║  Every 15 min  — Auto-fulfillment     ║
-║  Every 2 hrs   — Tracking + notify   ║
-║  Every 2 hrs   — KAI Pulse           ║
-║  Every 6 hrs   — Supplier sync       ║
-║  Every 6 hrs   — Profit rules        ║
-║  Every hour    — Review requests     ║
-║  Daily         — Market intel        ║
-║  Daily         — Price drop alerts   ║
-║  7am daily     — Morning brief       ║
-╚════════════════════════════════════════╝
-  `);
+    logger.info(`[KIRO Jobs] Morning briefs sent to ${stores.length} stores`);
+  } catch (err: any) {
+    logger.error("[KIRO Jobs] Morning brief batch failed:", err.message);
+  }
 }
 
-export {};
+// ── Order Notifications — called directly when order is placed ────────────────
+export async function notifyNewOrder(order: {
+  id: string; orderNumber: string | number; total: number;
+  customerName: string; storeId: string; items?: any[];
+}) {
+  try {
+    const store = await (prisma as any).store.findUnique({
+      where:   { id: order.storeId },
+      include: { owner: { select: { name:true, phone:true, email:true } } },
+    });
+    if (!store) return;
+
+    const currency = store.currency || "NGN";
+    const items    = order.items || [];
+    const itemList = items.slice(0,3).map((i:any) => `• ${i.name} × ${i.quantity}`).join("\n");
+
+    const msg = [
+      `🛍️ *New Order!* #${order.orderNumber}`,
+      ``,
+      `👤 Customer: ${order.customerName}`,
+      `💰 Total: ${fmt(order.total, currency)}`,
+      items.length > 0 ? `\n📦 Items:\n${itemList}${items.length>3?`\n...and ${items.length-3} more`:""}` : "",
+      ``,
+      `👉 Fulfill now: https://droposhq.com/dashboard/orders`,
+    ].filter(Boolean).join("\n");
+
+    if (store.owner?.phone) {
+      await sendWhatsApp({ to: store.owner.phone, message: msg });
+    }
+    if (store.owner?.email) {
+      await sendEmail({
+        to:      store.owner.email,
+        subject: `🛍️ New Order #${order.orderNumber} — ${fmt(order.total, currency)}`,
+        html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
+          <h2 style="color:#6B35E8;margin:0 0 16px">New Order #${order.orderNumber}</h2>
+          <p style="color:#333;font-size:14px;margin:0 0 8px">Customer: <strong>${order.customerName}</strong></p>
+          <p style="color:#333;font-size:14px;margin:0 0 16px">Total: <strong style="color:#6B35E8">${fmt(order.total,currency)}</strong></p>
+          <a href="https://droposhq.com/dashboard/orders" style="display:inline-block;background:#6B35E8;color:#fff;textDecoration:none;padding:12px 24px;borderRadius:10px;fontWeight:700;font-size:14px">View Order →</a>
+        </div>`,
+      });
+    }
+  } catch (err: any) {
+    logger.error("[KIRO Jobs] Order notification failed:", err.message);
+  }
+}
+
+// ── Pulse alerts — weekly store health check ─────────────────────────────────
+async function sendPulseAlerts() {
+  logger.info("[KIRO Jobs] Sending weekly pulse alerts…");
+  try {
+    const stores = await (prisma as any).store.findMany({
+      where: { isActive: true },
+      include: {
+        owner: { select: { phone:true, email:true, name:true } },
+        products: { select: { inventory:true, name:true }, where: { inventory: { lte: 3 } }, take: 5 },
+        orders: {
+          where: { createdAt: { gte: new Date(Date.now() - 7*24*60*60*1000) } },
+          select: { total:true },
+        },
+      },
+    });
+
+    for (const store of stores) {
+      const lowStock = store.products || [];
+      if (lowStock.length === 0) continue;
+
+      const msg = [
+        `📊 *Weekly Pulse — ${store.name}*`,
+        ``,
+        `⚠️ *Low Stock Alert:*`,
+        ...lowStock.map((p:any) => `• ${p.name}: only ${p.inventory} left`),
+        ``,
+        `Restock before you lose sales!`,
+        `👉 https://droposhq.com/dashboard/products`,
+      ].join("\n");
+
+      if (store.owner?.phone) await sendWhatsApp({ to: store.owner.phone, message: msg });
+    }
+  } catch (err: any) {
+    logger.error("[KIRO Jobs] Pulse alert failed:", err.message);
+  }
+}
+
+// ── Schedule all jobs ─────────────────────────────────────────────────────────
+scheduleDaily(7,  sendMorningBriefs);  // 7 AM daily
+scheduleDaily(18, sendPulseAlerts);    // 6 PM weekly (runs daily but only alerts on low stock)
+
+logger.info("[KIRO Jobs] Autopilot jobs scheduled: morning brief @ 7AM, pulse @ 6PM");

@@ -7,6 +7,62 @@ import { requireStoreOwner } from "../controllers/store.controller";
 const router = Router();
 
 
+
+// ── GET /:storeId — main analytics dashboard endpoint ────────────────────────
+router.get("/:storeId", authenticate, async (req: any, res) => {
+  const { storeId } = req.params;
+  const days = parseInt(req.query.period as string) || 7;
+  await requireStoreOwner(storeId, req.user!.userId, req.user!.role);
+
+  const from = new Date(Date.now() - days * 86400000);
+
+  const [orders, customers, products] = await Promise.all([
+    prisma.order.findMany({
+      where: { storeId, createdAt: { gte: from } },
+      select: { total: true, createdAt: true, status: true, customerId: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.storeCustomer.count({ where: { storeId } }),
+    (prisma as any).product.count({ where: { storeId } }),
+  ]);
+
+  // Build daily chart data
+  const dayMap: Record<string, { date: string; revenue: number; orders: number }> = {};
+  for (let i = 0; i < days; i++) {
+    const d   = new Date(Date.now() - (days - 1 - i) * 86400000);
+    const key = d.toISOString().slice(0, 10);
+    dayMap[key] = { date: key, revenue: 0, orders: 0 };
+  }
+  for (const o of orders) {
+    const key = o.createdAt.toISOString().slice(0, 10);
+    if (dayMap[key]) {
+      dayMap[key].orders++;
+      if (!["CANCELLED","REFUNDED"].includes(o.status)) dayMap[key].revenue += o.total;
+    }
+  }
+  const chart = Object.values(dayMap);
+
+  const revenue      = orders.filter(o=>!["CANCELLED","REFUNDED"].includes(o.status)).reduce((s,o)=>s+o.total,0);
+  const totalOrders  = orders.length;
+  const uniqueCustomers = new Set(orders.map(o=>o.customerId).filter(Boolean)).size;
+  const avgOrder     = totalOrders > 0 ? revenue / totalOrders : 0;
+  const convRate     = customers > 0 ? Math.min(((uniqueCustomers / customers) * 100), 100).toFixed(1) : 0;
+
+  return res.json({
+    success: true,
+    data: {
+      chart,
+      summary: {
+        revenue, orders: totalOrders, customers: uniqueCustomers,
+        avgOrder, conversionRate: convRate, healthScore: Math.min(80 + Math.floor(totalOrders / 5), 99),
+        revenueDelta: chart.length >= 2 ? Math.round(((chart[chart.length-1].revenue - chart[0].revenue) / Math.max(chart[0].revenue,1)) * 100) : 0,
+        ordersDelta: totalOrders,
+      },
+    },
+  });
+});
+
+
 // ── GET /:storeId/report  — monthly breakdown for reports page ───────────────
 router.get("/:storeId/report", authenticate, async (req: any, res) => {
   const { storeId } = req.params;
