@@ -33,18 +33,14 @@ router.patch("/:id/flash-sales/:saleId", authenticate, updateFlashSale);
 router.delete("/:id/flash-sales/:saleId", authenticate, deleteFlashSale);
 
 export default router;
-// Custom domain lookup — used by Next.js middleware
+// Custom domain lookup — used by frontend for custom domain routing
 router.get("/domain/:hostname", async (req: any, res: any) => {
   try {
     const { hostname } = req.params;
-    const { prisma } = await import("../config/database");
-    const store = await (prisma as any).store.findFirst({
+    const store = await prisma.store.findFirst({
       where: {
-        OR: [
-          { customDomain: hostname },
-          { customDomains: { has: hostname } },
-        ],
-        isActive: true,
+        customDomain: hostname,
+        status: { not: "SUSPENDED" } as any,
       },
       select: { slug: true, id: true, name: true },
     });
