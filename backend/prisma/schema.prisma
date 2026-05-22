@@ -162,7 +162,7 @@ model Store {
   customDomain    String?     @unique
   templateId      String?
   paystackConnected Boolean  @default(false)
-  status          StoreStatus @default(PENDING)
+  status          StoreStatus @default(ACTIVE)
   primaryColor    String?     @default("#7c3aed")
   accentColor     String?     @default("#a855f7")
   theme           String?     @default("default")

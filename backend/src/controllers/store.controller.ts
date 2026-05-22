@@ -135,7 +135,8 @@ export const getPublicStore = async (req: Request, res: Response) => {
   const store = await prisma.store.findFirst({
     where: {
       OR: [{ slug: req.params.slug }, { customDomain: req.params.slug }],
-      status: "ACTIVE",
+      // Show store if not explicitly suspended
+      NOT: { status: "SUSPENDED" },
     },
     select: {
       id: true, name: true, slug: true, description: true,

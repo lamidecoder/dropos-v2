@@ -23,9 +23,10 @@ export default function StorefrontPage() {
   const { data: store, isLoading: storeLoading, error } = useQuery({
     queryKey:  ["public-store", slug],
     queryFn:   () => publicApi.get(`/stores/public/${slug}`).then(r => r.data.data),
-    retry:     3,
+    retry:     2,
     staleTime: 5 * 60 * 1000,
     enabled:   !!slug,
+    retryDelay: 1000,
   });
 
   const { data: productsData, isLoading: productsLoading } = useQuery({
