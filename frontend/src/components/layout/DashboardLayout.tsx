@@ -404,7 +404,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
-        html, body { height: 100%; margin: 0; padding: 0; overscroll-behavior: none; }
+        html, body { margin: 0; padding: 0; }
         body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
         .hide-scroll { scrollbar-width: none; }
         .hide-scroll::-webkit-scrollbar { display: none; }
@@ -459,7 +459,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </AnimatePresence>
 
         {/* ── RIGHT COLUMN ── */}
-        <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, height:"100%" }}>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, height:"100%", minHeight:0 }}>
 
           {/* HEADER */}
           <header className="ds-header" style={{ flexShrink:0, display:"flex", alignItems:"center", gap:8, height:56, padding:"0 16px", borderBottom:`1px solid ${t.border}`, background:t.headerBg, backdropFilter:"blur(20px)", zIndex:20 }}>
@@ -506,7 +506,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </header>
 
           {/* PAGE CONTENT  -  no AnimatePresence (causes freeze on refresh) */}
-          <main className="thin-scroll ds-main" style={{ flex:1, overflowY:"auto", overflowX:"hidden", padding:"20px 16px 40px", WebkitOverflowScrolling:"touch" }}>
+          <main className="thin-scroll ds-main" style={{ flex:1, overflowY:"auto", overflowX:"hidden", padding:"20px 16px 40px", WebkitOverflowScrolling:"touch", minHeight:0, height:0 }}>
             {children}
           </main>
 
