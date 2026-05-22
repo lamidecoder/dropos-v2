@@ -4,7 +4,7 @@
 
 import prisma from "../lib/prisma";
 import { sendWhatsApp } from "../services/whatsapp.service";
-import { sendEmail } from "../services/email.service";
+import { emailService } from "../services/email.service";
 import { logger } from "../utils/logger";
 
 const fmt = (n: number, cur = "NGN") =>
@@ -71,7 +71,7 @@ async function sendMorningBriefs() {
 
         // Send email brief
         if (store.owner?.email) {
-          await sendEmail({
+          await emailService.send({
             to:      store.owner.email,
             subject: `☀️ Your KIRO Morning Brief — ${store.name}`,
             html: `
@@ -137,7 +137,7 @@ export async function notifyNewOrder(order: {
       await sendWhatsApp({ to: store.owner.phone, message: msg });
     }
     if (store.owner?.email) {
-      await sendEmail({
+      await emailService.send({
         to:      store.owner.email,
         subject: `🛍️ New Order #${order.orderNumber} — ${fmt(order.total, currency)}`,
         html: `<div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;padding:24px;">

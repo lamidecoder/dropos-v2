@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { authenticate } from "../middleware/auth";
 import prisma from "../lib/prisma";
-import { sendEmail } from "../services/email.service";
+import { emailService } from "../services/email.service";
 
 const router = Router();
 router.use(authenticate);
@@ -66,7 +66,7 @@ router.post("/apply", async (req: Request, res: Response) => {
     });
 
     // Notify referrer
-    await sendEmail({
+    await emailService.send({
       to:      referrer.email,
       subject: "🎉 Someone used your DropOS referral link!",
       html:    `<p>Great news! Someone just signed up using your referral link. You'll earn <strong>₦5,000</strong> when they upgrade to a paid plan.</p><p><a href="https://droposhq.com/dashboard/referral">View your referrals →</a></p>`,
@@ -93,7 +93,7 @@ router.post("/withdraw", async (req: Request, res: Response) => {
   }).catch(()=>{}); // table may not exist yet
 
   // Notify admin
-  await sendEmail({
+  await emailService.send({
     to:      process.env.ADMIN_EMAIL || "support@droposhq.com",
     subject: `💰 Referral Withdrawal Request — ₦${amount}`,
     html:    `<p>User ${userId} requested withdrawal of ₦${amount} to ${bankName} - ${accountNumber} (${accountName})</p>`,
