@@ -33,7 +33,7 @@ function StoreModal({ store, onClose, t, isDark, onSuccess }: any) {
     onError: (e: any) => toast.error(e.response?.data?.message || "Failed"),
   });
 
-  const THEMES = ["classic", "dark-luxe", "boutique", "minimal-pro", "bold", "neon"];
+  const THEMES: string[] = []; // Managed at /dashboard/customize
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -54,7 +54,7 @@ function StoreModal({ store, onClose, t, isDark, onSuccess }: any) {
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: t.muted, display: "block", marginBottom: 6 }}>Store URL Slug *</label>
             <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-              <span style={{ padding: "10px 12px", borderRadius: "10px 0 0 10px", border: `1px solid ${t.border}`, borderRight: "none", background: isDark ? "rgba(255,255,255,0.02)" : "#f1f5f9", fontSize: 12, color: t.muted, whiteSpace: "nowrap" }}>droposhq.com/store/</span>
+              <span style={{ padding: "10px 12px", borderRadius: "10px 0 0 10px", border: `1px solid ${t.border}`, borderRight: "none", background: isDark ? "rgba(255,255,255,0.02)" : "#f1f5f9", fontSize: 12, color: t.muted, whiteSpace: "nowrap" }}>{(form.slug||"your-store")}.droposhq.com</span>
               <input style={{ ...inp, borderRadius: "0 10px 10px 0", borderLeft: "none" } as any} value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") }))} placeholder="my-store" />
             </div>
           </div>
