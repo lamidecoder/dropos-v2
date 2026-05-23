@@ -12,8 +12,9 @@ export const config = {
 export async function middleware(req: NextRequest) {
   const hostname = req.headers.get("host") || "";
   const path     = req.nextUrl.pathname;
+  const search   = req.nextUrl.search;
 
-  // Skip Vercel system / preview domains
+  // Skip system domains
   if (
     hostname.includes("vercel.app") ||
     hostname.includes("localhost")
@@ -21,23 +22,21 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Root domain — serve normally
-  if (
-    hostname === ROOT_DOMAIN ||
-    hostname === `www.${ROOT_DOMAIN}`
-  ) {
+  // Root domain
+  if (hostname === ROOT_DOMAIN || hostname === `www.${ROOT_DOMAIN}`) {
     return NextResponse.next();
   }
 
-  // Subdomain — e.g. midelymah320.droposhq.com
+  // Subdomain e.g. midelymah320.droposhq.com
   if (hostname.endsWith(`.${ROOT_DOMAIN}`)) {
     const slug = hostname.replace(`.${ROOT_DOMAIN}`, "");
 
-    // Rewrite the URL path only — keep same host
-    // This is the correct Vercel pattern
-    return NextResponse.rewrite(
-      new URL(`/store/${slug}${path === "/" ? "" : path}`, req.url)
-    );
+    // Rewrite to root domain so Vercel serves the /store/[slug] route
+    const url = req.nextUrl.clone();
+    url.hostname = ROOT_DOMAIN;
+    url.pathname = `/store/${slug}${path === "/" ? "" : path}`;
+
+    return NextResponse.rewrite(url);
   }
 
   return NextResponse.next();
