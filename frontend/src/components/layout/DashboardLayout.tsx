@@ -1,6 +1,7 @@
 "use client";
 import ConnectionBanner from "../ConnectionBanner";
 import { useState, useEffect, createContext, useContext } from "react";
+import { AppLoader } from "../AppLoader";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -395,6 +396,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const isBottomActive = (item: any) =>
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
+
+  // Show app loader while auth is being checked
+  const isChecking = typeof window !== "undefined" && !user && localStorage.getItem("dropos-refresh-token");
+
+  if (isChecking) {
+    return <AppLoader show={true} message="Loading your workspace…" />;
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggle: toggleTheme }}>

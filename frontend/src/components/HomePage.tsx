@@ -145,7 +145,7 @@ export default function HomePage() {
           margin: "0 0 clamp(28px, 7vw, 44px)",
           maxWidth: 380,
         }}>
-          DropOS is the first AI-native store platform built for African merchants.
+          DropOS is the first AI-native store platform built for modern merchants.
           KIRO handles everything — import, pricing, fulfilment, and growth.
         </p>
 
@@ -224,7 +224,7 @@ export default function HomePage() {
 
         {/* Features */}
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "8px 20px", margin: "clamp(20px,5vw,36px) 0" }}>
-          {["AI product import", "KIRO AI assistant", "Paystack & Stripe", "Built for Nigeria"].map(f => (
+          {["AI product import", "KIRO AI assistant", "Paystack & Stripe", "Built for global commerce"].map(f => (
             <span key={f} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "clamp(11px, 2.5vw, 12px)", color: "rgba(240,236,255,0.38)" }}>
               <Check size={10} color="#6B35E8" />
               {f}
@@ -245,7 +245,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <p style={{ position: "absolute", bottom: 20, left: 0, right: 0, textAlign: "center", fontSize: 11, color: "rgba(240,236,255,0.18)", margin: 0 }}>
-        © {new Date().getFullYear()} DropOS · Built for African merchants
+        © {new Date().getFullYear()} DropOS · Built for modern merchants
       </p>
 
       <style>{`
