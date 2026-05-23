@@ -4512,6 +4512,16 @@ const REGISTRY: Record<string, (props: TemplateProps) => JSX.Element> = {
   "toys":       KidsTemplate,
   "playful":    KidsTemplate,
 
+  // New templates 2025
+  "onyx":       OnyxTemplate,   "monochrome": OnyxTemplate,   "clean":      OnyxTemplate,
+  "blaze":      BlazeTemplate,  "esports":    BlazeTemplate,
+  "flora":      FloraTemplate,  "plants":     FloraTemplate,   "botanical":  FloraTemplate,
+  "luxe":       LuxeTemplate,   "realestate": LuxeTemplate,    "property":   LuxeTemplate,
+  "muse":       MuseTemplate,   "agency":     MuseTemplate,    "creative":   MuseTemplate,
+  "pearl":      PearlTemplate,  "spa":        PearlTemplate,   "wellness":   PearlTemplate,
+  "chrome":     ChromeTemplate, "auto":       ChromeTemplate,  "automotive": ChromeTemplate,
+  "bound":      BoundTemplate,  "books":      BoundTemplate,   "bookstore":  BoundTemplate,
+
 };
 
 export function TemplateRenderer(props: TemplateProps) {
@@ -4519,54 +4529,3 @@ export function TemplateRenderer(props: TemplateProps) {
   const Component  = REGISTRY[templateId] || AuroraTemplate;
   return <Component {...props} />;
 }
-
-  // Onyx — minimal monochrome
-  "onyx":       OnyxTemplate,
-  "monochrome": OnyxTemplate,
-  "minimal":    OnyxTemplate,
-  "clean":      OnyxTemplate,
-
-  // Blaze — gaming
-  "blaze":      BlazeTemplate,
-  "esports":    BlazeTemplate,
-  "red-black":  BlazeTemplate,
-
-  // Flora — plants/botanicals
-  "flora":      FloraTemplate,
-  "plants":     FloraTemplate,
-  "garden":     FloraTemplate,
-  "botanical":  FloraTemplate,
-  "nature":     FloraTemplate,
-
-  // Luxe — real estate/premium
-  "luxe":       LuxeTemplate,
-  "realestate": LuxeTemplate,
-  "property":   LuxeTemplate,
-  "investment": LuxeTemplate,
-
-  // Muse — creative agency
-  "muse":       MuseTemplate,
-  "agency":     MuseTemplate,
-  "creative":   MuseTemplate,
-  "portfolio":  MuseTemplate,
-
-  // Pearl — skincare premium
-  "pearl":      PearlTemplate,
-  "skincare-lux": PearlTemplate,
-  "spa":        PearlTemplate,
-  "wellness":   PearlTemplate,
-
-  // Chrome — auto/cars
-  "chrome":     ChromeTemplate,
-  "auto":       ChromeTemplate,
-  "cars":       ChromeTemplate,
-  "dealership": ChromeTemplate,
-  "automotive": ChromeTemplate,
-
-  // Bound — bookstore
-  "bound":      BoundTemplate,
-  "books":      BoundTemplate,
-  "bookstore":  BoundTemplate,
-  "literary":   BoundTemplate,
-  "library":    BoundTemplate,
-
