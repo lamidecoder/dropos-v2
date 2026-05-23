@@ -36,7 +36,9 @@ export async function middleware(req: NextRequest) {
     url.hostname = ROOT_DOMAIN;
     url.pathname = `/store/${slug}${path === "/" ? "" : path}`;
 
-    return NextResponse.rewrite(url);
+    const response = NextResponse.rewrite(url);
+    response.headers.set("x-middleware-rewrite", "1");
+    return response;
   }
 
   return NextResponse.next();
