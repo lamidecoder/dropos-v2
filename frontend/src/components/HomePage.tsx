@@ -52,7 +52,7 @@ function Block({ value, label }: { value: number; label: string }) {
   );
 }
 
-export default function HomePage ComingSoonPage() {
+export default function HomePage() {
   const { d, h, m, s } = useCountdown(LAUNCH);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
