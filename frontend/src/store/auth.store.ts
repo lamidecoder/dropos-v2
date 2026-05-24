@@ -49,7 +49,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user:        null,
       accessToken: null, // never persisted
-      isLoading:   false,
+      isLoading:   true,
       isHydrated:  false,
       lastRefresh: null,
 

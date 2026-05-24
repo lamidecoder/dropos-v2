@@ -76,14 +76,14 @@ export default function CustomizePage() {
 
   const [activeIndustry, setActiveIndustry] = useState("all");
   const [activeTheme,    setActiveTheme]    = useState(store?.theme || "aurora");
-  const [activeColor,    setActiveColor]    = useState(store?.brandColor || "#6B35E8");
+  const [activeColor,    setActiveColor]    = useState(store?.primaryColor || "#6B35E8");
   const [preview,        setPreview]        = useState<any>(null);
   const [saving,         setSaving]         = useState(false);
 
   useEffect(() => {
     if (store) {
       setActiveTheme(store.theme || store.templateId || "aurora");
-      setActiveColor(store.brandColor || store.primaryColor || "#6B35E8");
+      setActiveColor(store.primaryColor || store.brandColor || "#6B35E8");
     }
   }, [store]);
 
@@ -98,7 +98,7 @@ export default function CustomizePage() {
     if (!storeId) return;
     setSaving(true);
     try {
-      await api.put(`/stores/${storeId}`, { theme: id, brandColor: activeColor });
+      await api.put(`/stores/${storeId}`, { theme: id, primaryColor: activeColor });
       setActiveTheme(id);
       qc.invalidateQueries({ queryKey: ["store-detail", storeId] });
       toast.success("Template applied! ✨");
@@ -110,7 +110,7 @@ export default function CustomizePage() {
   async function saveColor() {
     if (!storeId) return;
     try {
-      await api.put(`/stores/${storeId}`, { brandColor: activeColor, theme: activeTheme });
+      await api.put(`/stores/${storeId}`, { primaryColor: activeColor, theme: activeTheme });
       toast.success("Brand color saved!");
       qc.invalidateQueries({ queryKey: ["store-detail", storeId] });
     } catch { toast.error("Failed to save"); }

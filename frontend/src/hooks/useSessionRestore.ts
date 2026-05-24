@@ -16,6 +16,7 @@ export function useSessionRestore() {
 
     // Already have a token in memory — nothing to restore
     if (accessToken) {
+      setLoading(false);
       setHydrated(true);
       return;
     }

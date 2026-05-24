@@ -224,40 +224,129 @@ function ProductCard({
   );
 }
 
-// ── Shared: Sticky Nav ────────────────────────────────────────────────────────
-function StoreNav({ store, brand, dark, count, toggle, search, onSearch }: any) {
+// ── Shared: Full Store Nav ────────────────────────────────────────────────────
+function StoreNav({ store, brand, dark, count, toggle, search, onSearch, categories, onCategory, category }: any) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", h);
     return () => window.removeEventListener("scroll", h);
   }, []);
 
-  const bg = dark
-    ? scrolled ? "rgba(7,5,15,0.97)" : "rgba(7,5,15,0.8)"
-    : scrolled ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.85)";
-  const text = dark ? "#fff" : "#111";
-  const border = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
+  const bg     = dark ? (scrolled ? "rgba(7,5,15,0.98)" : "rgba(7,5,15,0.85)") : (scrolled ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.92)");
+  const text   = dark ? "#fff" : "#111";
+  const muted  = dark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)";
+  const border = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)";
+  const cats   = (categories || []).filter((c: string) => c !== "All").slice(0, 5);
 
   return (
-    <header style={{ position: "sticky", top: 0, zIndex: 50, backdropFilter: "blur(16px)", background: bg, borderBottom: `1px solid ${border}`, transition: "background 0.3s" }}>
+    <header style={{ position: "sticky", top: 0, zIndex: 50, backdropFilter: "blur(20px)", background: bg, borderBottom: `1px solid ${border}`, transition: "all 0.3s" }}>
+      {/* Top bar */}
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 clamp(16px,4vw,32px)", height: 60, display: "flex", alignItems: "center", gap: 16 }}>
-        <Link href={`/store/${store.slug}`} style={{ fontWeight: 900, fontSize: "clamp(16px,3vw,20px)", letterSpacing: "-0.04em", color: brand, textDecoration: "none", flexShrink: 0 }}>
+
+        {/* Logo */}
+        <Link href={`/store/${store.slug}`} style={{ fontWeight: 900, fontSize: "clamp(16px,2.5vw,20px)", letterSpacing: "-0.04em", color: brand, textDecoration: "none", flexShrink: 0, display: "flex", alignItems: "center", gap: 8 }}>
+          {store.logo && <img src={store.logo} alt={store.name} style={{ width: 28, height: 28, borderRadius: 8, objectFit: "cover" }}/>}
           {store.name}
         </Link>
-        <div style={{ flex: 1, maxWidth: 360, display: "flex", alignItems: "center", gap: 8, padding: "7px 12px", borderRadius: 12, background: dark ? "rgba(255,255,255,0.06)" : "#f5f5f5", border: `1px solid ${border}` }}>
-          <Search size={13} style={{ color: dark ? "rgba(255,255,255,0.4)" : "#888", flexShrink: 0 }} />
-          <input value={search || ""} onChange={e => onSearch?.(e.target.value)} placeholder="Search products..."
+
+        {/* Search bar — desktop */}
+        <div style={{ flex: 1, maxWidth: 380, margin: "0 auto", display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 99, background: dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.04)", border: `1px solid ${border}` }}>
+          <Search size={13} style={{ color: muted, flexShrink: 0 }} />
+          <input value={search || ""} onChange={e => onSearch?.(e.target.value)} placeholder="Search products…"
             style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 13, color: text, fontFamily: "inherit" }} />
+          {search && <button onClick={() => onSearch?.("")} style={{ background: "none", border: "none", cursor: "pointer", color: muted, padding: 0, display: "flex" }}><X size={13}/></button>}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: "auto" }}>
-          <button onClick={toggle} style={{ position: "relative", background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>
-            <ShoppingCart size={22} color={text} />
-            {count > 0 && <span style={{ position: "absolute", top: -6, right: -6, width: 17, height: 17, borderRadius: "50%", background: brand, color: "#fff", fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{count}</span>}
+
+        {/* Right actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto", flexShrink: 0 }}>
+          {/* Track order */}
+          <Link href={`/store/${store.slug}/track`}
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 99, border: `1px solid ${border}`, textDecoration: "none", color: muted, fontSize: 12, fontWeight: 600, background: "transparent" }}>
+            <Package size={12}/> <span style={{ display: "none" }} className="sm-show">Track</span>
+          </Link>
+
+          {/* Account */}
+          <Link href={`/store/${store.slug}/account`}
+            style={{ display: "flex", alignItems: "center", padding: 8, borderRadius: 99, border: `1px solid ${border}`, textDecoration: "none", color: muted, background: "transparent" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </Link>
+
+          {/* Cart */}
+          <button onClick={toggle}
+            style={{ position: "relative", display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 99, background: brand, border: "none", cursor: "pointer", color: "#fff", fontFamily: "inherit", fontSize: 13, fontWeight: 700 }}>
+            <ShoppingCart size={14}/>
+            {count > 0 ? count : "Cart"}
+            {count > 0 && <span style={{ position: "absolute", top: -4, right: -4, width: 16, height: 16, borderRadius: "50%", background: "#fff", color: brand, fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>{count}</span>}
+          </button>
+
+          {/* Mobile menu */}
+          <button onClick={() => setMobileOpen(m => !m)} style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: text, padding: 4 }} className="mobile-menu-btn">
+            {mobileOpen ? <X size={20}/> : <Menu size={20}/>}
           </button>
         </div>
       </div>
+
+      {/* Category nav — desktop */}
+      {cats.length > 0 && (
+        <div style={{ borderTop: `1px solid ${border}`, overflowX: "auto" }}>
+          <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 clamp(16px,4vw,32px)", display: "flex", gap: 0 }}>
+            <button onClick={() => onCategory?.("All")}
+              style={{ padding: "9px 16px", border: "none", borderBottom: `2px solid ${!category || category==="All" ? brand : "transparent"}`, background: "transparent", color: !category || category==="All" ? brand : muted, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "inherit", transition: "all 0.15s" }}>
+              All
+            </button>
+            {cats.map((c: string) => (
+              <button key={c} onClick={() => onCategory?.(c)}
+                style={{ padding: "9px 16px", border: "none", borderBottom: `2px solid ${category===c ? brand : "transparent"}`, background: "transparent", color: category===c ? brand : muted, fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "inherit", transition: "all 0.15s" }}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mobile menu overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            style={{ position: "absolute", top: "100%", left: 0, right: 0, background: dark ? "#07050F" : "#fff", borderBottom: `1px solid ${border}`, padding: "16px clamp(16px,4vw,32px)", zIndex: 40 }}>
+            {/* Mobile search */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: dark ? "rgba(255,255,255,0.06)" : "#f5f5f5", marginBottom: 14 }}>
+              <Search size={14} style={{ color: muted }}/>
+              <input value={search || ""} onChange={e => { onSearch?.(e.target.value); }} placeholder="Search…"
+                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 14, color: text, fontFamily: "inherit" }}/>
+            </div>
+            {/* Mobile categories */}
+            {cats.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+                {["All", ...cats].map((c: string) => (
+                  <button key={c} onClick={() => { onCategory?.(c); setMobileOpen(false); }}
+                    style={{ padding: "7px 14px", borderRadius: 99, border: `1px solid ${category===c||(!category&&c==="All") ? brand : border}`, background: category===c||(!category&&c==="All") ? brand : "transparent", color: category===c||(!category&&c==="All") ? "#fff" : text, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* Mobile nav links */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {[
+                { label: "Track Order", href: `/store/${store.slug}/track` },
+                { label: "My Account", href: `/store/${store.slug}/account` },
+              ].map(l => (
+                <Link key={l.label} href={l.href} onClick={() => setMobileOpen(false)}
+                  style={{ padding: "12px 4px", fontSize: 14, fontWeight: 600, color: text, textDecoration: "none", borderBottom: `1px solid ${border}` }}>
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style>{`.mobile-menu-btn{display:none!important}@media(max-width:640px){.mobile-menu-btn{display:flex!important}}`}</style>
     </header>
   );
 }
@@ -463,7 +552,7 @@ function AuroraTemplate({ store, products = [], search, onSearch, category, onCa
 
   return (
     <div style={{ minHeight: "100vh", background: "#fafafa", fontFamily: "'Inter','Plus Jakarta Sans',system-ui" }}>
-      <StoreNav store={store} brand={brand} dark={false} count={count} toggle={toggle} search={search} onSearch={onSearch} />
+      <StoreNav store={store} brand={brand} dark={false} count={count} toggle={toggle} search={search} onSearch={onSearch} categories={categories} onCategory={onCategory} category={category} />
 
       {/* HERO */}
       <div style={{ background: `linear-gradient(135deg,#f8f5ff 0%,#f0eaff 50%,#e8f0ff 100%)`, padding: "clamp(48px,10vw,96px) clamp(16px,4vw,32px)", overflow: "hidden", position: "relative" }}>
@@ -563,7 +652,7 @@ function ObsidianTemplate({ store, products = [], search, onSearch, category, on
 
   return (
     <div style={{ minHeight: "100vh", background: "#07050F", fontFamily: "'Inter',system-ui", color: "#fff" }}>
-      <StoreNav store={store} brand={brand} dark count={count} toggle={toggle} search={search} onSearch={onSearch} />
+      <StoreNav store={store} brand={brand} dark count={count} toggle={toggle} search={search} onSearch={onSearch} categories={categories} onCategory={onCategory} category={category} />
 
       {/* Cinematic hero */}
       <div style={{ position: "relative", height: "clamp(420px,60vh,680px)", display: "flex", alignItems: "center", overflow: "hidden", background: `linear-gradient(135deg,#0d0520,#1a0d3c)` }}>
@@ -721,7 +810,7 @@ function AtelierTemplate({ store, products = [], search, onSearch, category, onC
   return (
     <div style={{ minHeight: "100vh", background: "#fdf9f6", fontFamily: "'Cormorant Garamond','Georgia',serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap'); @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}} html{scroll-behavior:smooth}`}</style>
-      <StoreNav store={store} brand={brand} dark={false} count={count} toggle={toggle} search={search} onSearch={onSearch} />
+      <StoreNav store={store} brand={brand} dark={false} count={count} toggle={toggle} search={search} onSearch={onSearch} categories={categories} onCategory={onCategory} category={category} />
 
       {/* Editorial hero */}
       <div style={{ padding: "clamp(48px,10vw,96px) clamp(16px,4vw,40px)", textAlign: "center", borderBottom: "1px solid #e8e0d8" }}>
@@ -785,7 +874,7 @@ function VoltageTemplate({ store, products = [], search, onSearch, category, onC
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Impact','Arial Black',system-ui" }}>
-      <StoreNav store={store} brand={brand} dark={false} count={count} toggle={toggle} search={search} onSearch={onSearch} />
+      <StoreNav store={store} brand={brand} dark={false} count={count} toggle={toggle} search={search} onSearch={onSearch} categories={categories} onCategory={onCategory} category={category} />
 
       {/* Full bleed bold hero */}
       <div style={{ background: brand, padding: "clamp(40px,8vw,80px) clamp(16px,4vw,32px)", textAlign: "center" }}>
@@ -846,7 +935,7 @@ function PrismTemplate({ store, products = [], search, onSearch, category, onCat
 
   return (
     <div style={{ minHeight: "100vh", background: `linear-gradient(135deg,#0d0524 0%,#1a0d3c 50%,#0d1a3c 100%)`, fontFamily: "'Inter',system-ui" }}>
-      <StoreNav store={store} brand={brand} dark count={count} toggle={toggle} search={search} onSearch={onSearch} />
+      <StoreNav store={store} brand={brand} dark count={count} toggle={toggle} search={search} onSearch={onSearch} categories={categories} onCategory={onCategory} category={category} />
 
       {/* Gradient hero */}
       <div style={{ position: "relative", padding: "clamp(60px,12vw,100px) clamp(16px,4vw,32px)", textAlign: "center", overflow: "hidden" }}>
@@ -990,7 +1079,7 @@ function NexusTemplate({ store, products = [], search, onSearch, category, onCat
   return (
     <div style={{ minHeight: "100vh", background: "#060c14", fontFamily: "'Inter','DM Sans',system-ui", color: "#fff" }}>
       <style>{`@keyframes pulse{0%,100%{opacity:.3}50%{opacity:.7}} @keyframes scan{0%{transform:translateY(-100%)}100%{transform:translateY(200vh)}} html{scroll-behavior:smooth}`}</style>
-      <StoreNav store={store} brand={brand} dark count={count} toggle={toggle} search={search} onSearch={onSearch} />
+      <StoreNav store={store} brand={brand} dark count={count} toggle={toggle} search={search} onSearch={onSearch} categories={categories} onCategory={onCategory} category={category} />
 
       {/* Futuristic hero */}
       <div style={{ position: "relative", padding: "clamp(60px,12vw,100px) clamp(16px,4vw,32px)", overflow: "hidden" }}>

@@ -18,7 +18,7 @@ function StoreModal({ store, onClose, t, isDark, onSuccess }: any) {
     description: store?.description || "",
     slug:        store?.slug        || "",
     currency:    store?.currency    || "NGN",
-    brandColor:  store?.brandColor  || "#6B35E8",
+    primaryColor:  store?.primaryColor  || "#6B35E8",
     theme:       store?.theme       || "classic",
   });
 
@@ -76,9 +76,9 @@ function StoreModal({ store, onClose, t, isDark, onSuccess }: any) {
             <div>
               <label style={{ fontSize: 12, fontWeight: 600, color: t.muted, display: "block", marginBottom: 6 }}>Brand Color</label>
               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <input type="color" value={form.brandColor} onChange={e => setForm(f => ({ ...f, brandColor: e.target.value }))}
+                <input type="color" value={form.primaryColor} onChange={e => setForm(f => ({ ...f, primaryColor: e.target.value }))}
                   style={{ width: 40, height: 38, borderRadius: 8, border: `1px solid ${t.border}`, background: "none", cursor: "pointer", padding: 2 }} />
-                <input style={{ ...inp, flex: 1 } as any} value={form.brandColor} onChange={e => setForm(f => ({ ...f, brandColor: e.target.value }))} placeholder="#6B35E8" />
+                <input style={{ ...inp, flex: 1 } as any} value={form.primaryColor} onChange={e => setForm(f => ({ ...f, primaryColor: e.target.value }))} placeholder="#6B35E8" />
               </div>
             </div>
           </div>
@@ -186,8 +186,8 @@ export default function StoresPage() {
               {/* Header */}
               <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${t.border}` }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 13, background: `${store.brandColor || V.v500}18`, border: `1px solid ${store.brandColor || V.v500}25`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Store size={20} style={{ color: store.brandColor || V.v400 }} />
+                  <div style={{ width: 44, height: 44, borderRadius: 13, background: `${store.primaryColor || V.v500}18`, border: `1px solid ${store.primaryColor || V.v500}25`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Store size={20} style={{ color: store.primaryColor || V.v400 }} />
                   </div>
                   <div style={{ display: "flex", gap: 4 }}>
                     <button onClick={() => setModal(store)}
@@ -224,7 +224,7 @@ export default function StoresPage() {
                 </Link>
                 <button onClick={() => copyLink(store.slug)}
                   className="flex items-center gap-1.5 flex-1 justify-center py-2.5 rounded-xl text-xs font-bold transition-all hover:opacity-80"
-                  style={{ border: `1px solid ${store.brandColor || V.v500}40`, color: store.brandColor || V.v400, background: `${store.brandColor || V.v500}08` }}>
+                  style={{ border: `1px solid ${store.primaryColor || V.v500}40`, color: store.primaryColor || V.v400, background: `${store.primaryColor || V.v500}08` }}>
                   <Copy size={12} /> Copy Link
                 </button>
               </div>
