@@ -397,9 +397,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isBottomActive = (item: any) =>
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
 
-  // Show app loader while auth is being checked
-  const { isLoading: authLoading } = useAuthStore();
-  if (authLoading) {
+  // Show loader while session is being restored OR store hasn't hydrated
+  const authState = useAuthStore(s => ({ isLoading: s.isLoading, isHydrated: s.isHydrated }));
+  if (authState.isLoading || !authState.isHydrated) {
     return <AppLoader show={true} message="Loading your workspace…" />;
   }
 

@@ -10,23 +10,11 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { useState } from "react";
 import { CurrencyProvider } from "../providers/CurrencyProvider";
-import { AppLoader } from "../AppLoader";
-import { useAuthStore } from "../../store/auth.store";
 
 
 function SessionRestorer() {
   useSessionRestore();
   return null;
-}
-
-function RootLoader({ children }: { children: React.ReactNode }) {
-  const isLoading = useAuthStore(s => s.isLoading);
-  return (
-    <>
-      <AppLoader show={isLoading} message="Loading DropOS…" />
-      {children}
-    </>
-  );
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -45,7 +33,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <SessionRestorer />
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         <CurrencyProvider>
-          <RootLoader>{children}</RootLoader>
+          {children}
         </CurrencyProvider>
         <Toaster
           position="bottom-right"
