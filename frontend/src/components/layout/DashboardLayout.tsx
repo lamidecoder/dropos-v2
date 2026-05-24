@@ -438,11 +438,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .table-wrap  { overflow-x:auto; -webkit-overflow-scrolling:touch; }
         /* Chart height fix */
         .recharts-responsive-container { width:100%!important; }
+
+        /* ── Light mode: fix hardcoded dark Tailwind classes ── */
+        .light-mode .text-white { color: #130D2E !important; }
+        .light-mode [class*="text-white\/"] { color: rgba(19,13,46,0.55) !important; }
+        .light-mode [class*="bg-\\[\\#181230\\]"],
+        .light-mode [class*="bg-\\[\\#0D0918\\]"],
+        .light-mode [class*="bg-\\[\\#13131F\\]"],
+        .light-mode [class*="bg-\\[\\#1A1A2A\\]"],
+        .light-mode [class*="bg-\\[\\#16122A\\]"] { background-color: #ffffff !important; }
+        .light-mode .border-white\/\[0\.06\],
+        .light-mode [style*="rgba(255,255,255,0.06)"] { border-color: rgba(107,53,232,0.09) !important; }
+        .light-mode [style*="background: rgba(255,255,255,0.0"],
+        .light-mode [style*="background:rgba(255,255,255,0.0"] { background: rgba(107,53,232,0.04) !important; }
         /* Prevent text size adjust on mobile */
         * { -webkit-text-size-adjust:100%; }
       `}</style>
 
-      <div style={{ display:"flex", height:"100vh", width:"100vw", overflow:"hidden", background:t.bg, color:t.text, fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif" }}>
+      <div className={theme === "light" ? "light-mode" : ""} style={{ display:"flex", height:"100vh", width:"100vw", overflow:"hidden", background:t.bg, color:t.text, fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif" }}>
 
         {/* ── DESKTOP SIDEBAR ── */}
         <aside className="ds-sidebar" style={{ width:228, minWidth:228, height:"100%", background:t.sidebarBg, borderRight:`1px solid ${t.border}`, flexShrink:0, zIndex:10, display:"none" }}>
