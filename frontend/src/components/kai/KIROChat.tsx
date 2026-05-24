@@ -24,6 +24,29 @@ const BASE   = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.co
 const ACCENT = "#7C3AED";
 const ACCENT_D = "#5B21B6";
 
+
+// ── Suggestion card icon — monochrome SVG ─────────────────────
+const SUGGESTION_ICONS: Record<string,string> = {
+  pulse:  "M3 12h4l3-9 4 18 3-9h4",
+  trend:  "M22 7l-9.5 9.5-5-5L1 17",
+  import: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",
+  flash:  "M13 2L3 14h9l-1 8 10-12h-9z",
+  ad:     "M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z",
+  growth: "M18 20V10M12 20V4M6 20v-6",
+  default:"M12 5v14M5 12h14",
+};
+function SuggestionIcon({ id, color }: { id: string; color: string }) {
+  const d = SUGGESTION_ICONS[id] || SUGGESTION_ICONS.default;
+  const isFill = id === "flash";
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill={isFill ? color : "none"}
+      stroke={isFill ? "none" : color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"
+      style={{ display:"block", marginBottom:6, opacity:0.65 }}>
+      <path d={d}/>
+    </svg>
+  );
+}
+
 // ── types ──────────────────────────────────────────────────────────────────────
 type Mode = "light" | "dark";
 interface Msg {
@@ -411,7 +434,7 @@ function Welcome({ name, storeData, onSend, t }: { name:string; storeData:any; o
               whileHover={{ y:-2, transition:{ duration:0.12 } }} whileTap={{ scale:0.97 }}
               onClick={() => onSend(q.prompt)}
               style={{ padding:"11px 10px", borderRadius:11, border:`1px solid ${t.border}`, background: t.surface, cursor:"pointer", textAlign:"left", boxShadow: t.shadow }}>
-              <span style={{ fontSize:17, display:"block", marginBottom:4 }}>{q.icon}</span>
+              <SuggestionIcon id={q.icon} color={t.sub}/>
               <span style={{ fontSize:11, fontWeight:600, color: t.text, display:"block", lineHeight:1.3 }}>{q.title}</span>
               <span style={{ fontSize:10, color: t.sub, display:"block", lineHeight:1.4, marginTop:1 }}>{q.sub}</span>
             </motion.button>
@@ -997,7 +1020,7 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
             </div>
 
             <p style={{ fontSize:10, color:t.muted, textAlign:"center", margin:"6px 0 0" }}>
-              KIRO · Built by Darkweb & DropOS
+              Powered by DropOS
             </p>
           </div>
         </>

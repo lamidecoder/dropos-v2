@@ -348,7 +348,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname  = usePathname();
   const router    = useRouter();
 
-  const [theme,         setTheme]         = useState<"dark"|"light">("light");
+  const [theme, setTheme] = useState<"dark"|"light">(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("dropos-theme") as "dark"|"light") || "dark";
+    }
+    return "dark";
+  });
   const [toasts,        setToasts]        = useState<Toast[]>([]);
   const [confirmState,  setConfirmState]  = useState<{ opts: ConfirmOptions; resolve: (v: boolean) => void } | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -357,11 +362,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const plan = user?.subscription?.plan || "FREE";
 
   // Persist theme + apply class to <html> for CSS var support
-  useEffect(() => {
-    const saved = localStorage.getItem("dropos-theme") as "dark"|"light"|null;
-    if (saved) setTheme(saved);
-  }, []);
-
   useEffect(() => {
     const html = document.documentElement;
     if (theme === "dark") {

@@ -43,7 +43,7 @@ const FONTS = `
 `;
 
 // ── History ────────────────────────────────────────────────────
-interface Session { id: string; title: string; ts: number; }
+interface Session { id: string; title: string; ts: number; pinned?: boolean; }
 function genId() { return Math.random().toString(36).slice(2,10); }
 function timeAgo(ts: number) {
   const d = (Date.now()-ts)/1000;
@@ -98,7 +98,10 @@ function ModeBtn({ mode, toggle, T }: { mode:"light"|"dark"; toggle:()=>void; T:
       style={{width:32,height:32,borderRadius:8,border:`1px solid ${T.border}`,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}
       onMouseEnter={e=>(e.currentTarget.style.background=T.accentBg)}
       onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
-      {mode==="light"?"🌙":"☀️"}
+      {mode==="light"
+        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      }
     </button>
   );
 }
@@ -253,9 +256,92 @@ function AuthDropdown({ T, onLogin, onLoggedOut }: { T:typeof TL; onLogin:()=>vo
   );
 }
 
+// ── History item with context menu ──────────────────────────────
+function HistoryItem({ s, activeId, onSelect, onDelete, onRename, onPin, T }:
+  { s:Session; activeId:string; onSelect:(id:string)=>void; onDelete:(id:string)=>void; onRename:(id:string,title:string)=>void; onPin:(id:string)=>void; T:typeof TL }) {
+  const [menu, setMenu] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editVal, setEditVal] = useState(s.title||"New conversation");
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(false); };
+    if (menu) document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [menu]);
+
+  function commitRename() {
+    const v = editVal.trim();
+    if (v && v !== s.title) onRename(s.id, v);
+    setEditing(false);
+  }
+
+  return (
+    <div
+      onClick={() => !editing && onSelect(s.id)}
+      style={{display:"flex",alignItems:"center",gap:7,padding:"7px 10px",borderRadius:9,marginBottom:2,background:s.id===activeId?T.accentBg:"transparent",cursor:"pointer",transition:"background .14s",position:"relative"}}
+      onMouseEnter={e => { if (s.id!==activeId)(e.currentTarget as HTMLElement).style.background=T.s2; }}
+      onMouseLeave={e => { if (s.id!==activeId)(e.currentTarget as HTMLElement).style.background="transparent"; }}>
+
+      {/* Pin indicator */}
+      {s.pinned && <svg width="8" height="8" viewBox="0 0 24 24" fill={T.accent} style={{flexShrink:0}}><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>}
+
+      {/* Icon */}
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={s.id===activeId?T.accent:T.muted} strokeWidth="2" strokeLinecap="round" style={{flexShrink:0}}>
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+
+      {/* Title / edit input */}
+      <div style={{flex:1,minWidth:0}}>
+        {editing ? (
+          <input autoFocus value={editVal} onChange={e=>setEditVal(e.target.value)}
+            onBlur={commitRename} onKeyDown={e=>{if(e.key==="Enter")commitRename();if(e.key==="Escape")setEditing(false);}}
+            onClick={e=>e.stopPropagation()}
+            style={{width:"100%",fontSize:12,fontWeight:600,color:T.text,background:T.s3,border:`1px solid ${T.accent}`,borderRadius:5,padding:"2px 6px",outline:"none",fontFamily:"inherit"}}/>
+        ) : (
+          <>
+            <p style={{fontSize:12,fontWeight:600,color:s.id===activeId?T.accent:T.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.title||"New conversation"}</p>
+            <p style={{fontSize:10,color:T.muted,marginTop:1}}>{timeAgo(s.ts)}</p>
+          </>
+        )}
+      </div>
+
+      {/* Context menu trigger */}
+      <button onClick={e=>{e.stopPropagation();setMenu(m=>!m);}}
+        style={{flexShrink:0,width:20,height:20,borderRadius:5,border:"none",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:T.muted,opacity:menu?1:0,transition:"opacity .15s"}}
+        className="chat-menu-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      </button>
+
+      {/* Dropdown menu */}
+      {menu && (
+        <div ref={menuRef} onClick={e=>e.stopPropagation()}
+          style={{position:"absolute",right:8,top:"100%",zIndex:200,background:T.s1,border:`1px solid ${T.border}`,borderRadius:10,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",minWidth:140,overflow:"hidden",marginTop:4}}>
+          {[
+            { label: s.pinned?"Unpin":"Pin to top", icon:"M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z", action:()=>{onPin(s.id);setMenu(false);}, fill:true },
+            { label:"Rename", icon:"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z", action:()=>{setEditVal(s.title||"New conversation");setEditing(true);setMenu(false);}, fill:false },
+            { label:"Delete", icon:"M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6", action:()=>{onDelete(s.id);setMenu(false);}, fill:false, danger:true },
+          ].map(item => (
+            <button key={item.label} onClick={item.action}
+              style={{width:"100%",padding:"9px 14px",border:"none",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",gap:9,fontSize:12,fontWeight:500,color:item.danger?"#EF4444":T.text,fontFamily:"inherit",textAlign:"left"}}
+              onMouseEnter={e=>(e.currentTarget.style.background=T.s2)}
+              onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill={item.fill?"currentColor":"none"} stroke={item.fill?"none":"currentColor"} strokeWidth="2" strokeLinecap="round" color={item.danger?"#EF4444":T.muted}>
+                <path d={item.icon}/>
+              </svg>
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+<style>{".chat-menu-btn{opacity:0!important}.chat-menu-btn:hover,.chat-menu-btn:focus{opacity:1!important}[style*='background']:hover .chat-menu-btn{opacity:1!important}"}</style>
+
 // ── History sidebar ────────────────────────────────────────────
-function Sidebar({ history, activeId, onSelect, onNew, onDelete, open, onClose, T }:
-  { history:Session[]; activeId:string; onSelect:(id:string)=>void; onNew:()=>void; onDelete:(id:string)=>void; open:boolean; onClose:()=>void; T:typeof TL }) {
+function Sidebar({ history, activeId, onSelect, onNew, onDelete, onRename, onPin, open, onClose, T }:
+  { history:Session[]; activeId:string; onSelect:(id:string)=>void; onNew:()=>void; onDelete:(id:string)=>void; onRename:(id:string,title:string)=>void; onPin:(id:string)=>void; open:boolean; onClose:()=>void; T:typeof TL }) {
   return (
     <>
       <AnimatePresence>
@@ -293,34 +379,8 @@ function Sidebar({ history, activeId, onSelect, onNew, onDelete, open, onClose, 
               <p style={{fontSize:12,color:T.muted,lineHeight:1.7}}>No chats yet.<br/>Start a conversation<br/>and it'll appear here.</p>
             </div>
           )}
-          {history.map(s => (
-            <div key={s.id}
-              onClick={() => onSelect(s.id)}
-              style={{display:"flex",alignItems:"center",gap:7,padding:"8px 10px",borderRadius:9,marginBottom:2,background:s.id===activeId?T.accentBg:"transparent",cursor:"pointer",transition:"background .14s",position:"relative",group:"true"}}
-              onMouseEnter={e => {
-                if (s.id!==activeId)(e.currentTarget as HTMLElement).style.background=T.s2;
-                const btn = e.currentTarget.querySelector(".del-btn") as HTMLElement;
-                if (btn) btn.style.opacity="1";
-              }}
-              onMouseLeave={e => {
-                if (s.id!==activeId)(e.currentTarget as HTMLElement).style.background="transparent";
-                const btn = e.currentTarget.querySelector(".del-btn") as HTMLElement;
-                if (btn) btn.style.opacity="0";
-              }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={s.id===activeId?T.accent:T.muted} strokeWidth="2" strokeLinecap="round" style={{flexShrink:0}}>
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-              <div style={{flex:1,minWidth:0}}>
-                <p style={{fontSize:12,fontWeight:600,color:s.id===activeId?T.accent:T.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.title||"New conversation"}</p>
-                <p style={{fontSize:10,color:T.muted,marginTop:1}}>{timeAgo(s.ts)}</p>
-              </div>
-              <button
-                className="del-btn"
-                onClick={e => { e.stopPropagation(); onDelete(s.id); }}
-                style={{flexShrink:0,width:18,height:18,borderRadius:5,border:"none",background:"rgba(220,38,38,.12)",color:"#DC2626",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",opacity:0,transition:"opacity .15s"}}>
-                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-              </button>
-            </div>
+          {[...history].sort((a,b) => (b.pinned?1:0)-(a.pinned?1:0)).map(s => (
+            <HistoryItem key={s.id} s={s} activeId={activeId} onSelect={onSelect} onDelete={onDelete} onRename={onRename} onPin={onPin} T={T}/>
           ))}
         </div>
       </motion.div>
@@ -511,9 +571,9 @@ const CAPS = [
   {icon:"🌐",text:"Import from any website"},
   {icon:"📊",text:"Live store analytics"},
   {icon:"⚡",text:"Actions from chat"},
-  {icon:"🔥",text:"Market intelligence"},
+  {icon:"intel",text:"Market intelligence"},
   {icon:"📣",text:"AI ad copy"},
-  {icon:"🎯",text:"Goals & pulse alerts"},
+  {icon:"goals",text:"Goals & pulse alerts"},
 ];
 
 // ── Main ───────────────────────────────────────────────────────
@@ -546,6 +606,18 @@ export default function KIROPage() {
     refreshHist();
     if (id===sessionId) newSession();
   }, [sessionId, newSession, refreshHist]);
+
+  const renameSession = useCallback((id: string, title: string) => {
+    const h = loadHist().map((s: Session) => s.id === id ? { ...s, title } : s);
+    localStorage.setItem("kiro_hist", JSON.stringify(h));
+    refreshHist();
+  }, [refreshHist]);
+
+  const pinSession = useCallback((id: string) => {
+    const h = loadHist().map((s: Session) => s.id === id ? { ...s, pinned: !s.pinned } : s);
+    localStorage.setItem("kiro_hist", JSON.stringify(h));
+    refreshHist();
+  }, [refreshHist]);
 
   // Record a chat when user sends their first message
   const recordChat = useCallback((firstMsg: string) => {
@@ -597,6 +669,7 @@ export default function KIROPage() {
       <Sidebar
         history={history} activeId={sessionId}
         onSelect={pickSession} onNew={newSession} onDelete={removeSession}
+        onRename={renameSession} onPin={pinSession}
         open={sidebarOpen} onClose={()=>setSidebarOpen(false)} T={T}/>
 
       <header style={{height:48,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",borderBottom:`1px solid ${T.border}`,background:T.s1,flexShrink:0,boxShadow:T.shadow,gap:10}}>

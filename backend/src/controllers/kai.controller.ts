@@ -1021,11 +1021,15 @@ export async function getPulseAlerts(req: Request, res: Response) {
         const ctx = await getDeepContext(storeId).catch(() => null);
         const auto: any[] = [];
         if (ctx) {
-          if (ctx.pendingOrders > 0) auto.push({ id:`auto-1`, severity:"warning", title:`${ctx.pendingOrders} Unfulfilled Order${ctx.pendingOrders>1?"s":""}`, message:`You have ${ctx.pendingOrders} pending orders worth ${ctx.currencySymbol}${ctx.unfulfilledRevenue?.toLocaleString()||0}. Customers are waiting.`, read:false, actionable:true, suggestedPrompt:"Show me my unfulfilled orders and help me fulfill them" });
-          if (ctx.lowStockCount > 0) auto.push({ id:`auto-2`, severity:"warning", title:`${ctx.lowStockCount} Product${ctx.lowStockCount>1?"s":""}  Running Low`, message:`Restock before you run out and lose sales.`, read:false, actionable:true, suggestedPrompt:"Which products need restocking urgently?" });
-          if (ctx.revenueToday === 0) auto.push({ id:`auto-3`, severity:"opportunity", title:"No Sales Yet Today", message:"Time to drive traffic. A flash sale or WhatsApp blast could flip this.", read:false, actionable:true, suggestedPrompt:"Help me drive sales today" });
+          // Each alert has a unique id — deduplicated so they never repeat
+          if (ctx.pendingOrders > 0) auto.push({ id:`auto-orders`, severity:"warning", title:`${ctx.pendingOrders} Order${ctx.pendingOrders>1?"s":""}  Waiting Over 48 Hours`, message:`You have ${ctx.pendingOrders} orders that haven't been shipped in over 2 days. Customers are waiting. Let me help you fulfill them now.`, read:false, actionable:true, suggestedPrompt:"Show me my unfulfilled orders and help me fulfill them" });
+          if (ctx.lowStockCount > 0) auto.push({ id:`auto-stock`, severity:"warning", title:`${ctx.lowStockCount} Product${ctx.lowStockCount>1?"s":""}  Running Low on Stock`, message:`These products may run out before your next order. Restock now to avoid losing sales.`, read:false, actionable:true, suggestedPrompt:"Which products need restocking urgently?" });
+          if (ctx.revenueToday === 0) auto.push({ id:`auto-sales`, severity:"opportunity", title:"No Sales Yet Today — Let's Change That", message:"It's already afternoon and no orders today. A quick WhatsApp broadcast or flash sale could turn this around. Want me to set one up?", read:false, actionable:true, suggestedPrompt:"Help me drive sales today" });
         }
-        return res.json({ success: true, data: auto });
+        // Deduplicate by id before returning
+        const seen = new Set<string>();
+        const deduped = auto.filter(a => { if (seen.has(a.id)) return false; seen.add(a.id); return true; });
+        return res.json({ success: true, data: deduped });
       } catch {}
     }
     res.json({ success: true, data: alerts });
