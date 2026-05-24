@@ -14,8 +14,8 @@ import { TrendingUp, ShoppingCart, Users, ArrowUpRight, ArrowDownRight, Zap, Dow
 
 const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA", cyan:"#06B6D4", green:"#10B981", amber:"#F59E0B", red:"#EF4444" };
 const T = {
-  dark:  { card:T.card, border:"rgba(255,255,255,0.06)", text:"#fff", muted:T.faint, faint:"rgba(255,255,255,0.04)", grid:"rgba(255,255,255,0.04)" },
-  light: { card:"#fff",    border:"rgba(15,5,32,0.07)",    text:T.card, muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)", grid:"rgba(15,5,32,0.06)" },
+  dark:  { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:"rgba(240,236,255,0.25)", faint:"rgba(255,255,255,0.04)", grid:"rgba(255,255,255,0.04)" },
+  light: { card:"#fff",    border:"rgba(15,5,32,0.07)",    text:"#181230", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)", grid:"rgba(15,5,32,0.06)" },
 };
 const PERIODS = ["7 days","30 days","90 days","1 year"];
 

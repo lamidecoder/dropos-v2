@@ -25,7 +25,7 @@ function StatCard({ label, value, sub, trend, color, icon: Icon, delay = 0 }: an
   const isUp = trend >= 0;
   return (
     <motion.div className="rounded-2xl p-4 relative overflow-hidden"
-      style={{ background: T.faint, border: "1px solid rgba(255,255,255,0.07)" }}
+      style={{ background: "rgba(240,236,255,0.25)", border: "1px solid rgba(255,255,255,0.07)" }}
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
       transition={{ delay, type: "spring", damping: 22 }}>
       {/* Glow */}
@@ -45,8 +45,8 @@ function StatCard({ label, value, sub, trend, color, icon: Icon, delay = 0 }: an
         )}
       </div>
       <p className="text-2xl font-black text-white mb-0.5">{value}</p>
-      <p className="text-xs" style={{ color: T.muted }}>{label}</p>
-      {sub && <p className="text-xs mt-0.5" style={{ color: T.faint }}>{sub}</p>}
+      <p className="text-xs" style={{ color: "rgba(240,236,255,0.5)" }}>{label}</p>
+      {sub && <p className="text-xs mt-0.5" style={{ color: "rgba(240,236,255,0.25)" }}>{sub}</p>}
     </motion.div>
   );
 }
@@ -66,7 +66,7 @@ function PulseAlert({ alert }: { alert: any }) {
         style={{ background: c }} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white">{alert.title}</p>
-        <p className="text-xs mt-0.5 leading-relaxed" style={{ color: T.muted }}>
+        <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "rgba(240,236,255,0.5)" }}>
           {alert.message}
         </p>
       </div>
@@ -85,12 +85,12 @@ function QuickAction({ emoji, label, href, color }: any) {
   return (
     <a href={href}
       className="flex flex-col items-center gap-2 p-3 rounded-2xl transition-all"
-      style={{ background: T.faint, border: "1px solid rgba(255,255,255,0.07)" }}>
+      style={{ background: "rgba(240,236,255,0.25)", border: "1px solid rgba(255,255,255,0.07)" }}>
       <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
         style={{ background: `${color}15` }}>
         {emoji}
       </div>
-      <p className="text-xs text-center" style={{ color: T.text, lineHeight: 1.3 }}>{label}</p>
+      <p className="text-xs text-center" style={{ color: "#F0ECFF", lineHeight: 1.3 }}>{label}</p>
     </a>
   );
 }

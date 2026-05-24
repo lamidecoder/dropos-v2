@@ -9,7 +9,7 @@ import { Plus, X, Package, Zap, Check, Loader2, ShoppingBag, Tag } from "lucide-
 import toast from "react-hot-toast";
 
 const V={v500:"#6B35E8",v400:"#8B5CF6",v300:"#A78BFA",green:"#10B981",amber:"#F59E0B"};
-const TM={dark:{card:T.card,border:"rgba(255,255,255,0.06)",text:"#fff",muted:T.faint,faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:T.card,muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
+const TM={dark:{card:"#181230",border:"rgba(255,255,255,0.06)",text:"#fff",muted:"rgba(240,236,255,0.25)",faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:"#181230",muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
 const fmt=(n:number)=>new Intl.NumberFormat("en",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(n||0);
 
 export default function BundleBuilderPage(){

@@ -19,10 +19,10 @@ function GradeCircle({ score, label }: { score: number; label: string }) {
         </svg>
         <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
           <p style={{fontSize:20,fontWeight:900,color,margin:0,letterSpacing:"-0.04em"}}>{score}</p>
-          <p style={{fontSize:9,color:T.faint,margin:0,fontWeight:600}}>/100</p>
+          <p style={{fontSize:9,color:"rgba(240,236,255,0.25)",margin:0,fontWeight:600}}>/100</p>
         </div>
       </div>
-      <p style={{fontSize:12,fontWeight:600,color:T.muted,margin:0}}>{label}</p>
+      <p style={{fontSize:12,fontWeight:600,color:"rgba(240,236,255,0.5)",margin:0}}>{label}</p>
     </div>
   );
 }

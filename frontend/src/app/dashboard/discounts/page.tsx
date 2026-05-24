@@ -124,7 +124,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
           </div>
           <div>
             <div className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>{d.name}</div>
-            <div className="text-[11px] mt-0.5" style={{ color: T.faint }}>{typeConf.label}</div>
+            <div className="text-[11px] mt-0.5" style={{ color: "rgba(240,236,255,0.25)" }}>{typeConf.label}</div>
           </div>
         </div>
         <StatusBadge status={d.status} />
@@ -161,7 +161,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
         <div className="flex gap-1.5 mb-3 flex-wrap">
           {(d.tiers as TierRow[]).map((t, i) => (
             <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded-lg"
-              style={{ background: "var(--bg-card,#fff)", color: T.muted, border: "1px solid rgba(255,255,255,0.06)" }}>
+              style={{ background: "var(--bg-card,#fff)", color: "rgba(240,236,255,0.5)", border: "1px solid rgba(255,255,255,0.06)" }}>
               {t.minQty}+ → {t.discount}% off
             </span>
           ))}
@@ -171,7 +171,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
       {/* Usage bar */}
       {d.maxUses && (
         <div className="mb-3">
-          <div className="flex justify-between text-[11px] mb-1" style={{ color: T.faint }}>
+          <div className="flex justify-between text-[11px] mb-1" style={{ color: "rgba(240,236,255,0.25)" }}>
             <span>{d.usedCount} uses</span>
             <span>{d.maxUses} max</span>
           </div>
@@ -184,7 +184,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
 
       {/* Dates */}
       {(d.startsAt || d.expiresAt) && (
-        <div className="text-[11px] mb-3" style={{ color: T.faint }}>
+        <div className="text-[11px] mb-3" style={{ color: "rgba(240,236,255,0.25)" }}>
           {d.startsAt && <span>Starts: {new Date(d.startsAt).toLocaleDateString()} · </span>}
           {d.expiresAt && <span>Expires: {new Date(d.expiresAt).toLocaleDateString()}</span>}
         </div>
@@ -193,22 +193,22 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
       {/* Actions */}
       <div className="flex items-center justify-between pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px]" style={{ color: T.faint }}>
+          <span className="text-[11px]" style={{ color: "rgba(240,236,255,0.25)" }}>
             {d._count?.usages || d.usedCount || 0} uses · ${((d._count?.usages || 0) * 0).toFixed(0)} saved
           </span>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={() => toggleMut.mutate()}
             className="p-2 rounded-lg transition-all text-xs font-bold flex items-center gap-1"
-            style={{ color: isActive ? "var(--success)" : T.faint, background: isActive ? "rgba(16,185,129,0.08)" : "var(--bg-card,#fff)" }}>
+            style={{ color: isActive ? "var(--success)" : "rgba(240,236,255,0.25)", background: isActive ? "rgba(16,185,129,0.08)" : "var(--bg-card,#fff)" }}>
             {isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
             {isActive ? "On" : "Off"}
           </button>
           <button onClick={() => onDelete(d.id)}
             className="p-2 rounded-lg transition-all"
-            style={{ color: T.faint }}
+            style={{ color: "rgba(240,236,255,0.25)" }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--error)"}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = T.faint}>
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(240,236,255,0.25)"}>
             <Trash2 size={13} />
           </button>
         </div>
@@ -229,18 +229,18 @@ function TierEditor({ tiers, onChange }: { tiers: TierRow[]; onChange: (t: TierR
     <div className="space-y-2">
       {tiers.map((t, i) => (
         <div key={i} className="flex items-center gap-2">
-          <span className="text-xs" style={{ color: T.faint, width: 60 }}>Buy {i === 0 ? "≥" : "≥"}</span>
+          <span className="text-xs" style={{ color: "rgba(240,236,255,0.25)", width: 60 }}>Buy {i === 0 ? "≥" : "≥"}</span>
           <input type="number" value={t.minQty} min={1}
             onChange={e => set(i, "minQty", Number(e.target.value))}
             className="w-20 rounded-lg px-2 py-1.5 text-xs outline-none"
             style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" }} />
-          <span className="text-xs" style={{ color: T.faint }}>items →</span>
+          <span className="text-xs" style={{ color: "rgba(240,236,255,0.25)" }}>items →</span>
           <input type="number" value={t.discount} min={1} max={100}
             onChange={e => set(i, "discount", Number(e.target.value))}
             className="w-20 rounded-lg px-2 py-1.5 text-xs outline-none"
             style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" }} />
-          <span className="text-xs" style={{ color: T.faint }}>% off</span>
-          <button onClick={() => del(i)} className="p-1 rounded" style={{ color: T.faint }}>
+          <span className="text-xs" style={{ color: "rgba(240,236,255,0.25)" }}>% off</span>
+          <button onClick={() => del(i)} className="p-1 rounded" style={{ color: "rgba(240,236,255,0.25)" }}>
             <X size={12} />
           </button>
         </div>
