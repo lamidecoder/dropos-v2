@@ -167,25 +167,25 @@ function parseActions(text: string): Action[] {
 
 // ── action card labels ─────────────────────────────────────────────────────────
 const ACTION_META: Record<string, { icon: string; label: string; cta: string }> = {
-  add_product:           { icon:"📦", label:"Add product",         cta:"Add to store"    },
-  import_from_url:       { icon:"🌐", label:"Import product",      cta:"Import"          },
-  update_price:          { icon:"💰", label:"Update price",        cta:"Update"          },
-  update_stock:          { icon:"📋", label:"Update stock",        cta:"Update"          },
-  create_coupon:         { icon:"🎟", label:"Create coupon",       cta:"Create"          },
-  create_coupon_v2:      { icon:"🎟", label:"Create coupon",       cta:"Create"          },
-  fulfill_order:         { icon:"🚚", label:"Fulfill order",       cta:"Fulfill"         },
-  update_order_status:   { icon:"📬", label:"Update order",        cta:"Update"          },
-  create_flash_sale:     { icon:"⚡", label:"Flash sale",          cta:"Launch"          },
-  archive_product:       { icon:"🔒", label:"Archive product",     cta:"Archive"         },
-  delete_product:        { icon:"🗑", label:"Delete product",      cta:"Delete"          },
-  duplicate_product:     { icon:"📋", label:"Duplicate product",   cta:"Duplicate"       },
-  add_tracking:          { icon:"📦", label:"Add tracking",        cta:"Add"             },
-  process_refund:        { icon:"💸", label:"Process refund",      cta:"Refund"          },
-  send_email:            { icon:"📧", label:"Send email",          cta:"Send"            },
-  send_whatsapp:         { icon:"💬", label:"Send WhatsApp",       cta:"Send"            },
-  bulk_update_prices:    { icon:"💰", label:"Bulk price update",   cta:"Update all"      },
-  update_store_description:{ icon:"✏️", label:"Update store",     cta:"Update"          },
-  update_product:        { icon:"✏️", label:"Update product",      cta:"Save"            },
+  add_product:           { icon:"", label:"Add product",         cta:"Add to store"    },
+  import_from_url:       { icon:"", label:"Import product",      cta:"Import"          },
+  update_price:          { icon:"", label:"Update price",        cta:"Update"          },
+  update_stock:          { icon:"", label:"Update stock",        cta:"Update"          },
+  create_coupon:         { icon:"", label:"Create coupon",       cta:"Create"          },
+  create_coupon_v2:      { icon:"", label:"Create coupon",       cta:"Create"          },
+  fulfill_order:         { icon:"", label:"Fulfill order",       cta:"Fulfill"         },
+  update_order_status:   { icon:"", label:"Update order",        cta:"Update"          },
+  create_flash_sale:     { icon:"", label:"Flash sale",          cta:"Launch"          },
+  archive_product:       { icon:"", label:"Archive product",     cta:"Archive"         },
+  delete_product:        { icon:"", label:"Delete product",      cta:"Delete"          },
+  duplicate_product:     { icon:"", label:"Duplicate product",   cta:"Duplicate"       },
+  add_tracking:          { icon:"", label:"Add tracking",        cta:"Add"             },
+  process_refund:        { icon:"", label:"Process refund",      cta:"Refund"          },
+  send_email:            { icon:"", label:"Send email",          cta:"Send"            },
+  send_whatsapp:         { icon:"", label:"Send WhatsApp",       cta:"Send"            },
+  bulk_update_prices:    { icon:"", label:"Bulk price update",   cta:"Update all"      },
+  update_store_description:{ icon:"", label:"Update store",     cta:"Update"          },
+  update_product:        { icon:"", label:"Update product",      cta:"Save"            },
 };
 
 // ── Time greeting ──────────────────────────────────────────────────────────────
@@ -224,7 +224,7 @@ function Spinner({ size = 16, color = ACCENT }: { size?: number; color?: string 
 function ActionCard({ action, onApprove, onDismiss, t }: { action: Action; onApprove:(a:Action)=>void; onDismiss:(a:Action)=>void; t: typeof T.light }) {
   const [loading, setLoading] = useState(false);
   const [done,    setDone]    = useState(false);
-  const meta = ACTION_META[action.type] || { icon:"⚡", label: action.type.replace(/_/g," "), cta:"Run" };
+  const meta = ACTION_META[action.type] || { icon:"", label: action.type.replace(/_/g," "), cta:"Run" };
   if (done) return null;
 
   const p = action.payload as any;
@@ -374,12 +374,12 @@ function Welcome({ name, storeData, onSend, t }: { name:string; storeData:any; o
   const sym      = storeData?.currencySymbol || "₦";
 
   const QUICK = [
-    { icon:"📊", title:"Store pulse",       sub:"Revenue · Health · What needs action",  prompt:"Give me my full store summary — revenue, orders, health score, and what I should focus on today." },
-    { icon:"🔥", title:"Trending products", sub:"Live market research",                   prompt:"What products are trending right now in my market this week?" },
-    { icon:"🌐", title:"Import product",    sub:"Any URL — AliExpress, Temu, Amazon",     prompt:"I want to import a product. Paste a link and I'll handle everything." },
-    { icon:"⚡", title:"Flash sale",        sub:"Drive sales right now",                  prompt:"Help me set up a flash sale on my best products today." },
-    { icon:"📣", title:"Write ad copy",     sub:"TikTok · WhatsApp · Instagram",          prompt:"Write high-converting ad copy for my top product across TikTok, WhatsApp, and Instagram." },
-    { icon:"🚀", title:"Growth plan",       sub:"Specific 5-step plan",                   prompt:"Give me a specific 5-step plan to grow my store revenue this month based on my current data." },
+    { svg:"M3 3h18v2H3zm0 4h12v2H3zm0 4h18v2H3zm0 4h12v2H3z", title:"Store pulse",       sub:"Revenue · Health · What needs action",  prompt:"Give me my full store summary — revenue, orders, health score, and what I should focus on today." },
+    { svg:"M2 20h20M6 20V10l6-6 6 6v10M9 20v-5h6v5", title:"Trending products", sub:"Live market research",                   prompt:"What products are trending right now in my market this week?" },
+    { svg:"M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-4v4l3 3", title:"Import product",    sub:"Any URL — AliExpress, Temu, Amazon",     prompt:"I want to import a product. Paste a link and I'll handle everything." },
+    { svg:"M13 2L3 14h9l-1 8 10-12h-9z", title:"Flash sale",        sub:"Drive sales right now",                  prompt:"Help me set up a flash sale on my best products today." },
+    { svg:"M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z", title:"Write ad copy",     sub:"TikTok · WhatsApp · Instagram",          prompt:"Write high-converting ad copy for my top product across TikTok, WhatsApp, and Instagram." },
+    { svg:"M22 12h-4l-3 9L9 3l-3 9H2", title:"Growth plan",       sub:"Specific 5-step plan",                   prompt:"Give me a specific 5-step plan to grow my store revenue this month based on my current data." },
   ];
 
   return (

@@ -300,7 +300,7 @@ function Sidebar({ t, pathname, plan, user, onNavClick, onLogout, theme }: any) 
         {/* Locked groups hint */}
         {lockedCount > 0 && level < 4 && (
           <div style={{ margin:"8px 4px 4px", padding:"10px 12px", borderRadius:12, background:"rgba(107,53,232,0.04)", border:"1px solid rgba(107,53,232,0.1)", textAlign:"center" }}>
-            <p style={{ fontSize:10, color:"rgba(255,255,255,0.25)", lineHeight:1.5 }}>
+            <p style={{ fontSize:10, color:t.textFaint, lineHeight:1.5 }}>
               More features unlock as you grow.
             </p>
             <p style={{ fontSize:10, color:V.v300, marginTop:2, fontWeight:600 }}>

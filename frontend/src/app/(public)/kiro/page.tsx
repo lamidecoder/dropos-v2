@@ -262,6 +262,7 @@ function HistoryItem({ s, activeId, onSelect, onDelete, onRename, onPin, T }:
   const [menu, setMenu] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editVal, setEditVal] = useState(s.title||"New conversation");
+  const [hover, setHover] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -279,9 +280,9 @@ function HistoryItem({ s, activeId, onSelect, onDelete, onRename, onPin, T }:
   return (
     <div
       onClick={() => !editing && onSelect(s.id)}
-      style={{display:"flex",alignItems:"center",gap:7,padding:"7px 10px",borderRadius:9,marginBottom:2,background:s.id===activeId?T.accentBg:"transparent",cursor:"pointer",transition:"background .14s",position:"relative"}}
-      onMouseEnter={e => { if (s.id!==activeId)(e.currentTarget as HTMLElement).style.background=T.s2; }}
-      onMouseLeave={e => { if (s.id!==activeId)(e.currentTarget as HTMLElement).style.background="transparent"; }}>
+      style={{display:"flex",alignItems:"center",gap:7,padding:"7px 10px",borderRadius:9,marginBottom:2,background:s.id===activeId?T.accentBg:hover?T.s2:"transparent",cursor:"pointer",transition:"background .14s",position:"relative"}}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}>
 
       {/* Pin indicator */}
       {s.pinned && <svg width="8" height="8" viewBox="0 0 24 24" fill={T.accent} style={{flexShrink:0}}><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>}
@@ -308,8 +309,7 @@ function HistoryItem({ s, activeId, onSelect, onDelete, onRename, onPin, T }:
 
       {/* Context menu trigger */}
       <button onClick={e=>{e.stopPropagation();setMenu(m=>!m);}}
-        style={{flexShrink:0,width:20,height:20,borderRadius:5,border:"none",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:T.muted,opacity:menu?1:0,transition:"opacity .15s"}}
-        className="chat-menu-btn">
+        style={{flexShrink:0,width:20,height:20,borderRadius:5,border:"none",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:T.muted,opacity:menu||hover?1:0,transition:"opacity .15s"}}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
       </button>
 
@@ -337,8 +337,7 @@ function HistoryItem({ s, activeId, onSelect, onDelete, onRename, onPin, T }:
     </div>
   );
 }
-<style>{".chat-menu-btn{opacity:0!important}.chat-menu-btn:hover,.chat-menu-btn:focus{opacity:1!important}[style*='background']:hover .chat-menu-btn{opacity:1!important}"}</style>
-
+// chat menu visibility handled via inline opacity
 // ── History sidebar ────────────────────────────────────────────
 function Sidebar({ history, activeId, onSelect, onNew, onDelete, onRename, onPin, open, onClose, T }:
   { history:Session[]; activeId:string; onSelect:(id:string)=>void; onNew:()=>void; onDelete:(id:string)=>void; onRename:(id:string,title:string)=>void; onPin:(id:string)=>void; open:boolean; onClose:()=>void; T:typeof TL }) {

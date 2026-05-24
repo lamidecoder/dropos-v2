@@ -113,7 +113,15 @@ export default function DashboardPage() {
 
   const stats = analytics?.stats || {};
   const orders = Array.isArray(recentOrders) ? recentOrders : [];
-  const alerts = Array.isArray(pulse) ? pulse : [];
+  // Deduplicate alerts by message to avoid showing same alert multiple times
+  const rawAlerts = Array.isArray(pulse) ? pulse : [];
+  const seen = new Set<string>();
+  const alerts = rawAlerts.filter((a: any) => {
+    const key = a.message || a.title || JSON.stringify(a);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 4);
 
   const statCards = [
     { label: "Revenue (7d)",  value: fmt(stats.revenue || 0),          delta: stats.revenueDelta,  color: V.v400,  icon: TrendingUp  },
