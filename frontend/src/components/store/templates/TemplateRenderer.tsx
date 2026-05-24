@@ -3288,6 +3288,148 @@ function BoundTemplate({ store, products=[], search, onSearch, category, onCateg
   );
 }
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  TEMPLATE: ONYX — Minimal Monochrome (Pure black/white, ultra-clean)
+// ══════════════════════════════════════════════════════════════════════════════
+function OnyxTemplate({ store, products=[], search, onSearch, category, onCategory, categories=[], isLoading }: TemplateProps) {
+  const brand=store.primaryColor||"#111"; const currency=store.currency||"NGN";
+  const{count,toggle}=useCart(store.id,currency); const w=useWindowSize();
+  return(
+    <div style={{minHeight:"100vh",background:"#fff",fontFamily:"'Helvetica Neue',Arial,sans-serif",color:"#111"}}>
+      <style>{"@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}"}</style>
+      <header style={{borderBottom:"1px solid #e8e8e8",position:"sticky",top:0,zIndex:50,background:"#fff"}}>
+        <div style={{maxWidth:1200,margin:"0 auto",padding:"0 clamp(16px,4vw,40px)",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:"clamp(15px,2.5vw,20px)",fontWeight:900,letterSpacing:"-0.04em"}}>{store.name}</span>
+          <div style={{flex:1,maxWidth:320,margin:"0 24px",display:"flex",alignItems:"center",gap:8,padding:"8px 12px",border:"1px solid #e8e8e8"}}>
+            <Search size={13} color="#888"/><input value={search||""} onChange={e=>onSearch?.(e.target.value)} placeholder="Search…" style={{flex:1,border:"none",outline:"none",fontSize:13,fontFamily:"inherit"}}/>
+          </div>
+          <button onClick={toggle} style={{background:"none",border:"none",cursor:"pointer",position:"relative"}}><ShoppingCart size={18}/>{count>0&&<span style={{position:"absolute",top:-4,right:-4,width:14,height:14,borderRadius:"50%",background:"#111",color:"#fff",fontSize:8,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{count}</span>}</button>
+        </div>
+      </header>
+      <div style={{maxWidth:1200,margin:"0 auto",padding:"clamp(40px,6vw,80px) clamp(16px,4vw,40px)"}}>
+        <div style={{borderBottom:"1px solid #e8e8e8",paddingBottom:24,marginBottom:40}}>
+          <h1 style={{fontSize:"clamp(36px,6vw,72px)",fontWeight:900,margin:0,letterSpacing:"-0.05em",lineHeight:0.9}}>{store.name}</h1>
+          <p style={{fontSize:14,color:"#888",margin:"12px 0 0",maxWidth:480}}>{store.description||"Curated products, zero compromise."}</p>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"220px"},1fr))`,gap:1,background:"#e8e8e8"}}>
+          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{background:"#fff",aspectRatio:"4/5",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
+            const img=p.images?.[0]||"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=500&fit=crop";
+            const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false); const[hov,setHov]=useState(false);
+            return(<div key={p.id} style={{background:"#fff",position:"relative"}} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>
+              <Link href={`/store/${store.slug}/product/${p.id}`} style={{textDecoration:"none",display:"block"}}>
+                <div style={{aspectRatio:"4/5",overflow:"hidden",background:"#f8f8f8"}}>
+                  <img src={img} alt={p.name} style={{width:"100%",height:"100%",objectFit:"cover",transition:"transform 0.6s",transform:hov?"scale(1.04)":"scale(1)"}}/>
+                </div>
+                <div style={{padding:"12px 14px 16px"}}>
+                  <p style={{fontSize:13,color:"#888",margin:"0 0 3px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.category||store.name}</p>
+                  <p style={{fontSize:14,fontWeight:600,color:"#111",margin:"0 0 8px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</p>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{fontSize:15,fontWeight:800}}>{fmtPrice(p.price,currency)}</span>
+                    <button onClick={e=>{e.preventDefault();e.stopPropagation();add(p);setAdded(true);setTimeout(()=>setAdded(false),1500)}} style={{padding:"5px 12px",border:"1px solid #111",background:added?"#111":"transparent",color:added?"#fff":"#111",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{added?"✓":"ADD"}</button>
+                  </div>
+                </div>
+              </Link>
+            </div>);
+          })}
+        </div>
+      </div>
+      <Newsletter brand={brand}/><StoreFooter store={store} brand={brand}/><CartDrawer store={store} brand={brand} currency={currency}/>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  TEMPLATE: BLAZE — Gaming/Esports (Red/black neon aggression)
+// ══════════════════════════════════════════════════════════════════════════════
+function BlazeTemplate({ store, products=[], search, onSearch, category, onCategory, categories=[], isLoading }: TemplateProps) {
+  const brand=store.primaryColor||"#FF2D55"; const currency=store.currency||"NGN";
+  const{count,toggle}=useCart(store.id,currency); const w=useWindowSize();
+  return(
+    <div style={{minHeight:"100vh",background:"#0D0D0D",color:"#F5F5F5",fontFamily:"'Rajdhani','Impact',sans-serif",overflowX:"hidden"}}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+      <header style={{position:"sticky",top:0,zIndex:50,background:"rgba(13,13,13,0.97)",borderBottom:`2px solid ${brand}`}}>
+        <div style={{maxWidth:1280,margin:"0 auto",padding:"0 clamp(16px,3vw,32px)",height:60,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:"clamp(16px,3vw,24px)",fontWeight:700,color:"#F5F5F5",letterSpacing:"0.06em",textTransform:"uppercase"}}>{store.name}</span>
+          <button onClick={toggle} style={{background:brand,border:"none",padding:"8px 16px",color:"#F5F5F5",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"inherit",display:"flex",alignItems:"center",gap:6}}><ShoppingCart size={14}/>[{count}]</button>
+        </div>
+      </header>
+      <div style={{background:"linear-gradient(135deg,#1A0005,#0D0D0D)",padding:"clamp(48px,8vw,96px) clamp(16px,3vw,32px)"}}>
+        <h1 style={{fontSize:"clamp(52px,10vw,112px)",fontWeight:700,lineHeight:0.85,margin:"0 0 20px",textTransform:"uppercase",letterSpacing:"-0.03em"}}>{store.name.toUpperCase()}<br/><span style={{color:brand}}>STORE</span></h1>
+        <p style={{fontSize:14,color:"rgba(245,245,245,0.5)",maxWidth:480,margin:"0 0 32px"}}>{store.description||"Premium gear for serious players."}</p>
+        <a href="#products" style={{display:"inline-block",padding:"14px 32px",background:brand,color:"#fff",fontSize:15,fontWeight:700,textDecoration:"none",textTransform:"uppercase"}}>ENTER STORE →</a>
+      </div>
+      <div id="products" style={{maxWidth:1280,margin:"0 auto",padding:"clamp(32px,5vw,56px) clamp(16px,3vw,32px)"}}>
+        <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"220px"},1fr))`,gap:2}}>
+          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{background:"#1A1A1A",aspectRatio:"1",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
+            const img=p.images?.[0]||"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop";
+            const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false);
+            return(<div key={p.id} style={{background:"#1A1A1A"}}>
+              <Link href={`/store/${store.slug}/product/${p.id}`} style={{textDecoration:"none",display:"block"}}>
+                <img src={img} alt={p.name} style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block"}}/>
+                <div style={{padding:"12px 14px 14px"}}>
+                  <p style={{fontSize:14,fontWeight:700,color:"#F5F5F5",margin:"0 0 8px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</p>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{fontSize:16,fontWeight:700,color:brand}}>{fmtPrice(p.price,currency)}</span>
+                    <button onClick={e=>{e.preventDefault();e.stopPropagation();add(p);setAdded(true);setTimeout(()=>setAdded(false),1500)}} style={{padding:"6px 14px",background:added?"#1A1A1A":brand,border:`1px solid ${brand}`,color:"#F5F5F5",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{added?"✓ ADDED":"+ ADD"}</button>
+                  </div>
+                </div>
+              </Link>
+            </div>);
+          })}
+        </div>
+      </div>
+      <Newsletter brand={brand} dark/><StoreFooter store={store} brand={brand} dark/><CartDrawer store={store} brand={brand} currency={currency}/>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  TEMPLATE: FLORA — Plants/Botanicals (Green, organic, earthy)
+// ══════════════════════════════════════════════════════════════════════════════
+function FloraTemplate({ store, products=[], search, onSearch, category, onCategory, categories=[], isLoading }: TemplateProps) {
+  const brand=store.primaryColor||"#3A7D44"; const currency=store.currency||"NGN";
+  const{count,toggle}=useCart(store.id,currency); const w=useWindowSize();
+  return(
+    <div style={{minHeight:"100vh",background:"#F5F9F0",color:"#1A2E1C",fontFamily:"'Crimson Pro','Georgia',serif"}}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+      <header style={{position:"sticky",top:0,zIndex:50,background:"rgba(245,249,240,0.97)",backdropFilter:"blur(16px)",borderBottom:"1px solid rgba(58,125,68,0.1)"}}>
+        <div style={{maxWidth:1200,margin:"0 auto",padding:"0 clamp(16px,4vw,40px)",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:"clamp(18px,3vw,24px)",fontWeight:600,color:"#1A2E1C",fontStyle:"italic"}}>{store.name}</span>
+          <button onClick={toggle} style={{background:brand,border:"none",borderRadius:99,padding:"9px 18px",cursor:"pointer",color:"#F5F9F0",fontSize:13,fontWeight:500,display:"flex",alignItems:"center",gap:6}}><ShoppingCart size={14}/>{count>0?`(${count})`:"Cart"}</button>
+        </div>
+      </header>
+      <div style={{background:"linear-gradient(135deg,#E8F5E0,#D4EAC8)",padding:"clamp(56px,8vw,96px) clamp(16px,4vw,40px)"}}>
+        <h1 style={{fontSize:"clamp(44px,7vw,80px)",fontWeight:300,color:"#1A2E1C",lineHeight:1.05,margin:"0 0 20px",letterSpacing:"-0.02em"}}>Bring <em style={{fontStyle:"italic",color:brand}}>Nature</em> Home.</h1>
+        <p style={{fontSize:16,color:"rgba(26,46,28,0.6)",maxWidth:420,margin:"0 0 32px",fontWeight:300}}>{store.description||"Rare and beautiful plants delivered to your door."}</p>
+        <a href="#products" style={{display:"inline-block",padding:"14px 32px",borderRadius:99,background:brand,color:"#F5F9F0",fontSize:14,textDecoration:"none"}}>Shop Plants</a>
+      </div>
+      <div id="products" style={{maxWidth:1200,margin:"0 auto",padding:"clamp(40px,6vw,64px) clamp(16px,4vw,40px)"}}>
+        <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"240px"},1fr))`,gap:20}}>
+          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{borderRadius:20,background:"rgba(58,125,68,0.06)",aspectRatio:"3/4",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
+            const img=p.images?.[0]||"https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500&h=700&fit=crop";
+            const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false);
+            return(<div key={p.id} style={{borderRadius:20,overflow:"hidden",background:"#fff",boxShadow:"0 2px 16px rgba(58,125,68,0.06)"}}>
+              <Link href={`/store/${store.slug}/product/${p.id}`} style={{textDecoration:"none",display:"block"}}>
+                <img src={img} alt={p.name} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
+                <div style={{padding:"14px 16px 16px"}}>
+                  <p style={{fontSize:17,fontWeight:400,color:"#1A2E1C",margin:"0 0 10px"}}>{p.name}</p>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{fontSize:17,fontWeight:600,color:brand}}>{fmtPrice(p.price,currency)}</span>
+                    <button onClick={e=>{e.preventDefault();e.stopPropagation();add(p);setAdded(true);setTimeout(()=>setAdded(false),1500)}} style={{padding:"7px 14px",borderRadius:99,background:added?brand:"rgba(58,125,68,0.1)",border:`1px solid ${added?brand:"rgba(58,125,68,0.2)"}`,color:added?"#F5F9F0":brand,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>{added?"Added ✓":"Add"}</button>
+                  </div>
+                </div>
+              </Link>
+            </div>);
+          })}
+        </div>
+      </div>
+      <Newsletter brand={brand}/><StoreFooter store={store} brand={brand}/><CartDrawer store={store} brand={brand} currency={currency}/>
+    </div>
+  );
+}
+
+
 // ── TEMPLATE REGISTRY ──────────────────────────────────────────────────────────
 const REGISTRY: Record<string, (props: TemplateProps) => JSX.Element> = {
   // Classic / Aurora variants
