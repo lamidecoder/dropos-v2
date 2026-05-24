@@ -20,6 +20,15 @@ const fmt = (n: number) => new Intl.NumberFormat("en-NG", { style:"currency", cu
 function StatCard({ label, value, delta, color, icon: Icon, delay = 0 }: any) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+
+  const T = {
+    text:   isDark ? "#F0ECFF"                : "#130D2E",
+    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
+    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
+    card:   isDark ? "#181230"                : "#ffffff",
+    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
+    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
+  };
   const t = { card: isDark ? T.card : "#fff", border: isDark ? "rgba(255,255,255,0.06)" : "rgba(15,5,32,0.07)", text: isDark ? "#fff" : T.card, muted: isDark ? T.faint : "rgba(13,9,24,0.45)" };
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}

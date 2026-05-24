@@ -113,6 +113,12 @@ export default function ChatSettingsPage() {
     
   );
 
+  const T = {
+    text:   "#130D2E", muted:  "rgba(19,13,46,0.5)",
+    faint:  "rgba(19,13,46,0.3)", card: "#ffffff",
+    border: "rgba(107,53,232,0.09)", bg: "rgba(107,53,232,0.04)",
+  };
+
   return (
     
       <div className="space-y-6 max-w-2xl mx-auto">

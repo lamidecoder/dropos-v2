@@ -47,6 +47,15 @@ const EXAMPLE_SCRIPTS = [
 export default function ContentStudioPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+
+  const T = {
+    text:   isDark ? "#F0ECFF"                : "#130D2E",
+    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
+    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
+    card:   isDark ? "#181230"                : "#ffffff",
+    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
+    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
+  };
   const t = {
     card:   isDark ? "#0F0C1E" : "#fff",
     card2:  isDark ? T.card : "#F8F7FF",

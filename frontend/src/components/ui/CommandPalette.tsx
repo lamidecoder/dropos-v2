@@ -2,8 +2,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import {
 import { useTheme } from "../layout/DashboardLayout";
+import {
   Search, LayoutDashboard, Package, ShoppingCart, Users, BarChart2,
   Zap, Settings, CreditCard, Truck, Tag, Gift, Bell, Store,
   TrendingUp, Image, FileText, Globe, ArrowRight, Command,

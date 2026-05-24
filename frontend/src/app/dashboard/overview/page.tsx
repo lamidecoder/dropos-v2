@@ -1,10 +1,13 @@
 "use client";
-﻿"use client";
 // ============================================================
 // Dashboard Overview - Premium Home Screen
 // Path: frontend/src/app/dashboard/overview/page.tsx
 // ============================================================
-import { useState }      from "react";
+import { useState, useContext } from "react";
+import { useTheme } from "../../../components/layout/DashboardLayout";
+// @ts-ignore
+const _useTheme = useTheme;
+import { useState as _useState }      from "react";
 import { useQuery }      from "@tanstack/react-query";
 import { motion }        from "framer-motion";
 import { api }           from "@/lib/api";
@@ -94,6 +97,15 @@ function QuickAction({ emoji, label, href, color }: any) {
 
 // ── MAIN ──────────────────────────────────────────────────────
 export default function OverviewPage() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const T = {
+    text:   isDark ? "#F0ECFF"                : "#130D2E",
+    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
+    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
+    card:   isDark ? "#181230"                : "#ffffff",
+    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
+  };
   const user    = useAuthStore(s => s.user);
   const storeId = user?.stores?.[0]?.id || "";
   const name    = user?.name?.split(" ")[0] || "there";

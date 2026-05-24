@@ -14,6 +14,15 @@ const fmt=(n:number)=>new Intl.NumberFormat("en",{style:"currency",currency:"NGN
 
 export default function BundleBuilderPage(){
   const{theme}=useTheme();const isDark=theme==="dark";const t=isDark?TM.dark:TM.light;
+
+  const T = {
+    text:   isDark ? "#F0ECFF"                : "#130D2E",
+    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
+    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
+    card:   isDark ? "#181230"                : "#ffffff",
+    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
+    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
+  };
   const storeId=useAuthStore(s=>s.user?.stores?.[0]?.id);const qc=useQueryClient();
   const[selected,setSelected]=useState<any[]>([]);
   const[name,setName]=useState("");
