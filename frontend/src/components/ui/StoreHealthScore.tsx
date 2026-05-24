@@ -88,7 +88,7 @@ export default function StoreHealthScore() {
         {/* Score ring */}
         <div className="relative flex-shrink-0" style={{ width: 52, height: 52 }}>
           <svg width="52" height="52" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r="22" fill="none" stroke=T.faint strokeWidth="4" />
+            <circle cx="26" cy="26" r="22" fill="none" stroke={T.faint} strokeWidth="4" />
             <circle cx="26" cy="26" r="22" fill="none" stroke={color} strokeWidth="4"
               strokeDasharray={`${(score / 100) * 138.2} 138.2`}
               strokeLinecap="round"

@@ -125,7 +125,7 @@ export default function GiftCardsPage() {
                 <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:10 }}>
                   {/* Gift card visual */}
                   <div style={{ width:56, height:36, borderRadius:8, background:`linear-gradient(135deg,${V.v500},#3D1C8A)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <Gift size={16} color=T.muted/>
+                    <Gift size={16} color={T.muted}/>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>

@@ -159,7 +159,7 @@ export default function SetupChecklist() {
                   <p style={{ fontSize: 12, fontWeight: done ? 500 : 600, color: done ? "T.muted" : T.text, textDecoration: done ? "line-through" : "none" }}>{step.label}</p>
                   {!done && <p style={{ fontSize: 10, color: T.faint, marginTop: 1 }}>{step.desc}</p>}
                 </div>
-                {!done && <ChevronRight size={12} color=T.faint />}
+                {!done && <ChevronRight size={12} color={T.faint} />}
               </div>
             </Link>
           );
