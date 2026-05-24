@@ -398,9 +398,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
 
   // Show app loader while auth is being checked
-  const isChecking = typeof window !== "undefined" && !user && localStorage.getItem("dropos-refresh-token");
-
-  if (isChecking) {
+  const { isLoading: authLoading } = useAuthStore();
+  if (authLoading) {
     return <AppLoader show={true} message="Loading your workspace…" />;
   }
 

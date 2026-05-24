@@ -3289,9 +3289,6 @@ function BoundTemplate({ store, products=[], search, onSearch, category, onCateg
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  TEMPLATE: ONYX — Minimal Monochrome (Pure black/white, ultra-clean)
-// ══════════════════════════════════════════════════════════════════════════════
 function OnyxTemplate({ store, products=[], search, onSearch, category, onCategory, categories=[], isLoading }: TemplateProps) {
   const brand=store.primaryColor||"#111"; const currency=store.currency||"NGN";
   const{count,toggle}=useCart(store.id,currency); const w=useWindowSize();
@@ -3312,15 +3309,14 @@ function OnyxTemplate({ store, products=[], search, onSearch, category, onCatego
           <h1 style={{fontSize:"clamp(36px,6vw,72px)",fontWeight:900,margin:0,letterSpacing:"-0.05em",lineHeight:0.9}}>{store.name}</h1>
           <p style={{fontSize:14,color:"#888",margin:"12px 0 0",maxWidth:480}}>{store.description||"Curated products, zero compromise."}</p>
         </div>
+        {categories.filter(c=>c!=="All").length>0&&<div style={{display:"flex",gap:0,borderBottom:"1px solid #e8e8e8",marginBottom:32,overflowX:"auto"}}>{categories.map(c=><button key={c} onClick={()=>onCategory?.(c)} style={{padding:"10px 20px",border:"none",borderBottom:`2px solid ${category===c?"#111":"transparent"}`,background:"transparent",color:category===c?"#111":"#888",fontSize:12,fontWeight:600,cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase",fontFamily:"inherit",whiteSpace:"nowrap"}}>{c}</button>)}</div>}
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"220px"},1fr))`,gap:1,background:"#e8e8e8"}}>
           {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{background:"#fff",aspectRatio:"4/5",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
             const img=p.images?.[0]||"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=500&fit=crop";
             const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false); const[hov,setHov]=useState(false);
-            return(<div key={p.id} style={{background:"#fff",position:"relative"}} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>
+            return(<div key={p.id} style={{background:"#fff"}} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>
               <Link href={`/store/${store.slug}/product/${p.id}`} style={{textDecoration:"none",display:"block"}}>
-                <div style={{aspectRatio:"4/5",overflow:"hidden",background:"#f8f8f8"}}>
-                  <img src={img} alt={p.name} style={{width:"100%",height:"100%",objectFit:"cover",transition:"transform 0.6s",transform:hov?"scale(1.04)":"scale(1)"}}/>
-                </div>
+                <div style={{aspectRatio:"4/5",overflow:"hidden",background:"#f8f8f8"}}><img src={img} alt={p.name} style={{width:"100%",height:"100%",objectFit:"cover",transition:"transform 0.6s",transform:hov?"scale(1.04)":"scale(1)"}}/></div>
                 <div style={{padding:"12px 14px 16px"}}>
                   <p style={{fontSize:13,color:"#888",margin:"0 0 3px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.category||store.name}</p>
                   <p style={{fontSize:14,fontWeight:600,color:"#111",margin:"0 0 8px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</p>
@@ -3339,9 +3335,6 @@ function OnyxTemplate({ store, products=[], search, onSearch, category, onCatego
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  TEMPLATE: BLAZE — Gaming/Esports (Red/black neon aggression)
-// ══════════════════════════════════════════════════════════════════════════════
 function BlazeTemplate({ store, products=[], search, onSearch, category, onCategory, categories=[], isLoading }: TemplateProps) {
   const brand=store.primaryColor||"#FF2D55"; const currency=store.currency||"NGN";
   const{count,toggle}=useCart(store.id,currency); const w=useWindowSize();
@@ -3359,6 +3352,7 @@ function BlazeTemplate({ store, products=[], search, onSearch, category, onCateg
         <p style={{fontSize:14,color:"rgba(245,245,245,0.5)",maxWidth:480,margin:"0 0 32px"}}>{store.description||"Premium gear for serious players."}</p>
         <a href="#products" style={{display:"inline-block",padding:"14px 32px",background:brand,color:"#fff",fontSize:15,fontWeight:700,textDecoration:"none",textTransform:"uppercase"}}>ENTER STORE →</a>
       </div>
+      {categories.filter(c=>c!=="All").length>0&&<div style={{borderBottom:`2px solid ${brand}20`,overflowX:"auto"}}><div style={{maxWidth:1280,margin:"0 auto",padding:"0 clamp(16px,3vw,32px)",display:"flex",gap:0}}>{categories.map(c=><button key={c} onClick={()=>onCategory?.(c)} style={{padding:"14px 20px",border:"none",borderBottom:`3px solid ${category===c?brand:"transparent"}`,background:"transparent",color:category===c?brand:"rgba(245,245,245,0.35)",fontSize:12,fontWeight:700,cursor:"pointer",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"inherit",whiteSpace:"nowrap"}}>{c}</button>)}</div></div>}
       <div id="products" style={{maxWidth:1280,margin:"0 auto",padding:"clamp(32px,5vw,56px) clamp(16px,3vw,32px)"}}>
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"220px"},1fr))`,gap:2}}>
           {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{background:"#1A1A1A",aspectRatio:"1",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
@@ -3371,7 +3365,7 @@ function BlazeTemplate({ store, products=[], search, onSearch, category, onCateg
                   <p style={{fontSize:14,fontWeight:700,color:"#F5F5F5",margin:"0 0 8px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</p>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <span style={{fontSize:16,fontWeight:700,color:brand}}>{fmtPrice(p.price,currency)}</span>
-                    <button onClick={e=>{e.preventDefault();e.stopPropagation();add(p);setAdded(true);setTimeout(()=>setAdded(false),1500)}} style={{padding:"6px 14px",background:added?"#1A1A1A":brand,border:`1px solid ${brand}`,color:"#F5F5F5",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{added?"✓ ADDED":"+ ADD"}</button>
+                    <button onClick={e=>{e.preventDefault();e.stopPropagation();add(p);setAdded(true);setTimeout(()=>setAdded(false),1500)}} style={{padding:"6px 14px",background:added?"#1A1A1A":brand,border:`1px solid ${brand}`,color:"#F5F5F5",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{added?"✓":"+ ADD"}</button>
                   </div>
                 </div>
               </Link>
@@ -3384,9 +3378,6 @@ function BlazeTemplate({ store, products=[], search, onSearch, category, onCateg
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  TEMPLATE: FLORA — Plants/Botanicals (Green, organic, earthy)
-// ══════════════════════════════════════════════════════════════════════════════
 function FloraTemplate({ store, products=[], search, onSearch, category, onCategory, categories=[], isLoading }: TemplateProps) {
   const brand=store.primaryColor||"#3A7D44"; const currency=store.currency||"NGN";
   const{count,toggle}=useCart(store.id,currency); const w=useWindowSize();
@@ -3396,6 +3387,7 @@ function FloraTemplate({ store, products=[], search, onSearch, category, onCateg
       <header style={{position:"sticky",top:0,zIndex:50,background:"rgba(245,249,240,0.97)",backdropFilter:"blur(16px)",borderBottom:"1px solid rgba(58,125,68,0.1)"}}>
         <div style={{maxWidth:1200,margin:"0 auto",padding:"0 clamp(16px,4vw,40px)",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <span style={{fontSize:"clamp(18px,3vw,24px)",fontWeight:600,color:"#1A2E1C",fontStyle:"italic"}}>{store.name}</span>
+          <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",borderRadius:99,background:"rgba(58,125,68,0.08)",flex:1,maxWidth:280,margin:"0 24px"}}><Search size={13} color={brand}/><input value={search||""} onChange={e=>onSearch?.(e.target.value)} placeholder="Find plants…" style={{flex:1,background:"transparent",border:"none",outline:"none",fontSize:13,color:"#1A2E1C"}}/></div>
           <button onClick={toggle} style={{background:brand,border:"none",borderRadius:99,padding:"9px 18px",cursor:"pointer",color:"#F5F9F0",fontSize:13,fontWeight:500,display:"flex",alignItems:"center",gap:6}}><ShoppingCart size={14}/>{count>0?`(${count})`:"Cart"}</button>
         </div>
       </header>
@@ -3404,6 +3396,7 @@ function FloraTemplate({ store, products=[], search, onSearch, category, onCateg
         <p style={{fontSize:16,color:"rgba(26,46,28,0.6)",maxWidth:420,margin:"0 0 32px",fontWeight:300}}>{store.description||"Rare and beautiful plants delivered to your door."}</p>
         <a href="#products" style={{display:"inline-block",padding:"14px 32px",borderRadius:99,background:brand,color:"#F5F9F0",fontSize:14,textDecoration:"none"}}>Shop Plants</a>
       </div>
+      {categories.filter(c=>c!=="All").length>0&&<div style={{padding:"16px clamp(16px,4vw,40px)",background:"#ECF5E4",borderBottom:"1px solid rgba(58,125,68,0.1)",overflowX:"auto"}}><div style={{display:"flex",gap:8,maxWidth:1200,margin:"0 auto"}}>{categories.map(c=><button key={c} onClick={()=>onCategory?.(c)} style={{padding:"8px 20px",borderRadius:99,border:`1px solid ${category===c?brand:"rgba(58,125,68,0.2)"}`,background:category===c?brand:"transparent",color:category===c?"#F5F9F0":"rgba(26,46,28,0.6)",fontSize:13,fontWeight:400,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>{c}</button>)}</div></div>}
       <div id="products" style={{maxWidth:1200,margin:"0 auto",padding:"clamp(40px,6vw,64px) clamp(16px,4vw,40px)"}}>
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"240px"},1fr))`,gap:20}}>
           {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{borderRadius:20,background:"rgba(58,125,68,0.06)",aspectRatio:"3/4",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
