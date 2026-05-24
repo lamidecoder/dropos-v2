@@ -241,7 +241,6 @@ app.use("/api/milestones",     milestoneRoutes);
 app.use("/api/contact",        contactRoutes);
 app.use("/api/bundles",        bundleRoutes);
 app.use("/api/group-buy",      groupBuyRoutes);
-app.use("/api/referral",       referralRoutes);
 app.use("/api/nav-level",      navLevelRoutes);
 app.use("/api/reports",        reportsRoutes);
 app.use(notFound);
