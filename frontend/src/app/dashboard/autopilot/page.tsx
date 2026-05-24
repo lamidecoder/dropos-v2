@@ -107,14 +107,14 @@ export default function AutopilotPage() {
                 </motion.div>
               )}
             </div>
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <p className="text-sm" style={{ color: t.muted }}>
               Connect your supplier once - KAI handles everything automatically
             </p>
           </div>
 
           {/* What autopilot does */}
           <div className="rounded-2xl p-5 mb-6" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: "rgba(255,255,255,0.3)", fontSize: "10px" }}>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: t.muted, fontSize: "10px" }}>
               What runs automatically
             </p>
             <div className="space-y-3">
@@ -126,12 +126,12 @@ export default function AutopilotPage() {
                   transition={{ delay: i * 0.06 }}>
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: isActive ? `${task.color}15` : "rgba(255,255,255,0.05)" }}>
-                    <task.icon size={14} style={{ color: isActive ? task.color : "rgba(255,255,255,0.25)" }} />
+                    <task.icon size={14} style={{ color: isActive ? task.color : t.muted }} />
                   </div>
-                  <p className="flex-1 text-sm" style={{ color: isActive ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.3)" }}>
+                  <p className="flex-1 text-sm" style={{ color: isActive ? t.text : t.muted }}>
                     {task.label}
                   </p>
-                  <span className="text-xs" style={{ color: isActive ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.15)" }}>
+                  <span className="text-xs" style={{ color: isActive ? t.muted : t.faint }}>
                     {task.interval}
                   </span>
                   {isActive && (
@@ -151,12 +151,12 @@ export default function AutopilotPage() {
               style={{ background: cjConnected ? "rgba(52,211,153,0.05)" : "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black"
-                  style={{ background: cjConnected ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.06)", color: cjConnected ? "#34d399" : "rgba(255,255,255,0.4)" }}>
+                  style={{ background: cjConnected ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.06)", color: cjConnected ? "#34d399" : t.muted }}>
                   CJ
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-white">CJDropshipping</p>
-                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  <p className="text-xs" style={{ color: t.muted }}>
                     Free · 400,000+ products · Ships worldwide · No monthly fee
                   </p>
                 </div>
@@ -168,7 +168,7 @@ export default function AutopilotPage() {
                       <Check size={10} />Connected
                     </span>
                   : <span className="text-xs px-2.5 py-1 rounded-full"
-                      style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}>
+                      style={{ background: "rgba(255,255,255,0.06)", color: t.muted }}>
                       Not connected
                     </span>
                 }
@@ -178,10 +178,10 @@ export default function AutopilotPage() {
             <div className="px-5 py-4">
               {cjConnected ? (
                 <div>
-                  <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  <p className="text-sm mb-3" style={{ color: t.text }}>
                     ✅ Autopilot is active. New orders are automatically sent to CJDropshipping and customers receive tracking updates automatically.
                   </p>
-                  <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  <p className="text-xs mb-4" style={{ color: t.muted }}>
                     Connected as: {status?.cj?.email}
                   </p>
                   <div className="flex gap-2">
@@ -193,7 +193,7 @@ export default function AutopilotPage() {
                     </button>
                     <button onClick={() => disconnectCJ.mutate()}
                       className="px-4 py-2 rounded-xl text-xs"
-                      style={{ color: "rgba(255,255,255,0.3)" }}>
+                      style={{ color: t.muted }}>
                       Disconnect
                     </button>
                   </div>
@@ -202,7 +202,7 @@ export default function AutopilotPage() {
                 <div>
                   {!showCJForm ? (
                     <div>
-                      <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>
+                      <p className="text-sm mb-4" style={{ color: t.muted }}>
                         Connect your free CJDropshipping account to activate full autopilot. Orders will be fulfilled automatically - you just focus on getting customers.
                       </p>
                       <div className="flex gap-3">
@@ -213,7 +213,7 @@ export default function AutopilotPage() {
                         </button>
                         <a href="https://cjdropshipping.com/register.html" target="_blank"
                           className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm"
-                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>
+                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: t.muted }}>
                           <ExternalLink size={12} />Create free account
                         </a>
                       </div>
@@ -223,7 +223,7 @@ export default function AutopilotPage() {
                       <p className="text-sm font-medium text-white mb-4">Enter your CJDropshipping credentials</p>
                       <div className="space-y-3 mb-4">
                         <div>
-                          <label className="text-xs mb-1.5 block" style={{ color: "rgba(255,255,255,0.45)" }}>CJ Email</label>
+                          <label className="text-xs mb-1.5 block" style={{ color: t.muted }}>CJ Email</label>
                           <input value={cjEmail} onChange={e => setCJEmail(e.target.value)}
                             placeholder="your@email.com"
                             type="email"
@@ -231,7 +231,7 @@ export default function AutopilotPage() {
                             style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.85)" }} />
                         </div>
                         <div>
-                          <label className="text-xs mb-1.5 block" style={{ color: "rgba(255,255,255,0.45)" }}>CJ Password</label>
+                          <label className="text-xs mb-1.5 block" style={{ color: t.muted }}>CJ Password</label>
                           <div className="relative">
                             <input value={cjPass} onChange={e => setCJPass(e.target.value)}
                               placeholder="••••••••"
@@ -240,7 +240,7 @@ export default function AutopilotPage() {
                               style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.85)" }} />
                             <button onClick={() => setShowPass(!showPass)}
                               className="absolute right-3 top-1/2 -translate-y-1/2"
-                              style={{ color: "rgba(255,255,255,0.3)" }}>
+                              style={{ color: t.muted }}>
                               {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
                             </button>
                           </div>
@@ -250,7 +250,7 @@ export default function AutopilotPage() {
                       <div className="flex items-start gap-2 mb-4 px-3 py-2 rounded-xl"
                         style={{ background: "rgba(96,165,250,0.08)", border: "1px solid rgba(96,165,250,0.15)" }}>
                         <AlertCircle size={12} className="mt-0.5 flex-shrink-0" style={{ color: "#60a5fa" }} />
-                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        <p className="text-xs" style={{ color: t.muted }}>
                           Your credentials are stored encrypted and only used to place orders on your behalf. DropOS never stores payment info.
                         </p>
                       </div>
@@ -259,13 +259,13 @@ export default function AutopilotPage() {
                         <button disabled={!cjEmail || !cjPass || connectCJ.isPending}
                           onClick={() => connectCJ.mutate()}
                           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-                          style={{ background: (cjEmail && cjPass) ? "#7c3aed" : "rgba(255,255,255,0.05)", color: (cjEmail && cjPass) ? "#fff" : "rgba(255,255,255,0.25)" }}>
+                          style={{ background: (cjEmail && cjPass) ? "#7c3aed" : "rgba(255,255,255,0.05)", color: (cjEmail && cjPass) ? "#fff" : t.muted }}>
                           {connectCJ.isPending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                           {connectCJ.isPending ? "Connecting..." : "Connect & Activate"}
                         </button>
                         <button onClick={() => { setShowCJForm(false); setCJEmail(""); setCJPass(""); }}
                           className="px-4 py-2.5 rounded-xl text-sm"
-                          style={{ color: "rgba(255,255,255,0.4)" }}>
+                          style={{ color: t.muted }}>
                           Cancel
                         </button>
                       </div>
@@ -290,13 +290,13 @@ export default function AutopilotPage() {
                   "Add winning products - KAI finds them daily",
                   "Set your prices and let profit rules protect them",
                 ].map((task, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
+                  <div key={i} className="flex items-center gap-2 text-sm" style={{ color: t.text }}>
                     <ChevronRight size={12} style={{ color: "#a78bfa" }} />
                     {task}
                   </div>
                 ))}
               </div>
-              <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.3)" }}>
+              <p className="text-xs mt-3" style={{ color: t.muted }}>
                 Everything else - fulfillment, tracking, stock sync, reviews - KAI handles it.
               </p>
             </motion.div>
