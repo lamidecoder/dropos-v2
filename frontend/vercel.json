@@ -6,5 +6,6 @@
     "NEXT_PUBLIC_API_URL": "https://dropos-v2.onrender.com/api",
     "NEXT_PUBLIC_ROOT_DOMAIN": "droposhq.com",
     "NEXT_PUBLIC_APP_URL": "https://droposhq.com"
-  }
+  },
+  "_buildId": 1779660985140
 }
