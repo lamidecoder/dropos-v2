@@ -218,7 +218,7 @@ export default function CustomizePage() {
                     {/* Dark indicator */}
                     {t.dark && (
                       <div style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(0,0,0,0.6)", borderRadius: 99, padding: "2px 8px", backdropFilter: "blur(4px)" }}>
-                        <span style={{ fontSize: 9, color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>🌙 Dark</span>
+                        <span style={{ fontSize: 9, color: T.muted, fontWeight: 600 }}>🌙 Dark</span>
                       </div>
                     )}
                   </div>
@@ -360,7 +360,7 @@ export default function CustomizePage() {
                 </div>
               </div>
             </div>
-            <p style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.3)", padding: "10px 0 16px", flexShrink: 0 }}>
+            <p style={{ textAlign: "center", fontSize: 12, color: T.faint, padding: "10px 0 16px", flexShrink: 0 }}>
               Apply to see it live on your store → {storeSlug && <a href={`//${storeSlug}.${ROOT_DOMAIN}`} target="_blank" rel="noopener noreferrer" style={{ color: V.v400, textDecoration: "none" }}>{storeSlug}.{ROOT_DOMAIN}</a>}
             </p>
           </motion.div>

@@ -33,7 +33,7 @@ const AUTOPILOT_TASKS = [
 export default function AutopilotPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:"rgba(255,255,255,0.38)", faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)" };
+  const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:t.muted, faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)" };
   const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const qc      = useQueryClient();
 
@@ -128,10 +128,10 @@ export default function AutopilotPage() {
                     style={{ background: isActive ? `${task.color}15` : "rgba(255,255,255,0.05)" }}>
                     <task.icon size={14} style={{ color: isActive ? task.color : t.muted }} />
                   </div>
-                  <p className="flex-1 text-sm" style={{ color: isActive ? t.text : t.muted }}>
+                  <p className="flex-1 text-sm" style={{ color: isActive ? t.muted : t.muted }}>
                     {task.label}
                   </p>
-                  <span className="text-xs" style={{ color: isActive ? t.muted : t.faint }}>
+                  <span className="text-xs" style={{ color: isActive ? t.muted : t.muted }}>
                     {task.interval}
                   </span>
                   {isActive && (
@@ -178,7 +178,7 @@ export default function AutopilotPage() {
             <div className="px-5 py-4">
               {cjConnected ? (
                 <div>
-                  <p className="text-sm mb-3" style={{ color: t.text }}>
+                  <p className="text-sm mb-3" style={{ color: t.muted }}>
                     ✅ Autopilot is active. New orders are automatically sent to CJDropshipping and customers receive tracking updates automatically.
                   </p>
                   <p className="text-xs mb-4" style={{ color: t.muted }}>
@@ -228,7 +228,7 @@ export default function AutopilotPage() {
                             placeholder="your@email.com"
                             type="email"
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
-                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.85)" }} />
+                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: t.muted }} />
                         </div>
                         <div>
                           <label className="text-xs mb-1.5 block" style={{ color: t.muted }}>CJ Password</label>
@@ -237,7 +237,7 @@ export default function AutopilotPage() {
                               placeholder="••••••••"
                               type={showPass ? "text" : "password"}
                               className="w-full rounded-xl px-3 py-2.5 text-sm outline-none pr-10"
-                              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.85)" }} />
+                              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: t.muted }} />
                             <button onClick={() => setShowPass(!showPass)}
                               className="absolute right-3 top-1/2 -translate-y-1/2"
                               style={{ color: t.muted }}>
@@ -290,7 +290,7 @@ export default function AutopilotPage() {
                   "Add winning products - KAI finds them daily",
                   "Set your prices and let profit rules protect them",
                 ].map((task, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm" style={{ color: t.text }}>
+                  <div key={i} className="flex items-center gap-2 text-sm" style={{ color: t.muted }}>
                     <ChevronRight size={12} style={{ color: "#a78bfa" }} />
                     {task}
                   </div>

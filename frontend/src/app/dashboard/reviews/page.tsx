@@ -13,7 +13,7 @@ function Stars({ rating }: { rating: number }) {
   return (
     <div style={{display:"flex",gap:2}}>
       {[1,2,3,4,5].map(i=>(
-        <Star key={i} size={13} fill={i<=rating?"#F59E0B":"none"} color={i<=rating?"#F59E0B":"rgba(255,255,255,0.15)"}/>
+        <Star key={i} size={13} fill={i<=rating?"#F59E0B":"none"} color={i<=rating?"#F59E0B":isDark?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.15)"}/>
       ))}
     </div>
   );

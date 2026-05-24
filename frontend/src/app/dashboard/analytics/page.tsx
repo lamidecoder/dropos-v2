@@ -14,8 +14,8 @@ import { TrendingUp, ShoppingCart, Users, ArrowUpRight, ArrowDownRight, Zap, Dow
 
 const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA", cyan:"#06B6D4", green:"#10B981", amber:"#F59E0B", red:"#EF4444" };
 const T = {
-  dark:  { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:"rgba(255,255,255,0.38)", faint:"rgba(255,255,255,0.04)", grid:"rgba(255,255,255,0.04)" },
-  light: { card:"#fff",    border:"rgba(15,5,32,0.07)",    text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)", grid:"rgba(15,5,32,0.06)" },
+  dark:  { card:T.card, border:"rgba(255,255,255,0.06)", text:"#fff", muted:T.faint, faint:"rgba(255,255,255,0.04)", grid:"rgba(255,255,255,0.04)" },
+  light: { card:"#fff",    border:"rgba(15,5,32,0.07)",    text:T.card, muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)", grid:"rgba(15,5,32,0.06)" },
 };
 const PERIODS = ["7 days","30 days","90 days","1 year"];
 
@@ -124,7 +124,7 @@ export default function AnalyticsPage() {
           {KIRO_INSIGHTS.map((insight,i) => (
             <div key={i} className="flex items-start gap-2.5">
               <span className="text-sm flex-shrink-0">{insight.icon}</span>
-              <p className="text-xs leading-relaxed" style={{color:"rgba(255,255,255,0.55)"}}>{insight.text}</p>
+              <p className="text-xs leading-relaxed" style={{color:T.muted}}>{insight.text}</p>
             </div>
           ))}
         </div>
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid stroke={t.grid} strokeDasharray="3 3"/>
                 <XAxis dataKey="label" tick={{fill:t.muted,fontSize:10}} axisLine={false} tickLine={false}/>
                 <YAxis tick={{fill:t.muted,fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`₦${(v/1000).toFixed(0)}k`}/>
-                <Tooltip contentStyle={{background:isDark?"#181230":"#fff",border:`1px solid ${t.border}`,borderRadius:12}} labelStyle={{color:t.text}} formatter={(v:any)=>[fmt(v),"Revenue"]}/>
+                <Tooltip contentStyle={{background:isDark?T.card:"#fff",border:`1px solid ${t.border}`,borderRadius:12}} labelStyle={{color:t.text}} formatter={(v:any)=>[fmt(v),"Revenue"]}/>
                 <Area type="monotone" dataKey="revenue" stroke={V.v500} strokeWidth={2} fill="url(#rev)"/>
               </AreaChart>
             </ResponsiveContainer>
@@ -181,7 +181,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid stroke={t.grid} strokeDasharray="3 3"/>
                 <XAxis dataKey="label" tick={{fill:t.muted,fontSize:10}} axisLine={false} tickLine={false}/>
                 <YAxis tick={{fill:t.muted,fontSize:10}} axisLine={false} tickLine={false}/>
-                <Tooltip contentStyle={{background:isDark?"#181230":"#fff",border:`1px solid ${t.border}`,borderRadius:12}} labelStyle={{color:t.text}}/>
+                <Tooltip contentStyle={{background:isDark?T.card:"#fff",border:`1px solid ${t.border}`,borderRadius:12}} labelStyle={{color:t.text}}/>
                 <Bar dataKey="orders" fill={V.cyan} radius={[4,4,0,0]}/>
               </BarChart>
             </ResponsiveContainer>
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid stroke={t.grid} strokeDasharray="3 3"/>
                 <XAxis dataKey="label" tick={{fill:t.muted,fontSize:10}} axisLine={false} tickLine={false}/>
                 <YAxis tick={{fill:t.muted,fontSize:10}} axisLine={false} tickLine={false}/>
-                <Tooltip contentStyle={{background:isDark?"#181230":"#fff",border:`1px solid ${t.border}`,borderRadius:12}} labelStyle={{color:t.text}}/>
+                <Tooltip contentStyle={{background:isDark?T.card:"#fff",border:`1px solid ${t.border}`,borderRadius:12}} labelStyle={{color:t.text}}/>
                 <Line type="monotone" dataKey="visitors" stroke={V.v400} strokeWidth={2} dot={false} name="New customers"/>
                 <Line type="monotone" dataKey="returning" stroke={V.green} strokeWidth={2} dot={false} name="Returning"/>
               </LineChart>
@@ -292,7 +292,7 @@ export default function AnalyticsPage() {
           </div>
           <div className="mt-4 p-3 rounded-xl flex items-start gap-2.5" style={{background:"rgba(107,53,232,0.06)",border:"1px solid rgba(107,53,232,0.15)"}}>
             <Zap size={13} color={V.v400} style={{flexShrink:0,marginTop:1}}/>
-            <p className="text-xs leading-relaxed" style={{color:"rgba(255,255,255,0.5)"}}>Your Day 30 retention is above 45% — excellent. KIRO suggests adding a loyalty programme to push Day 60 retention above 35%.</p>
+            <p className="text-xs leading-relaxed" style={{color:T.muted}}>Your Day 30 retention is above 45% — excellent. KIRO suggests adding a loyalty programme to push Day 60 retention above 35%.</p>
           </div>
         </div>
       )}

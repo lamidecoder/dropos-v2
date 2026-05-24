@@ -20,7 +20,7 @@ const fmt = (n: number) => new Intl.NumberFormat("en-NG", { style:"currency", cu
 function StatCard({ label, value, delta, color, icon: Icon, delay = 0 }: any) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const t = { card: isDark ? "#181230" : "#fff", border: isDark ? "rgba(255,255,255,0.06)" : "rgba(15,5,32,0.07)", text: isDark ? "#fff" : "#0D0918", muted: isDark ? "rgba(255,255,255,0.38)" : "rgba(13,9,24,0.45)" };
+  const t = { card: isDark ? T.card : "#fff", border: isDark ? "rgba(255,255,255,0.06)" : "rgba(15,5,32,0.07)", text: isDark ? "#fff" : T.card, muted: isDark ? T.faint : "rgba(13,9,24,0.45)" };
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
       style={{ padding: 18, borderRadius: 16, background: t.card, border: `1px solid ${t.border}` }}>
@@ -83,10 +83,10 @@ export default function DashboardPage() {
   }, []);
 
   const t = {
-    card:   isDark ? "#181230" : "#fff",
+    card:   isDark ? T.card : "#fff",
     border: isDark ? "rgba(255,255,255,0.06)" : "rgba(15,5,32,0.07)",
-    text:   isDark ? "#fff"    : "#0D0918",
-    muted:  isDark ? "rgba(255,255,255,0.38)" : "rgba(13,9,24,0.45)",
+    text:   isDark ? "#fff"    : T.card,
+    muted:  isDark ? T.faint : "rgba(13,9,24,0.45)",
     faint:  isDark ? "rgba(255,255,255,0.03)" : "rgba(15,5,32,0.02)",
   };
 
@@ -219,7 +219,7 @@ export default function DashboardPage() {
               <span style={{ fontSize: 12, fontWeight: 700, color: V.v300 }}>KIRO</span>
             </div>
             <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 6 }}>What do you want to build today?</p>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginBottom: 14, lineHeight: 1.5 }}>
+            <p style={{ fontSize: 11, color: T.muted, marginBottom: 14, lineHeight: 1.5 }}>
               Import products, write copy, run a sale, or just ask anything about your store.
             </p>
             <Link href="/kiro">

@@ -49,7 +49,7 @@ export default function ContentStudioPage() {
   const isDark = theme === "dark";
   const t = {
     card:   isDark ? "#0F0C1E" : "#fff",
-    card2:  isDark ? "#181230" : "#F8F7FF",
+    card2:  isDark ? T.card : "#F8F7FF",
     border: isDark ? "rgba(255,255,255,0.06)" : "rgba(107,53,232,0.1)",
     text:   isDark ? "#F0ECFF" : "#130D2E",
     muted:  isDark ? "rgba(240,236,255,0.5)" : "rgba(19,13,46,0.55)",
@@ -312,7 +312,7 @@ export default function ContentStudioPage() {
               {["Be specific with product name — 'Brazilian Hair Bundle 18 inch' converts 3x better than just 'hair'",isTiktok?"Include the hook angle — 'survival' or 'transformation' angles outperform generic scripts":"Provide a clear message — 'launches April 30' or '50% off today only' works best"].map((tip,i) => (
                 <div key={i} style={{display:"flex",alignItems:"start",gap:8}}>
                   <span style={{fontSize:10,color:V.v400,flexShrink:0,marginTop:2}}>→</span>
-                  <p style={{fontSize:11,color:"rgba(255,255,255,0.5)",lineHeight:1.5}}>{tip}</p>
+                  <p style={{fontSize:11,color:T.muted,lineHeight:1.5}}>{tip}</p>
                 </div>
               ))}
             </div>

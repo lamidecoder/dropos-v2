@@ -21,7 +21,7 @@ const GRADE_COLORS: Record<string, string> = { A: "#34d399", B: "#60a5fa", C: "#
 export default function BulkImportPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:"rgba(255,255,255,0.38)", faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)" };
+  const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:t.muted, faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)" };
   const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const [storeUrl, setStoreUrl]   = useState("");
   const [products, setProducts]   = useState<any[]>([]);
@@ -56,7 +56,7 @@ export default function BulkImportPage() {
       <div className="p-6 max-w-4xl" style={{ minHeight: "100vh", background: "#07070e" }}>
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white mb-0.5">Bulk Import</h1>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <p className="text-sm" style={{ color: t.muted }}>
             Paste any supplier store URL - KAI fetches all products and scores them
           </p>
         </div>
@@ -65,16 +65,16 @@ export default function BulkImportPage() {
         <div className="rounded-2xl p-5 mb-5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
           <div className="flex gap-3">
             <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              <Link size={14} style={{ color: "rgba(255,255,255,0.3)" }} />
+              <Link size={14} style={{ color: t.muted }} />
               <input value={storeUrl} onChange={e => setStoreUrl(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && storeUrl && scanMutation.mutate()}
                 placeholder="https://www.aliexpress.com/store/... or any supplier URL"
                 className="flex-1 bg-transparent outline-none text-sm"
-                style={{ color: "rgba(255,255,255,0.85)" }} />
+                style={{ color: t.muted }} />
             </div>
             <button disabled={!storeUrl || scanMutation.isPending} onClick={() => scanMutation.mutate()}
               className="flex items-center gap-2 px-5 rounded-xl text-sm font-semibold flex-shrink-0"
-              style={{ background: storeUrl ? "#7c3aed" : "rgba(255,255,255,0.05)", color: storeUrl ? "#fff" : "rgba(255,255,255,0.25)" }}>
+              style={{ background: storeUrl ? "#7c3aed" : "rgba(255,255,255,0.05)", color: storeUrl ? "#fff" : t.muted }}>
               {scanMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Package size={14} />}
               {scanMutation.isPending ? "Scanning..." : "Scan Store"}
             </button>
@@ -87,16 +87,16 @@ export default function BulkImportPage() {
             {/* Controls */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex gap-2">
-                <button onClick={selectAll} className="px-3 py-1.5 rounded-lg text-xs" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)" }}>Select all</button>
+                <button onClick={selectAll} className="px-3 py-1.5 rounded-lg text-xs" style={{ background: "rgba(255,255,255,0.05)", color: t.muted }}>Select all</button>
                 <button onClick={selectGood} className="px-3 py-1.5 rounded-lg text-xs" style={{ background: "rgba(52,211,153,0.1)", color: "#34d399" }}>Select A & B grades</button>
-                <span className="text-xs self-center" style={{ color: "rgba(255,255,255,0.35)" }}>{selected.size} selected</span>
+                <span className="text-xs self-center" style={{ color: t.muted }}>{selected.size} selected</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Pricing:</span>
+                <span className="text-xs" style={{ color: t.muted }}>Pricing:</span>
                 {PRICING_RULES.map(r => (
                   <button key={r.id} onClick={() => setPricing(r.id)}
                     className="px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                    style={{ background: pricingRule === r.id ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.04)", border: pricingRule === r.id ? "1px solid rgba(124,58,237,0.3)" : "1px solid rgba(255,255,255,0.06)", color: pricingRule === r.id ? "#a78bfa" : "rgba(255,255,255,0.4)" }}>
+                    style={{ background: pricingRule === r.id ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.04)", border: pricingRule === r.id ? "1px solid rgba(124,58,237,0.3)" : "1px solid rgba(255,255,255,0.06)", color: pricingRule === r.id ? "#a78bfa" : t.muted }}>
                     {r.label} <span style={{ opacity: 0.6 }}>({r.desc})</span>
                   </button>
                 ))}
@@ -128,7 +128,7 @@ export default function BulkImportPage() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-white truncate">{p.name}</p>
-                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{p.reason}</p>
+                      <p className="text-xs" style={{ color: t.muted }}>{p.reason}</p>
                     </div>
                     {/* Pricing */}
                     <div className="text-right flex-shrink-0">
@@ -144,7 +144,7 @@ export default function BulkImportPage() {
             {!imported ? (
               <button disabled={!selected.size || importMutation.isPending} onClick={() => importMutation.mutate()}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold"
-                style={{ background: selected.size ? "linear-gradient(135deg,#7c3aed,#5b21b6)" : "rgba(255,255,255,0.05)", color: selected.size ? "#fff" : "rgba(255,255,255,0.25)" }}>
+                style={{ background: selected.size ? "linear-gradient(135deg,#7c3aed,#5b21b6)" : "rgba(255,255,255,0.05)", color: selected.size ? "#fff" : t.muted }}>
                 {importMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                 {importMutation.isPending ? "Importing..." : `Import ${selected.size} Products`}
               </button>
@@ -160,9 +160,9 @@ export default function BulkImportPage() {
 
         {!products.length && !scanMutation.isPending && (
           <div className="text-center py-16">
-            <Package size={36} className="mx-auto mb-3" style={{ color: "rgba(255,255,255,0.08)" }} />
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>Paste a supplier store URL above</p>
-            <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>Or tell KAI: "Import products from this AliExpress store"</p>
+            <Package size={36} className="mx-auto mb-3" style={{ color: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)" }} />
+            <p className="text-sm" style={{ color: t.muted }}>Paste a supplier store URL above</p>
+            <p className="text-xs mt-1" style={{ color: t.muted }}>Or tell KAI: "Import products from this AliExpress store"</p>
           </div>
         )}
       </div>

@@ -61,7 +61,7 @@ function StatusBadge({ status }: { status: string }) {
     PAUSED:    { bg: "rgba(245,158,11,0.1)",  color: "#F59E0B", dot: "#F59E0B", label: "Paused"    },
     EXPIRED:   { bg: "rgba(239,68,68,0.1)",   color: "#EF4444", dot: "#EF4444", label: "Expired"   },
     SCHEDULED: { bg: "rgba(59,130,246,0.1)",  color: "#3B82F6", dot: "#3B82F6", label: "Scheduled" },
-  }[status] || { bg: cardBg, color: "var(--text-muted,#666)", dot: "var(--text-muted,#666)", label: status };
+  }[status] || { bg: "var(--bg-card,#fff)", color: "var(--text-muted,#666)", dot: "var(--text-muted,#666)", label: status };
 
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
@@ -114,7 +114,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
 
   return (
     <div className="rounded-2xl p-5 transition-all hover:-translate-y-0.5"
-      style={{ background: cardBg, border: "1px solid var(--border-color,rgba(107,53,232,0.08))", boxShadow: "var(--shadow-sm)" }}>
+      style={{ background: "var(--bg-card,#fff)", border: "1px solid var(--border-color,rgba(107,53,232,0.08))", boxShadow: "var(--shadow-sm)" }}>
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -123,8 +123,8 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
             <Icon size={15} style={{ color: typeConf.color }} />
           </div>
           <div>
-            <div className="font-bold text-sm" style={{ color: txPrimary }}>{d.name}</div>
-            <div className="text-[11px] mt-0.5" style={{ color: tx }}>{typeConf.label}</div>
+            <div className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>{d.name}</div>
+            <div className="text-[11px] mt-0.5" style={{ color: T.faint }}>{typeConf.label}</div>
           </div>
         </div>
         <StatusBadge status={d.status} />
@@ -141,7 +141,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
         </span>
         {d.minOrderValue > 0 && (
           <span className="text-[11px] px-2 py-0.5 rounded-full"
-            style={{ background: cardBg, color: "var(--text-muted,#666)", border: "1px solid var(--border-color,rgba(107,53,232,0.08))" }}>
+            style={{ background: "var(--bg-card,#fff)", color: "var(--text-muted,#666)", border: "1px solid var(--border-color,rgba(107,53,232,0.08))" }}>
             Min ${d.minOrderValue}
           </span>
         )}
@@ -161,7 +161,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
         <div className="flex gap-1.5 mb-3 flex-wrap">
           {(d.tiers as TierRow[]).map((t, i) => (
             <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded-lg"
-              style={{ background: cardBg, color: tx, border: `1px solid ${borderCol}` }}>
+              style={{ background: "var(--bg-card,#fff)", color: T.muted, border: "1px solid rgba(255,255,255,0.06)" }}>
               {t.minQty}+ → {t.discount}% off
             </span>
           ))}
@@ -171,11 +171,11 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
       {/* Usage bar */}
       {d.maxUses && (
         <div className="mb-3">
-          <div className="flex justify-between text-[11px] mb-1" style={{ color: tx }}>
+          <div className="flex justify-between text-[11px] mb-1" style={{ color: T.faint }}>
             <span>{d.usedCount} uses</span>
             <span>{d.maxUses} max</span>
           </div>
-          <div className="h-1.5 rounded-full" style={{ background: cardBg }}>
+          <div className="h-1.5 rounded-full" style={{ background: "var(--bg-card,#fff)" }}>
             <div className="h-full rounded-full transition-all"
               style={{ width: usedPct + "%", background: usedPct > 80 ? "#EF4444" : typeConf.color }} />
           </div>
@@ -184,31 +184,31 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
 
       {/* Dates */}
       {(d.startsAt || d.expiresAt) && (
-        <div className="text-[11px] mb-3" style={{ color: tx }}>
+        <div className="text-[11px] mb-3" style={{ color: T.faint }}>
           {d.startsAt && <span>Starts: {new Date(d.startsAt).toLocaleDateString()} · </span>}
           {d.expiresAt && <span>Expires: {new Date(d.expiresAt).toLocaleDateString()}</span>}
         </div>
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-3" style={{ borderTop: `1px solid ${borderCol}` }}>
+      <div className="flex items-center justify-between pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px]" style={{ color: tx }}>
+          <span className="text-[11px]" style={{ color: T.faint }}>
             {d._count?.usages || d.usedCount || 0} uses · ${((d._count?.usages || 0) * 0).toFixed(0)} saved
           </span>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={() => toggleMut.mutate()}
             className="p-2 rounded-lg transition-all text-xs font-bold flex items-center gap-1"
-            style={{ color: isActive ? "var(--success)" : tx, background: isActive ? "rgba(16,185,129,0.08)" : cardBg }}>
+            style={{ color: isActive ? "var(--success)" : T.faint, background: isActive ? "rgba(16,185,129,0.08)" : "var(--bg-card,#fff)" }}>
             {isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
             {isActive ? "On" : "Off"}
           </button>
           <button onClick={() => onDelete(d.id)}
             className="p-2 rounded-lg transition-all"
-            style={{ color: tx }}
+            style={{ color: T.faint }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--error)"}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = tx}>
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = T.faint}>
             <Trash2 size={13} />
           </button>
         </div>
@@ -229,18 +229,18 @@ function TierEditor({ tiers, onChange }: { tiers: TierRow[]; onChange: (t: TierR
     <div className="space-y-2">
       {tiers.map((t, i) => (
         <div key={i} className="flex items-center gap-2">
-          <span className="text-xs" style={{ color: tx, width: 60 }}>Buy {i === 0 ? "≥" : "≥"}</span>
+          <span className="text-xs" style={{ color: T.faint, width: 60 }}>Buy {i === 0 ? "≥" : "≥"}</span>
           <input type="number" value={t.minQty} min={1}
             onChange={e => set(i, "minQty", Number(e.target.value))}
             className="w-20 rounded-lg px-2 py-1.5 text-xs outline-none"
-            style={{ background: cardBg, border: `1px solid ${borderCol}`, color: txPrimary }} />
-          <span className="text-xs" style={{ color: tx }}>items →</span>
+            style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" }} />
+          <span className="text-xs" style={{ color: T.faint }}>items →</span>
           <input type="number" value={t.discount} min={1} max={100}
             onChange={e => set(i, "discount", Number(e.target.value))}
             className="w-20 rounded-lg px-2 py-1.5 text-xs outline-none"
-            style={{ background: cardBg, border: `1px solid ${borderCol}`, color: txPrimary }} />
-          <span className="text-xs" style={{ color: tx }}>% off</span>
-          <button onClick={() => del(i)} className="p-1 rounded" style={{ color: tx }}>
+            style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" }} />
+          <span className="text-xs" style={{ color: T.faint }}>% off</span>
+          <button onClick={() => del(i)} className="p-1 rounded" style={{ color: T.faint }}>
             <X size={12} />
           </button>
         </div>
@@ -259,7 +259,7 @@ export default function DiscountsPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const t = {
-    card:  false ? cardBg : "#fff",
+    card:  false ? "var(--bg-card,#fff)" : "#fff",
     border:false ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.08)",
     text:  false ? "#F0ECFF" : "#130D2E",
     muted: false ? "rgba(240,236,255,0.45)" : "rgba(19,13,46,0.55)",
@@ -273,12 +273,6 @@ export default function DiscountsPage() {
   const [modal, setModal]       = useState(false);
   const [selType, setSelType]   = useState<DiscountType | null>(null);
   const [tiers, setTiers]       = useState<TierRow[]>([{ minQty: 2, discount: 10 }, { minQty: 5, discount: 20 }]);
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const tx = isDark ? tx : "rgba(19,13,46,0.55)";
-  const txPrimary = isDark ? "#F0ECFF" : "#130D2E";
-  const cardBg = isDark ? "#181230" : "#ffffff";
-  const borderCol = isDark ? "rgba(255,255,255,0.06)" : "rgba(107,53,232,0.09)";
   const [filter, setFilter]     = useState<string>("ALL");
 
   const { data: discounts = [], isLoading } = useQuery({
@@ -332,7 +326,7 @@ export default function DiscountsPage() {
   const flashSales  = discounts.filter((d: any) => d.type === "FLASH_SALE" && d.status === "ACTIVE").length;
   const autoDiscount = discounts.filter((d: any) => d.isAutomatic).length;
 
-  const inp = { background: cardBg, border: `1px solid ${borderCol}`, color: txPrimary };
+  const inp = { background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" };
 
   return (
     
@@ -340,8 +334,8 @@ export default function DiscountsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-black tracking-tight" style={{ color: txPrimary }}>Discount Engine</h1>
-            <p className="text-xs mt-1" style={{ color: tx }}>
+            <h1 className="text-xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>Discount Engine</h1>
+            <p className="text-xs mt-1" style={{ color: T.faint }}>
               BOGO, flash sales, volume tiers, automatic discounts - all in one place
             </p>
           </div>
@@ -360,15 +354,15 @@ export default function DiscountsPage() {
             { label: "Auto Discounts",   value: autoDiscount,  icon: Zap,      color: "#10B981" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="rounded-2xl p-4"
-              style={{ background: cardBg, border: `1px solid ${borderCol}`, boxShadow: "var(--shadow-sm)" }}>
+              style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "var(--shadow-sm)" }}>
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                   style={{ background: color + "18", border: `1px solid ${color}30` }}>
                   <Icon size={15} style={{ color }} />
                 </div>
                 <div>
-                  <div className="text-xl font-black" style={{ color: txPrimary }}>{value}</div>
-                  <div className="text-[11px]" style={{ color: tx }}>{label}</div>
+                  <div className="text-xl font-black" style={{ color: "var(--text-primary)" }}>{value}</div>
+                  <div className="text-[11px]" style={{ color: T.faint }}>{label}</div>
                 </div>
               </div>
             </div>
@@ -381,9 +375,9 @@ export default function DiscountsPage() {
             <button key={f} onClick={() => setFilter(f)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize"
               style={{
-                background: filter === f ? "rgba(107,53,232,0.12)" : cardBg,
-                color:      filter === f ? "#6B35E8"     : tx,
-                border:     `1px solid ${filter === f ? "rgba(107,53,232,0.4)" : borderCol}`,
+                background: filter === f ? "rgba(107,53,232,0.12)" : "var(--bg-card,#fff)",
+                color:      filter === f ? "#6B35E8"     : T.muted,
+                border:     `1px solid ${filter === f ? "var(--accent-border)" : "var(--border-color)"}`,
               }}>
               {f.toLowerCase().replace(/_/g, " ")}
             </button>
@@ -399,10 +393,10 @@ export default function DiscountsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-2xl p-16 text-center"
-            style={{ background: cardBg, border: "1px dashed rgba(255,255,255,0.06)" }}>
-            <Tag size={36} className="mx-auto mb-4" style={{ color: tx }} />
-            <h3 className="font-bold mb-2" style={{ color: txPrimary }}>No discounts yet</h3>
-            <p className="text-sm mb-5" style={{ color: tx }}>
+            style={{ background: "var(--bg-card,#fff)", border: "1px dashed rgba(255,255,255,0.06)" }}>
+            <Tag size={36} className="mx-auto mb-4" style={{ color: T.faint }} />
+            <h3 className="font-bold mb-2" style={{ color: "var(--text-primary)" }}>No discounts yet</h3>
+            <p className="text-sm mb-5" style={{ color: T.muted }}>
               Create your first discount to drive more sales.
             </p>
             <button onClick={() => setModal(true)}
@@ -424,15 +418,15 @@ export default function DiscountsPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ background: "var(--bg-overlay)", backdropFilter: "blur(8px)" }}>
             <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl"
-              style={{ background: cardBg, border: `1px solid ${borderCol}`, boxShadow: "var(--shadow-xl)" }}>
+              style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "var(--shadow-xl)" }}>
 
               {/* Modal header */}
-              <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: borderCol }}>
-                <h2 className="text-lg font-black" style={{ color: txPrimary }}>
+              <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: "var(--border-color)" }}>
+                <h2 className="text-lg font-black" style={{ color: "var(--text-primary)" }}>
                   {selType ? `Create ${typeConf?.label}` : "Choose Discount Type"}
                 </h2>
                 <button onClick={() => { setModal(false); setSelType(null); }}
-                  className="p-2 rounded-lg" style={{ color: tx }}>
+                  className="p-2 rounded-lg" style={{ color: T.faint }}>
                   <X size={16} />
                 </button>
               </div>
@@ -444,16 +438,16 @@ export default function DiscountsPage() {
                     {TYPES.map(t => (
                       <button key={t.type} onClick={() => { setSelType(t.type); set("type", t.type); }}
                         className="flex flex-col items-start gap-2 p-4 rounded-xl text-left transition-all hover:-translate-y-0.5"
-                        style={{ background: cardBg, border: `1px solid ${borderCol}` }}
+                        style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)" }}
                         onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = t.color + "60"}
-                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = borderCol}>
+                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-color)"}>
                         <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                           style={{ background: t.color + "18", border: `1px solid ${t.color}30` }}>
                           <t.icon size={16} style={{ color: t.color }} />
                         </div>
                         <div>
-                          <div className="text-sm font-bold" style={{ color: txPrimary }}>{t.label}</div>
-                          <div className="text-[11px] mt-0.5" style={{ color: tx }}>{t.desc}</div>
+                          <div className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{t.label}</div>
+                          <div className="text-[11px] mt-0.5" style={{ color: T.faint }}>{t.desc}</div>
                         </div>
                       </button>
                     ))}
@@ -470,14 +464,14 @@ export default function DiscountsPage() {
                     {/* Basic info */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold mb-1.5" style={{ color: tx }}>Discount Name *</label>
+                        <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Discount Name *</label>
                         <input value={form.name || ""} onChange={e => set("name", e.target.value)}
                           placeholder="e.g. Summer Sale 20% Off"
                           className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-all"
                           style={inp} />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold mb-1.5" style={{ color: tx }}>Priority (higher = first)</label>
+                        <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Priority (higher = first)</label>
                         <input type="number" value={form.priority || 0} onChange={e => set("priority", Number(e.target.value))}
                           className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-all"
                           style={inp} />
@@ -488,13 +482,13 @@ export default function DiscountsPage() {
                     {(selType === "PERCENTAGE" || selType === "BUNDLE") && (
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-semibold mb-1.5" style={{ color: tx }}>Discount %</label>
+                          <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Discount %</label>
                           <input type="number" min={1} max={100} value={form.value || 10}
                             onChange={e => set("value", Number(e.target.value))}
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-all" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold mb-1.5" style={{ color: tx }}>Max $ off (optional)</label>
+                          <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Max $ off (optional)</label>
                           <input type="number" min={0} value={form.maxDiscount || ""} placeholder="No cap"
                             onChange={e => set("maxDiscount", Number(e.target.value))}
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-all" style={inp} />
@@ -504,7 +498,7 @@ export default function DiscountsPage() {
 
                     {selType === "FIXED" && (
                       <div>
-                        <label className="block text-xs font-semibold mb-1.5" style={{ color: tx }}>Fixed Amount Off ($)</label>
+                        <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Fixed Amount Off ($)</label>
                         <input type="number" min={1} value={form.value || 10}
                           onChange={e => set("value", Number(e.target.value))}
                           className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-all" style={inp} />
@@ -512,37 +506,37 @@ export default function DiscountsPage() {
                     )}
 
                     {selType === "BOGO" && (
-                      <div className="rounded-xl p-4 space-y-3" style={{ background: cardBg, border: `1px solid ${borderCol}` }}>
-                        <div className="text-xs font-bold" style={{ color: tx }}>BOGO Configuration</div>
+                      <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div className="text-xs font-bold" style={{ color: T.muted }}>BOGO Configuration</div>
                         <div className="grid grid-cols-3 gap-3">
                           <div>
-                            <label className="block text-xs mb-1" style={{ color: tx }}>Buy (qty)</label>
+                            <label className="block text-xs mb-1" style={{ color: T.faint }}>Buy (qty)</label>
                             <input type="number" min={1} value={form.bogoRequiredQty || 2}
                               onChange={e => set("bogoRequiredQty", Number(e.target.value))}
                               className="w-full rounded-lg px-2 py-2 text-sm outline-none" style={inp} />
                           </div>
                           <div>
-                            <label className="block text-xs mb-1" style={{ color: tx }}>Get (qty)</label>
+                            <label className="block text-xs mb-1" style={{ color: T.faint }}>Get (qty)</label>
                             <input type="number" min={1} value={form.bogoGetQty || 1}
                               onChange={e => set("bogoGetQty", Number(e.target.value))}
                               className="w-full rounded-lg px-2 py-2 text-sm outline-none" style={inp} />
                           </div>
                           <div>
-                            <label className="block text-xs mb-1" style={{ color: tx }}>% off free item</label>
+                            <label className="block text-xs mb-1" style={{ color: T.faint }}>% off free item</label>
                             <input type="number" min={1} max={100} value={form.bogoPctOff || 100}
                               onChange={e => set("bogoPctOff", Number(e.target.value))}
                               className="w-full rounded-lg px-2 py-2 text-sm outline-none" style={inp} />
                           </div>
                         </div>
-                        <p className="text-[11px]" style={{ color: tx }}>
+                        <p className="text-[11px]" style={{ color: T.faint }}>
                           Customer buys {form.bogoRequiredQty || 2}, gets {form.bogoGetQty || 1} at {form.bogoPctOff || 100}% off
                         </p>
                       </div>
                     )}
 
                     {selType === "TIERED" && (
-                      <div className="rounded-xl p-4" style={{ background: cardBg, border: `1px solid ${borderCol}` }}>
-                        <div className="text-xs font-bold mb-3" style={{ color: tx }}>Volume Tiers</div>
+                      <div className="rounded-xl p-4" style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div className="text-xs font-bold mb-3" style={{ color: T.muted }}>Volume Tiers</div>
                         <TierEditor tiers={tiers} onChange={setTiers} />
                       </div>
                     )}
@@ -550,19 +544,19 @@ export default function DiscountsPage() {
                     {selType === "FLASH_SALE" && (
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-xs font-semibold mb-1.5" style={{ color: tx }}>Discount %</label>
+                          <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Discount %</label>
                           <input type="number" min={1} max={100} value={form.value || 30}
                             onChange={e => set("value", Number(e.target.value))}
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold mb-1.5" style={{ color: tx }}>Starts</label>
+                          <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Starts</label>
                           <input type="datetime-local" value={form.flashSaleStartsAt || ""}
                             onChange={e => set("flashSaleStartsAt", e.target.value)}
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold mb-1.5" style={{ color: tx }}>Ends *</label>
+                          <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Ends *</label>
                           <input type="datetime-local" value={form.flashSaleEndsAt || ""}
                             onChange={e => set("flashSaleEndsAt", e.target.value)}
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none" style={inp} />
@@ -571,29 +565,29 @@ export default function DiscountsPage() {
                     )}
 
                     {/* Conditions */}
-                    <div className="pt-3 border-t" style={{ borderColor: borderCol }}>
-                      <div className="text-xs font-bold mb-3" style={{ color: tx }}>Conditions</div>
+                    <div className="pt-3 border-t" style={{ borderColor: "var(--border-color)" }}>
+                      <div className="text-xs font-bold mb-3" style={{ color: T.muted }}>Conditions</div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs mb-1" style={{ color: tx }}>Min order value ($)</label>
+                          <label className="block text-xs mb-1" style={{ color: T.faint }}>Min order value ($)</label>
                           <input type="number" min={0} value={form.minOrderValue || ""} placeholder="None"
                             onChange={e => set("minOrderValue", Number(e.target.value))}
                             className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs mb-1" style={{ color: tx }}>Max total uses</label>
+                          <label className="block text-xs mb-1" style={{ color: T.faint }}>Max total uses</label>
                           <input type="number" min={0} value={form.maxUses || ""} placeholder="Unlimited"
                             onChange={e => set("maxUses", Number(e.target.value))}
                             className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs mb-1" style={{ color: tx }}>Valid from</label>
+                          <label className="block text-xs mb-1" style={{ color: T.faint }}>Valid from</label>
                           <input type="date" value={form.startsAt || ""}
                             onChange={e => set("startsAt", e.target.value)}
                             className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs mb-1" style={{ color: tx }}>Expires</label>
+                          <label className="block text-xs mb-1" style={{ color: T.faint }}>Expires</label>
                           <input type="date" value={form.expiresAt || ""}
                             onChange={e => set("expiresAt", e.target.value)}
                             className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inp} />
@@ -602,7 +596,7 @@ export default function DiscountsPage() {
                     </div>
 
                     {/* Options */}
-                    <div className="flex flex-wrap gap-3 pt-3 border-t" style={{ borderColor: borderCol }}>
+                    <div className="flex flex-wrap gap-3 pt-3 border-t" style={{ borderColor: "var(--border-color)" }}>
                       {[
                         { key: "isAutomatic",   label: "Automatic (no code)" },
                         { key: "stackable",      label: "Stackable" },
@@ -612,12 +606,12 @@ export default function DiscountsPage() {
                         <button key={key} onClick={() => set(key, !form[key as keyof DiscountForm])}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                           style={{
-                            background: form[key as keyof DiscountForm] ? "rgba(107,53,232,0.12)" : cardBg,
-                            color:      form[key as keyof DiscountForm] ? "#6B35E8"     : tx,
-                            border:     `1px solid ${form[key as keyof DiscountForm] ? "var(--accent-border)" : borderCol}`,
+                            background: form[key as keyof DiscountForm] ? "rgba(107,53,232,0.12)" : "var(--bg-card,#fff)",
+                            color:      form[key as keyof DiscountForm] ? "#6B35E8"     : T.muted,
+                            border:     `1px solid ${form[key as keyof DiscountForm] ? "var(--accent-border)" : "var(--border-color)"}`,
                           }}>
                           <div className="w-3.5 h-3.5 rounded flex items-center justify-center"
-                            style={{ background: form[key as keyof DiscountForm] ? "#6B35E8" : cardBg, border: `1px solid ${form[key as keyof DiscountForm] ? "#6B35E8" : borderCol}` }}>
+                            style={{ background: form[key as keyof DiscountForm] ? "#6B35E8" : "var(--bg-card,#fff)", border: `1px solid ${form[key as keyof DiscountForm] ? "#6B35E8" : "var(--border-color)"}` }}>
                             {form[key as keyof DiscountForm] && <span className="text-[#ffffff] text-[8px]">✓</span>}
                           </div>
                           {label}
@@ -634,7 +628,7 @@ export default function DiscountsPage() {
                       </button>
                       <button onClick={() => { setModal(false); setSelType(null); }}
                         className="px-5 py-3 rounded-xl text-sm font-semibold transition-all"
-                        style={{ background: cardBg, color: tx, border: `1px solid ${borderCol}` }}>
+                        style={{ background: "var(--bg-card,#fff)", color: T.muted, border: "1px solid rgba(255,255,255,0.06)" }}>
                         Cancel
                       </button>
                     </div>

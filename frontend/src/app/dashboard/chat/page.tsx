@@ -212,7 +212,7 @@ export default function ChatSettingsPage() {
                       className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all ${liveChatProvider === p.id ? "border-2" : ""}`}
                       style={{
                         borderColor: liveChatProvider === p.id ? p.color : "rgba(255,255,255,0.06)",
-                        background:  liveChatProvider === p.id ? `${p.color}10` : "#181230",
+                        background:  liveChatProvider === p.id ? `${p.color}10` : T.card,
                       }}>
                       <span className="text-xl">{p.icon}</span>
                       <div>
