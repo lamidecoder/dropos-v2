@@ -42,7 +42,7 @@ const FONTS = `
 ::selection{background:rgba(124,58,237,0.18)}
 `;
 
-// ── History ────────────────────────────────────────────────────
+// ── History (DB-backed, falls back to localStorage for guests) ──
 interface Session { id: string; title: string; ts: number; pinned?: boolean; }
 function genId() { return Math.random().toString(36).slice(2,10); }
 function timeAgo(ts: number) {
@@ -52,8 +52,31 @@ function timeAgo(ts: number) {
   if (d<86400) return Math.floor(d/3600)+"h ago";
   return Math.floor(d/86400)+"d ago";
 }
+// localStorage fallbacks for guests
 function loadHist(): Session[] {
   try { return JSON.parse(localStorage.getItem("kiro_hist")||"[]"); } catch { return []; }
+}
+// DB-backed helpers (for authed users)
+async function dbLoadHist(token: string): Promise<Session[]> {
+  try {
+    const r = await fetch(`${BASE}/kai/conversations`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    if (!r.ok) return loadHist();
+    const { data } = await r.json();
+    return (data||[]).map((c: any) => ({
+      id: c.id, title: c.title || "Untitled", ts: new Date(c.updatedAt).getTime(), pinned: c.pinned
+    }));
+  } catch { return loadHist(); }
+}
+async function dbDeleteHist(id: string, token: string) {
+  try { await fetch(`${BASE}/kai/conversations/${id}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } }); } catch {}
+}
+async function dbRenameHist(id: string, title: string, token: string) {
+  try { await fetch(`${BASE}/kai/conversations/${id}`, { method: "PATCH", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ title }) }); } catch {}
+}
+async function dbPinHist(id: string, pinned: boolean, token: string) {
+  try { await fetch(`${BASE}/kai/conversations/${id}`, { method: "PATCH", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ pinned }) }); } catch {}
 }
 function pushHist(id: string, title: string) {
   const h = loadHist().filter(x=>x.id!==id);
@@ -589,7 +612,22 @@ export default function KIROPage() {
   const T = mode==="light" ? TL : TD;
 
   // History helpers
-  const refreshHist = useCallback(() => setHistory(loadHist()), []);
+  const getToken = () => {
+    try {
+      const { useAuthStore: store } = require("../../../store/auth.store");
+      return store.getState().accessToken || "";
+    } catch { return ""; }
+  };
+
+  const refreshHist = useCallback(async () => {
+    const token = getToken();
+    if (token && authState === "authed") {
+      const sessions = await dbLoadHist(token);
+      setHistory(sessions);
+    } else {
+      setHistory(loadHist());
+    }
+  }, [authState]);
   const newSession  = useCallback(() => {
     const id = genId();
     setSessionId(id);
@@ -600,32 +638,55 @@ export default function KIROPage() {
     setSessionId(id);
     setSidebarOpen(false);
   }, []);
-  const removeSession = useCallback((id: string) => {
-    delHist(id);
+  const removeSession = useCallback(async (id: string) => {
+    const token = getToken();
+    if (token && authState === "authed") {
+      await dbDeleteHist(id, token);
+    } else {
+      delHist(id);
+    }
     refreshHist();
     if (id===sessionId) newSession();
   }, [sessionId, newSession, refreshHist]);
 
-  const renameSession = useCallback((id: string, title: string) => {
-    const h = loadHist().map((s: Session) => s.id === id ? { ...s, title } : s);
-    localStorage.setItem("kiro_hist", JSON.stringify(h));
+  const renameSession = useCallback(async (id: string, title: string) => {
+    const token = getToken();
+    if (token && authState === "authed") {
+      await dbRenameHist(id, title, token);
+    } else {
+      const h = loadHist().map((s: Session) => s.id === id ? { ...s, title } : s);
+      localStorage.setItem("kiro_hist", JSON.stringify(h));
+    }
     refreshHist();
-  }, [refreshHist]);
+  }, [refreshHist, authState]);
 
-  const pinSession = useCallback((id: string) => {
-    const h = loadHist().map((s: Session) => s.id === id ? { ...s, pinned: !s.pinned } : s);
-    localStorage.setItem("kiro_hist", JSON.stringify(h));
+  const pinSession = useCallback(async (id: string) => {
+    const token = getToken();
+    const current = history.find(s => s.id === id);
+    const newPinned = !current?.pinned;
+    if (token && authState === "authed") {
+      await dbPinHist(id, newPinned, token);
+    } else {
+      const h = loadHist().map((s: Session) => s.id === id ? { ...s, pinned: newPinned } : s);
+      localStorage.setItem("kiro_hist", JSON.stringify(h));
+    }
     refreshHist();
-  }, [refreshHist]);
+  }, [refreshHist, authState, history]);
 
-  // Record a chat when user sends their first message
+  // Re-load history from DB once authed
+  useEffect(() => {
+    if (authState === "authed") refreshHist();
+  }, [authState]);
   const recordChat = useCallback((firstMsg: string) => {
     if (sessionId) { pushHist(sessionId, firstMsg); refreshHist(); }
   }, [sessionId, refreshHist]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("kiro-mode") as "light"|"dark"|null;
-    if (saved) setMode(saved);
+    // Sync with dashboard theme (stored in localStorage as "dropos-theme"), fallback to kiro-mode
+    const dashTheme = localStorage.getItem("dropos-theme") as "light"|"dark"|null;
+    const kiroMode  = localStorage.getItem("kiro-mode")   as "light"|"dark"|null;
+    if (dashTheme) setMode(dashTheme);
+    else if (kiroMode) setMode(kiroMode);
     const id = genId(); setSessionId(id);
     refreshHist();
     tryAutoLogin().then(r => {
@@ -636,7 +697,9 @@ export default function KIROPage() {
 
   const toggleMode = () => {
     const n = mode==="light"?"dark":"light";
-    setMode(n); localStorage.setItem("kiro-mode",n);
+    setMode(n);
+    localStorage.setItem("kiro-mode", n);
+    localStorage.setItem("dropos-theme", n);  // keep in sync with dashboard
   };
 
   // ── Logged in: auth success
