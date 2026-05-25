@@ -7,6 +7,7 @@ import {
   Zap, Settings, CreditCard, Truck, Tag, Gift, Bell, Store,
   TrendingUp, Image, FileText, Globe, ArrowRight, Command,
 } from "lucide-react";
+import { useTheme } from "../layout/DashboardLayout";
 
 const NAV_ITEMS = [
   { label: "Dashboard",        href: "/dashboard",                    icon: LayoutDashboard,  group: "Pages"    },
@@ -38,6 +39,24 @@ const NAV_ITEMS = [
 ];
 
 export default function CommandPalette() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const D = {
+    triggerBg:  isDark ? "rgba(255,255,255,0.05)" : "rgba(107,53,232,0.06)",
+    triggerBdr: isDark ? "rgba(255,255,255,0.08)" : "rgba(107,53,232,0.12)",
+    triggerTxt: isDark ? "rgba(255,255,255,0.35)" : "rgba(19,13,46,0.45)",
+    kbdBg:      isDark ? "rgba(255,255,255,0.08)" : "rgba(107,53,232,0.08)",
+    kbdTxt:     isDark ? "rgba(255,255,255,0.3)"  : "rgba(19,13,46,0.4)",
+    modalBg:    isDark ? "#181230"                 : "#ffffff",
+    divider:    isDark ? "rgba(255,255,255,0.06)"  : "rgba(107,53,232,0.08)",
+    searchIcon: isDark ? "rgba(255,255,255,0.3)"   : "rgba(19,13,46,0.35)",
+    groupTxt:   isDark ? "rgba(255,255,255,0.2)"   : "rgba(19,13,46,0.3)",
+    itemBg:     isDark ? "rgba(255,255,255,0.05)"  : "rgba(107,53,232,0.05)",
+    itemTxt:    isDark ? "rgba(255,255,255,0.65)"  : "rgba(19,13,46,0.65)",
+    noResult:   isDark ? "rgba(255,255,255,0.3)"   : "rgba(19,13,46,0.4)",
+    footerTxt:  isDark ? "rgba(255,255,255,0.2)"   : "rgba(19,13,46,0.3)",
+    activeTxt:  isDark ? "#fff"                    : "#130D2E",
+  };
   const [open,  setOpen]  = useState(false);
   const [query, setQuery] = useState("");
   const [sel,   setSel]   = useState(0);
@@ -98,12 +117,12 @@ export default function CommandPalette() {
       <button
         onClick={() => setOpen(true)}
         className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all hover:opacity-80"
-        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)" }}>
+        style={{ background: D.triggerBg, border: `1px solid ${D.triggerBdr}`, color: D.triggerTxt }}>
         <Search size={11} />
         <span>Search</span>
         <div className="flex items-center gap-0.5 ml-1">
-          <kbd style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.3)", fontFamily: "system-ui" }}>⌘</kbd>
-          <kbd style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.3)", fontFamily: "system-ui" }}>K</kbd>
+          <kbd style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: D.kbdBg, color: D.kbdTxt, fontFamily: "system-ui" }}>⌘</kbd>
+          <kbd style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: D.kbdBg, color: D.kbdTxt, fontFamily: "system-ui" }}>K</kbd>
         </div>
       </button>
 
@@ -122,10 +141,10 @@ export default function CommandPalette() {
               className="fixed z-[9999] w-full max-w-lg left-1/2 -translate-x-1/2"
               style={{ top: "15vh" }}>
 
-              <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ background: "#181230", border: "1px solid rgba(107,53,232,0.3)" }}>
+              <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ background: D.modalBg, border: "1px solid rgba(107,53,232,0.3)" }}>
                 {/* Search input */}
-                <div className="flex items-center gap-3 px-4 py-3.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                  <Search size={16} style={{ color: "rgba(255,255,255,0.3)", flexShrink: 0 }} />
+                <div className="flex items-center gap-3 px-4 py-3.5" style={{ borderBottom: `1px solid ${D.divider}` }}>
+                  <Search size={16} style={{ color: D.searchIcon, flexShrink: 0 }} />
                   <input
                     ref={inputRef}
                     value={query}
@@ -135,7 +154,7 @@ export default function CommandPalette() {
                     style={{ fontFamily: "inherit" }}
                   />
                   <kbd onClick={() => setOpen(false)}
-                    style={{ fontSize: 10, padding: "2px 6px", borderRadius: 5, background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.25)", cursor: "pointer" }}>
+                    style={{ fontSize: 10, padding: "2px 6px", borderRadius: 5, background: D.kbdBg, color: D.kbdTxt, cursor: "pointer" }}>
                     ESC
                   </kbd>
                 </div>
@@ -144,7 +163,7 @@ export default function CommandPalette() {
                 <div style={{ maxHeight: "min(60vh, 400px)", overflowY: "auto", scrollbarWidth: "none" }}>
                   {Object.entries(groups).map(([group, items]) => (
                     <div key={group}>
-                      <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.2)" }}>
+                      <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: D.groupTxt }}>
                         {group}
                       </p>
                       {items.map((item, i) => {
@@ -156,10 +175,10 @@ export default function CommandPalette() {
                             onMouseEnter={() => setSel(globalIdx)}
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all"
                             style={{ background: isActive ? "rgba(107,53,232,0.15)" : "transparent", borderLeft: isActive ? "2px solid #8B5CF6" : "2px solid transparent" }}>
-                            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: isActive ? "rgba(107,53,232,0.2)" : "rgba(255,255,255,0.05)" }}>
-                              <Icon size={13} style={{ color: isActive ? "#A78BFA" : "rgba(255,255,255,0.4)" }} />
+                            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: isActive ? "rgba(107,53,232,0.2)" : D.itemBg }}>
+                              <Icon size={13} style={{ color: isActive ? "#A78BFA" : D.itemTxt }} />
                             </div>
-                            <span className="text-sm font-medium" style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.65)" }}>
+                            <span className="text-sm font-medium" style={{ color: isActive ? D.activeTxt : D.itemTxt }}>
                               {item.label}
                             </span>
                             {isActive && <ArrowRight size={12} style={{ color: "#8B5CF6", marginLeft: "auto" }} />}
@@ -170,17 +189,17 @@ export default function CommandPalette() {
                   ))}
                   {filtered.length === 0 && (
                     <div className="text-center py-10">
-                      <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>No results for "{query}"</p>
+                      <p className="text-sm" style={{ color: D.noResult }}>No results for "{query}"</p>
                     </div>
                   )}
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center gap-4 px-4 py-2.5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                <div className="flex items-center gap-4 px-4 py-2.5" style={{ borderTop: `1px solid ${D.divider}` }}>
                   {[["↑↓", "navigate"], ["↵", "open"], ["esc", "close"]].map(([k, l]) => (
                     <div key={k} className="flex items-center gap-1.5">
-                      <kbd style={{ fontSize: 10, padding: "1px 5px", borderRadius: 4, background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.25)", fontFamily: "system-ui" }}>{k}</kbd>
-                      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.2)" }}>{l}</span>
+                      <kbd style={{ fontSize: 10, padding: "1px 5px", borderRadius: 4, background: D.kbdBg, color: D.kbdTxt, fontFamily: "system-ui" }}>{k}</kbd>
+                      <span style={{ fontSize: 10, color: D.footerTxt }}>{l}</span>
                     </div>
                   ))}
                 </div>

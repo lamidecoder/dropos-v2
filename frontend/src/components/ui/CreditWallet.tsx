@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Plus, TrendingUp, AlertTriangle, X, Check } from "lucide-react";
 import { useCreditsStore, CREDIT_COSTS } from "../../store/credits.store";
+import { useTheme } from "../layout/DashboardLayout";
 import { api } from "../../lib/api";
 import toast from "react-hot-toast";
 
@@ -14,6 +15,8 @@ const TOP_UP_PACKS = [
 ];
 
 export function CreditBadge({ compact = false }: { compact?: boolean }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const { balance, monthlyLimit } = useCreditsStore();
   const pct = Math.round((balance / monthlyLimit) * 100);
   const isLow = pct <= 20;
@@ -36,10 +39,10 @@ export function CreditBadge({ compact = false }: { compact?: boolean }) {
       <Zap size={13} color={color} />
       <div style={{ flex: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>Credits</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: isDark ? "rgba(255,255,255,0.6)" : "rgba(19,13,46,0.6)" }}>Credits</span>
           <span style={{ fontSize: 11, fontWeight: 700, color }}>{balance.toLocaleString()} / {monthlyLimit.toLocaleString()}</span>
         </div>
-        <div style={{ height: 4, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+        <div style={{ height: 4, borderRadius: 99, background: isDark ? "rgba(255,255,255,0.08)" : "rgba(107,53,232,0.1)", overflow: "hidden" }}>
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${pct}%` }}
@@ -136,6 +139,8 @@ export function TopUpModal({ onClose }: { onClose: () => void }) {
 }
 
 export default function CreditWallet() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const { balance, plan, monthlyLimit, usedThisMonth } = useCreditsStore();
   const [showTopUp, setShowTopUp] = useState(false);
   const pct = Math.round((balance / monthlyLimit) * 100);
@@ -147,7 +152,7 @@ export default function CreditWallet() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <Zap size={14} color="#8B5CF6" />
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>KIRO Credits</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: isDark ? "#fff" : "#130D2E" }}>KIRO Credits</span>
           </div>
           <button onClick={() => setShowTopUp(true)}
             style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 8, border: "1px solid rgba(107,53,232,0.4)", background: "rgba(107,53,232,0.12)", color: "#A78BFA", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
@@ -156,11 +161,11 @@ export default function CreditWallet() {
         </div>
 
         <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 8 }}>
-          <span style={{ fontSize: 24, fontWeight: 900, color: isLow ? "#F59E0B" : "#fff" }}>{balance.toLocaleString()}</span>
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>/ {monthlyLimit.toLocaleString()} this month</span>
+          <span style={{ fontSize: 24, fontWeight: 900, color: isLow ? "#F59E0B" : (isDark ? "#fff" : "#130D2E") }}>{balance.toLocaleString()}</span>
+          <span style={{ fontSize: 12, color: isDark ? "rgba(255,255,255,0.35)" : "rgba(19,13,46,0.45)" }}>/ {monthlyLimit.toLocaleString()} this month</span>
         </div>
 
-        <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden", marginBottom: 8 }}>
+        <div style={{ height: 5, borderRadius: 99, background: isDark ? "rgba(255,255,255,0.08)" : "rgba(107,53,232,0.1)", overflow: "hidden", marginBottom: 8 }}>
           <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }}
             style={{ height: "100%", borderRadius: 99, background: isLow ? (pct <= 5 ? "#EF4444" : "#F59E0B") : "#6B35E8" }} />
         </div>
