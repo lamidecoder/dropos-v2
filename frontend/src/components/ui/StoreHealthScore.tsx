@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 import { useAuthStore } from "../../store/auth.store";
-import { useTheme } from "../layout/DashboardLayout";
 
 interface HealthCheck {
   id:      string;
@@ -50,9 +49,6 @@ function scoreLabel(score: number) {
 }
 
 export default function StoreHealthScore() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const tx = { text: isDark?"#F0ECFF":"#130D2E", muted: isDark?"rgba(240,236,255,0.5)":"rgba(19,13,46,0.5)", card: isDark?"#181230":"#fff", border: isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.09)" };
   const user = useAuthStore(s => s.user);
   const storeId = user?.stores?.[0]?.id;
   const [expanded, setExpanded] = useState(false);
@@ -98,7 +94,7 @@ export default function StoreHealthScore() {
             <span className="font-bold text-sm text-white">Store Health</span>
             <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: `${color}15`, color }}>{scoreLabel(score)}</span>
           </div>
-          <p className="text-xs" style={{ color: tx.muted }}>
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
             {passed}/{checks.length} checks passed · {failing.length > 0 ? `${failing.length} high priority issues` : "Only minor gaps"}
           </p>
         </div>
@@ -110,7 +106,7 @@ export default function StoreHealthScore() {
           </div>
         </Link>
 
-        <ChevronRight size={14} style={{ color: tx.muted, transform: expanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }} />
+        <ChevronRight size={14} style={{ color: "rgba(255,255,255,0.3)", transform: expanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }} />
       </button>
 
       {/* Expanded checks */}
@@ -129,7 +125,7 @@ export default function StoreHealthScore() {
                         : <AlertTriangle size={10} color="#F59E0B" />
                     }
                   </div>
-                  <span className="text-xs flex-1" style={{ color: c.passed ? tx.muted : "rgba(255,255,255,0.8)", textDecoration: c.passed ? "line-through" : "none" }}>
+                  <span className="text-xs flex-1" style={{ color: c.passed ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.8)", textDecoration: c.passed ? "line-through" : "none" }}>
                     {c.label}
                   </span>
                   {!c.passed && c.href && (

@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Zap, X, ArrowRight, Crown, Lock } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import Link from "next/link";
-import { useTheme } from "../layout/DashboardLayout";
 
 type Feature =
   | "products"   // Free: 20, Growth+: unlimited
@@ -65,9 +64,6 @@ interface PlanGateProps {
 }
 
 export function PlanGate({ feature, children, fallback, silent }: PlanGateProps) {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const tx = { text: isDark?"#F0ECFF":"#130D2E", muted: isDark?"rgba(240,236,255,0.5)":"rgba(19,13,46,0.5)", card: isDark?"#181230":"#fff", border: isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.09)" };
   const user    = useAuthStore(s => s.user);
   const plan    = user?.subscription?.plan || "FREE";
   const required = PLAN_REQUIREMENTS[feature];
@@ -104,14 +100,14 @@ export function UpgradePrompt({ feature, requiredPlan, inline = false }: { featu
         </div>
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>{copy.title}</p>
-          <p style={{ fontSize: 12, color: tx.muted, lineHeight: 1.5 }}>{copy.desc}</p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>{copy.desc}</p>
         </div>
         <Link href="/dashboard/billing">
           <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "none", background: `linear-gradient(135deg,${color},${color}99)`, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
             Upgrade <ArrowRight size={11} />
           </button>
         </Link>
-        <button onClick={() => setDismissed(true)} style={{ color: tx.muted, background: "none", border: "none", cursor: "pointer" }}><X size={14} /></button>
+        <button onClick={() => setDismissed(true)} style={{ color: "rgba(255,255,255,0.3)", background: "none", border: "none", cursor: "pointer" }}><X size={14} /></button>
       </motion.div>
     );
   }
@@ -129,8 +125,8 @@ export function UsageBar({ feature, current, max, label }: { feature: Feature; c
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4, fontSize: 11 }}>
-        <span style={{ color: tx.muted }}>{label || feature}</span>
-        <span style={{ color: isHigh ? color : tx.muted, fontWeight: isHigh ? 700 : 400 }}>
+        <span style={{ color: "rgba(255,255,255,0.45)" }}>{label || feature}</span>
+        <span style={{ color: isHigh ? color : "rgba(255,255,255,0.45)", fontWeight: isHigh ? 700 : 400 }}>
           {current} / {max}
         </span>
       </div>
