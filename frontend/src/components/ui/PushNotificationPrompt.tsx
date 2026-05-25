@@ -3,8 +3,19 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, X, Zap } from "lucide-react";
 import { api } from "../../lib/api";
+import { useTheme } from "../layout/DashboardLayout";
 
 export default function PushNotificationPrompt() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const P = {
+    bg:      isDark ? "#181230"                : "#ffffff",
+    title:   isDark ? "#fff"                   : "#130D2E",
+    desc:    isDark ? "rgba(255,255,255,0.45)" : "rgba(19,13,46,0.55)",
+    dismiss: isDark ? "rgba(255,255,255,0.3)"  : "rgba(19,13,46,0.35)",
+    notNow:  isDark ? "rgba(255,255,255,0.4)"  : "rgba(19,13,46,0.5)",
+    notNowBdr: isDark ? "rgba(255,255,255,0.1)": "rgba(107,53,232,0.12)",
+  };
   const [show, setShow]     = useState(false);
   const [status, setStatus] = useState<"idle"|"requesting"|"done">("idle");
 
@@ -60,7 +71,7 @@ export default function PushNotificationPrompt() {
           style={{
             position: "fixed", bottom: 88, right: 16, zIndex: 9990,
             width: 300, borderRadius: 16, overflow: "hidden",
-            background: "#181230", border: "1px solid rgba(107,53,232,0.3)",
+            background: P.bg, border: "1px solid rgba(107,53,232,0.3)",
             boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
           }}>
           <div style={{ padding: "16px 16px 0", display: "flex", alignItems: "flex-start", gap: 12 }}>
@@ -68,20 +79,20 @@ export default function PushNotificationPrompt() {
               <Zap size={16} color="white" />
             </div>
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: "#fff", marginBottom: 4 }}>
+              <p style={{ fontSize: 13, fontWeight: 800, color: P.title, marginBottom: 4 }}>
                 Get KIRO alerts instantly
               </p>
-              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
+              <p style={{ fontSize: 11, color: P.desc, lineHeight: 1.5 }}>
                 New orders, low stock, and KIRO insights sent directly to your device.
               </p>
             </div>
-            <button onClick={dismiss} style={{ color: "rgba(255,255,255,0.3)", background: "none", border: "none", cursor: "pointer" }}>
+            <button onClick={dismiss} style={{ color: P.dismiss, background: "none", border: "none", cursor: "pointer" }}>
               <X size={14} />
             </button>
           </div>
           <div style={{ display: "flex", gap: 8, padding: 12 }}>
             <button onClick={dismiss}
-              style={{ flex: 1, padding: "8px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}>
+              style={{ flex: 1, padding: "8px", borderRadius: 10, border: `1px solid ${P.notNowBdr}`, background: "transparent", color: P.notNow, fontSize: 12, cursor: "pointer" }}>
               Not now
             </button>
             <button onClick={request} disabled={status === "requesting"}

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronRight, X, Zap, Package, CreditCard, Share2, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "../../store/auth.store";
+import { useTheme } from "../layout/DashboardLayout";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 
@@ -66,6 +67,22 @@ const STEPS: ChecklistStep[] = [
 ];
 
 export default function SetupChecklist() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const S = {
+    title:   isDark ? "#fff"                   : "#130D2E",
+    track:   isDark ? "rgba(255,255,255,0.08)" : "rgba(107,53,232,0.1)",
+    dismiss: isDark ? "rgba(255,255,255,0.3)"  : "rgba(19,13,46,0.3)",
+    grid:    isDark ? "rgba(255,255,255,0.05)" : "rgba(107,53,232,0.05)",
+    iconBg:  isDark ? "rgba(255,255,255,0.06)" : "rgba(107,53,232,0.06)",
+    iconBdr: isDark ? "rgba(255,255,255,0.08)" : "rgba(107,53,232,0.1)",
+    iconClr: isDark ? "rgba(255,255,255,0.5)"  : "rgba(19,13,46,0.4)",
+    doneTxt: isDark ? "rgba(255,255,255,0.4)"  : "rgba(19,13,46,0.4)",
+    itemTxt: isDark ? "rgba(255,255,255,0.85)" : "#130D2E",
+    descTxt: isDark ? "rgba(255,255,255,0.3)"  : "rgba(19,13,46,0.45)",
+    chevron: isDark ? "rgba(255,255,255,0.2)"  : "rgba(19,13,46,0.25)",
+    footer:  isDark ? "rgba(255,255,255,0.25)" : "rgba(19,13,46,0.35)",
+  };
   const user    = useAuthStore(s => s.user);
   const [dismissed, setDismissed] = useState(false);
   const [hasShown, setHasShown]   = useState(false);
@@ -110,12 +127,12 @@ export default function SetupChecklist() {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
             <Zap size={15} color="#8B5CF6" />
-            <p style={{ fontSize: 14, fontWeight: 800, color: "#fff" }}>
+            <p style={{ fontSize: 14, fontWeight: 800, color: S.title }}>
               {progress === 0 ? "Let's get your store ready" : `${progress} of ${total} done - keep going!`}
             </p>
           </div>
           {/* Progress bar */}
-          <div style={{ width: 200, height: 4, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+          <div style={{ width: 200, height: 4, borderRadius: 99, background: S.track, overflow: "hidden" }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
@@ -124,37 +141,37 @@ export default function SetupChecklist() {
             />
           </div>
         </div>
-        <button onClick={() => setDismissed(true)} style={{ color: "rgba(255,255,255,0.3)", background: "none", border: "none", cursor: "pointer" }}>
+        <button onClick={() => setDismissed(true)} style={{ color: S.dismiss, background: "none", border: "none", cursor: "pointer" }}>
           <X size={15} />
         </button>
       </div>
 
       {/* Steps */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "rgba(255,255,255,0.05)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: S.grid }}>
         {STEPS.map((step, i) => {
           const done    = step.check(data || user);
           const Icon    = step.icon;
           return (
             <Link key={step.id} href={done ? "#" : step.href} style={{ textDecoration: "none" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: done ? "rgba(16,185,129,0.05)" : "rgba(6,4,13,0.5)", transition: "background 0.15s", cursor: done ? "default" : "pointer" }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: done ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.06)", border: `1px solid ${done ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.08)"}` }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: done ? "rgba(16,185,129,0.15)" : S.iconBg, border: `1px solid ${done ? "rgba(16,185,129,0.3)" : S.iconBdr}` }}>
                   {done
                     ? <Check size={13} color="#10B981" strokeWidth={3} />
-                    : <Icon size={13} color="rgba(255,255,255,0.5)" />
+                    : <Icon size={13} color={S.iconClr} />
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 12, fontWeight: done ? 500 : 600, color: done ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.85)", textDecoration: done ? "line-through" : "none" }}>{step.label}</p>
-                  {!done && <p style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 1 }}>{step.desc}</p>}
+                  <p style={{ fontSize: 12, fontWeight: done ? 500 : 600, color: done ? S.doneTxt : S.itemTxt, textDecoration: done ? "line-through" : "none" }}>{step.label}</p>
+                  {!done && <p style={{ fontSize: 10, color: S.descTxt, marginTop: 1 }}>{step.desc}</p>}
                 </div>
-                {!done && <ChevronRight size={12} color="rgba(255,255,255,0.2)" />}
+                {!done && <ChevronRight size={12} color={S.chevron} />}
               </div>
             </Link>
           );
         })}
       </div>
 
-      <div style={{ padding: "10px 20px 14px", fontSize: 11, color: "rgba(255,255,255,0.25)", textAlign: "center" }}>
+      <div style={{ padding: "10px 20px 14px", fontSize: 11, color: S.footer, textAlign: "center" }}>
         Complete all 5 steps to unlock your full store potential
       </div>
     </motion.div>

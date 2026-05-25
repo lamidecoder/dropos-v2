@@ -10,6 +10,7 @@ import { motion }        from "framer-motion";
 import { api }           from "@/lib/api";
 import { useAuthStore }  from "@/store/auth.store";
 import KAIChat           from "@/components/kai/KIROChat";
+import { useTheme }      from "@/components/layout/DashboardLayout";
 import {
   TrendingUp, Package, Users, ShoppingCart,
   ArrowUpRight, ArrowDownRight, Bell,
@@ -18,10 +19,12 @@ import {
 
 // ── Stat Card ─────────────────────────────────────────────────
 function StatCard({ label, value, sub, trend, color, icon: Icon, delay = 0 }: any) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const isUp = trend >= 0;
   return (
     <motion.div className="rounded-2xl p-4 relative overflow-hidden"
-      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
+      style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(107,53,232,0.04)", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(107,53,232,0.09)" }}
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
       transition={{ delay, type: "spring", damping: 22 }}>
       {/* Glow */}
@@ -40,15 +43,17 @@ function StatCard({ label, value, sub, trend, color, icon: Icon, delay = 0 }: an
           </div>
         )}
       </div>
-      <p className="text-2xl font-black text-white mb-0.5">{value}</p>
-      <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</p>
-      {sub && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{sub}</p>}
+      <p className="text-2xl font-black mb-0.5" style={{ color: isDark ? "#fff" : "#130D2E" }}>{value}</p>
+      <p className="text-xs" style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(19,13,46,0.5)" }}>{label}</p>
+      {sub && <p className="text-xs mt-0.5" style={{ color: isDark ? "rgba(255,255,255,0.3)" : "rgba(19,13,46,0.4)" }}>{sub}</p>}
     </motion.div>
   );
 }
 
 // ── KAI Pulse Alert ───────────────────────────────────────────
 function PulseAlert({ alert }: { alert: any }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const colors: Record<string,string> = {
     critical: "#f87171", warning: "#fbbf24",
     success:  "#34d399", info:    "#60a5fa",
@@ -61,8 +66,8 @@ function PulseAlert({ alert }: { alert: any }) {
       <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
         style={{ background: c }} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white">{alert.title}</p>
-        <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
+        <p className="text-sm font-medium" style={{ color: isDark ? "#fff" : "#130D2E" }}>{alert.title}</p>
+        <p className="text-xs mt-0.5 leading-relaxed" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(19,13,46,0.5)" }}>
           {alert.message}
         </p>
       </div>
@@ -78,21 +83,25 @@ function PulseAlert({ alert }: { alert: any }) {
 
 // ── Quick Action ──────────────────────────────────────────────
 function QuickAction({ emoji, label, href, color }: any) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   return (
     <a href={href}
       className="flex flex-col items-center gap-2 p-3 rounded-2xl transition-all"
-      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+      style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(107,53,232,0.04)", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(107,53,232,0.09)" }}>
       <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
         style={{ background: `${color}15` }}>
         {emoji}
       </div>
-      <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.6)", lineHeight: 1.3 }}>{label}</p>
+      <p className="text-xs text-center" style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(19,13,46,0.6)", lineHeight: 1.3 }}>{label}</p>
     </a>
   );
 }
 
 // ── MAIN ──────────────────────────────────────────────────────
 export default function OverviewPage() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const user    = useAuthStore(s => s.user);
   const storeId = user?.stores?.[0]?.id || "";
   const name    = user?.name?.split(" ")[0] || "there";
@@ -133,17 +142,17 @@ export default function OverviewPage() {
 
   return (
     
-      <div className="min-h-screen" style={{ background: "#07070e" }}>
+      <div className="min-h-screen" style={{ background: isDark ? "#07070e" : "#F4F2FB" }}>
         <div className="max-w-2xl mx-auto px-5 pt-6 pb-10">
 
           {/* Greeting */}
           <motion.div className="mb-6"
             initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="text-xs mb-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+            <p className="text-xs mb-0.5" style={{ color: isDark ? "rgba(255,255,255,0.3)" : "rgba(19,13,46,0.4)" }}>
               {greeting},
             </p>
-            <h1 className="text-xl font-semibold text-white">{name} 👋</h1>
-            <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <h1 className="text-xl font-semibold" style={{ color: isDark ? "#fff" : "#130D2E" }}>{name} 👋</h1>
+            <p className="text-xs mt-1" style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(19,13,46,0.5)" }}>
               {new Date().toLocaleDateString("en-NG", { weekday:"long", day:"numeric", month:"long" })}
             </p>
           </motion.div>
@@ -184,7 +193,7 @@ export default function OverviewPage() {
           {orders.length > 0 && (
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold text-white">Needs Fulfillment</p>
+                <p className="text-sm font-semibold" style={{ color: isDark ? "#fff" : "#130D2E" }}>Needs Fulfillment</p>
                 <a href="/dashboard/orders" className="text-xs" style={{ color: "#a78bfa" }}>
                   See all
                 </a>
@@ -202,15 +211,15 @@ export default function OverviewPage() {
                       animate={{ scale: [1,1.4,1] }}
                       transition={{ duration: 1.8, repeat: Infinity }} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white truncate">{order.customer?.name}</p>
-                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      <p className="text-sm truncate" style={{ color: isDark ? "#fff" : "#130D2E" }}>{order.customer?.name}</p>
+                      <p className="text-xs" style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(19,13,46,0.5)" }}>
                         {order.items?.length} item{order.items?.length !== 1 ? "s" : ""}
                       </p>
                     </div>
                     <p className="text-sm font-bold" style={{ color: "#60a5fa" }}>
                       ₦{Number(order.total || 0).toLocaleString()}
                     </p>
-                    <ChevronRight size={14} style={{ color: "rgba(255,255,255,0.3)" }} />
+                    <ChevronRight size={14} style={{ color: isDark ? "rgba(255,255,255,0.3)" : "rgba(19,13,46,0.3)" }} />
                   </motion.a>
                 ))}
               </div>
@@ -219,7 +228,7 @@ export default function OverviewPage() {
 
           {/* Quick actions */}
           <div className="mb-6">
-            <p className="text-sm font-semibold text-white mb-3">Quick Actions</p>
+            <p className="text-sm font-semibold mb-3" style={{ color: isDark ? "#fff" : "#130D2E" }}>Quick Actions</p>
             <div className="grid grid-cols-4 gap-2">
               <QuickAction emoji="📦" label="Orders"     href="/dashboard/orders"       color="#60a5fa" />
               <QuickAction emoji="➕" label="Add Product"href="/dashboard/products/new" color="#34d399" />
@@ -239,15 +248,15 @@ export default function OverviewPage() {
             style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)" }}
             whileHover={{ borderColor: "rgba(124,58,237,0.4)" }}
             whileTap={{ scale: 0.99 }}>
-            <motion.div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white"
-              style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)" }}
+            <motion.div className="w-10 h-10 rounded-xl flex items-center justify-center font-black"
+              style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", color: "#fff" }}
               animate={{ boxShadow: ["0 0 0px #7c3aed30","0 0 16px #7c3aed50","0 0 0px #7c3aed30"] }}
               transition={{ duration: 3, repeat: Infinity }}>
               K
             </motion.div>
             <div className="flex-1 text-left">
-              <p className="text-sm font-semibold text-white">Ask KIRO anything</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+              <p className="text-sm font-semibold" style={{ color: isDark ? "#fff" : "#130D2E" }}>Ask KIRO anything</p>
+              <p className="text-xs" style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(19,13,46,0.5)" }}>
                 "What should I sell this week?" · "Write me a TikTok script"
               </p>
             </div>

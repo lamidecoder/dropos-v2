@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, X, ArrowRight, Crown, Lock } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
+import { useTheme } from "../layout/DashboardLayout";
 import Link from "next/link";
 
 type Feature =
@@ -84,10 +85,15 @@ export function PlanGate({ feature, children, fallback, silent }: PlanGateProps)
 }
 
 export function UpgradePrompt({ feature, requiredPlan, inline = false }: { feature: Feature; requiredPlan: string; inline?: boolean }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [dismissed, setDismissed] = useState(false);
   const copy = UPGRADE_COPY[feature];
   const color = requiredPlan === "PRO" ? "#F59E0B" : "#8B5CF6";
   const bg    = requiredPlan === "PRO" ? "rgba(245,158,11,0.08)" : "rgba(107,53,232,0.08)";
+  const titleClr  = isDark ? "#fff" : "#130D2E";
+  const descClr   = isDark ? "rgba(255,255,255,0.45)" : "rgba(19,13,46,0.55)";
+  const dismissClr = isDark ? "rgba(255,255,255,0.3)" : "rgba(19,13,46,0.35)";
 
   if (dismissed && inline) return null;
 
@@ -99,15 +105,15 @@ export function UpgradePrompt({ feature, requiredPlan, inline = false }: { featu
           {requiredPlan === "PRO" ? <Crown size={14} color={color} /> : <Zap size={14} color={color} />}
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>{copy.title}</p>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>{copy.desc}</p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: titleClr, marginBottom: 2 }}>{copy.title}</p>
+          <p style={{ fontSize: 12, color: descClr, lineHeight: 1.5 }}>{copy.desc}</p>
         </div>
         <Link href="/dashboard/billing">
           <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "none", background: `linear-gradient(135deg,${color},${color}99)`, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
             Upgrade <ArrowRight size={11} />
           </button>
         </Link>
-        <button onClick={() => setDismissed(true)} style={{ color: "rgba(255,255,255,0.3)", background: "none", border: "none", cursor: "pointer" }}><X size={14} /></button>
+        <button onClick={() => setDismissed(true)} style={{ color: dismissClr, background: "none", border: "none", cursor: "pointer" }}><X size={14} /></button>
       </motion.div>
     );
   }
@@ -117,6 +123,10 @@ export function UpgradePrompt({ feature, requiredPlan, inline = false }: { featu
 
 // Usage limit progress bar — shown when approaching limits
 export function UsageBar({ feature, current, max, label }: { feature: Feature; current: number; max: number; label?: string }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const muteClr = isDark ? "rgba(255,255,255,0.45)" : "rgba(19,13,46,0.5)";
+  const trackBg = isDark ? "rgba(255,255,255,0.08)" : "rgba(107,53,232,0.1)";
   const pct      = Math.min(100, Math.round((current / max) * 100));
   const isHigh   = pct >= 80;
   const isFull   = pct >= 100;
@@ -125,12 +135,12 @@ export function UsageBar({ feature, current, max, label }: { feature: Feature; c
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4, fontSize: 11 }}>
-        <span style={{ color: "rgba(255,255,255,0.45)" }}>{label || feature}</span>
-        <span style={{ color: isHigh ? color : "rgba(255,255,255,0.45)", fontWeight: isHigh ? 700 : 400 }}>
+        <span style={{ color: muteClr }}>{label || feature}</span>
+        <span style={{ color: isHigh ? color : muteClr, fontWeight: isHigh ? 700 : 400 }}>
           {current} / {max}
         </span>
       </div>
-      <div style={{ height: 4, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+      <div style={{ height: 4, borderRadius: 99, background: trackBg, overflow: "hidden" }}>
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
