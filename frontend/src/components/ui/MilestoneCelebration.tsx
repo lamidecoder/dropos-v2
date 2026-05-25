@@ -6,7 +6,6 @@ import { api } from "../../lib/api";
 import { useAuthStore } from "../../store/auth.store";
 import Link from "next/link";
 import { Zap, ArrowRight, X } from "lucide-react";
-import { useTheme } from "../layout/DashboardLayout";
 
 interface Milestone {
   id:      string;
@@ -51,17 +50,6 @@ function Confetti() {
 }
 
 export default function MilestoneCelebration() {
-
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const T = {
-    text:   isDark ? "#F0ECFF"                : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
-    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
-    card:   isDark ? "#181230" : "#ffffff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
-    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
-  };
   const user     = useAuthStore(s => s.user);
   const storeId  = user?.stores?.[0]?.id;
   const [current, setCurrent] = useState<Milestone | null>(null);
@@ -98,7 +86,7 @@ export default function MilestoneCelebration() {
 
         <motion.div initial={{ opacity:0, scale:0.85, y:32 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0, scale:0.9, y:16 }}
           transition={{ type:"spring", stiffness:280, damping:26 }}
-          style={{ position:"relative", width:"100%", maxWidth:400, borderRadius:28, overflow:"hidden", background:"T.card", border:"1px solid rgba(255,255,255,0.08)", boxShadow:"0 32px 80px rgba(0,0,0,0.5)" }}>
+          style={{ position:"relative", width:"100%", maxWidth:400, borderRadius:28, overflow:"hidden", background:"#0D0918", border:"1px solid rgba(255,255,255,0.08)", boxShadow:"0 32px 80px rgba(0,0,0,0.5)" }}>
 
           <Confetti />
 
@@ -108,7 +96,7 @@ export default function MilestoneCelebration() {
           <div style={{ padding:"32px 28px 28px", textAlign:"center", position:"relative", zIndex:1 }}>
             {/* Dismiss */}
             <button onClick={dismiss}
-              style={{ position:"absolute", top:16, right:16, width:30, height:30, borderRadius:"50%", border:"none", background:T.faint, cursor:"pointer", color:"T.muted", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              style={{ position:"absolute", top:16, right:16, width:30, height:30, borderRadius:"50%", border:"none", background:"rgba(255,255,255,0.06)", cursor:"pointer", color:"rgba(255,255,255,0.4)", display:"flex", alignItems:"center", justifyContent:"center" }}>
               <X size={14}/>
             </button>
 
@@ -127,7 +115,7 @@ export default function MilestoneCelebration() {
             <h2 style={{ fontSize:22, fontWeight:900, letterSpacing:"-1px", color:"#fff", marginBottom:10 }}>
               {current.title}
             </h2>
-            <p style={{ fontSize:14, lineHeight:1.65, color:"T.muted", marginBottom:24 }}>
+            <p style={{ fontSize:14, lineHeight:1.65, color:"rgba(255,255,255,0.55)", marginBottom:24 }}>
               {current.message}
             </p>
 
@@ -138,7 +126,7 @@ export default function MilestoneCelebration() {
                     {current.cta.label} <ArrowRight size={14}/>
                   </button>
                 </Link>
-                <button onClick={dismiss} style={{ padding:"11px 22px", borderRadius:14, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"T.muted", fontSize:13, cursor:"pointer" }}>
+                <button onClick={dismiss} style={{ padding:"11px 22px", borderRadius:14, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(255,255,255,0.5)", fontSize:13, cursor:"pointer" }}>
                   Close
                 </button>
               </div>

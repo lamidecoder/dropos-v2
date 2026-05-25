@@ -1,20 +1,16 @@
 "use client";
+﻿"use client";
 // ============================================================
 // Dashboard Overview - Premium Home Screen
 // Path: frontend/src/app/dashboard/overview/page.tsx
 // ============================================================
-import { useState, useContext } from "react";
-import { useTheme } from "../../../components/layout/DashboardLayout";
-// @ts-ignore
-const _useTheme = useTheme;
-import { useState as _useState }      from "react";
+import { useState }      from "react";
 import { useQuery }      from "@tanstack/react-query";
 import { motion }        from "framer-motion";
 import { api }           from "@/lib/api";
 import { useAuthStore }  from "@/store/auth.store";
 import KAIChat           from "@/components/kai/KIROChat";
 import {
-
   TrendingUp, Package, Users, ShoppingCart,
   ArrowUpRight, ArrowDownRight, Bell,
   Zap, ChevronRight, Clock, AlertCircle,
@@ -25,7 +21,7 @@ function StatCard({ label, value, sub, trend, color, icon: Icon, delay = 0 }: an
   const isUp = trend >= 0;
   return (
     <motion.div className="rounded-2xl p-4 relative overflow-hidden"
-      style={{ background: "rgba(240,236,255,0.25)", border: "1px solid rgba(255,255,255,0.07)" }}
+      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
       transition={{ delay, type: "spring", damping: 22 }}>
       {/* Glow */}
@@ -45,8 +41,8 @@ function StatCard({ label, value, sub, trend, color, icon: Icon, delay = 0 }: an
         )}
       </div>
       <p className="text-2xl font-black text-white mb-0.5">{value}</p>
-      <p className="text-xs" style={{ color: "rgba(240,236,255,0.5)" }}>{label}</p>
-      {sub && <p className="text-xs mt-0.5" style={{ color: "rgba(240,236,255,0.25)" }}>{sub}</p>}
+      <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</p>
+      {sub && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{sub}</p>}
     </motion.div>
   );
 }
@@ -66,7 +62,7 @@ function PulseAlert({ alert }: { alert: any }) {
         style={{ background: c }} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white">{alert.title}</p>
-        <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "rgba(240,236,255,0.5)" }}>
+        <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
           {alert.message}
         </p>
       </div>
@@ -85,27 +81,18 @@ function QuickAction({ emoji, label, href, color }: any) {
   return (
     <a href={href}
       className="flex flex-col items-center gap-2 p-3 rounded-2xl transition-all"
-      style={{ background: "rgba(240,236,255,0.25)", border: "1px solid rgba(255,255,255,0.07)" }}>
+      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
       <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
         style={{ background: `${color}15` }}>
         {emoji}
       </div>
-      <p className="text-xs text-center" style={{ color: "#F0ECFF", lineHeight: 1.3 }}>{label}</p>
+      <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.6)", lineHeight: 1.3 }}>{label}</p>
     </a>
   );
 }
 
 // ── MAIN ──────────────────────────────────────────────────────
 export default function OverviewPage() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const T = {
-    text:   isDark ? "#F0ECFF"                : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
-    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
-    card:   isDark ? "#181230"                : "#ffffff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
-  };
   const user    = useAuthStore(s => s.user);
   const storeId = user?.stores?.[0]?.id || "";
   const name    = user?.name?.split(" ")[0] || "there";
@@ -152,11 +139,11 @@ export default function OverviewPage() {
           {/* Greeting */}
           <motion.div className="mb-6"
             initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="text-xs mb-0.5" style={{ color: T.faint }}>
+            <p className="text-xs mb-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>
               {greeting},
             </p>
             <h1 className="text-xl font-semibold text-white">{name} 👋</h1>
-            <p className="text-xs mt-1" style={{ color: T.muted }}>
+            <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
               {new Date().toLocaleDateString("en-NG", { weekday:"long", day:"numeric", month:"long" })}
             </p>
           </motion.div>
@@ -216,14 +203,14 @@ export default function OverviewPage() {
                       transition={{ duration: 1.8, repeat: Infinity }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate">{order.customer?.name}</p>
-                      <p className="text-xs" style={{ color: T.muted }}>
+                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
                         {order.items?.length} item{order.items?.length !== 1 ? "s" : ""}
                       </p>
                     </div>
                     <p className="text-sm font-bold" style={{ color: "#60a5fa" }}>
                       ₦{Number(order.total || 0).toLocaleString()}
                     </p>
-                    <ChevronRight size={14} style={{ color: T.faint }} />
+                    <ChevronRight size={14} style={{ color: "rgba(255,255,255,0.3)" }} />
                   </motion.a>
                 ))}
               </div>
@@ -260,7 +247,7 @@ export default function OverviewPage() {
             </motion.div>
             <div className="flex-1 text-left">
               <p className="text-sm font-semibold text-white">Ask KIRO anything</p>
-              <p className="text-xs" style={{ color: T.muted }}>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
                 "What should I sell this week?" · "Write me a TikTok script"
               </p>
             </div>

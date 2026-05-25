@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, X, Share2, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useTheme } from "../layout/DashboardLayout";
 
 interface Props {
   orderAmount?: number;
@@ -26,17 +25,6 @@ function Particle({ x, y, color, delay }: { x: number; y: number; color: string;
 const CONFETTI_COLORS = ["#6B35E8","#A78BFA","#10B981","#F59E0B","#EF4444","#06B6D4","#EC4899","#fff"];
 
 export default function FirstSaleCelebration({ orderAmount, customerName, onDismiss }: Props) {
-
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const T = {
-    text:   isDark ? "#F0ECFF"                : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
-    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
-    card:   isDark ? "#181230" : "#ffffff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
-    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
-  };
   const particles = Array.from({ length: 60 }, (_, i) => ({
     id: i,
     x:  Math.random() * 200 - 50,
@@ -58,12 +46,12 @@ export default function FirstSaleCelebration({ orderAmount, customerName, onDism
         initial={{ opacity: 0, scale: 0.7, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 24 }}
-        style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 380, borderRadius: 28, background: T.card, border: "1px solid rgba(107,53,232,0.3)", overflow: "hidden", textAlign: "center", padding: "40px 32px 32px" }}>
+        style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 380, borderRadius: 28, background: "#181230", border: "1px solid rgba(107,53,232,0.3)", overflow: "hidden", textAlign: "center", padding: "40px 32px 32px" }}>
 
         {/* Glow */}
         <div style={{ position: "absolute", top: -40, left: "50%", transform: "translateX(-50%)", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(107,53,232,0.5), transparent 70%)", filter: "blur(30px)", pointerEvents: "none" }} />
 
-        <button onClick={onDismiss} style={{ position: "absolute", top: 16, right: 16, color: T.faint, background: "none", border: "none", cursor: "pointer" }}>
+        <button onClick={onDismiss} style={{ position: "absolute", top: 16, right: 16, color: "rgba(255,255,255,0.3)", background: "none", border: "none", cursor: "pointer" }}>
           <X size={18} />
         </button>
 
@@ -93,7 +81,7 @@ export default function FirstSaleCelebration({ orderAmount, customerName, onDism
               {fmt(orderAmount)}
             </p>
           )}
-          <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", lineHeight: 1.6 }}>
             {customerName ? `${customerName} just bought from your store.` : "Someone just bought from your store."}
             {" "}This is your first step to financial freedom.
           </p>
@@ -115,7 +103,7 @@ export default function FirstSaleCelebration({ orderAmount, customerName, onDism
                 .catch(() => navigator.clipboard.writeText("I just made my first sale on DropOS! 🔥 Try it: https://droposhq.com"));
               toast?.success?.("Copied to share!");
             }}
-            style={{ padding: "12px 14px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.12)", background: T.faint, color: T.text, cursor: "pointer" }}>
+            style={{ padding: "12px 14px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.7)", cursor: "pointer" }}>
             <Share2 size={16} />
           </button>
         </motion.div>
@@ -124,7 +112,7 @@ export default function FirstSaleCelebration({ orderAmount, customerName, onDism
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          style={{ fontSize: 11, color: T.faint, marginTop: 16 }}>
+          style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 16 }}>
           KIRO is already working on getting you the next one
         </motion.p>
       </motion.div>

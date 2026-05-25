@@ -9,20 +9,11 @@ import { Plus, X, Package, Zap, Check, Loader2, ShoppingBag, Tag } from "lucide-
 import toast from "react-hot-toast";
 
 const V={v500:"#6B35E8",v400:"#8B5CF6",v300:"#A78BFA",green:"#10B981",amber:"#F59E0B"};
-const TM={dark:{card:"#181230",border:"rgba(255,255,255,0.06)",text:"#fff",muted:"rgba(240,236,255,0.25)",faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:"#181230",muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
+const TM={dark:{card:"#181230",border:"rgba(255,255,255,0.06)",text:"#fff",muted:"rgba(255,255,255,0.38)",faint:"rgba(255,255,255,0.04)"},light:{card:"#fff",border:"rgba(15,5,32,0.07)",text:"#0D0918",muted:"rgba(13,9,24,0.45)",faint:"rgba(15,5,32,0.03)"}};
 const fmt=(n:number)=>new Intl.NumberFormat("en",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(n||0);
 
 export default function BundleBuilderPage(){
   const{theme}=useTheme();const isDark=theme==="dark";const t=isDark?TM.dark:TM.light;
-
-  const T = {
-    text:   isDark ? "#F0ECFF"                : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
-    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
-    card:   isDark ? "#181230"                : "#ffffff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
-    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
-  };
   const storeId=useAuthStore(s=>s.user?.stores?.[0]?.id);const qc=useQueryClient();
   const[selected,setSelected]=useState<any[]>([]);
   const[name,setName]=useState("");
@@ -108,14 +99,14 @@ export default function BundleBuilderPage(){
             <div className="space-y-2 mb-3">
               {selected.map(p=>(
                 <div key={p.id} className="flex items-center gap-2">
-                  <p className="text-xs flex-1 truncate" style={{color:T.muted}}>{p.name}</p>
+                  <p className="text-xs flex-1 truncate" style={{color:"rgba(255,255,255,0.7)"}}>{p.name}</p>
                   <p className="text-xs font-bold flex-shrink-0" style={{color:V.v300}}>{fmt(p.price||0)}</p>
-                  <button onClick={()=>toggle(p)} style={{color:T.faint,background:"none",border:"none",cursor:"pointer"}}><X size={11}/></button>
+                  <button onClick={()=>toggle(p)} style={{color:"rgba(255,255,255,0.3)",background:"none",border:"none",cursor:"pointer"}}><X size={11}/></button>
                 </div>
               ))}
             </div>
             <div className="border-t pt-3" style={{borderColor:"rgba(107,53,232,0.2)"}}>
-              <div className="flex justify-between text-xs mb-1"><span style={{color:T.muted}}>Original price</span><span style={{color:T.muted,textDecoration:"line-through"}}>{fmt(bundleTotal)}</span></div>
+              <div className="flex justify-between text-xs mb-1"><span style={{color:"rgba(255,255,255,0.5)"}}>Original price</span><span style={{color:"rgba(255,255,255,0.5)",textDecoration:"line-through"}}>{fmt(bundleTotal)}</span></div>
               <div className="flex justify-between text-xs mb-1"><span style={{color:V.green}}>You save</span><span style={{color:V.green,fontWeight:700}}>-{fmt(savings)}</span></div>
               <div className="flex justify-between text-sm font-black"><span style={{color:"#fff"}}>Bundle price</span><span style={{color:V.v300}}>{fmt(bundlePrice)}</span></div>
             </div>

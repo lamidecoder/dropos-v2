@@ -19,26 +19,17 @@ function GradeCircle({ score, label }: { score: number; label: string }) {
         </svg>
         <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
           <p style={{fontSize:20,fontWeight:900,color,margin:0,letterSpacing:"-0.04em"}}>{score}</p>
-          <p style={{fontSize:9,color:"rgba(240,236,255,0.25)",margin:0,fontWeight:600}}>/100</p>
+          <p style={{fontSize:9,color:"rgba(255,255,255,0.3)",margin:0,fontWeight:600}}>/100</p>
         </div>
       </div>
-      <p style={{fontSize:12,fontWeight:600,color:"rgba(240,236,255,0.5)",margin:0}}>{label}</p>
+      <p style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.5)",margin:0}}>{label}</p>
     </div>
   );
 }
 export default function GraderPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-
-  const T = {
-    text:   isDark ? "#F0ECFF"                : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
-    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
-    card:   isDark ? "#181230"                : "#ffffff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
-    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
-  };
-  const t = { card:isDark?T.card:"#fff", border:isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)", text:isDark?"#F0ECFF":"#130D2E", muted:isDark?"rgba(240,236,255,0.45)":"rgba(19,13,46,0.55)", faint:isDark?"rgba(255,255,255,0.03)":"rgba(107,53,232,0.03)" };
+  const t = { card:isDark?"#181230":"#fff", border:isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)", text:isDark?"#F0ECFF":"#130D2E", muted:isDark?"rgba(240,236,255,0.45)":"rgba(19,13,46,0.55)", faint:isDark?"rgba(255,255,255,0.03)":"rgba(107,53,232,0.03)" };
   const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const { data: analytics } = useQuery({ queryKey:["grade",storeId], queryFn:()=>api.get(`/analytics/${storeId}?period=30`).then(r=>r.data.data), enabled:!!storeId });
   const stats = analytics?.stats||{};
@@ -59,7 +50,7 @@ export default function GraderPage() {
       <div style={{padding:28,borderRadius:20,background:`linear-gradient(135deg,#1a0d3c,#0d0520)`,border:"1px solid rgba(107,53,232,0.25)",marginBottom:20,display:"flex",alignItems:"center",gap:32,flexWrap:"wrap"}}>
         <div style={{textAlign:"center"}}>
           <p style={{fontSize:72,fontWeight:900,color:overall>=70?V.green:overall>=50?V.amber:V.red,margin:0,letterSpacing:"-0.06em",lineHeight:1}}>{grade}</p>
-          <p style={{fontSize:13,color:T.muted,margin:"6px 0 0"}}>Overall Grade</p>
+          <p style={{fontSize:13,color:"rgba(255,255,255,0.4)",margin:"6px 0 0"}}>Overall Grade</p>
         </div>
         <div style={{display:"flex",gap:20,flexWrap:"wrap",flex:1,justifyContent:"center"}}>
           {grades.map(g=><GradeCircle key={g.label} score={Math.round(g.score)} label={g.label}/>)}

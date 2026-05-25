@@ -5,7 +5,6 @@ import { Zap, Plus, TrendingUp, AlertTriangle, X, Check } from "lucide-react";
 import { useCreditsStore, CREDIT_COSTS } from "../../store/credits.store";
 import { api } from "../../lib/api";
 import toast from "react-hot-toast";
-import { useTheme } from "../layout/DashboardLayout";
 
 const TOP_UP_PACKS = [
   { id: "starter",    amount: 500,   price: 1500,   label: "Starter",    popular: false },
@@ -15,17 +14,6 @@ const TOP_UP_PACKS = [
 ];
 
 export function CreditBadge({ compact = false }: { compact?: boolean }) {
-
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const T = {
-    text:   isDark ? "#F0ECFF"                : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
-    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
-    card:   isDark ? "#181230" : "#ffffff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
-    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
-  };
   const { balance, monthlyLimit } = useCreditsStore();
   const pct = Math.round((balance / monthlyLimit) * 100);
   const isLow = pct <= 20;
@@ -48,10 +36,10 @@ export function CreditBadge({ compact = false }: { compact?: boolean }) {
       <Zap size={13} color={color} />
       <div style={{ flex: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: T.text }}>Credits</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>Credits</span>
           <span style={{ fontSize: 11, fontWeight: 700, color }}>{balance.toLocaleString()} / {monthlyLimit.toLocaleString()}</span>
         </div>
-        <div style={{ height: 4, borderRadius: 99, background: T.faint, overflow: "hidden" }}>
+        <div style={{ height: 4, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${pct}%` }}
@@ -109,19 +97,19 @@ export function TopUpModal({ onClose }: { onClose: () => void }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-        style={{ width: "100%", maxWidth: 420, borderRadius: 24, background: T.card, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
+        style={{ width: "100%", maxWidth: 420, borderRadius: 24, background: "#181230", border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
           <div>
             <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 2 }}>Top Up Credits</h2>
-            <p style={{ fontSize: 12, color: T.muted }}>Credits never expire. Use for KIRO, images, videos.</p>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Credits never expire. Use for KIRO, images, videos.</p>
           </div>
-          <button onClick={onClose} style={{ color: T.muted, background: "none", border: "none", cursor: "pointer" }}><X size={18} /></button>
+          <button onClick={onClose} style={{ color: "rgba(255,255,255,0.4)", background: "none", border: "none", cursor: "pointer" }}><X size={18} /></button>
         </div>
 
         <div style={{ padding: 24, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {TOP_UP_PACKS.map(pack => (
             <button key={pack.id} onClick={() => handleTopUp(pack)} disabled={!!loading}
-              style={{ padding: "16px", borderRadius: 16, border: `1px solid ${pack.popular ? "rgba(107,53,232,0.5)" : T.faint}`, background: pack.popular ? "rgba(107,53,232,0.1)" : T.faint, cursor: "pointer", textAlign: "left", position: "relative", opacity: loading ? 0.6 : 1 }}>
+              style={{ padding: "16px", borderRadius: 16, border: `1px solid ${pack.popular ? "rgba(107,53,232,0.5)" : "rgba(255,255,255,0.08)"}`, background: pack.popular ? "rgba(107,53,232,0.1)" : "rgba(255,255,255,0.03)", cursor: "pointer", textAlign: "left", position: "relative", opacity: loading ? 0.6 : 1 }}>
               {pack.popular && <span style={{ position: "absolute", top: -8, right: 8, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "#6B35E8", color: "#fff", letterSpacing: "0.05em", textTransform: "uppercase" }}>Popular</span>}
               {loading === pack.id
                 ? <div style={{ height: 40, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -129,7 +117,7 @@ export function TopUpModal({ onClose }: { onClose: () => void }) {
                   </div>
                 : <>
                     <p style={{ fontSize: 20, fontWeight: 900, color: "#fff", marginBottom: 2 }}>{pack.amount.toLocaleString()}</p>
-                    <p style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>credits</p>
+                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 10 }}>credits</p>
                     <p style={{ fontSize: 15, fontWeight: 800, color: "#A78BFA" }}>₦{pack.price.toLocaleString()}</p>
                   </>
               }
@@ -138,7 +126,7 @@ export function TopUpModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div style={{ padding: "0 24px 24px" }}>
-          <div style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(107,53,232,0.06)", border: "1px solid rgba(107,53,232,0.15)", fontSize: 12, color: T.muted, lineHeight: 1.6 }}>
+          <div style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(107,53,232,0.06)", border: "1px solid rgba(107,53,232,0.15)", fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
             Top-up credits roll over forever. Monthly plan credits reset each billing date. KIRO uses 1 credit per message.
           </div>
         </div>
@@ -169,10 +157,10 @@ export default function CreditWallet() {
 
         <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 8 }}>
           <span style={{ fontSize: 24, fontWeight: 900, color: isLow ? "#F59E0B" : "#fff" }}>{balance.toLocaleString()}</span>
-          <span style={{ fontSize: 12, color: T.faint }}>/ {monthlyLimit.toLocaleString()} this month</span>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>/ {monthlyLimit.toLocaleString()} this month</span>
         </div>
 
-        <div style={{ height: 5, borderRadius: 99, background: T.faint, overflow: "hidden", marginBottom: 8 }}>
+        <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden", marginBottom: 8 }}>
           <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }}
             style={{ height: "100%", borderRadius: 99, background: isLow ? (pct <= 5 ? "#EF4444" : "#F59E0B") : "#6B35E8" }} />
         </div>

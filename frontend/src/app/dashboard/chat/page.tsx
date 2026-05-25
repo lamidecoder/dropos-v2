@@ -113,12 +113,6 @@ export default function ChatSettingsPage() {
     
   );
 
-  const T = {
-    text:   "#130D2E", muted:  "rgba(19,13,46,0.5)",
-    faint:  "rgba(19,13,46,0.3)", card: "#ffffff",
-    border: "rgba(107,53,232,0.09)", bg: "rgba(107,53,232,0.04)",
-  };
-
   return (
     
       <div className="space-y-6 max-w-2xl mx-auto">
@@ -218,7 +212,7 @@ export default function ChatSettingsPage() {
                       className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all ${liveChatProvider === p.id ? "border-2" : ""}`}
                       style={{
                         borderColor: liveChatProvider === p.id ? p.color : "rgba(255,255,255,0.06)",
-                        background:  liveChatProvider === p.id ? `${p.color}10` : T.card,
+                        background:  liveChatProvider === p.id ? `${p.color}10` : "#181230",
                       }}>
                       <span className="text-xl">{p.icon}</span>
                       <div>

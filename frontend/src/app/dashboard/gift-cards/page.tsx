@@ -19,17 +19,8 @@ const fmt = (n: number) => new Intl.NumberFormat("en-NG",{style:"currency",curre
 export default function GiftCardsPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-
-  const T = {
-    text:   isDark ? "#F0ECFF"                : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
-    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
-    card:   isDark ? "#181230"                : "#ffffff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
-    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
-  };
   const t = {
-    card: isDark?T.card:"#fff", border: isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)",
+    card: isDark?"#181230":"#fff", border: isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.08)",
     text: isDark?"#F0ECFF":"#130D2E", muted: isDark?"rgba(240,236,255,0.45)":"rgba(19,13,46,0.55)",
     faint: isDark?"rgba(255,255,255,0.03)":"rgba(107,53,232,0.03)",
     input: isDark?"rgba(255,255,255,0.05)":"#F0EDFF",
@@ -125,7 +116,7 @@ export default function GiftCardsPage() {
                 <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:10 }}>
                   {/* Gift card visual */}
                   <div style={{ width:56, height:36, borderRadius:8, background:`linear-gradient(135deg,${V.v500},#3D1C8A)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <Gift size={16} color={T.muted}/>
+                    <Gift size={16} color="rgba(255,255,255,0.8)"/>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
@@ -165,7 +156,7 @@ export default function GiftCardsPage() {
           <div style={{ position:"fixed", inset:0, zIndex:50, display:"flex", alignItems:"center", justifyContent:"center", padding:16, background:"rgba(0,0,0,0.6)", backdropFilter:"blur(8px)" }}
             onClick={e=>e.target===e.currentTarget&&setShowNew(false)}>
             <motion.div initial={{opacity:0,scale:0.95,y:16}} animate={{opacity:1,scale:1,y:0}} exit={{opacity:0,scale:0.95}}
-              style={{ width:"100%", maxWidth:460, borderRadius:20, overflow:"hidden", background:isDark?T.card:"#fff", border:`1px solid ${t.border}` }}>
+              style={{ width:"100%", maxWidth:460, borderRadius:20, overflow:"hidden", background:isDark?"#181230":"#fff", border:`1px solid ${t.border}` }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 20px", borderBottom:`1px solid ${t.border}` }}>
                 <h3 style={{ fontSize:15, fontWeight:800, color:t.text, margin:0 }}>Create Gift Card</h3>
                 <button onClick={()=>setShowNew(false)} style={{ border:"none", background:"none", cursor:"pointer", color:t.muted }}><X size={18}/></button>

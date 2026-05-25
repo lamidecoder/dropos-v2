@@ -124,7 +124,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
           </div>
           <div>
             <div className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>{d.name}</div>
-            <div className="text-[11px] mt-0.5" style={{ color: "rgba(240,236,255,0.25)" }}>{typeConf.label}</div>
+            <div className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{typeConf.label}</div>
           </div>
         </div>
         <StatusBadge status={d.status} />
@@ -161,7 +161,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
         <div className="flex gap-1.5 mb-3 flex-wrap">
           {(d.tiers as TierRow[]).map((t, i) => (
             <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded-lg"
-              style={{ background: "var(--bg-card,#fff)", color: "rgba(240,236,255,0.5)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              style={{ background: "var(--bg-card,#fff)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.06)" }}>
               {t.minQty}+ → {t.discount}% off
             </span>
           ))}
@@ -171,7 +171,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
       {/* Usage bar */}
       {d.maxUses && (
         <div className="mb-3">
-          <div className="flex justify-between text-[11px] mb-1" style={{ color: "rgba(240,236,255,0.25)" }}>
+          <div className="flex justify-between text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>
             <span>{d.usedCount} uses</span>
             <span>{d.maxUses} max</span>
           </div>
@@ -184,7 +184,7 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
 
       {/* Dates */}
       {(d.startsAt || d.expiresAt) && (
-        <div className="text-[11px] mb-3" style={{ color: "rgba(240,236,255,0.25)" }}>
+        <div className="text-[11px] mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>
           {d.startsAt && <span>Starts: {new Date(d.startsAt).toLocaleDateString()} · </span>}
           {d.expiresAt && <span>Expires: {new Date(d.expiresAt).toLocaleDateString()}</span>}
         </div>
@@ -193,22 +193,22 @@ function DiscountCard({ d, storeId, onDelete }: { d: any; storeId: string; onDel
       {/* Actions */}
       <div className="flex items-center justify-between pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px]" style={{ color: "rgba(240,236,255,0.25)" }}>
+          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
             {d._count?.usages || d.usedCount || 0} uses · ${((d._count?.usages || 0) * 0).toFixed(0)} saved
           </span>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={() => toggleMut.mutate()}
             className="p-2 rounded-lg transition-all text-xs font-bold flex items-center gap-1"
-            style={{ color: isActive ? "var(--success)" : "rgba(240,236,255,0.25)", background: isActive ? "rgba(16,185,129,0.08)" : "var(--bg-card,#fff)" }}>
+            style={{ color: isActive ? "var(--success)" : "rgba(255,255,255,0.3)", background: isActive ? "rgba(16,185,129,0.08)" : "var(--bg-card,#fff)" }}>
             {isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
             {isActive ? "On" : "Off"}
           </button>
           <button onClick={() => onDelete(d.id)}
             className="p-2 rounded-lg transition-all"
-            style={{ color: "rgba(240,236,255,0.25)" }}
+            style={{ color: "rgba(255,255,255,0.3)" }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--error)"}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(240,236,255,0.25)"}>
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.3)"}>
             <Trash2 size={13} />
           </button>
         </div>
@@ -229,18 +229,18 @@ function TierEditor({ tiers, onChange }: { tiers: TierRow[]; onChange: (t: TierR
     <div className="space-y-2">
       {tiers.map((t, i) => (
         <div key={i} className="flex items-center gap-2">
-          <span className="text-xs" style={{ color: "rgba(240,236,255,0.25)", width: 60 }}>Buy {i === 0 ? "≥" : "≥"}</span>
+          <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)", width: 60 }}>Buy {i === 0 ? "≥" : "≥"}</span>
           <input type="number" value={t.minQty} min={1}
             onChange={e => set(i, "minQty", Number(e.target.value))}
             className="w-20 rounded-lg px-2 py-1.5 text-xs outline-none"
             style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" }} />
-          <span className="text-xs" style={{ color: "rgba(240,236,255,0.25)" }}>items →</span>
+          <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>items →</span>
           <input type="number" value={t.discount} min={1} max={100}
             onChange={e => set(i, "discount", Number(e.target.value))}
             className="w-20 rounded-lg px-2 py-1.5 text-xs outline-none"
             style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-primary)" }} />
-          <span className="text-xs" style={{ color: "rgba(240,236,255,0.25)" }}>% off</span>
-          <button onClick={() => del(i)} className="p-1 rounded" style={{ color: "rgba(240,236,255,0.25)" }}>
+          <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>% off</span>
+          <button onClick={() => del(i)} className="p-1 rounded" style={{ color: "rgba(255,255,255,0.3)" }}>
             <X size={12} />
           </button>
         </div>
@@ -258,15 +258,6 @@ function TierEditor({ tiers, onChange }: { tiers: TierRow[]; onChange: (t: TierR
 export default function DiscountsPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-
-  const T = {
-    text:   isDark ? "#F0ECFF"                : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
-    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
-    card:   isDark ? "#181230"                : "#ffffff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
-    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
-  };
   const t = {
     card:  false ? "var(--bg-card,#fff)" : "#fff",
     border:false ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.08)",
@@ -344,7 +335,7 @@ export default function DiscountsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>Discount Engine</h1>
-            <p className="text-xs mt-1" style={{ color: T.faint }}>
+            <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
               BOGO, flash sales, volume tiers, automatic discounts - all in one place
             </p>
           </div>
@@ -371,7 +362,7 @@ export default function DiscountsPage() {
                 </div>
                 <div>
                   <div className="text-xl font-black" style={{ color: "var(--text-primary)" }}>{value}</div>
-                  <div className="text-[11px]" style={{ color: T.faint }}>{label}</div>
+                  <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</div>
                 </div>
               </div>
             </div>
@@ -385,7 +376,7 @@ export default function DiscountsPage() {
               className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize"
               style={{
                 background: filter === f ? "rgba(107,53,232,0.12)" : "var(--bg-card,#fff)",
-                color:      filter === f ? "#6B35E8"     : T.muted,
+                color:      filter === f ? "#6B35E8"     : "rgba(255,255,255,0.5)",
                 border:     `1px solid ${filter === f ? "var(--accent-border)" : "var(--border-color)"}`,
               }}>
               {f.toLowerCase().replace(/_/g, " ")}
@@ -403,9 +394,9 @@ export default function DiscountsPage() {
         ) : filtered.length === 0 ? (
           <div className="rounded-2xl p-16 text-center"
             style={{ background: "var(--bg-card,#fff)", border: "1px dashed rgba(255,255,255,0.06)" }}>
-            <Tag size={36} className="mx-auto mb-4" style={{ color: T.faint }} />
+            <Tag size={36} className="mx-auto mb-4" style={{ color: "rgba(255,255,255,0.3)" }} />
             <h3 className="font-bold mb-2" style={{ color: "var(--text-primary)" }}>No discounts yet</h3>
-            <p className="text-sm mb-5" style={{ color: T.muted }}>
+            <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.5)" }}>
               Create your first discount to drive more sales.
             </p>
             <button onClick={() => setModal(true)}
@@ -435,7 +426,7 @@ export default function DiscountsPage() {
                   {selType ? `Create ${typeConf?.label}` : "Choose Discount Type"}
                 </h2>
                 <button onClick={() => { setModal(false); setSelType(null); }}
-                  className="p-2 rounded-lg" style={{ color: T.faint }}>
+                  className="p-2 rounded-lg" style={{ color: "rgba(255,255,255,0.3)" }}>
                   <X size={16} />
                 </button>
               </div>
@@ -456,7 +447,7 @@ export default function DiscountsPage() {
                         </div>
                         <div>
                           <div className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{t.label}</div>
-                          <div className="text-[11px] mt-0.5" style={{ color: T.faint }}>{t.desc}</div>
+                          <div className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{t.desc}</div>
                         </div>
                       </button>
                     ))}
@@ -473,14 +464,14 @@ export default function DiscountsPage() {
                     {/* Basic info */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Discount Name *</label>
+                        <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Discount Name *</label>
                         <input value={form.name || ""} onChange={e => set("name", e.target.value)}
                           placeholder="e.g. Summer Sale 20% Off"
                           className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-all"
                           style={inp} />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Priority (higher = first)</label>
+                        <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Priority (higher = first)</label>
                         <input type="number" value={form.priority || 0} onChange={e => set("priority", Number(e.target.value))}
                           className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-all"
                           style={inp} />
@@ -491,13 +482,13 @@ export default function DiscountsPage() {
                     {(selType === "PERCENTAGE" || selType === "BUNDLE") && (
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Discount %</label>
+                          <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Discount %</label>
                           <input type="number" min={1} max={100} value={form.value || 10}
                             onChange={e => set("value", Number(e.target.value))}
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-all" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Max $ off (optional)</label>
+                          <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Max $ off (optional)</label>
                           <input type="number" min={0} value={form.maxDiscount || ""} placeholder="No cap"
                             onChange={e => set("maxDiscount", Number(e.target.value))}
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-all" style={inp} />
@@ -507,7 +498,7 @@ export default function DiscountsPage() {
 
                     {selType === "FIXED" && (
                       <div>
-                        <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Fixed Amount Off ($)</label>
+                        <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Fixed Amount Off ($)</label>
                         <input type="number" min={1} value={form.value || 10}
                           onChange={e => set("value", Number(e.target.value))}
                           className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-all" style={inp} />
@@ -516,28 +507,28 @@ export default function DiscountsPage() {
 
                     {selType === "BOGO" && (
                       <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                        <div className="text-xs font-bold" style={{ color: T.muted }}>BOGO Configuration</div>
+                        <div className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>BOGO Configuration</div>
                         <div className="grid grid-cols-3 gap-3">
                           <div>
-                            <label className="block text-xs mb-1" style={{ color: T.faint }}>Buy (qty)</label>
+                            <label className="block text-xs mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Buy (qty)</label>
                             <input type="number" min={1} value={form.bogoRequiredQty || 2}
                               onChange={e => set("bogoRequiredQty", Number(e.target.value))}
                               className="w-full rounded-lg px-2 py-2 text-sm outline-none" style={inp} />
                           </div>
                           <div>
-                            <label className="block text-xs mb-1" style={{ color: T.faint }}>Get (qty)</label>
+                            <label className="block text-xs mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Get (qty)</label>
                             <input type="number" min={1} value={form.bogoGetQty || 1}
                               onChange={e => set("bogoGetQty", Number(e.target.value))}
                               className="w-full rounded-lg px-2 py-2 text-sm outline-none" style={inp} />
                           </div>
                           <div>
-                            <label className="block text-xs mb-1" style={{ color: T.faint }}>% off free item</label>
+                            <label className="block text-xs mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>% off free item</label>
                             <input type="number" min={1} max={100} value={form.bogoPctOff || 100}
                               onChange={e => set("bogoPctOff", Number(e.target.value))}
                               className="w-full rounded-lg px-2 py-2 text-sm outline-none" style={inp} />
                           </div>
                         </div>
-                        <p className="text-[11px]" style={{ color: T.faint }}>
+                        <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
                           Customer buys {form.bogoRequiredQty || 2}, gets {form.bogoGetQty || 1} at {form.bogoPctOff || 100}% off
                         </p>
                       </div>
@@ -545,7 +536,7 @@ export default function DiscountsPage() {
 
                     {selType === "TIERED" && (
                       <div className="rounded-xl p-4" style={{ background: "var(--bg-card,#fff)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                        <div className="text-xs font-bold mb-3" style={{ color: T.muted }}>Volume Tiers</div>
+                        <div className="text-xs font-bold mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>Volume Tiers</div>
                         <TierEditor tiers={tiers} onChange={setTiers} />
                       </div>
                     )}
@@ -553,19 +544,19 @@ export default function DiscountsPage() {
                     {selType === "FLASH_SALE" && (
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Discount %</label>
+                          <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Discount %</label>
                           <input type="number" min={1} max={100} value={form.value || 30}
                             onChange={e => set("value", Number(e.target.value))}
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Starts</label>
+                          <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Starts</label>
                           <input type="datetime-local" value={form.flashSaleStartsAt || ""}
                             onChange={e => set("flashSaleStartsAt", e.target.value)}
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold mb-1.5" style={{ color: T.muted }}>Ends *</label>
+                          <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Ends *</label>
                           <input type="datetime-local" value={form.flashSaleEndsAt || ""}
                             onChange={e => set("flashSaleEndsAt", e.target.value)}
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none" style={inp} />
@@ -575,28 +566,28 @@ export default function DiscountsPage() {
 
                     {/* Conditions */}
                     <div className="pt-3 border-t" style={{ borderColor: "var(--border-color)" }}>
-                      <div className="text-xs font-bold mb-3" style={{ color: T.muted }}>Conditions</div>
+                      <div className="text-xs font-bold mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>Conditions</div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs mb-1" style={{ color: T.faint }}>Min order value ($)</label>
+                          <label className="block text-xs mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Min order value ($)</label>
                           <input type="number" min={0} value={form.minOrderValue || ""} placeholder="None"
                             onChange={e => set("minOrderValue", Number(e.target.value))}
                             className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs mb-1" style={{ color: T.faint }}>Max total uses</label>
+                          <label className="block text-xs mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Max total uses</label>
                           <input type="number" min={0} value={form.maxUses || ""} placeholder="Unlimited"
                             onChange={e => set("maxUses", Number(e.target.value))}
                             className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs mb-1" style={{ color: T.faint }}>Valid from</label>
+                          <label className="block text-xs mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Valid from</label>
                           <input type="date" value={form.startsAt || ""}
                             onChange={e => set("startsAt", e.target.value)}
                             className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inp} />
                         </div>
                         <div>
-                          <label className="block text-xs mb-1" style={{ color: T.faint }}>Expires</label>
+                          <label className="block text-xs mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Expires</label>
                           <input type="date" value={form.expiresAt || ""}
                             onChange={e => set("expiresAt", e.target.value)}
                             className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inp} />
@@ -616,7 +607,7 @@ export default function DiscountsPage() {
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                           style={{
                             background: form[key as keyof DiscountForm] ? "rgba(107,53,232,0.12)" : "var(--bg-card,#fff)",
-                            color:      form[key as keyof DiscountForm] ? "#6B35E8"     : T.muted,
+                            color:      form[key as keyof DiscountForm] ? "#6B35E8"     : "rgba(255,255,255,0.5)",
                             border:     `1px solid ${form[key as keyof DiscountForm] ? "var(--accent-border)" : "var(--border-color)"}`,
                           }}>
                           <div className="w-3.5 h-3.5 rounded flex items-center justify-center"
@@ -637,7 +628,7 @@ export default function DiscountsPage() {
                       </button>
                       <button onClick={() => { setModal(false); setSelType(null); }}
                         className="px-5 py-3 rounded-xl text-sm font-semibold transition-all"
-                        style={{ background: "var(--bg-card,#fff)", color: T.muted, border: "1px solid rgba(255,255,255,0.06)" }}>
+                        style={{ background: "var(--bg-card,#fff)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.06)" }}>
                         Cancel
                       </button>
                     </div>

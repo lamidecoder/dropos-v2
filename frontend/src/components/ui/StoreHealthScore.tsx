@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 import { useAuthStore } from "../../store/auth.store";
-import { useTheme } from "../layout/DashboardLayout";
 
 interface HealthCheck {
   id:      string;
@@ -50,17 +49,6 @@ function scoreLabel(score: number) {
 }
 
 export default function StoreHealthScore() {
-
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const T = {
-    text:   isDark ? "#F0ECFF"                : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
-    faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
-    card:   isDark ? "#181230" : "#ffffff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
-    bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
-  };
   const user = useAuthStore(s => s.user);
   const storeId = user?.stores?.[0]?.id;
   const [expanded, setExpanded] = useState(false);
@@ -82,13 +70,13 @@ export default function StoreHealthScore() {
   if (score === 100) return null;
 
   return (
-    <div className="rounded-2xl overflow-hidden mb-5" style={{ background: T.faint, border: "1px solid rgba(255,255,255,0.07)" }}>
+    <div className="rounded-2xl overflow-hidden mb-5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
       {/* Header */}
       <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center gap-4 p-4 text-left">
         {/* Score ring */}
         <div className="relative flex-shrink-0" style={{ width: 52, height: 52 }}>
           <svg width="52" height="52" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r="22" fill="none" stroke={T.faint} strokeWidth="4" />
+            <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="4" />
             <circle cx="26" cy="26" r="22" fill="none" stroke={color} strokeWidth="4"
               strokeDasharray={`${(score / 100) * 138.2} 138.2`}
               strokeLinecap="round"
@@ -106,7 +94,7 @@ export default function StoreHealthScore() {
             <span className="font-bold text-sm text-white">Store Health</span>
             <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: `${color}15`, color }}>{scoreLabel(score)}</span>
           </div>
-          <p className="text-xs" style={{ color: T.muted }}>
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
             {passed}/{checks.length} checks passed · {failing.length > 0 ? `${failing.length} high priority issues` : "Only minor gaps"}
           </p>
         </div>
@@ -118,7 +106,7 @@ export default function StoreHealthScore() {
           </div>
         </Link>
 
-        <ChevronRight size={14} style={{ color: T.faint, transform: expanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }} />
+        <ChevronRight size={14} style={{ color: "rgba(255,255,255,0.3)", transform: expanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }} />
       </button>
 
       {/* Expanded checks */}
@@ -137,7 +125,7 @@ export default function StoreHealthScore() {
                         : <AlertTriangle size={10} color="#F59E0B" />
                     }
                   </div>
-                  <span className="text-xs flex-1" style={{ color: c.passed ? "T.muted" : T.text, textDecoration: c.passed ? "line-through" : "none" }}>
+                  <span className="text-xs flex-1" style={{ color: c.passed ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.8)", textDecoration: c.passed ? "line-through" : "none" }}>
                     {c.label}
                   </span>
                   {!c.passed && c.href && (
