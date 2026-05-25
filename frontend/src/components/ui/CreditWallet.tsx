@@ -15,6 +15,8 @@ const TOP_UP_PACKS = [
 ];
 
 export function CreditBadge({ compact = false }: { compact?: boolean }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const { balance, monthlyLimit } = useCreditsStore();
   const pct = Math.round((balance / monthlyLimit) * 100);
   const isLow = pct <= 20;
@@ -31,9 +33,6 @@ export function CreditBadge({ compact = false }: { compact?: boolean }) {
       </div>
     );
   }
-
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
