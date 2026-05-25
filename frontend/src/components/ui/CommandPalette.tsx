@@ -46,7 +46,7 @@ export default function CommandPalette() {
     text:   isDark ? "#F0ECFF"                : "#130D2E",
     muted:  isDark ? "rgba(240,236,255,0.5)"  : "rgba(19,13,46,0.5)",
     faint:  isDark ? "rgba(240,236,255,0.25)" : "rgba(19,13,46,0.3)",
-    card:   isDark ? T.card                : "#ffffff",
+    card:   isDark ? "#181230" : "#ffffff",
     border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.09)",
     bg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(107,53,232,0.04)",
   };
