@@ -3,8 +3,12 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, X, Zap } from "lucide-react";
 import { api } from "../../lib/api";
+import { useTheme } from "../layout/DashboardLayout";
 
 export default function PushNotificationPrompt() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const tx = { text: isDark?"#F0ECFF":"#130D2E", muted: isDark?"rgba(240,236,255,0.5)":"rgba(19,13,46,0.5)", card: isDark?"#181230":"#fff", border: isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.09)" };
   const [show, setShow]     = useState(false);
   const [status, setStatus] = useState<"idle"|"requesting"|"done">("idle");
 
@@ -71,17 +75,17 @@ export default function PushNotificationPrompt() {
               <p style={{ fontSize: 13, fontWeight: 800, color: "#fff", marginBottom: 4 }}>
                 Get KIRO alerts instantly
               </p>
-              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
+              <p style={{ fontSize: 11, color: tx.muted, lineHeight: 1.5 }}>
                 New orders, low stock, and KIRO insights sent directly to your device.
               </p>
             </div>
-            <button onClick={dismiss} style={{ color: "rgba(255,255,255,0.3)", background: "none", border: "none", cursor: "pointer" }}>
+            <button onClick={dismiss} style={{ color: tx.muted, background: "none", border: "none", cursor: "pointer" }}>
               <X size={14} />
             </button>
           </div>
           <div style={{ display: "flex", gap: 8, padding: 12 }}>
             <button onClick={dismiss}
-              style={{ flex: 1, padding: "8px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}>
+              style={{ flex: 1, padding: "8px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: tx.muted, fontSize: 12, cursor: "pointer" }}>
               Not now
             </button>
             <button onClick={request} disabled={status === "requesting"}

@@ -7,6 +7,7 @@ import {
   Zap, Settings, CreditCard, Truck, Tag, Gift, Bell, Store,
   TrendingUp, Image, FileText, Globe, ArrowRight, Command,
 } from "lucide-react";
+import { useTheme } from "../layout/DashboardLayout";
 
 const NAV_ITEMS = [
   { label: "Dashboard",        href: "/dashboard",                    icon: LayoutDashboard,  group: "Pages"    },
@@ -98,12 +99,12 @@ export default function CommandPalette() {
       <button
         onClick={() => setOpen(true)}
         className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all hover:opacity-80"
-        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)" }}>
+        style={{ background: faint, border: "1px solid rgba(255,255,255,0.08)", color: muted }}>
         <Search size={11} />
         <span>Search</span>
         <div className="flex items-center gap-0.5 ml-1">
-          <kbd style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.3)", fontFamily: "system-ui" }}>⌘</kbd>
-          <kbd style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.3)", fontFamily: "system-ui" }}>K</kbd>
+          <kbd style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: bdr, color: muted, fontFamily: "system-ui" }}>⌘</kbd>
+          <kbd style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: bdr, color: muted, fontFamily: "system-ui" }}>K</kbd>
         </div>
       </button>
 
@@ -125,7 +126,7 @@ export default function CommandPalette() {
               <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ background: "#181230", border: "1px solid rgba(107,53,232,0.3)" }}>
                 {/* Search input */}
                 <div className="flex items-center gap-3 px-4 py-3.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                  <Search size={16} style={{ color: "rgba(255,255,255,0.3)", flexShrink: 0 }} />
+                  <Search size={16} style={{ color: muted, flexShrink: 0 }} />
                   <input
                     ref={inputRef}
                     value={query}
@@ -156,8 +157,8 @@ export default function CommandPalette() {
                             onMouseEnter={() => setSel(globalIdx)}
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all"
                             style={{ background: isActive ? "rgba(107,53,232,0.15)" : "transparent", borderLeft: isActive ? "2px solid #8B5CF6" : "2px solid transparent" }}>
-                            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: isActive ? "rgba(107,53,232,0.2)" : "rgba(255,255,255,0.05)" }}>
-                              <Icon size={13} style={{ color: isActive ? "#A78BFA" : "rgba(255,255,255,0.4)" }} />
+                            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: isActive ? "rgba(107,53,232,0.2)" : faint }}>
+                              <Icon size={13} style={{ color: isActive ? "#A78BFA" : muted }} />
                             </div>
                             <span className="text-sm font-medium" style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.65)" }}>
                               {item.label}
@@ -170,7 +171,7 @@ export default function CommandPalette() {
                   ))}
                   {filtered.length === 0 && (
                     <div className="text-center py-10">
-                      <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>No results for "{query}"</p>
+                      <p className="text-sm" style={{ color: muted }}>No results for "{query}"</p>
                     </div>
                   )}
                 </div>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuthStore } from "../../store/auth.store";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
+import { useTheme } from "../layout/DashboardLayout";
 
 interface ChecklistStep {
   id:       string;
@@ -66,6 +67,9 @@ const STEPS: ChecklistStep[] = [
 ];
 
 export default function SetupChecklist() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const tx = { text: isDark?"#F0ECFF":"#130D2E", muted: isDark?"rgba(240,236,255,0.5)":"rgba(19,13,46,0.5)", card: isDark?"#181230":"#fff", border: isDark?"rgba(255,255,255,0.07)":"rgba(107,53,232,0.09)" };
   const user    = useAuthStore(s => s.user);
   const [dismissed, setDismissed] = useState(false);
   const [hasShown, setHasShown]   = useState(false);
@@ -124,7 +128,7 @@ export default function SetupChecklist() {
             />
           </div>
         </div>
-        <button onClick={() => setDismissed(true)} style={{ color: "rgba(255,255,255,0.3)", background: "none", border: "none", cursor: "pointer" }}>
+        <button onClick={() => setDismissed(true)} style={{ color: tx.muted, background: "none", border: "none", cursor: "pointer" }}>
           <X size={15} />
         </button>
       </div>
@@ -140,12 +144,12 @@ export default function SetupChecklist() {
                 <div style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: done ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.06)", border: `1px solid ${done ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.08)"}` }}>
                   {done
                     ? <Check size={13} color="#10B981" strokeWidth={3} />
-                    : <Icon size={13} color="rgba(255,255,255,0.5)" />
+                    : <Icon size={13} color=tx.muted />
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 12, fontWeight: done ? 500 : 600, color: done ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.85)", textDecoration: done ? "line-through" : "none" }}>{step.label}</p>
-                  {!done && <p style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 1 }}>{step.desc}</p>}
+                  <p style={{ fontSize: 12, fontWeight: done ? 500 : 600, color: done ? tx.muted : "rgba(255,255,255,0.85)", textDecoration: done ? "line-through" : "none" }}>{step.label}</p>
+                  {!done && <p style={{ fontSize: 10, color: tx.muted, marginTop: 1 }}>{step.desc}</p>}
                 </div>
                 {!done && <ChevronRight size={12} color="rgba(255,255,255,0.2)" />}
               </div>
