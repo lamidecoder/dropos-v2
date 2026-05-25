@@ -83,6 +83,8 @@ function PulseAlert({ alert }: { alert: any }) {
 
 // ── Quick Action ──────────────────────────────────────────────
 function QuickAction({ emoji, label, href, color }: any) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   return (
     <a href={href}
       className="flex flex-col items-center gap-2 p-3 rounded-2xl transition-all"

@@ -144,7 +144,7 @@ export default function SetupChecklist() {
                 <div style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: done ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.06)", border: `1px solid ${done ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.08)"}` }}>
                   {done
                     ? <Check size={13} color="#10B981" strokeWidth={3} />
-                    : <Icon size={13} color=tx.muted />
+                    : <Icon size={13} color={tx.muted} />
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
