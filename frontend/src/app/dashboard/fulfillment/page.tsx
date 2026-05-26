@@ -38,7 +38,11 @@ export default function FulfillmentPage() {
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["fulfillment", storeId, tab],
-    queryFn:  () => api.get(`/fulfillment/status/${storeId}?status=${tab}`).then(r => r.data.data || []),
+    queryFn:  async () => {
+      const r = await api.get(`/fulfillment/status/${storeId}?status=${tab}`);
+      const d = r.data?.data;
+      return Array.isArray(d) ? d : [];
+    },
     enabled:  !!storeId,
     refetchInterval: 30000,
   });
@@ -55,7 +59,7 @@ export default function FulfillmentPage() {
     onError: (e: any) => toast.error(e.response?.data?.message || "Fulfillment failed"),
   });
 
-  const orders = data || [];
+  const orders = Array.isArray(data) ? data : [];
   const pending    = orders.filter((o: any) => o.fulfillmentStatus === "UNFULFILLED").length;
   const processing = orders.filter((o: any) => o.fulfillmentStatus === "PROCESSING").length;
 
