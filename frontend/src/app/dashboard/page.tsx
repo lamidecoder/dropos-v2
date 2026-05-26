@@ -113,7 +113,11 @@ export default function DashboardPage() {
 
   const stats = analytics?.stats || {};
   const orders = Array.isArray(recentOrders) ? recentOrders : [];
-  const alerts = Array.isArray(pulse) ? pulse : [];
+  // Deduplicate by type — keep most recent of each type, max 4
+  const seen = new Set<string>();
+  const alerts = (Array.isArray(pulse) ? pulse : [])
+    .filter((a: any) => { if (seen.has(a.type)) return false; seen.add(a.type); return true; })
+    .slice(0, 4);
 
   const statCards = [
     { label: "Revenue (7d)",  value: fmt(stats.revenue || 0),          delta: stats.revenueDelta,  color: V.v400,  icon: TrendingUp  },
@@ -249,10 +253,10 @@ export default function DashboardPage() {
             <span style={{ fontSize: 13, fontWeight: 700, color: t.text, display: "block", marginBottom: 12 }}>Store Status</span>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[
-                { label: "Store live",      done: !!user?.stores?.[0]?.id,        icon: Store         },
-                { label: "Products added",  done: (stats.products || 0) > 0,       icon: Package       },
-                { label: "First order",     done: (stats.orders   || 0) > 0,       icon: ShoppingCart  },
-                { label: "Payment setup",   done: !!user?.stores?.[0]?.id,        icon: CheckCircle2  },
+                { label: "Store live",      done: !!user?.stores?.[0]?.id,                         icon: Store        },
+                { label: "Products added",  done: (stats?.products || analytics?.totalProducts || 0) > 0, icon: Package      },
+                { label: "First order",     done: (stats?.orders   || analytics?.totalOrders    || orders.length || 0) > 0, icon: ShoppingCart },
+                { label: "Payment setup",   done: !!(user?.stores?.[0] as any)?.paystackPublicKey || !!(user?.stores?.[0] as any)?.currency, icon: CheckCircle2 },
               ].map(item => {
                 const Icon = item.icon;
                 return (

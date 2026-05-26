@@ -53,13 +53,15 @@ export async function analyzeStore(storeId: string): Promise<void> {
         take: 5,
       });
       if (oldOrders.length > 0) {
+        const count = oldOrders.length;
+        const orderWord = count === 1 ? "order" : "orders";
         await createAlert(storeId,
           "unfulfilled_orders",
-          `${oldOrders.length} orders waiting over 48 hours`,
-          `You have ${oldOrders.length} orders that haven't been shipped in over 2 days. Customers are waiting. Let me help you fulfill them now.`,
+          `${count} ${orderWord} waiting over 48 hours`,
+          `You have ${count} ${orderWord} that ${count === 1 ? "hasn't" : "haven't"} been shipped in over 2 days. Customers are waiting. Let me help you fulfill them now.`,
           "warning",
-          `Help me fulfill my ${oldOrders.length} overdue orders`,
-          { count: oldOrders.length }
+          `Help me fulfill my ${count} overdue ${orderWord}`,
+          { count }
         );
       }
     }
@@ -165,14 +167,21 @@ export async function runPulseForAllStores(): Promise<void> {
 
 // ── Get unread alerts for a store ────────────────────────────
 export async function getUnreadAlerts(storeId: string) {
-  return prisma.kaiPulseAlert.findMany({
+  const all = await prisma.kaiPulseAlert.findMany({
     where: { storeId, read: false },
     orderBy: [
       { severity: "desc" },
       { createdAt: "desc" },
     ],
-    take: 10,
+    take: 20,
   });
+  // Deduplicate by type — keep most recent of each type
+  const seen = new Set<string>();
+  return all.filter(a => {
+    if (seen.has(a.type)) return false;
+    seen.add(a.type);
+    return true;
+  }).slice(0, 6);
 }
 
 // ── Mark alert as read ────────────────────────────────────────
