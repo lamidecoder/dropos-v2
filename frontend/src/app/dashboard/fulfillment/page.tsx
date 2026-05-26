@@ -11,11 +11,11 @@ import toast from "react-hot-toast";
 const V = { v500:"#6B35E8", v400:"#8B5CF6", green:"#10B981", amber:"#F59E0B", red:"#EF4444", cyan:"#06B6D4" };
 
 const STATUS: Record<string,any> = {
-  PENDING:    { label:"Pending",     color:V.amber, bg:"rgba(245,158,11,0.1)",  icon:Clock   },
-  PROCESSING: { label:"Processing",  color:V.cyan,  bg:"rgba(6,182,212,0.1)",  icon:RefreshCw },
-  SHIPPED:    { label:"Shipped",     color:V.green, bg:"rgba(16,185,129,0.1)", icon:Truck   },
-  DELIVERED:  { label:"Delivered",   color:V.v400,  bg:"rgba(107,53,232,0.1)", icon:Check   },
-  FAILED:     { label:"Failed",      color:V.red,   bg:"rgba(239,68,68,0.1)",  icon:AlertTriangle },
+  UNFULFILLED: { label:"Unfulfilled", color:V.amber, bg:"rgba(245,158,11,0.1)",  icon:Clock   },
+  PROCESSING:  { label:"Processing",  color:V.cyan,  bg:"rgba(6,182,212,0.1)",  icon:RefreshCw },
+  SHIPPED:     { label:"Shipped",     color:V.green, bg:"rgba(16,185,129,0.1)", icon:Truck   },
+  DELIVERED:   { label:"Delivered",   color:V.v400,  bg:"rgba(107,53,232,0.1)", icon:Check   },
+  FAILED:      { label:"Failed",      color:V.red,   bg:"rgba(239,68,68,0.1)",  icon:AlertTriangle },
 };
 
 function fmt(n: number) {
@@ -34,7 +34,7 @@ export default function FulfillmentPage() {
   };
   const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const qc = useQueryClient();
-  const [tab, setTab] = useState("PENDING");
+  const [tab, setTab] = useState("UNFULFILLED");
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["fulfillment", storeId, tab],
@@ -56,7 +56,7 @@ export default function FulfillmentPage() {
   });
 
   const orders = data || [];
-  const pending    = orders.filter((o: any) => o.fulfillmentStatus === "PENDING").length;
+  const pending    = orders.filter((o: any) => o.fulfillmentStatus === "UNFULFILLED").length;
   const processing = orders.filter((o: any) => o.fulfillmentStatus === "PROCESSING").length;
 
   return (
@@ -117,13 +117,13 @@ export default function FulfillmentPage() {
           <Package size={36} style={{ color:t.muted, margin:"0 auto 12px" }}/>
           <p className="font-bold text-base mb-2" style={{ color:t.text }}>No {tab.toLowerCase()} orders</p>
           <p className="text-sm" style={{ color:t.muted }}>
-            {tab === "PENDING" ? "All orders are fulfilled. Great work!" : `No ${tab.toLowerCase()} orders right now.`}
+            {tab === "UNFULFILLED" ? "All orders are fulfilled. Great work!" : `No ${tab.toLowerCase()} orders right now.`}
           </p>
         </div>
       ) : (
         <div className="space-y-3">
           {orders.map((order: any, i: number) => {
-            const cfg = STATUS[order.fulfillmentStatus || "PENDING"];
+            const cfg = STATUS[order.fulfillmentStatus || "UNFULFILLED"] || STATUS["UNFULFILLED"];
             const Icon = cfg.icon;
             return (
               <motion.div key={order.id} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.04}}
@@ -139,7 +139,7 @@ export default function FulfillmentPage() {
                     </span>
                   </div>
                   <p className="text-xs" style={{ color:t.muted }}>
-                    {order.customerName || "Customer"} · {fmt(order.total)}
+                    {order.customerName || order.customer?.name || "Customer"} · {fmt(order.total)}
                     {order.trackingNumber && ` · ${order.trackingNumber}`}
                   </p>
                 </div>
@@ -150,7 +150,7 @@ export default function FulfillmentPage() {
                       <ExternalLink size={13} style={{ color:t.muted }}/>
                     </a>
                   )}
-                  {(order.fulfillmentStatus === "PENDING" || !order.fulfillmentStatus) && (
+                  {(order.fulfillmentStatus === "UNFULFILLED" || !order.fulfillmentStatus) && (
                     <button onClick={() => fulfillMut.mutate(order.id)}
                       disabled={fulfillMut.isPending}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white"
