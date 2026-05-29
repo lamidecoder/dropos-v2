@@ -245,7 +245,28 @@ function ProductModal({ storeId, product, onClose, t, isDark }: any) {
 
           {/* Description */}
           <div style={{ marginBottom:14 }}>
-            {label("Description")}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+              {label("Description")}
+              <button type="button"
+                disabled={!form.name || genDesc}
+                onClick={async () => {
+                  if (!form.name || genDesc) return;
+                  setGenDesc(true);
+                  try {
+                    const r = await api.post("/kai/smart-chat", {
+                      storeId,
+                      message: `Write a compelling product description for: "${form.name}". ${form.category ? `Category: ${form.category}.` : ""} ${form.price ? `Price: ₦${form.price}.` : ""} Keep it 2-3 sentences, focus on benefits and why Nigerian buyers would want it. No bullets, no markdown, just clean flowing text.`,
+                    });
+                    const desc = r.data?.data?.message || r.data?.message || "";
+                    if (desc) setForm(f => ({ ...f, description: desc.replace(/\*\*/g, "").trim() }));
+                  } catch { toast.error("KIRO couldn't generate — try again"); }
+                  finally { setGenDesc(false); }
+                }}
+                style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius:8, border:`1px solid ${V.v400}30`, background:`${V.v400}10`, color:V.v400, fontSize:11, fontWeight:700, cursor: form.name ? "pointer" : "not-allowed", opacity: form.name ? 1 : 0.4, fontFamily:"inherit" }}>
+                {genDesc ? <Loader2 size={10} style={{ animation:"spin 0.8s linear infinite" }}/> : <Zap size={10}/>}
+                {genDesc ? "Writing…" : "KIRO Write"}
+              </button>
+            </div>
             <textarea style={{...inp,resize:"none",display:"block"}} rows={3}
               value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))}
               placeholder="Describe your product — what it is, who it's for, why they need it..."/>
@@ -358,6 +379,7 @@ export default function ProductsPage() {
   const [status,    setStatus]    = useState("ALL");
   const [showModal, setShowModal] = useState(false);
   const [editing,   setEditing]   = useState<any>(null);
+  const [genDesc,   setGenDesc]   = useState(false);
 
   const { data, isLoading } = useQuery<any>({
     queryKey: ["products", storeId, status],
