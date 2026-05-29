@@ -91,13 +91,13 @@ export default function AutopilotPage() {
 
   return (
     
-      <div className="min-h-screen p-6" style={{ background: "#07070e" }}>
+      <div className="min-h-screen p-6" style={{ background: isDark ? "#07070e" : "#F4F2FB" }}>
         <div className="max-w-3xl mx-auto">
 
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-xl font-semibold text-white">Store Autopilot</h1>
+              <h1 className="text-xl font-semibold" style={{ color: t.text }}>Store Autopilot</h1>
               {isActive && (
                 <motion.div className="flex items-center gap-1.5 px-3 py-1 rounded-full"
                   style={{ background: "rgba(52,211,153,0.15)", border: "1px solid rgba(52,211,153,0.3)" }}
@@ -113,7 +113,7 @@ export default function AutopilotPage() {
           </div>
 
           {/* What autopilot does */}
-          <div className="rounded-2xl p-5 mb-6" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div className="rounded-2xl p-5 mb-6" style={{ background: t.faint, border: `1px solid ${t.border}` }}>
             <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: t.muted, fontSize: "10px" }}>
               What runs automatically
             </p>
@@ -125,7 +125,7 @@ export default function AutopilotPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.06 }}>
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: isActive ? `${task.color}15` : "rgba(255,255,255,0.05)" }}>
+                    style={{ background: isActive ? `${task.color}15` : t.faint, border: `1px solid ${t.border}` }}>
                     <task.icon size={14} style={{ color: isActive ? task.color : t.muted }} />
                   </div>
                   <p className="flex-1 text-sm" style={{ color: isActive ? t.muted : t.muted }}>
@@ -146,16 +146,16 @@ export default function AutopilotPage() {
           </div>
 
           {/* CJ Connection */}
-          <div className="rounded-2xl overflow-hidden mb-4" style={{ border: `1px solid ${cjConnected ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.08)"}` }}>
+          <div className="rounded-2xl overflow-hidden mb-4" style={{ border: `1px solid ${cjConnected ? "rgba(52,211,153,0.2)" : t.border}` }}>
             <div className="px-5 py-4 flex items-center justify-between"
-              style={{ background: cjConnected ? "rgba(52,211,153,0.05)" : "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              style={{ background: cjConnected ? "rgba(52,211,153,0.05)" : t.faint, borderBottom: `1px solid ${t.border}` }}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black"
-                  style={{ background: cjConnected ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.06)", color: cjConnected ? "#34d399" : t.muted }}>
+                  style={{ background: cjConnected ? "rgba(52,211,153,0.15)" : t.card, border: `1px solid ${t.border}`, color: cjConnected ? "#34d399" : t.muted }}>
                   CJ
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">CJDropshipping</p>
+                  <p className="text-sm font-semibold" style={{ color: t.text }}>CJDropshipping</p>
                   <p className="text-xs" style={{ color: t.muted }}>
                     Free · 400,000+ products · Ships worldwide · No monthly fee
                   </p>
@@ -168,7 +168,7 @@ export default function AutopilotPage() {
                       <Check size={10} />Connected
                     </span>
                   : <span className="text-xs px-2.5 py-1 rounded-full"
-                      style={{ background: "rgba(255,255,255,0.06)", color: t.muted }}>
+                      style={{ background: t.faint, border: `1px solid ${t.border}`, color: t.muted }}>
                       Not connected
                     </span>
                 }
@@ -213,14 +213,14 @@ export default function AutopilotPage() {
                         </button>
                         <a href="https://cjdropshipping.com/register.html" target="_blank"
                           className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm"
-                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: t.muted }}>
+                          style={{ background: t.faint, border: `1px solid ${t.border}`, color: t.muted }}>
                           <ExternalLink size={12} />Create free account
                         </a>
                       </div>
                     </div>
                   ) : (
                     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-                      <p className="text-sm font-medium text-white mb-4">Enter your CJDropshipping credentials</p>
+                      <p className="text-sm font-medium mb-4" style={{ color: t.text }}>Enter your CJDropshipping credentials</p>
                       <div className="space-y-3 mb-4">
                         <div>
                           <label className="text-xs mb-1.5 block" style={{ color: t.muted }}>CJ Email</label>
@@ -228,7 +228,7 @@ export default function AutopilotPage() {
                             placeholder="your@email.com"
                             type="email"
                             className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
-                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: t.muted }} />
+                            style={{ background: t.faint, border: `1px solid ${t.border}`, color: t.text }} />
                         </div>
                         <div>
                           <label className="text-xs mb-1.5 block" style={{ color: t.muted }}>CJ Password</label>
@@ -237,7 +237,7 @@ export default function AutopilotPage() {
                               placeholder="••••••••"
                               type={showPass ? "text" : "password"}
                               className="w-full rounded-xl px-3 py-2.5 text-sm outline-none pr-10"
-                              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: t.muted }} />
+                              style={{ background: t.faint, border: `1px solid ${t.border}`, color: t.text }} />
                             <button onClick={() => setShowPass(!showPass)}
                               className="absolute right-3 top-1/2 -translate-y-1/2"
                               style={{ color: t.muted }}>
@@ -259,7 +259,7 @@ export default function AutopilotPage() {
                         <button disabled={!cjEmail || !cjPass || connectCJ.isPending}
                           onClick={() => connectCJ.mutate()}
                           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-                          style={{ background: (cjEmail && cjPass) ? "#7c3aed" : "rgba(255,255,255,0.05)", color: (cjEmail && cjPass) ? "#fff" : t.muted }}>
+                          style={{ background: (cjEmail && cjPass) ? "#7c3aed" : t.faint, border: `1px solid ${(cjEmail && cjPass) ? "transparent" : t.border}`, color: (cjEmail && cjPass) ? "#fff" : t.muted }}>
                           {connectCJ.isPending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                           {connectCJ.isPending ? "Connecting..." : "Connect & Activate"}
                         </button>
@@ -281,7 +281,7 @@ export default function AutopilotPage() {
             <motion.div className="rounded-2xl p-5"
               style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)" }}
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-              <p className="text-sm font-semibold text-white mb-3">
+              <p className="text-sm font-semibold mb-3" style={{ color: t.text }}>
                 🎯 Your only job now
               </p>
               <div className="space-y-2">
