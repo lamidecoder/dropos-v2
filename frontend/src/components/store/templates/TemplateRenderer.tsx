@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingCart, Search, Heart, Package, Star, Truck, Shield,
   RotateCcw, ArrowRight, Menu, X, ChevronDown, Instagram,
-  Play, Zap, Clock, TrendingUp, ChevronLeft, ChevronRight
+  Play, Zap, Clock, TrendingUp, ChevronLeft, ChevronRight, Trash2
 } from "lucide-react";
 import { useCartStore } from "../../../store/cart.store";
 import { StorePreloader, usePreloader } from "../StorePreloader";
@@ -353,48 +353,159 @@ function StoreNav({ store, brand, dark, count, toggle, search, onSearch, categor
 
 // ── Shared: Cart Drawer ───────────────────────────────────────────────────────
 function CartDrawer({ store, brand, currency }: any) {
-  const { items, total, isOpen, toggle } = useCart(store.id, currency);
-  const fmt = (n: number) => fmtPrice(n, currency);
+  const { items, isOpen, toggle } = useCart(store.id, currency);
+  const updateQty  = useCartStore(s => s.updateQty);
+  const removeItem = useCartStore(s => s.removeItem);
+  const total      = useCartStore(s => s.total);
+  const fmt  = (n: number) => fmtPrice(n, currency);
+  const totalAmt   = typeof total === "function" ? total() : (total as any);
+  const count      = items.reduce((a, i) => a + i.quantity, 0);
+
+  // Free shipping threshold
+  const FREE_SHIPPING = 50000;
+  const progress = Math.min(100, (totalAmt / FREE_SHIPPING) * 100);
+  const remaining = FREE_SHIPPING - totalAmt;
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={toggle} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100 }} />
-          <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(400px,100vw)", background: "#fff", zIndex: 101, display: "flex", flexDirection: "column", boxShadow: "-8px 0 32px rgba(0,0,0,0.12)" }}>
-            <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: 0 }}>Your Cart ({items.reduce((a,i)=>a+i.quantity,0)})</h2>
-              <button onClick={toggle} style={{ background: "none", border: "none", cursor: "pointer", color: "#888" }}><X size={20} /></button>
+          {/* Backdrop */}
+          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+            onClick={toggle}
+            style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:100, backdropFilter:"blur(2px)" }} />
+
+          {/* Drawer */}
+          <motion.div
+            initial={{ x:"100%" }} animate={{ x:0 }} exit={{ x:"100%" }}
+            transition={{ type:"spring", damping:28, stiffness:320 }}
+            style={{ position:"fixed", top:0, right:0, bottom:0, width:"min(420px,100vw)", background:"#fff", zIndex:101, display:"flex", flexDirection:"column", boxShadow:"-12px 0 48px rgba(0,0,0,0.15)" }}>
+
+            {/* Header */}
+            <div style={{ padding:"20px 20px 16px", borderBottom:"1px solid #f0f0f0", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
+              <div>
+                <h2 style={{ fontSize:18, fontWeight:900, color:"#111", margin:"0 0 2px", letterSpacing:"-0.03em" }}>
+                  Your Cart {count > 0 && <span style={{ fontSize:13, fontWeight:600, color:"#888", marginLeft:4 }}>({count} item{count !== 1 ? "s" : ""})</span>}
+                </h2>
+                {totalAmt > 0 && (
+                  <p style={{ fontSize:12, color:"#888", margin:0 }}>{fmt(totalAmt)} total</p>
+                )}
+              </div>
+              <button onClick={toggle} style={{ width:32, height:32, borderRadius:8, border:"1px solid #eee", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#888" }}>
+                <X size={16}/>
+              </button>
             </div>
-            <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+
+            {/* Free shipping bar */}
+            {totalAmt > 0 && (
+              <div style={{ padding:"12px 20px", borderBottom:"1px solid #f5f5f5", flexShrink:0 }}>
+                {remaining > 0 ? (
+                  <p style={{ fontSize:12, color:"#555", margin:"0 0 6px" }}>
+                    Add <strong style={{ color: brand }}>{fmt(remaining)}</strong> more for free shipping 🚚
+                  </p>
+                ) : (
+                  <p style={{ fontSize:12, fontWeight:700, color:"#10B981", margin:"0 0 6px" }}>🎉 You qualify for free shipping!</p>
+                )}
+                <div style={{ height:4, borderRadius:99, background:"#f0f0f0", overflow:"hidden" }}>
+                  <motion.div
+                    initial={{ width:0 }}
+                    animate={{ width:`${progress}%` }}
+                    transition={{ duration:0.6, ease:"easeOut" }}
+                    style={{ height:"100%", borderRadius:99, background: progress >= 100 ? "#10B981" : `linear-gradient(90deg,${brand},${brand}cc)` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Items */}
+            <div style={{ flex:1, overflowY:"auto", padding:"12px 20px" }}>
               {items.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "60px 0" }}>
-                  <ShoppingCart size={40} style={{ color: "#ddd", margin: "0 auto 12px" }} />
-                  <p style={{ color: "#999", fontSize: 14 }}>Your cart is empty</p>
-                </div>
-              ) : items.map(item => (
-                <div key={`${item.productId}-${item.variantId}`} style={{ display: "flex", gap: 12, marginBottom: 16, padding: "12px 0", borderBottom: "1px solid #f5f5f5" }}>
-                  {item.image && <img src={item.image} alt={item.name} style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 10, flexShrink: 0 }} />}
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "#111", margin: "0 0 4px" }}>{item.name}</p>
-                    <p style={{ fontSize: 13, color: "#888", margin: 0 }}>Qty: {item.quantity} · {fmt(item.price)}</p>
+                <div style={{ textAlign:"center", padding:"64px 0" }}>
+                  <div style={{ width:64, height:64, borderRadius:20, background:"#f8f8f8", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
+                    <ShoppingCart size={28} style={{ color:"#ddd" }}/>
                   </div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>{fmt(item.price * item.quantity)}</p>
+                  <p style={{ fontSize:15, fontWeight:700, color:"#111", margin:"0 0 6px" }}>Your cart is empty</p>
+                  <p style={{ fontSize:13, color:"#888", margin:0 }}>Browse the store and add products</p>
+                  <button onClick={toggle} style={{ marginTop:20, padding:"10px 24px", borderRadius:10, background:`linear-gradient(135deg,${brand},${brand}cc)`, color:"#fff", fontSize:13, fontWeight:700, border:"none", cursor:"pointer" }}>
+                    Continue Shopping
+                  </button>
                 </div>
-              ))}
+              ) : (
+                <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
+                  {items.map((item, idx) => (
+                    <motion.div key={`${item.productId}-${item.variantId}-${idx}`}
+                      initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:idx*0.04 }}
+                      layout
+                      style={{ display:"flex", gap:12, padding:"14px 0", borderBottom:"1px solid #f5f5f5" }}>
+                      {/* Image */}
+                      <div style={{ width:72, height:72, borderRadius:12, overflow:"hidden", flexShrink:0, background:"#f5f5f5" }}>
+                        {item.image
+                          ? <img src={item.image} alt={item.name} style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+                          : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}><Package size={20} style={{ color:"#ddd" }}/></div>
+                        }
+                      </div>
+
+                      {/* Details */}
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <p style={{ fontSize:14, fontWeight:700, color:"#111", margin:"0 0 2px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</p>
+                        {item.variantLabel && (
+                          <p style={{ fontSize:11, color:"#888", margin:"0 0 6px", background:"#f5f5f5", display:"inline-block", padding:"2px 8px", borderRadius:4 }}>{item.variantLabel}</p>
+                        )}
+                        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:6 }}>
+                          {/* Qty controls */}
+                          <div style={{ display:"flex", alignItems:"center", border:"1px solid #eee", borderRadius:8, overflow:"hidden" }}>
+                            <button
+                              onClick={() => item.quantity <= 1 ? removeItem(item.productId, item.variantId) : updateQty(item.productId, item.quantity - 1, item.variantId)}
+                              style={{ width:28, height:28, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#555", fontSize:16 }}>
+                              {item.quantity <= 1 ? <Trash2 size={11} color="#EF4444"/> : "−"}
+                            </button>
+                            <span style={{ width:28, textAlign:"center", fontSize:13, fontWeight:700, color:"#111" }}>{item.quantity}</span>
+                            <button
+                              onClick={() => updateQty(item.productId, item.quantity + 1, item.variantId)}
+                              style={{ width:28, height:28, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#555", fontSize:16 }}>
+                              +
+                            </button>
+                          </div>
+                          {/* Price */}
+                          <p style={{ fontSize:15, fontWeight:900, color:"#111", margin:0 }}>{fmt(item.price * item.quantity)}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </div>
+
+            {/* Footer */}
             {items.length > 0 && (
-              <div style={{ padding: 20, borderTop: "1px solid #f0f0f0" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: "#111" }}>Total</span>
-                  <span style={{ fontSize: 18, fontWeight: 900, color: "#111" }}>{fmt(total)}</span>
+              <div style={{ padding:20, borderTop:"1px solid #f0f0f0", flexShrink:0, background:"#fff" }}>
+                {/* Totals */}
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                  <span style={{ fontSize:13, color:"#888" }}>Subtotal</span>
+                  <span style={{ fontSize:13, color:"#888" }}>{fmt(totalAmt)}</span>
                 </div>
-                <Link href={`/store/${store.slug}/checkout`}
-                  style={{ display: "block", width: "100%", padding: "14px 0", borderRadius: 14, background: `linear-gradient(135deg,${brand},${brand}cc)`, color: "#fff", fontSize: 15, fontWeight: 800, textAlign: "center", textDecoration: "none" }}>
-                  Checkout →
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+                  <span style={{ fontSize:13, color:"#888" }}>Shipping</span>
+                  <span style={{ fontSize:13, color: progress >= 100 ? "#10B981" : "#888" }}>
+                    {progress >= 100 ? "FREE" : "Calculated at checkout"}
+                  </span>
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", paddingTop:12, borderTop:"1px solid #f0f0f0", marginBottom:16 }}>
+                  <span style={{ fontSize:16, fontWeight:800, color:"#111" }}>Total</span>
+                  <span style={{ fontSize:20, fontWeight:900, color:"#111", letterSpacing:"-0.03em" }}>{fmt(totalAmt)}</span>
+                </div>
+
+                {/* Checkout CTA */}
+                <Link href={`/store/${store.slug}/checkout`} onClick={toggle}
+                  style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, width:"100%", padding:"15px 0", borderRadius:14, background:`linear-gradient(135deg,${brand},${brand}bb)`, color:"#fff", fontSize:15, fontWeight:800, textAlign:"center", textDecoration:"none", boxShadow:`0 8px 24px ${brand}40` }}>
+                  Checkout · {fmt(totalAmt)} →
                 </Link>
+
+                {/* Continue shopping */}
+                <button onClick={toggle}
+                  style={{ width:"100%", marginTop:10, padding:"10px 0", borderRadius:10, border:"none", background:"transparent", color:"#888", fontSize:13, fontWeight:600, cursor:"pointer" }}>
+                  Continue Shopping
+                </button>
               </div>
             )}
           </motion.div>
