@@ -21,7 +21,7 @@ const GRADE_COLORS: Record<string, string> = { A: "#34d399", B: "#60a5fa", C: "#
 export default function BulkImportPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:t.muted, faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)" };
+  const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", text:"#fff", muted:"rgba(255,255,255,0.38)", faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", text:"#0D0918", muted:"rgba(13,9,24,0.45)", faint:"rgba(15,5,32,0.03)" };
   const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const [storeUrl, setStoreUrl]   = useState("");
   const [products, setProducts]   = useState<any[]>([]);
