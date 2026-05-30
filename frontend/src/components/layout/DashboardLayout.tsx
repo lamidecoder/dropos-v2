@@ -397,19 +397,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isBottomActive = (item: any) =>
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
 
-  // Show loader while session is being restored OR store hasn't hydrated
-  const authState = useAuthStore(s => ({ isLoading: s.isLoading, isHydrated: s.isHydrated }));
-  const [minWait, setMinWait] = useState(true);
-
-  useEffect(() => {
-    // Guarantee loader shows for at least 1.2s so orbit animation is visible
-    const t = setTimeout(() => setMinWait(false), 1200);
-    return () => clearTimeout(t);
-  }, []);
-
-  if (authState.isLoading || !authState.isHydrated || minWait) {
-    return <AppLoader show={true} />;
-  }
+  // Note: AppLoader is shown by the parent dashboard/layout.tsx — no duplicate here
 
   return (
     <ThemeContext.Provider value={{ theme, toggle: toggleTheme }}>
