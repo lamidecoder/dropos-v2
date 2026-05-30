@@ -137,8 +137,8 @@ export default function DashboardPage() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto" }}>
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.04em", color: t.text, marginBottom: 4 }}>
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.04em", color: t.text, marginBottom: 4 }}>
           Good {greeting}, {firstName} 👋
         </h1>
         <p style={{ fontSize: 13, color: t.muted }}>
@@ -146,16 +146,17 @@ export default function DashboardPage() {
         </p>
       </motion.div>
 
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }} className="grid-cols-2 sm:grid-cols-4">
+      {/* Stats — 2 cols on mobile, 4 on desktop */}
+      <div className="ov-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 16 }}>
         {statCards.map((s, i) => <StatCard key={s.label} {...s} delay={i * 0.07} />)}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16 }} className="grid-1col lg:grid-2col">
+      {/* Main grid — stacks on mobile */}
+      <div className="ov-main" style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 14 }}>
         {/* Left: Recent Orders */}
         <div>
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            style={{ padding: 18, borderRadius: 16, background: t.card, border: `1px solid ${t.border}`, marginBottom: 16 }}>
+            style={{ padding: 16, borderRadius: 16, background: t.card, border: `1px solid ${t.border}`, marginBottom: 14 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: t.text }}>Recent Orders</span>
               <Link href="/dashboard/orders" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: V.v400, textDecoration: "none", fontWeight: 600 }}>
@@ -180,9 +181,8 @@ export default function DashboardPage() {
             )}
           </motion.div>
 
-          {/* KIRO Opportunity Feed - proactive intelligence */}
+          {/* KIRO Opportunity Feed */}
           {storeId && <OpportunityFeed storeId={storeId} isDark={isDark} onAction={(action) => {
-            // Trigger KIRO chat with the action
             if (typeof window !== "undefined") {
               window.dispatchEvent(new CustomEvent("kiro:execute", { detail: { prompt: action } }));
             }
@@ -191,7 +191,7 @@ export default function DashboardPage() {
           {/* KIRO Pulse Alerts */}
           {alerts.length > 0 && (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-              style={{ padding: 18, borderRadius: 16, background: t.card, border: `1px solid ${t.border}` }}>
+              style={{ padding: 16, borderRadius: 16, background: t.card, border: `1px solid ${t.border}` }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
                 <Zap size={14} color={V.v400} />
                 <span style={{ fontSize: 13, fontWeight: 700, color: t.text }}>KIRO Alerts</span>
@@ -212,10 +212,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Right column */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {/* KIRO CTA */}
           <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}
-            style={{ padding: 18, borderRadius: 16, background: "linear-gradient(135deg,#2D1B69,#1a0f3c)", border: "1px solid rgba(107,53,232,0.3)", position: "relative", overflow: "hidden" }}>
+            style={{ padding: 16, borderRadius: 16, background: "linear-gradient(135deg,#2D1B69,#1a0f3c)", border: "1px solid rgba(107,53,232,0.3)", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: "rgba(107,53,232,0.15)" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(107,53,232,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -236,7 +236,7 @@ export default function DashboardPage() {
 
           {/* Quick Actions */}
           <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.32 }}
-            style={{ padding: 18, borderRadius: 16, background: t.card, border: `1px solid ${t.border}` }}>
+            style={{ padding: 16, borderRadius: 16, background: t.card, border: `1px solid ${t.border}` }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: t.text, display: "block", marginBottom: 12 }}>Quick Actions</span>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {quickActions.map(a => {
@@ -258,7 +258,7 @@ export default function DashboardPage() {
 
           {/* Store status */}
           <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.38 }}
-            style={{ padding: 18, borderRadius: 16, background: t.card, border: `1px solid ${t.border}` }}>
+            style={{ padding: 16, borderRadius: 16, background: t.card, border: `1px solid ${t.border}` }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: t.text, display: "block", marginBottom: 12 }}>Store Status</span>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[
@@ -286,12 +286,14 @@ export default function DashboardPage() {
       </div>
 
       <style>{`
-        @media(max-width:900px){
-          .grid-cols-2{grid-template-columns:1fr 1fr!important}
-          .grid-1col.lg\\:grid-2col{grid-template-columns:1fr!important}
+        /* Mobile: stack everything, 2-col stats */
+        @media(max-width:768px){
+          .ov-stats{ grid-template-columns:1fr 1fr!important; gap:8px!important; }
+          .ov-main { grid-template-columns:1fr!important; }
         }
-        @media(max-width:480px){
-          .grid-cols-2{grid-template-columns:1fr 1fr!important}
+        /* Very small: 2-col stats stays readable */
+        @media(max-width:380px){
+          .ov-stats{ grid-template-columns:1fr 1fr!important; gap:6px!important; }
         }
       `}</style>
     </div>
