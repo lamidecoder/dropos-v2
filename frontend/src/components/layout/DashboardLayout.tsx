@@ -448,39 +448,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .light-mode [style*="background: rgba(255,255,255,0.0"],
         .light-mode [style*="background:rgba(255,255,255,0.0"] { background: rgba(107,53,232,0.04) !important; }
         /* Prevent text size adjust on mobile */
-        * { -webkit-text-size-adjust:100%; box-sizing:border-box; }
-        /* Global responsive helpers for all dashboard pages */
-        @media(max-width:768px){
-          /* Tables scroll horizontally */
-          table { min-width:500px; }
-          .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-          /* Common grid patterns collapse to single col */
-          [style*="grid-template-columns: 1fr 1fr 1fr"],
-          [style*="gridTemplateColumns: '1fr 1fr 1fr"],
-          [style*="repeat(3,1fr)"],
-          [style*="repeat(3, 1fr)"] { grid-template-columns:1fr 1fr!important; }
-          [style*="repeat(4,1fr)"],
-          [style*="repeat(4, 1fr)"] { grid-template-columns:1fr 1fr!important; }
-          /* Two col side panels collapse */
-          [style*="1fr 340px"],
-          [style*="1fr 320px"],
-          [style*="1fr 300px"],
-          [style*="1fr 280px"] { grid-template-columns:1fr!important; }
-          /* Fix padding on content area */
-          .ds-content { padding:12px!important; padding-bottom:72px!important; }
-          /* Stat cards */
-          .ov-stats { grid-template-columns:1fr 1fr!important; }
-          .ov-main  { grid-template-columns:1fr!important; }
-        }
-        @media(max-width:480px){
-          /* Very small screens */
-          [style*="font-size: 22px"],
-          [style*="fontSize: 22"] { font-size:18px!important; }
-          [style*="font-size: 24px"],
-          [style*="fontSize: 24"] { font-size:20px!important; }
-          /* Prevent overflow */
-          .ds-content { padding:10px!important; padding-bottom:72px!important; }
-        }
+        * { -webkit-text-size-adjust:100%; }
       `}</style>
 
       <div className={theme === "light" ? "light-mode" : ""} style={{ display:"flex", height:"100vh", width:"100vw", overflow:"hidden", background:t.bg, color:t.text, fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif" }}>
@@ -554,7 +522,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </header>
 
           {/* PAGE CONTENT  -  no AnimatePresence (causes freeze on refresh) */}
-          <main className="thin-scroll ds-main ds-content" style={{ flex:1, overflowY:"auto", overflowX:"hidden", padding:"20px 16px 40px", WebkitOverflowScrolling:"touch", minHeight:0, height:0 }}>
+          <main className="thin-scroll ds-main" style={{ flex:1, overflowY:"auto", overflowX:"hidden", padding:"20px 16px 40px", WebkitOverflowScrolling:"touch", minHeight:0, height:0 }}>
             {children}
           </main>
 
