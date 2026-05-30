@@ -280,8 +280,15 @@ function Sidebar({ t, pathname, plan, user, onNavClick, onLogout, theme }: any) 
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: t.sidebarBg }}>
       {/* Logo */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "18px 14px", flexShrink: 0, borderBottom: `1px solid ${t.border}`, minHeight: 60 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 10, background: `linear-gradient(145deg,${V.v500},${V.v900})`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(107,53,232,0.35)", flexShrink: 0 }}>
-          <Zap size={14} color="white" />
+        <div style={{
+          width: 32, height: 32, borderRadius: 9,
+          background: "linear-gradient(145deg, #2D1B69 0%, #0D0625 100%)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 4px 14px rgba(45,27,105,0.35)", flexShrink: 0,
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="white"/>
+          </svg>
         </div>
         <div>
           <div style={{ fontWeight: 800, fontSize: 15, letterSpacing: "-0.03em", color: t.text }}>
