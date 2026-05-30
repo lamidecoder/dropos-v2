@@ -118,7 +118,7 @@ function PulseDot() {
 function ModeBtn({ mode, toggle, T }: { mode:"light"|"dark"; toggle:()=>void; T:typeof TL }) {
   return (
     <button onClick={toggle}
-      style={{width:32,height:32,borderRadius:8,border:`1px solid ${"rgba(255,255,255,0.07)"}`,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}
+      style={{width:32,height:32,borderRadius:8,border:`1px solid ${T.border}`,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}
       onMouseEnter={e=>(e.currentTarget.style.background=T.accentBg)}
       onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
       {mode==="light"
@@ -173,7 +173,7 @@ function VoiceBtn({ onTranscript, T }: { onTranscript:(t:string)=>void; T:typeof
       <AnimatePresence>
         {isRec && interim && (
           <motion.div initial={{opacity:0,y:4,scale:.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0}}
-            style={{position:"absolute",bottom:"calc(100% + 8px)",right:0,background:"#13131F",border:`1px solid ${"rgba(255,255,255,0.07)"}`,borderRadius:10,padding:"7px 12px",fontSize:12,color:"#F0ECFF",whiteSpace:"nowrap",maxWidth:220,overflow:"hidden",textOverflow:"ellipsis",boxShadow:T.shadow,zIndex:10}}>
+            style={{position:"absolute",bottom:"calc(100% + 8px)",right:0,background:T.s1,border:`1px solid ${T.border}`,borderRadius:10,padding:"7px 12px",fontSize:12,color:T.text,whiteSpace:"nowrap",maxWidth:220,overflow:"hidden",textOverflow:"ellipsis",boxShadow:T.shadow,zIndex:10}}>
             <span style={{color:"rgba(240,236,255,0.5)",fontSize:10,display:"block",marginBottom:2}}>Listening…</span>
             {interim}
           </motion.div>
@@ -192,7 +192,7 @@ function VoiceBtn({ onTranscript, T }: { onTranscript:(t:string)=>void; T:typeof
       <button
         onClick={isRec ? stop : start}
         title={isRec ? "Stop recording" : "Voice input"}
-        style={{width:30,height:30,borderRadius:8,border:`1px solid ${isRec?"#EF4444":"rgba(255,255,255,0.07)"}`,background:isRec?"rgba(239,68,68,0.1)":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s"}}>
+        style={{width:30,height:30,borderRadius:8,border:`1px solid ${isRec?"#EF4444":T.border}`,background:isRec?"rgba(239,68,68,0.1)":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s"}}>
         {isRec
           ? <svg width="12" height="12" viewBox="0 0 24 24" fill="#EF4444"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
           : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.sub} strokeWidth="2" strokeLinecap="round">
@@ -241,20 +241,20 @@ function AuthDropdown({ T, onLogin, onLoggedOut }: { T:typeof TL; onLogin:()=>vo
   return (
     <div ref={ref} style={{position:"relative",flexShrink:0}}>
       <button onClick={() => setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",gap:7,padding:"4px 10px 4px 4px",borderRadius:9,border:`1px solid ${"rgba(255,255,255,0.07)"}`,background:T.s2,cursor:"pointer",fontFamily:"inherit",flexShrink:0,transition:"border-color .15s"}}
-        onMouseEnter={e=>(e.currentTarget.style.borderColor="rgba(255,255,255,0.07)")}
-        onMouseLeave={e=>(e.currentTarget.style.borderColor="rgba(255,255,255,0.07)")}>
+        style={{display:"flex",alignItems:"center",gap:7,padding:"4px 10px 4px 4px",borderRadius:9,border:`1px solid ${T.border}`,background:T.s2,cursor:"pointer",fontFamily:"inherit",flexShrink:0,transition:"border-color .15s"}}
+        onMouseEnter={e=>(e.currentTarget.style.borderColor=T.border)}
+        onMouseLeave={e=>(e.currentTarget.style.borderColor=T.border)}>
         <div style={{width:28,height:28,borderRadius:8,background:`linear-gradient(135deg,${ACCENT},${ACCENT_D})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#fff",flexShrink:0}}>{initials}</div>
-        <span style={{fontSize:12,fontWeight:600,color:"#F0ECFF",maxWidth:72,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{first}</span>
+        <span style={{fontSize:12,fontWeight:600,color:T.text,maxWidth:72,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{first}</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={"rgba(240,236,255,0.5)"} strokeWidth="2.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
       </button>
 
       <AnimatePresence>
         {open && (
           <motion.div initial={{opacity:0,y:5,scale:.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:4,scale:.96}} transition={{duration:.13}}
-            style={{position:"absolute",right:0,top:"calc(100% + 7px)",minWidth:185,borderRadius:13,background:"#13131F",border:`1px solid ${"rgba(255,255,255,0.07)"}`,boxShadow:"0 10px 36px rgba(0,0,0,0.16)",overflow:"hidden",zIndex:300}}>
-            <div style={{padding:"11px 14px",borderBottom:`1px solid ${"rgba(255,255,255,0.07)"}`}}>
-              <p style={{fontSize:12,fontWeight:700,color:"#F0ECFF"}}>{user.name||"User"}</p>
+            style={{position:"absolute",right:0,top:"calc(100% + 7px)",minWidth:185,borderRadius:13,background:T.s1,border:`1px solid ${T.border}`,boxShadow:T.shadow,overflow:"hidden",zIndex:300}}>
+            <div style={{padding:"11px 14px",borderBottom:`1px solid ${T.border}`}}>
+              <p style={{fontSize:12,fontWeight:700,color:T.text}}>{user.name||"User"}</p>
               <p style={{fontSize:11,color:"rgba(240,236,255,0.5)",marginTop:1}}>{user.email}</p>
             </div>
             <Link href="/dashboard" style={{textDecoration:"none"}}>
@@ -262,11 +262,11 @@ function AuthDropdown({ T, onLogin, onLoggedOut }: { T:typeof TL; onLogin:()=>vo
                 onMouseEnter={e=>(e.currentTarget.style.background=T.accentBg)}
                 onMouseLeave={e=>(e.currentTarget.style.background="none")}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-                <span style={{fontSize:13,fontWeight:600,color:"#F0ECFF"}}>Dashboard</span>
+                <span style={{fontSize:13,fontWeight:600,color:T.text}}>Dashboard</span>
               </button>
             </Link>
             <button onClick={handleLogout}
-              style={{width:"100%",padding:"10px 14px",display:"flex",alignItems:"center",gap:9,background:"none",border:"none",borderTop:`1px solid ${"rgba(255,255,255,0.07)"}`,cursor:"pointer",textAlign:"left",fontFamily:"inherit",transition:"background .12s"}}
+              style={{width:"100%",padding:"10px 14px",display:"flex",alignItems:"center",gap:9,background:"none",border:"none",borderTop:`1px solid ${T.border}`,cursor:"pointer",textAlign:"left",fontFamily:"inherit",transition:"background .12s"}}
               onMouseEnter={e=>(e.currentTarget.style.background="rgba(220,38,38,.07)")}
               onMouseLeave={e=>(e.currentTarget.style.background="none")}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -321,10 +321,10 @@ function HistoryItem({ s, activeId, onSelect, onDelete, onRename, onPin, T }:
           <input autoFocus value={editVal} onChange={e=>setEditVal(e.target.value)}
             onBlur={commitRename} onKeyDown={e=>{if(e.key==="Enter")commitRename();if(e.key==="Escape")setEditing(false);}}
             onClick={e=>e.stopPropagation()}
-            style={{width:"100%",fontSize:12,fontWeight:600,color:"#F0ECFF",background:T.s3,border:`1px solid ${T.accent}`,borderRadius:5,padding:"2px 6px",outline:"none",fontFamily:"inherit"}}/>
+            style={{width:"100%",fontSize:12,fontWeight:600,color:T.text,background:T.s3,border:`1px solid ${T.accent}`,borderRadius:5,padding:"2px 6px",outline:"none",fontFamily:"inherit"}}/>
         ) : (
           <>
-            <p style={{fontSize:12,fontWeight:600,color:s.id===activeId?T.accent:"#F0ECFF",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.title||"New conversation"}</p>
+            <p style={{fontSize:12,fontWeight:600,color:s.id===activeId?T.accent:T.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.title||"New conversation"}</p>
             <p style={{fontSize:10,color:"rgba(240,236,255,0.5)",marginTop:1}}>{timeAgo(s.ts)}</p>
           </>
         )}
@@ -339,14 +339,14 @@ function HistoryItem({ s, activeId, onSelect, onDelete, onRename, onPin, T }:
       {/* Dropdown menu */}
       {menu && (
         <div ref={menuRef} onClick={e=>e.stopPropagation()}
-          style={{position:"absolute",right:8,top:"100%",zIndex:200,background:"#13131F",border:`1px solid ${"rgba(255,255,255,0.07)"}`,borderRadius:10,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",minWidth:140,overflow:"hidden",marginTop:4}}>
+          style={{position:"absolute",right:8,top:"100%",zIndex:200,background:T.s1,border:`1px solid ${T.border}`,borderRadius:10,boxShadow:T.shadow,minWidth:140,overflow:"hidden",marginTop:4}}>
           {[
             { label: s.pinned?"Unpin":"Pin to top", icon:"M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z", action:()=>{onPin(s.id);setMenu(false);}, fill:true },
             { label:"Rename", icon:"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z", action:()=>{setEditVal(s.title||"New conversation");setEditing(true);setMenu(false);}, fill:false },
             { label:"Delete", icon:"M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6", action:()=>{onDelete(s.id);setMenu(false);}, fill:false, danger:true },
           ].map(item => (
             <button key={item.label} onClick={item.action}
-              style={{width:"100%",padding:"9px 14px",border:"none",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",gap:9,fontSize:12,fontWeight:500,color:item.danger?"#EF4444":"#F0ECFF",fontFamily:"inherit",textAlign:"left"}}
+              style={{width:"100%",padding:"9px 14px",border:"none",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",gap:9,fontSize:12,fontWeight:500,color:item.danger?"#EF4444":T.text,fontFamily:"inherit",textAlign:"left"}}
               onMouseEnter={e=>(e.currentTarget.style.background=T.s2)}
               onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill={item.fill?"currentColor":"none"} stroke={item.fill?"none":"currentColor"} strokeWidth="2" strokeLinecap="round" color={item.danger?"#EF4444":"rgba(240,236,255,0.5)"}>
@@ -374,12 +374,12 @@ function Sidebar({ history, activeId, onSelect, onNew, onDelete, onRename, onPin
         )}
       </AnimatePresence>
       <motion.div animate={{x:open?0:-280}} initial={{x:-280}} transition={{type:"spring",stiffness:340,damping:34}}
-        style={{position:"fixed",left:0,top:0,bottom:0,width:260,background:"#13131F",borderRight:`1px solid ${"rgba(255,255,255,0.07)"}`,zIndex:100,display:"flex",flexDirection:"column",boxShadow:"4px 0 24px rgba(0,0,0,0.1)"}}>
+        style={{position:"fixed",left:0,top:0,bottom:0,width:260,background:T.s1,borderRight:`1px solid ${T.border}`,zIndex:100,display:"flex",flexDirection:"column",boxShadow:T.shadow}}>
 
-        <div style={{padding:"13px 14px",borderBottom:`1px solid ${"rgba(255,255,255,0.07)"}`,display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:8}}><Logo size={22}/><span style={{fontSize:13,fontWeight:700,color:"#F0ECFF"}}>Chat history</span></div>
+        <div style={{padding:"13px 14px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}><Logo size={22}/><span style={{fontSize:13,fontWeight:700,color:T.text}}>Chat history</span></div>
           <button onClick={onClose}
-            style={{width:26,height:26,borderRadius:6,border:`1px solid ${"rgba(255,255,255,0.07)"}`,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(240,236,255,0.5)"}}
+            style={{width:26,height:26,borderRadius:6,border:`1px solid ${T.border}`,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(240,236,255,0.5)"}}
             onMouseEnter={e=>(e.currentTarget.style.background=T.s2)} onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -387,7 +387,7 @@ function Sidebar({ history, activeId, onSelect, onNew, onDelete, onRename, onPin
 
         <div style={{padding:"10px 10px 6px",flexShrink:0}}>
           <button onClick={onNew}
-            style={{width:"100%",padding:"8px 0",borderRadius:9,border:`1.5px dashed ${"rgba(255,255,255,0.07)"}`,background:T.accentBg,color:T.accent,fontWeight:600,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:7,justifyContent:"center",fontFamily:"inherit",transition:"opacity .15s"}}
+            style={{width:"100%",padding:"8px 0",borderRadius:9,border:`1.5px dashed ${T.border}`,background:T.accentBg,color:T.accent,fontWeight:600,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:7,justifyContent:"center",fontFamily:"inherit",transition:"opacity .15s"}}
             onMouseEnter={e=>(e.currentTarget.style.opacity="0.75")} onMouseLeave={e=>(e.currentTarget.style.opacity="1")}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
             New chat
@@ -415,9 +415,9 @@ function AuthModal({ onClose, onSuccess, T }: { onClose:()=>void; onSuccess:(sid
   const [tab, setTab]   = useState<"register"|"login">("register");
   const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [pass, setPass] = useState("");
   const [err, setErr]   = useState(""); const [busy, setBusy]   = useState(false);
-  const inp: React.CSSProperties = { width:"100%",padding:"10px 14px",borderRadius:9,border:`1px solid ${"rgba(255,255,255,0.07)"}`,background:T.s2,color:"#F0ECFF",fontSize:14,fontFamily:"'Inter',sans-serif",outline:"none",transition:"border-color 0.15s,box-shadow 0.15s" };
+  const inp: React.CSSProperties = { width:"100%",padding:"10px 14px",borderRadius:9,border:`1px solid ${T.border}`,background:T.s2,color:T.text,fontSize:14,fontFamily:"'Inter',sans-serif",outline:"none",transition:"border-color 0.15s,box-shadow 0.15s" };
   const focus = (e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor=ACCENT; e.currentTarget.style.boxShadow=`0 0 0 3px ${ACCENT}15`; };
-  const blur  = (e: React.FocusEvent<HTMLInputElement>, T: typeof TL) => { e.currentTarget.style.borderColor="rgba(255,255,255,0.07)"; e.currentTarget.style.boxShadow="none"; };
+  const blur  = (e: React.FocusEvent<HTMLInputElement>, T: typeof TL) => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.boxShadow="none"; };
 
   async function submit() {
     if (!email||!pass) return; setBusy(true); setErr("");
@@ -443,16 +443,16 @@ function AuthModal({ onClose, onSuccess, T }: { onClose:()=>void; onSuccess:(sid
     <div style={{position:"fixed",inset:0,zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:16,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(10px)"}}
       onClick={e=>e.target===e.currentTarget&&onClose()}>
       <motion.div initial={{opacity:0,y:10,scale:.97}} animate={{opacity:1,y:0,scale:1}} transition={{type:"spring",stiffness:320,damping:28}}
-        style={{width:"100%",maxWidth:350,borderRadius:18,background:"#13131F",border:`1px solid ${"rgba(255,255,255,0.07)"}`,padding:"26px 22px",boxShadow:"0 24px 60px rgba(0,0,0,0.2)"}}>
+        style={{width:"100%",maxWidth:350,borderRadius:18,background:T.s1,border:`1px solid ${T.border}`,padding:"26px 22px",boxShadow:T.shadow}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{display:"flex",justifyContent:"center",marginBottom:12}}><Logo size={38}/></div>
-          <h2 style={{fontSize:19,fontWeight:700,color:"#F0ECFF",margin:"0 0 4px",letterSpacing:"-0.3px"}}>{tab==="register"?"Create account":"Welcome back"}</h2>
+          <h2 style={{fontSize:19,fontWeight:700,color:T.text,margin:"0 0 4px",letterSpacing:"-0.3px"}}>{tab==="register"?"Create account":"Welcome back"}</h2>
           <p style={{fontSize:12,color:"rgba(240,236,255,0.5)"}}>{tab==="register"?"Free · No card needed":"Sign in to KIRO"}</p>
         </div>
         <div style={{display:"flex",gap:2,padding:3,borderRadius:9,background:T.s2,marginBottom:16}}>
           {(["register","login"] as const).map(m=>(
             <button key={m} onClick={()=>{setTab(m);setErr("");}}
-              style={{flex:1,padding:"6px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:12,fontWeight:500,transition:"all 0.15s",background:tab===m?"#13131F":"transparent",color:tab===m?"#F0ECFF":"rgba(240,236,255,0.5)",boxShadow:tab===m?T.shadow:"none"}}>
+              style={{flex:1,padding:"6px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:12,fontWeight:500,transition:"all 0.15s",background:tab===m?T.s1:"transparent",color:tab===m?T.text:"rgba(240,236,255,0.5)",boxShadow:tab===m?T.shadow:"none"}}>
               {m==="register"?"Sign up":"Sign in"}
             </button>
           ))}
@@ -518,7 +518,7 @@ function DemoChat({ T, onAuthNeeded }: { T:typeof TL; onAuthNeeded:()=>void }) {
           <motion.div key={msg.id} initial={{opacity:0,y:5}} animate={{opacity:1,y:0}} transition={{duration:0.2}}
             style={{display:"flex",flexDirection:msg.role==="user"?"row-reverse":"row",gap:7,alignItems:"flex-end",marginBottom:12}}>
             {msg.role==="ai"&&<Logo size={22}/>}
-            <div style={{maxWidth:"82%",padding:msg.role==="user"?"9px 14px":"0",borderRadius:msg.role==="user"?"16px 16px 4px 16px":"0",background:msg.role==="user"?`linear-gradient(145deg,${ACCENT},${ACCENT_D})`:"transparent",color:msg.role==="user"?"#fff":"#F0ECFF",fontSize:14,lineHeight:1.68,boxShadow:msg.role==="user"?`0 2px 8px ${ACCENT}28`:"none"}}>
+            <div style={{maxWidth:"82%",padding:msg.role==="user"?"9px 14px":"0",borderRadius:msg.role==="user"?"16px 16px 4px 16px":"0",background:msg.role==="user"?`linear-gradient(145deg,${ACCENT},${ACCENT_D})`:"transparent",color:msg.role==="user"?"#fff":T.text,fontSize:14,lineHeight:1.68,boxShadow:msg.role==="user"?`0 2px 8px ${ACCENT}28`:"none"}}>
               {msg.streaming&&!msg.text
                 ? <div style={{display:"flex",gap:4,padding:"3px 0"}}>{[0,1,2].map(i=><motion.div key={i} style={{width:5,height:5,borderRadius:"50%",background:"rgba(240,236,255,0.5)"}} animate={{y:[0,-4,0],opacity:[0.4,1,0.4]}} transition={{duration:0.6,repeat:Infinity,delay:i*0.12}}/>)}</div>
                 : <span>{msg.text}{msg.streaming&&<motion.span animate={{opacity:[1,0]}} transition={{duration:0.5,repeat:Infinity}} style={{display:"inline-block",width:2,height:13,background:"rgba(240,236,255,0.5)",marginLeft:1,verticalAlign:"text-bottom"}}/>}</span>
@@ -528,8 +528,8 @@ function DemoChat({ T, onAuthNeeded }: { T:typeof TL; onAuthNeeded:()=>void }) {
         ))}
         {count>=2&&(
           <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
-            style={{margin:"4px 0 10px",padding:"12px 14px",borderRadius:11,background:T.accentBg,border:`1px solid ${"rgba(255,255,255,0.07)"}`}}>
-            <p style={{fontSize:13,fontWeight:600,color:"#F0ECFF",margin:"0 0 3px"}}>KIRO is better with your store</p>
+            style={{margin:"4px 0 10px",padding:"12px 14px",borderRadius:11,background:T.accentBg,border:`1px solid ${T.border}`}}>
+            <p style={{fontSize:13,fontWeight:600,color:T.text,margin:"0 0 3px"}}>KIRO is better with your store</p>
             <p style={{fontSize:12,color:"rgba(240,236,255,0.5)",margin:"0 0 8px"}}>Free account unlocks full product import, analytics, and AI actions.</p>
             <button onClick={onAuthNeeded} style={{padding:"6px 14px",borderRadius:7,border:"none",background:`linear-gradient(135deg,${ACCENT},${ACCENT_D})`,color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>Start free →</button>
           </motion.div>
@@ -540,23 +540,23 @@ function DemoChat({ T, onAuthNeeded }: { T:typeof TL; onAuthNeeded:()=>void }) {
         <div style={{padding:"0 16px 8px",display:"flex",gap:6,flexWrap:"wrap"}}>
           {STARTERS.map(s=>(
             <button key={s} onClick={()=>send(s)}
-              style={{padding:"5px 11px",borderRadius:99,border:`1px solid ${"rgba(255,255,255,0.07)"}`,background:"transparent",color:T.sub,fontSize:12,cursor:"pointer",fontFamily:"'Inter',sans-serif",transition:"all 0.15s",whiteSpace:"nowrap"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.07)";e.currentTarget.style.color="#F0ECFF";}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.07)";e.currentTarget.style.color=T.sub;}}>
+              style={{padding:"5px 11px",borderRadius:99,border:`1px solid ${T.border}`,background:"transparent",color:T.sub,fontSize:12,cursor:"pointer",fontFamily:"'Inter',sans-serif",transition:"all 0.15s",whiteSpace:"nowrap"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.text;}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.sub;}}>
               {s}
             </button>
           ))}
         </div>
       )}
       <div style={{padding:"8px 14px 14px",flexShrink:0}}>
-        <div style={{display:"flex",gap:8,alignItems:"flex-end",borderRadius:12,border:`1px solid ${"rgba(255,255,255,0.07)"}`,background:"#13131F",padding:"7px 9px",boxShadow:T.shadow,transition:"border-color 0.15s"}}
+        <div style={{display:"flex",gap:8,alignItems:"flex-end",borderRadius:12,border:`1px solid ${T.border}`,background:T.s1,padding:"7px 9px",boxShadow:T.shadow,transition:"border-color 0.15s"}}
           onFocusCapture={e=>(e.currentTarget as HTMLDivElement).style.borderColor=ACCENT}
-          onBlurCapture={e=>(e.currentTarget as HTMLDivElement).style.borderColor="rgba(255,255,255,0.07)"}>
+          onBlurCapture={e=>(e.currentTarget as HTMLDivElement).style.borderColor=T.border}>
           <textarea ref={taRef} value={input}
             onChange={e=>{setInput(e.target.value);e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,90)+"px";}}
             onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}}
             placeholder="Ask KIRO anything…" rows={1}
-            style={{flex:1,background:"transparent",border:"none",outline:"none",color:"#F0ECFF",fontSize:14,fontFamily:"'Inter',sans-serif",lineHeight:1.5,resize:"none",maxHeight:90,overflowY:"auto",padding:"2px 0"}}/>
+            style={{flex:1,background:"transparent",border:"none",outline:"none",color:T.text,fontSize:14,fontFamily:"'Inter',sans-serif",lineHeight:1.5,resize:"none",maxHeight:90,overflowY:"auto",padding:"2px 0"}}/>
           <VoiceBtn T={T} onTranscript={t=>{setInput(p=>p?p+" "+t:t);}}/>
           <motion.button onClick={()=>send()} whileTap={{scale:.88}} disabled={loading||!input.trim()}
             style={{width:28,height:28,borderRadius:8,border:"none",cursor:input.trim()&&!loading?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.18s",background:input.trim()&&!loading?`linear-gradient(135deg,${ACCENT},${ACCENT_D})`:T.s3,opacity:input.trim()&&!loading?1:0.45}}>
@@ -713,8 +713,8 @@ export default function KIROPage() {
 
   // ── Authed: full chat
   if (authState==="authed") return (
-    <div style={{height:"100dvh",display:"flex",flexDirection:"column",background:"rgba(255,255,255,0.04)",overflow:"hidden",fontFamily:"'Inter',sans-serif"}}>
-      <style>{FONTS+`body,html{background:${"rgba(255,255,255,0.04)"}}`}</style>
+    <div style={{height:"100dvh",display:"flex",flexDirection:"column",background:T.s2,overflow:"hidden",fontFamily:"'Inter',sans-serif"}}>
+      <style>{FONTS+`body,html{background:${T.s2}}`}</style>
 
       <Sidebar
         history={history} activeId={sessionId}
@@ -722,16 +722,16 @@ export default function KIROPage() {
         onRename={renameSession} onPin={pinSession}
         open={sidebarOpen} onClose={()=>setSidebarOpen(false)} T={T}/>
 
-      <header style={{height:48,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",borderBottom:`1px solid ${"rgba(255,255,255,0.07)"}`,background:"#13131F",flexShrink:0,boxShadow:T.shadow,gap:10}}>
+      <header style={{height:48,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",borderBottom:`1px solid ${T.border}`,background:T.s1,flexShrink:0,boxShadow:T.shadow,gap:10}}>
         <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
           <button onClick={()=>setSidebarOpen(o=>!o)}
-            style={{width:30,height:30,borderRadius:7,border:`1px solid ${"rgba(255,255,255,0.07)"}`,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:T.sub,flexShrink:0,transition:"background .15s"}}
+            style={{width:30,height:30,borderRadius:7,border:`1px solid ${T.border}`,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:T.sub,flexShrink:0,transition:"background .15s"}}
             onMouseEnter={e=>(e.currentTarget.style.background=T.s2)}
             onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
           </button>
           <Logo size={24}/>
-          <span style={{fontSize:14,fontWeight:700,color:"#F0ECFF",flexShrink:0}}>KIRO</span>
+          <span style={{fontSize:14,fontWeight:700,color:T.text,flexShrink:0}}>KIRO</span>
           <PulseDot/>
           {/* current session title */}
           {history.find(h=>h.id===sessionId) && (
@@ -766,21 +766,21 @@ export default function KIROPage() {
 
   // ── Guest: marketing + demo
   return (
-    <div style={{height:"100dvh",display:"flex",flexDirection:"column",background:"rgba(255,255,255,0.04)",overflow:"hidden",fontFamily:"'Inter',sans-serif",transition:"background 0.25s"}}>
-      <style>{FONTS+`body,html{background:${"rgba(255,255,255,0.04)"}}`}</style>
+    <div style={{height:"100dvh",display:"flex",flexDirection:"column",background:T.s2,overflow:"hidden",fontFamily:"'Inter',sans-serif",transition:"background 0.25s"}}>
+      <style>{FONTS+`body,html{background:${T.s2}}`}</style>
       {showAuth && <AuthModal T={T} onClose={()=>setShowAuth(false)} onSuccess={handleAuth}/>}
 
-      <nav style={{height:52,display:"flex",alignItems:"center",padding:"0 20px",borderBottom:`1px solid ${"rgba(255,255,255,0.07)"}`,background:"#13131F",flexShrink:0,boxShadow:T.shadow,gap:8}}>
+      <nav style={{height:52,display:"flex",alignItems:"center",padding:"0 20px",borderBottom:`1px solid ${T.border}`,background:T.s1,flexShrink:0,boxShadow:T.shadow,gap:8}}>
         <div style={{display:"flex",alignItems:"center",gap:8,flex:1,minWidth:0}}>
           <Logo size={26}/>
-          <span style={{fontSize:15,fontWeight:700,color:"#F0ECFF",flexShrink:0}}>KIRO</span>
-          <span style={{fontSize:9,padding:"2px 6px",borderRadius:4,background:T.accentBg,color:T.accent,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",border:`1px solid ${"rgba(255,255,255,0.07)"}`,flexShrink:0}}>Beta</span>
+          <span style={{fontSize:15,fontWeight:700,color:T.text,flexShrink:0}}>KIRO</span>
+          <span style={{fontSize:9,padding:"2px 6px",borderRadius:4,background:T.accentBg,color:T.accent,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",border:`1px solid ${T.border}`,flexShrink:0}}>Beta</span>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
           <button onClick={()=>setShowAuth(true)}
-            style={{padding:"6px 14px",borderRadius:8,border:`1px solid ${"rgba(255,255,255,0.07)"}`,background:"transparent",color:T.sub,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"'Inter',sans-serif",transition:"all 0.15s",whiteSpace:"nowrap"}}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.07)";e.currentTarget.style.color="#F0ECFF";}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.07)";e.currentTarget.style.color=T.sub;}}>Sign in</button>
+            style={{padding:"6px 14px",borderRadius:8,border:`1px solid ${T.border}`,background:"transparent",color:T.sub,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"'Inter',sans-serif",transition:"all 0.15s",whiteSpace:"nowrap"}}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.text;}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.sub;}}>Sign in</button>
           <button onClick={()=>setShowAuth(true)}
             style={{padding:"6px 16px",borderRadius:8,border:"none",background:`linear-gradient(135deg,${ACCENT},${ACCENT_D})`,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif",whiteSpace:"nowrap",boxShadow:`0 2px 10px ${ACCENT}30`}}>
             Get started free
@@ -789,32 +789,32 @@ export default function KIROPage() {
       </nav>
 
       <div style={{flex:1,display:"grid",gridTemplateColumns:"360px 1fr",minHeight:0,overflow:"hidden"}} className="kiro-grid">
-        <div style={{borderRight:`1px solid ${"rgba(255,255,255,0.07)"}`,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"32px 24px",overflow:"hidden"}} className="kiro-left">
+        <div style={{borderRight:`1px solid ${T.border}`,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"32px 24px",overflow:"hidden"}} className="kiro-left">
           <div>
             <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:.05}}>
               <p style={{fontSize:10,fontWeight:700,color:"rgba(240,236,255,0.5)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:10}}>For African dropshippers</p>
-              <h1 style={{fontSize:30,fontWeight:700,color:"#F0ECFF",lineHeight:1.18,letterSpacing:"-0.5px",marginBottom:12}}>Your AI<br/>commerce<br/>partner.</h1>
+              <h1 style={{fontSize:30,fontWeight:700,color:T.text,lineHeight:1.18,letterSpacing:"-0.5px",marginBottom:12}}>Your AI<br/>commerce<br/>partner.</h1>
               <p style={{fontSize:14,color:T.sub,lineHeight:1.7,marginBottom:24,maxWidth:270}}>Import products, write ad copy, manage orders, and understand your market — all from one conversation.</p>
             </motion.div>
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {CAPS.map((c,i)=>(
                 <motion.div key={c.text} initial={{opacity:0,x:-8}} animate={{opacity:1,x:0}} transition={{delay:.15+i*.05}}
-                  style={{display:"flex",alignItems:"center",gap:9,padding:"8px 10px",borderRadius:9,background:"#13131F",border:`1px solid ${"rgba(255,255,255,0.07)"}`}}>
+                  style={{display:"flex",alignItems:"center",gap:9,padding:"8px 10px",borderRadius:9,background:T.s1,border:`1px solid ${T.border}`}}>
                   <span style={{fontSize:14,flexShrink:0}}>{c.icon}</span>
-                  <span style={{fontSize:12,fontWeight:500,color:"#F0ECFF"}}>{c.text}</span>
+                  <span style={{fontSize:12,fontWeight:500,color:T.text}}>{c.text}</span>
                 </motion.div>
               ))}
             </div>
           </div>
           <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.5}}
-            style={{padding:"13px 14px",borderRadius:11,background:"#13131F",border:`1px solid ${"rgba(255,255,255,0.07)"}`,marginTop:20}}>
+            style={{padding:"13px 14px",borderRadius:11,background:T.s1,border:`1px solid ${T.border}`,marginTop:20}}>
             <p style={{fontSize:13,color:T.sub,lineHeight:1.6,fontStyle:"italic",marginBottom:6}}>"KIRO found me 3 winning products and wrote all my TikTok scripts. First ₦100k month done."</p>
             <p style={{fontSize:11,color:"rgba(240,236,255,0.5)",fontWeight:600}}>Adaeze O. · Lagos, Nigeria</p>
           </motion.div>
         </div>
 
         <div style={{display:"flex",flexDirection:"column",minHeight:0,overflow:"hidden"}}>
-          <div style={{height:42,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 18px",borderBottom:`1px solid ${"rgba(255,255,255,0.07)"}`,flexShrink:0}}>
+          <div style={{height:42,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 18px",borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <div style={{width:6,height:6,borderRadius:"50%",background:T.green,boxShadow:`0 0 6px ${T.green}`}}/>
               <span style={{fontSize:12,fontWeight:500,color:T.sub}}>Live demo</span>
