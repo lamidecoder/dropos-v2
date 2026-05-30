@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useCurrency } from "../../lib/currency";
+// currency formatting handled inline
 import {
   TrendingUp, ShoppingCart, Users, Package, Zap,
   ChevronRight, Store, Flame, Activity, ArrowUpRight,
@@ -73,7 +73,11 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const isDark = theme === "dark";
   const [greeting, setGreeting] = useState("morning");
-  const { fmt, code, symbol } = useCurrency();
+  const storeCurrency = (user?.stores?.[0] as any)?.currency || "NGN";
+  const fmtCurrency = (n: number) => {
+    const symbol = storeCurrency === "NGN" ? "₦" : storeCurrency === "GBP" ? "£" : storeCurrency === "USD" ? "$" : "₦";
+    return `${symbol}${(n || 0).toLocaleString("en-NG", { maximumFractionDigits: 0 })}`;
+  };
   const firstName = user?.name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
   const storeId = user?.stores?.[0]?.id;
   const storeSlug = user?.stores?.[0]?.slug;
@@ -112,7 +116,7 @@ export default function DashboardPage() {
     staleTime: 120000,
   });
 
-  const stats = analytics?.stats || {};
+  const stats = analytics?.summary || analytics?.stats || {};
   const orders = Array.isArray(recentOrders) ? recentOrders : [];
   // Deduplicate by type — keep most recent of each type, max 4
   const seen = new Set<string>();
@@ -121,10 +125,10 @@ export default function DashboardPage() {
     .slice(0, 4);
 
   const statCards = [
-    { label: "Revenue (7d)",  value: fmt(stats.revenue || 0),          delta: stats.revenueDelta,  color: V.v400,  icon: TrendingUp  },
-    { label: "Orders (7d)",   value: (stats.orders    || 0).toLocaleString(), delta: stats.ordersDelta, color: V.cyan,  icon: ShoppingCart },
-    { label: "Customers",     value: (stats.customers || 0).toLocaleString(), delta: undefined,         color: V.green, icon: Users        },
-    { label: "Products",      value: (stats.products  || 0).toLocaleString(), delta: undefined,         color: V.amber, icon: Package      },
+    { label: "Revenue (7d)",  value: fmtCurrency(stats.revenue || 0),        delta: stats.revenueDelta,  color: V.v400,  icon: TrendingUp  },
+    { label: "Orders (7d)",   value: (stats.orders    || 0).toLocaleString(), delta: stats.ordersDelta,   color: V.cyan,  icon: ShoppingCart },
+    { label: "Customers",     value: (stats.customers || 0).toLocaleString(), delta: undefined,            color: V.green, icon: Users        },
+    { label: "Products",      value: (stats.products  || analytics?.totalProducts || 0).toLocaleString(), delta: undefined, color: V.amber, icon: Package },
   ];
 
   const quickActions = [
