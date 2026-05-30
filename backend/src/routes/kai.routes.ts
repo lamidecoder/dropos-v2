@@ -25,6 +25,7 @@ import {
   trendingHandler as trending,
   profitCalcHandler as profitCalc,
 } from "../controllers/kai.scraper.controller";
+import { QUICK_COMMANDS, getSuggestedCommands } from "../services/kai.commands.service";
 
 const router = Router();
 
@@ -80,6 +81,16 @@ router.get   ("/pulse",                 getPulseAlerts);
 router.patch ("/pulse/:id/read",        readPulseAlert);
 
 // Skills (saved prompts)
+// Quick Commands — power user shortcuts
+router.get("/commands", (req, res) => {
+  res.json({ success: true, data: QUICK_COMMANDS });
+});
+router.get("/commands/suggested", async (req, res) => {
+  const storeId = (req.query.storeId as string) || "";
+  const data = await getSuggestedCommands(storeId);
+  res.json({ success: true, data });
+});
+
 router.get   ("/skills",                getSkills);
 router.post  ("/skills",                createSkill);
 router.delete("/skills/:id",            deleteSkill);

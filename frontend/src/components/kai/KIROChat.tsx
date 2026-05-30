@@ -621,12 +621,37 @@ export default function KIROChat({ storeId: propStoreId, conversationId: initCon
 
   // ── slash commands ────────────────────────────────────────────────────────
   const SLASH_CMDS = [
-    { cmd:"/import",   label:"Import product",  prompt:"I want to import a product. Paste the URL:" },
-    { cmd:"/sale",     label:"Flash sale",      prompt:"Help me set up a flash sale right now." },
-    { cmd:"/ad",       label:"Write ad copy",   prompt:"Write high-converting ad copy for my top product." },
-    { cmd:"/research", label:"Market research", prompt:"What products are trending in my market this week?" },
-    { cmd:"/plan",     label:"Growth plan",     prompt:"Give me a 5-step plan to grow my store this month." },
-    { cmd:"/orders",   label:"Pending orders",  prompt:"Show me all pending orders that need action." },
+    // SALES
+    { cmd:"/flash-sale",  label:"⚡ Run Flash Sale",     prompt:"Help me launch a flash sale right now. Suggest which products to discount based on inventory and sales velocity, then create the flash sale with optimal pricing." },
+    { cmd:"/discount",    label:"🏷️ Create Discount",    prompt:"Create a smart discount code. Suggest a code name and discount percentage based on my margins." },
+    { cmd:"/bogo",        label:"🎁 BOGO Offer",          prompt:"Set up a buy-one-get-one offer. Recommend which products to include for highest profit retention." },
+
+    // PRODUCTS
+    { cmd:"/import",      label:"📥 Import Product",      prompt:"I want to import a product. Paste the URL:" },
+    { cmd:"/audit",       label:"🔍 Product Audit",       prompt:"Audit all my products. Find: 1) products with no images 2) products with no description 3) products with prices that look wrong 4) products with low inventory. Suggest fixes." },
+    { cmd:"/rewrite",     label:"✏️ Rewrite Descriptions", prompt:"Review my products and identify which descriptions need improvement. For each, write a better version that converts Nigerian buyers." },
+    { cmd:"/price-check", label:"💰 Price Audit",         prompt:"Audit my product prices. For each, tell me if it's too high, too low, or just right for the Nigerian market. Suggest specific price changes." },
+
+    // MARKETING
+    { cmd:"/whatsapp",    label:"💬 WhatsApp Broadcast",  prompt:"Help me write a WhatsApp broadcast. Suggest the best message type right now (promo, restock, abandoned cart, win-back)." },
+    { cmd:"/email",       label:"📧 Email Campaign",      prompt:"Create an email campaign for my customers. Pick the best campaign type for right now and write the full email." },
+    { cmd:"/abandoned",   label:"🛒 Recover Carts",       prompt:"Check my abandoned carts. Show how many, total value at risk, and send recovery messages." },
+    { cmd:"/instagram",   label:"📸 Instagram Caption",   prompt:"Write me an Instagram caption with Nigerian hashtags for:" },
+    { cmd:"/tiktok",      label:"🎬 TikTok Script",       prompt:"Write a viral TikTok script for Nigerian audience. Hook in 3 seconds, fast cuts, CTA. Product:" },
+    { cmd:"/ad",          label:"📢 Ad Copy",             prompt:"Write high-converting Facebook/Instagram ad copy for my top product." },
+
+    // ANALYTICS
+    { cmd:"/insights",    label:"📊 Store Insights",      prompt:"Give me a complete insights report on my store right now: top performers, what needs attention, what's growing, what's dying, and 3 specific actions I should take today." },
+    { cmd:"/trending",    label:"🔥 Trending Products",   prompt:"Show me what's trending in Nigeria right now. Categories with high demand, products selling fast on Jumia/Konga/TikTok Shop, seasonal opportunities." },
+    { cmd:"/forecast",    label:"📈 Sales Forecast",      prompt:"Forecast my sales for the next 30 days. Predicted revenue, predicted orders, what's likely to drive growth, what could slow it down." },
+    { cmd:"/plan",        label:"🚀 Growth Plan",         prompt:"Give me a 5-step plan to grow my store this month, specific to my current situation." },
+
+    // OPERATIONS
+    { cmd:"/fulfill",     label:"📦 Fulfill Orders",      prompt:"Show me all unfulfilled orders. For each, prepare the fulfillment. I'll approve and you process." },
+    { cmd:"/refund",      label:"↩️ Process Refund",     prompt:"Help me process a refund. Order ID or customer name:" },
+    { cmd:"/stock",       label:"📋 Stock Check",         prompt:"Check my inventory. Show low stock, items needing reorder, and overstocked items. Suggest restock actions." },
+    { cmd:"/orders",      label:"📑 Pending Orders",      prompt:"Show me all pending orders that need action." },
+    { cmd:"/research",    label:"🌍 Market Research",     prompt:"What products are trending in my market this week?" },
   ];
 
   // ── file upload ────────────────────────────────────────────────────────────
