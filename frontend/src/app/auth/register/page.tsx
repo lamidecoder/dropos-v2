@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Eye, EyeOff, Zap, ArrowRight, Check } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Check, Mail, Lock, User } from "lucide-react";
 import { useRegister } from "../../../hooks/useAuth";
 
 const schema = z.object({
@@ -19,9 +19,9 @@ const schema = z.object({
 type Form = z.infer<typeof schema>;
 
 const pwChecks = [
-  { label: "8+ characters",    test: (v: string) => v.length >= 8     },
-  { label: "Uppercase",        test: (v: string) => /[A-Z]/.test(v)  },
-  { label: "Number",           test: (v: string) => /\d/.test(v)      },
+  { label: "8+ characters", test: (v: string) => v.length >= 8     },
+  { label: "Uppercase",     test: (v: string) => /[A-Z]/.test(v)   },
+  { label: "Number",        test: (v: string) => /\d/.test(v)      },
 ];
 
 function GoogleIcon() {
@@ -52,192 +52,246 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: "#0C0A14", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", display: "flex", background: "#F4F2FB", fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
-        .auth-input { transition: border-color 0.15s, box-shadow 0.15s; }
-        .auth-input:focus { border-color: rgba(107,53,232,0.6) !important; box-shadow: 0 0 0 3px rgba(107,53,232,0.12); }
-        .auth-input::placeholder { color: rgba(255,255,255,0.18); }
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700;800;900&display=swap');
+        .auth-input { transition: all 0.15s ease; }
+        .auth-input:focus { border-color: #6B35E8 !important; box-shadow: 0 0 0 3px rgba(107,53,232,0.08); outline: none; }
+        .auth-input::placeholder { color: rgba(19,13,46,0.3); }
+        @media (max-width: 768px) {
+          .auth-visual { display: none !important; }
+          .auth-form-pane { width: 100% !important; }
+        }
       `}</style>
 
-      {/* Left visual panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col p-14"
-        style={{ background: "linear-gradient(145deg, #130d26 0%, #0e0820 50%, #080612 100%)" }}>
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-100px] right-[-60px] w-[500px] h-[500px] rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(107,53,232,0.3) 0%, transparent 65%)", filter: "blur(70px)" }} />
-          <div className="absolute bottom-[-60px] left-[-40px] w-[380px] h-[380px] rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(192,38,211,0.2) 0%, transparent 65%)", filter: "blur(60px)" }} />
-        </div>
-        <div className="absolute inset-0 opacity-[0.025]"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+      {/* LEFT — visual panel */}
+      <div className="auth-visual" style={{
+        width: "44%",
+        position: "relative", overflow: "hidden",
+        display: "flex", flexDirection: "column", justifyContent: "space-between",
+        padding: "48px 56px",
+        background: "linear-gradient(160deg, #2D1B69 0%, #1A0B4A 60%, #0D0625 100%)",
+      }}>
+        <div style={{
+          position: "absolute", top: "-200px", right: "-150px",
+          width: 600, height: 600, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(167,139,250,0.4) 0%, transparent 60%)",
+          filter: "blur(80px)", pointerEvents: "none",
+        }}/>
+        <div style={{
+          position: "absolute", bottom: "-100px", left: "-50px",
+          width: 400, height: 400, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 60%)",
+          filter: "blur(60px)", pointerEvents: "none",
+        }}/>
 
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg, #6B35E8, #3D1C8A)", boxShadow: "0 4px 20px rgba(107,53,232,0.5)" }}>
-            <Zap size={16} color="white" />
+        <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: "rgba(255,255,255,0.95)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="#2D1B69"/>
+            </svg>
           </div>
-          <span className="text-lg font-black text-white tracking-tight">
-            Drop<span style={{ color: "#8B5CF6" }}>OS</span>
-          </span>
+          <span style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>DropOS</span>
         </div>
 
-        <div className="relative z-10 mt-auto mb-10">
-          <h1 className="font-black text-white leading-[0.95] tracking-tight mb-6"
-            style={{ fontSize: "clamp(44px, 5vw, 62px)", letterSpacing: "-2px" }}>
-            Start selling<br />
-            <span style={{
-              background: "linear-gradient(135deg, #A78BFA 0%, #C4B5FD 40%, #06B6D4 100%)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
-            }}>
-              in 60 seconds.
-            </span>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 440 }}>
+          <h1 style={{
+            fontFamily: "'Fraunces', Georgia, serif",
+            fontSize: 44, fontWeight: 500, letterSpacing: "-0.03em",
+            color: "#fff", margin: "0 0 18px", lineHeight: 1.08,
+          }}>
+            Start selling in <em style={{ fontStyle: "italic", fontWeight: 400, color: "#C4B5FD" }}>minutes</em>.
           </h1>
-          <p style={{ fontSize: 15, lineHeight: 1.65, color: "rgba(255,255,255,0.4)", maxWidth: 340 }}>
-            No experience needed. KIRO builds your store, writes your listings, and finds your first customers.
+          <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(255,255,255,0.65)", margin: 0, maxWidth: 380 }}>
+            Join African merchants building real businesses with AI.
+            Launch your store today. No credit card needed.
           </p>
         </div>
 
-        {/* Feature list */}
-        <div className="relative z-10 space-y-3">
-          {[
-            { label: "Store live in under 60 seconds",           color: "#8B5CF6" },
-            { label: "KIRO AI handles products and orders",      color: "#06B6D4" },
-            { label: "Paystack payments built in",               color: "#10B981" },
-            { label: "Free plan, no credit card needed",         color: "#F59E0B" },
-          ].map(f => (
-            <div key={f.label} className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: `${f.color}20`, border: `1px solid ${f.color}40` }}>
-                <Check size={10} style={{ color: f.color }} strokeWidth={3} />
-              </div>
-              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 500 }}>{f.label}</span>
-            </div>
-          ))}
+        <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 24 }}>
+          <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em" }}>
+            © 2026 DROPOS
+          </span>
+          <div style={{ width: 1, height: 12, background: "rgba(255,255,255,0.15)" }} />
+          <Link href="/privacy" style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", textDecoration: "none", letterSpacing: "0.05em" }}>
+            Privacy
+          </Link>
+          <Link href="/terms" style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", textDecoration: "none", letterSpacing: "0.05em" }}>
+            Terms
+          </Link>
         </div>
       </div>
 
-      {/* Right panel */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 relative">
-        <div className="absolute inset-0 lg:hidden pointer-events-none overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] rounded-full opacity-15"
-            style={{ background: "radial-gradient(circle, #6B35E8, transparent 70%)", filter: "blur(70px)" }} />
-        </div>
+      {/* RIGHT — form pane */}
+      <div className="auth-form-pane" style={{
+        width: "56%",
+        display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        padding: "48px 24px",
+        background: "#FAFAFC",
+      }}>
+        <div style={{ width: "100%", maxWidth: 380 }}>
 
-        <div className="w-full max-w-[380px] relative z-10">
-          <div className="flex items-center gap-2.5 mb-10 lg:hidden">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #6B35E8, #3D1C8A)" }}>
-              <Zap size={14} color="white" />
+          {/* Mobile logo */}
+          <div className="lg:hidden" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#2D1B69", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="#fff"/>
+              </svg>
             </div>
-            <span className="text-xl font-black text-white tracking-tight">
-              Drop<span style={{ color: "#8B5CF6" }}>OS</span>
-            </span>
+            <span style={{ fontSize: 15, fontWeight: 800, color: "#130D2E", letterSpacing: "-0.02em" }}>DropOS</span>
           </div>
 
-          <div className="mb-8">
-            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Create your account</h2>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>
-              Already have one?{" "}
-              <Link href="/auth/login" style={{ color: "#A78BFA", fontWeight: 600, textDecoration: "none" }}>
-                Sign in
-              </Link>
-            </p>
-          </div>
+          <h2 style={{
+            fontFamily: "'Fraunces', Georgia, serif",
+            fontSize: 32, fontWeight: 500, letterSpacing: "-0.025em",
+            color: "#130D2E", margin: "0 0 6px", lineHeight: 1.15,
+          }}>
+            Create account
+          </h2>
+          <p style={{ fontSize: 14, color: "rgba(19,13,46,0.55)", margin: "0 0 28px" }}>
+            Already have an account? <Link href="/auth/login" style={{ color: "#6B35E8", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
+          </p>
 
-          {/* Google */}
-          <button onClick={handleGoogle}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold mb-5 transition-opacity hover:opacity-90 active:scale-[.98]"
-            style={{ background: "#ffffff", color: "#111", boxShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>
-            <GoogleIcon />
-            Continue with Google
+          <button onClick={handleGoogle} type="button"
+            style={{
+              width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+              gap: 10, padding: "13px 16px", borderRadius: 12,
+              background: "#fff", border: "1px solid rgba(19,13,46,0.08)",
+              fontSize: 14, fontWeight: 600, color: "#130D2E",
+              cursor: "pointer", fontFamily: "inherit",
+              transition: "all 0.15s ease",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(19,13,46,0.16)"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(19,13,46,0.04)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(19,13,46,0.08)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+            <GoogleIcon /> Sign up with Google
           </button>
 
-          <div className="flex items-center gap-3 mb-5">
-            <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", fontWeight: 500 }}>or with email</span>
-            <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0" }}>
+            <div style={{ flex: 1, height: 1, background: "rgba(19,13,46,0.08)" }} />
+            <span style={{ fontSize: 11, color: "rgba(19,13,46,0.4)", fontWeight: 500, letterSpacing: "0.05em" }}>OR</span>
+            <div style={{ flex: 1, height: 1, background: "rgba(19,13,46,0.08)" }} />
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+          <form onSubmit={handleSubmit(onSubmit)}>
             {/* Name */}
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.45)", display: "block", marginBottom: 6 }}>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#130D2E", marginBottom: 6 }}>
                 Full name
               </label>
-              <input {...register("name")} type="text" placeholder="Your name"
-                className="auth-input w-full px-4 py-3 rounded-xl text-sm text-white outline-none"
-                style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${errors.name ? "rgba(239,68,68,0.6)" : "rgba(255,255,255,0.08)"}` }}
-              />
-              {errors.name && <p style={{ fontSize: 11, color: "#f87171", marginTop: 4 }}>{errors.name.message}</p>}
+              <div style={{ position: "relative" }}>
+                <User size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(19,13,46,0.35)" }}/>
+                <input {...register("name")} type="text"
+                  className="auth-input"
+                  placeholder="Olamide Sotunde"
+                  style={{
+                    width: "100%", padding: "13px 14px 13px 40px",
+                    borderRadius: 12, border: "1px solid rgba(19,13,46,0.1)",
+                    background: "#fff", fontSize: 14, color: "#130D2E",
+                    fontFamily: "inherit",
+                  }}
+                />
+              </div>
+              {errors.name && <p style={{ fontSize: 11.5, color: "#EF4444", marginTop: 5 }}>{errors.name.message}</p>}
             </div>
 
             {/* Email */}
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.45)", display: "block", marginBottom: 6 }}>
-                Email address
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#130D2E", marginBottom: 6 }}>
+                Email
               </label>
-              <input {...register("email")} type="email" placeholder="you@example.com"
-                className="auth-input w-full px-4 py-3 rounded-xl text-sm text-white outline-none"
-                style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${errors.email ? "rgba(239,68,68,0.6)" : "rgba(255,255,255,0.08)"}` }}
-              />
-              {errors.email && <p style={{ fontSize: 11, color: "#f87171", marginTop: 4 }}>{errors.email.message}</p>}
+              <div style={{ position: "relative" }}>
+                <Mail size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(19,13,46,0.35)" }}/>
+                <input {...register("email")} type="email"
+                  className="auth-input"
+                  placeholder="you@example.com"
+                  style={{
+                    width: "100%", padding: "13px 14px 13px 40px",
+                    borderRadius: 12, border: "1px solid rgba(19,13,46,0.1)",
+                    background: "#fff", fontSize: 14, color: "#130D2E",
+                    fontFamily: "inherit",
+                  }}
+                />
+              </div>
+              {errors.email && <p style={{ fontSize: 11.5, color: "#EF4444", marginTop: 5 }}>{errors.email.message}</p>}
             </div>
 
             {/* Password */}
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.45)", display: "block", marginBottom: 6 }}>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#130D2E", marginBottom: 6 }}>
                 Password
               </label>
-              <div className="relative">
-                <input {...register("password")} type={showPw ? "text" : "password"} placeholder="Min 8 characters"
-                  onChange={e => setPw(e.target.value)}
-                  className="auth-input w-full px-4 py-3 pr-11 rounded-xl text-sm text-white outline-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${errors.password ? "rgba(239,68,68,0.6)" : "rgba(255,255,255,0.08)"}` }}
+              <div style={{ position: "relative" }}>
+                <Lock size={14} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(19,13,46,0.35)" }}/>
+                <input {...register("password", { onChange: e => setPw(e.target.value) })}
+                  type={showPw ? "text" : "password"}
+                  className="auth-input"
+                  placeholder="Create a strong password"
+                  style={{
+                    width: "100%", padding: "13px 44px 13px 40px",
+                    borderRadius: 12, border: "1px solid rgba(19,13,46,0.1)",
+                    background: "#fff", fontSize: 14, color: "#130D2E",
+                    fontFamily: "inherit",
+                  }}
                 />
-                <button type="button" onClick={() => setShowPw(s => !s)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-opacity hover:opacity-60"
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.3)" }}>
-                  {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                <button type="button" onClick={() => setShowPw(!showPw)}
+                  style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(19,13,46,0.4)", cursor: "pointer", padding: 0 }}>
+                  {showPw ? <EyeOff size={14}/> : <Eye size={14}/>}
                 </button>
               </div>
-
-              {/* Password strength */}
-              {pw.length > 0 && (
-                <div className="flex items-center gap-3 mt-2.5 flex-wrap">
-                  {pwChecks.map(c => {
-                    const ok = c.test(pw);
-                    return (
-                      <div key={c.label} className="flex items-center gap-1.5">
-                        <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all"
-                          style={{ background: ok ? "#10B981" : "rgba(255,255,255,0.08)", border: `1px solid ${ok ? "#10B981" : "rgba(255,255,255,0.12)"}` }}>
-                          {ok && <Check size={8} color="white" strokeWidth={3} />}
-                        </div>
-                        <span style={{ fontSize: 11, color: ok ? "#34d399" : "rgba(255,255,255,0.25)", fontWeight: ok ? 600 : 400 }}>
-                          {c.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              {errors.password && <p style={{ fontSize: 11.5, color: "#EF4444", marginTop: 5 }}>{errors.password.message}</p>}
             </div>
 
+            {/* Password strength indicators */}
+            {pw && (
+              <div style={{ display: "flex", gap: 12, marginBottom: 16, padding: "10px 12px", background: "rgba(107,53,232,0.03)", borderRadius: 10 }}>
+                {pwChecks.map(c => {
+                  const passed = c.test(pw);
+                  return (
+                    <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <div style={{
+                        width: 14, height: 14, borderRadius: "50%",
+                        background: passed ? "#10B981" : "rgba(19,13,46,0.08)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        transition: "all 0.2s",
+                      }}>
+                        {passed && <Check size={9} color="#fff" strokeWidth={3}/>}
+                      </div>
+                      <span style={{ fontSize: 11, color: passed ? "#10B981" : "rgba(19,13,46,0.4)", fontWeight: 500 }}>{c.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             <button type="submit" disabled={reg.isPending}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90 active:scale-[.98] disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, #6B35E8 0%, #3D1C8A 100%)", boxShadow: "0 4px 20px rgba(107,53,232,0.4)", marginTop: 4 }}>
-              {reg.isPending
-                ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating account</>
-                : <>Create free account <ArrowRight size={15} /></>
-              }
+              style={{
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+                gap: 8, padding: "14px 16px", borderRadius: 12, marginTop: 16,
+                background: "#130D2E", color: "#fff",
+                fontSize: 14, fontWeight: 700, fontFamily: "inherit",
+                border: "none", cursor: reg.isPending ? "wait" : "pointer",
+                opacity: reg.isPending ? 0.7 : 1,
+                transition: "all 0.15s ease",
+                boxShadow: "0 4px 16px rgba(19,13,46,0.15)",
+              }}
+              onMouseEnter={e => { if (!reg.isPending) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(19,13,46,0.22)"; } }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(19,13,46,0.15)"; }}>
+              {reg.isPending ? "Creating account…" : "Create account"}
+              {!reg.isPending && <ArrowRight size={14}/>}
             </button>
           </form>
 
-          <p className="text-center mt-6" style={{ fontSize: 11, color: "rgba(255,255,255,0.2)" }}>
-            By signing up you agree to our{" "}
-            <Link href="/terms" style={{ color: "rgba(255,255,255,0.35)", textDecoration: "underline" }}>Terms</Link>
+          <p style={{ fontSize: 11, color: "rgba(19,13,46,0.35)", textAlign: "center", marginTop: 24, lineHeight: 1.5 }}>
+            By creating an account, you agree to our{" "}
+            <Link href="/terms" style={{ color: "rgba(19,13,46,0.55)", textDecoration: "none" }}>Terms</Link>
             {" "}and{" "}
-            <Link href="/privacy" style={{ color: "rgba(255,255,255,0.35)", textDecoration: "underline" }}>Privacy Policy</Link>
+            <Link href="/privacy" style={{ color: "rgba(19,13,46,0.55)", textDecoration: "none" }}>Privacy Policy</Link>
           </p>
         </div>
       </div>
