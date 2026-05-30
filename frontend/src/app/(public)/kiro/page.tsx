@@ -14,12 +14,12 @@ const KIROChatFull = dynamic(() => import("../../../components/kai/KIROChat"), {
 });
 
 const TL = {
-  bg:"#F7F6F3",s1:"#FFFFFF",s2:"#EFEEEA",s3:"#E5E4DF",
-  text:"#111827",sub:"#6B7280",muted:"#9CA3AF",
-  border:"rgba(0,0,0,0.08)",borderH:"rgba(0,0,0,0.18)",
-  accent:ACCENT,accentD:ACCENT_D,accentBg:ACCENT+"12",
-  shadow:"0 1px 4px rgba(0,0,0,0.06),0 4px 20px rgba(0,0,0,0.04)",
-  green:"#059669",amber:"#D97706",red:"#DC2626",
+  bg:"#F4F2FB", s1:"#FAFAFC", s2:"#EEEAF8", s3:"#E5E0F5",
+  text:"#130D2E", sub:"rgba(19,13,46,0.6)", muted:"rgba(19,13,46,0.38)",
+  border:"rgba(100,70,200,0.1)", borderH:"rgba(107,53,232,0.3)",
+  accent:ACCENT, accentD:ACCENT_D, accentBg:ACCENT+"12",
+  shadow:"0 1px 4px rgba(45,27,105,0.06),0 4px 20px rgba(45,27,105,0.04)",
+  green:"#059669", amber:"#D97706", red:"#DC2626",
 };
 const TD = {
   bg:"#0D0D14",s1:"#13131F",s2:"#1A1A2A",s3:"#232338",
@@ -604,12 +604,12 @@ export default function KIROPage() {
   const [authState, setAuthState] = useState<"checking"|"authed"|"guest">("checking");
   const [storeId,   setStoreId]   = useState("");
   const [showAuth,  setShowAuth]  = useState(false);
-  const [mode,      setMode]      = useState<"light"|"dark">("light");
   const [history,   setHistory]   = useState<Session[]>([]);
   const [sessionId, setSessionId] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const firstMsgRef = useRef<string>("");
-  const T = mode==="light" ? TL : TD;
+  // KIRO is always light mode — inherits auth page color system
+  const T = TL;
 
   // History helpers
   const getToken = () => {
@@ -682,11 +682,6 @@ export default function KIROPage() {
   }, [sessionId, refreshHist]);
 
   useEffect(() => {
-    // Sync with dashboard theme (stored in localStorage as "dropos-theme"), fallback to kiro-mode
-    const dashTheme = localStorage.getItem("dropos-theme") as "light"|"dark"|null;
-    const kiroMode  = localStorage.getItem("kiro-mode")   as "light"|"dark"|null;
-    if (dashTheme) setMode(dashTheme);
-    else if (kiroMode) setMode(kiroMode);
     const id = genId(); setSessionId(id);
     refreshHist();
     tryAutoLogin().then(r => {
@@ -694,13 +689,6 @@ export default function KIROPage() {
       else setAuthState("guest");
     });
   }, []);
-
-  const toggleMode = () => {
-    const n = mode==="light"?"dark":"light";
-    setMode(n);
-    localStorage.setItem("kiro-mode", n);
-    localStorage.setItem("dropos-theme", n);  // keep in sync with dashboard
-  };
 
   // ── Logged in: auth success
   const handleAuth = (sid: string) => {
@@ -753,7 +741,6 @@ export default function KIROPage() {
           )}
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
-          <ModeBtn mode={mode} toggle={toggleMode} T={T}/>
           <AuthDropdown T={T} onLogin={()=>setShowAuth(true)} onLoggedOut={handleLogout}/>
         </div>
       </header>
@@ -790,7 +777,6 @@ export default function KIROPage() {
           <span style={{fontSize:9,padding:"2px 6px",borderRadius:4,background:T.accentBg,color:T.accent,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",border:`1px solid ${"rgba(255,255,255,0.07)"}`,flexShrink:0}}>Beta</span>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
-          <ModeBtn mode={mode} toggle={toggleMode} T={T}/>
           <button onClick={()=>setShowAuth(true)}
             style={{padding:"6px 14px",borderRadius:8,border:`1px solid ${"rgba(255,255,255,0.07)"}`,background:"transparent",color:T.sub,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"'Inter',sans-serif",transition:"all 0.15s",whiteSpace:"nowrap"}}
             onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.07)";e.currentTarget.style.color="#F0ECFF";}}

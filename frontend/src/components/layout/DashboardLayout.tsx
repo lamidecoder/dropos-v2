@@ -266,7 +266,7 @@ function Sidebar({ t, pathname, plan, user, onNavClick, onLogout, theme }: any) 
     "store":        0,
     "sales":        1,  // unlock after first product
     "marketing":    2,  // unlock after first order
-    "studio":       2,  // unlock after first order
+    "studio":       0,  // always visible — AI features available immediately
     "intelligence": 3,  // unlock after 10 orders
     "tools":        3,
     "developers":   3,
@@ -350,9 +350,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const [theme, setTheme] = useState<"dark"|"light">(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("dropos-theme") as "dark"|"light") || "dark";
+      return (localStorage.getItem("dropos-theme") as "dark"|"light") || "light";
     }
-    return "dark";
+    return "light";
   });
   const [toasts,        setToasts]        = useState<Toast[]>([]);
   const [confirmState,  setConfirmState]  = useState<{ opts: ConfirmOptions; resolve: (v: boolean) => void } | null>(null);
