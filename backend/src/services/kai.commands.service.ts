@@ -1,7 +1,7 @@
 // KIRO Quick Commands - power user shortcuts
 // Type / in chat to access these instantly
 
-import { prisma } from "../db/prisma";
+import { prisma } from "../config/database";
 
 export interface QuickCommand {
   command: string;

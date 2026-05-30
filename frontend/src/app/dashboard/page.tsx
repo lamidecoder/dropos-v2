@@ -12,6 +12,7 @@ import {
 import { useTheme } from "../../components/layout/DashboardLayout";
 import { useAuthStore } from "../../store/auth.store";
 import { api } from "../../lib/api";
+import { OpportunityFeed } from "../../components/kai/OpportunityFeed";
 
 const V = { v500: "#6B35E8", v400: "#8B5CF6", v300: "#A78BFA", cyan: "#06B6D4", green: "#10B981", amber: "#F59E0B", red: "#EF4444" };
 
@@ -178,6 +179,14 @@ export default function DashboardPage() {
               </div>
             )}
           </motion.div>
+
+          {/* KIRO Opportunity Feed - proactive intelligence */}
+          {storeId && <OpportunityFeed storeId={storeId} isDark={isDark} onAction={(action) => {
+            // Trigger KIRO chat with the action
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("kiro:execute", { detail: { prompt: action } }));
+            }
+          }}/>}
 
           {/* KIRO Pulse Alerts */}
           {alerts.length > 0 && (

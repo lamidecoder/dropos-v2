@@ -26,6 +26,7 @@ import {
   profitCalcHandler as profitCalc,
 } from "../controllers/kai.scraper.controller";
 import { QUICK_COMMANDS, getSuggestedCommands } from "../services/kai.commands.service";
+import { scanStoreOpportunities, generateDailyBrief } from "../services/kai.opportunity.service";
 
 const router = Router();
 
@@ -89,6 +90,29 @@ router.get("/commands/suggested", async (req, res) => {
   const storeId = (req.query.storeId as string) || "";
   const data = await getSuggestedCommands(storeId);
   res.json({ success: true, data });
+});
+
+// Opportunity Engine — proactive store intelligence
+router.get("/opportunities", async (req, res) => {
+  try {
+    const storeId = (req.query.storeId as string) || "";
+    if (!storeId) return res.json({ success: true, data: [] });
+    const data = await scanStoreOpportunities(storeId);
+    res.json({ success: true, data });
+  } catch (e: any) {
+    res.json({ success: true, data: [] });
+  }
+});
+
+router.get("/daily-brief", async (req, res) => {
+  try {
+    const storeId = (req.query.storeId as string) || "";
+    if (!storeId) return res.json({ success: true, data: null });
+    const data = await generateDailyBrief(storeId);
+    res.json({ success: true, data });
+  } catch (e: any) {
+    res.json({ success: true, data: null });
+  }
 });
 
 router.get   ("/skills",                getSkills);
