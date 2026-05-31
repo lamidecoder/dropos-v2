@@ -11,10 +11,10 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-const tx  = "[color:var(--text-primary)]";
+const tx  = "[color:t.text]";
 const sub = "text-secondary";
-const card = "[background:var(--bg-secondary)] [border-color:var(--border)]";
-const inp  = "[background:var(--bg-card)] [border-color:var(--border)] [color:var(--text-primary)] border rounded-xl px-3 py-2.5 text-sm outline-none w-full focus:[border-color:var(--accent)] transition-colors";
+const card = "[background:t.card] [border-color:t.border]";
+const inp  = "[background:t.card] [border-color:t.border] [color:t.text] border rounded-xl px-3 py-2.5 text-sm outline-none w-full focus:[border-color:#6B35E8] transition-colors";
 
 interface Variant {
   id: string;
@@ -142,7 +142,7 @@ export default function ProductVariantsPage() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <button onClick={() => router.back()} className={`flex items-center gap-1 text-xs ${sub} mb-2 hover:[color:var(--accent)] transition-colors`}>
+            <button onClick={() => router.back()} className={`flex items-center gap-1 text-xs ${sub} mb-2 hover:[color:#6B35E8] transition-colors`}>
               <ArrowLeft size={12} /> Back to Products
             </button>
             <h1 className={`text-2xl font-black tracking-tight ${tx}`}>
@@ -156,11 +156,11 @@ export default function ProductVariantsPage() {
           </div>
           <div className="flex gap-2">
             <button onClick={() => { setBulkMode(true); setCreating(false); }}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-bold border ${card} ${sub} hover:[color:var(--text-primary)] transition-colors`}>
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-bold border ${card} ${sub} hover:[color:t.text] transition-colors`}>
               <Layers size={14} /> Bulk Add
             </button>
             <button onClick={() => { setCreating(true); setBulkMode(false); setEditing(null); setForm(BLANK); }}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-[var(--text-primary)]"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-[t.text]"
               style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
               <Plus size={14} /> Add Variant
             </button>
@@ -171,21 +171,21 @@ export default function ProductVariantsPage() {
         <div className={`rounded-2xl border p-4 ${card} flex gap-6`}>
           <div>
             <p className={`text-xs font-semibold ${sub}`}>Total Variants</p>
-            <p className={`text-2xl font-black [color:var(--accent)]`}>{variants.length}</p>
+            <p className={`text-2xl font-black [color:#6B35E8]`}>{variants.length}</p>
           </div>
-          <div className="w-px [background:var(--border)]" />
+          <div className="w-px [background:t.border]" />
           <div>
             <p className={`text-xs font-semibold ${sub}`}>Total Stock</p>
             <p className={`text-2xl font-black ${tx}`}>{totalStock}</p>
           </div>
-          <div className="w-px [background:var(--border)]" />
+          <div className="w-px [background:t.border]" />
           <div>
             <p className={`text-xs font-semibold ${sub}`}>Option Groups</p>
             <p className={`text-2xl font-black ${tx}`}>{Object.keys(grouped).length}</p>
           </div>
           {variants.some(v => v.inventory === 0) && (
             <>
-              <div className="w-px [background:var(--border)]" />
+              <div className="w-px [background:t.border]" />
               <div>
                 <p className={`text-xs font-semibold text-amber-500`}>Out of Stock</p>
                 <p className="text-2xl font-black text-amber-400">{variants.filter(v => v.inventory === 0).length}</p>
@@ -199,7 +199,7 @@ export default function ProductVariantsPage() {
           <div className={`rounded-2xl border p-5 ${card}`} style={{ borderColor: "rgba(124,58,237,0.3)", background: "rgba(124,58,237,0.04)" }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className={`font-bold ${tx}`}>Bulk Add Variants</h3>
-              <button onClick={() => setBulkMode(false)} className="p-1.5 rounded-lg hover:[background:var(--bg-card)]"><X size={14} /></button>
+              <button onClick={() => setBulkMode(false)} className="p-1.5 rounded-lg hover:[background:t.card]"><X size={14} /></button>
             </div>
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
@@ -215,11 +215,11 @@ export default function ProductVariantsPage() {
             </div>
             <div className="flex flex-wrap gap-1.5 mb-4">
               {bulkValues.split(",").map(v => v.trim()).filter(Boolean).map(v => (
-                <span key={v} className="text-xs px-2 py-0.5 rounded-full font-semibold [background:rgba(124,58,237,0.1)] [color:var(--accent)]">{v}</span>
+                <span key={v} className="text-xs px-2 py-0.5 rounded-full font-semibold [background:rgba(124,58,237,0.1)] [color:#6B35E8]">{v}</span>
               ))}
             </div>
             <button onClick={() => bulkCreateMut.mutate()} disabled={!bulkName || !bulkValues || bulkCreateMut.isPending}
-              className="px-5 py-2 rounded-xl text-sm font-bold text-[var(--text-primary)] disabled:opacity-50"
+              className="px-5 py-2 rounded-xl text-sm font-bold text-[t.text] disabled:opacity-50"
               style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
               {bulkCreateMut.isPending ? "Creating…" : `Create ${bulkValues.split(",").filter(v => v.trim()).length} Variants`}
             </button>
@@ -231,7 +231,7 @@ export default function ProductVariantsPage() {
           <div className={`rounded-2xl border p-5 ${card}`}>
             <div className="flex items-center justify-between mb-4">
               <h3 className={`font-bold ${tx}`}>{editing ? "Edit Variant" : "New Variant"}</h3>
-              <button onClick={() => { setCreating(false); setEditing(null); }} className="p-1.5 rounded-lg hover:[background:var(--bg-card)]"><X size={14} /></button>
+              <button onClick={() => { setCreating(false); setEditing(null); }} className="p-1.5 rounded-lg hover:[background:t.card]"><X size={14} /></button>
             </div>
             <div className="grid grid-cols-2 gap-3 mb-3">
               <div>
@@ -263,7 +263,7 @@ export default function ProductVariantsPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={handleSave} disabled={!form.name || !form.value || createMut.isPending || updateMut.isPending}
-                className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold text-[var(--text-primary)] disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold text-[t.text] disabled:opacity-50"
                 style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
                 <Save size={14} /> {editing ? "Save Changes" : "Add Variant"}
               </button>
@@ -284,7 +284,7 @@ export default function ProductVariantsPage() {
             <p className={`font-bold ${tx} mb-1`}>No variants yet</p>
             <p className={`text-sm ${sub} mb-5`}>Add Size, Color, or any option to let customers choose.</p>
             <button onClick={() => { setCreating(true); setBulkMode(false); setForm(BLANK); }}
-              className="px-5 py-2.5 rounded-xl text-sm font-bold text-[var(--text-primary)]"
+              className="px-5 py-2.5 rounded-xl text-sm font-bold text-[t.text]"
               style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
               <Plus size={14} className="inline mr-1.5" />Add First Variant
             </button>
@@ -293,10 +293,10 @@ export default function ProductVariantsPage() {
           <div className="space-y-4">
             {Object.entries(grouped).map(([groupName, groupVariants]) => (
               <div key={groupName} className={`rounded-2xl border overflow-hidden ${card}`}>
-                <div className="flex items-center justify-between px-5 py-3.5 border-b [border-color:var(--border)]">
+                <div className="flex items-center justify-between px-5 py-3.5 border-b [border-color:t.border]">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
-                      <Layers size={12} className="text-[var(--text-primary)]" />
+                      <Layers size={12} className="text-[t.text]" />
                     </div>
                     <span className={`font-black text-sm ${tx}`}>{groupName}</span>
                     <span className={`text-xs ${sub}`}>({groupVariants.length} options)</span>
@@ -305,10 +305,10 @@ export default function ProductVariantsPage() {
                     {groupVariants.reduce((s, v) => s + v.inventory, 0)} total stock
                   </span>
                 </div>
-                <div className="divide-y [divide-color:var(--border)]">
+                <div className="divide-y [divide-color:t.border]">
                   {groupVariants.map(v => (
-                    <div key={v.id} className="flex items-center gap-4 px-5 py-3.5 hover:[background:var(--bg-card)] transition-colors group">
-                      <div className="w-9 h-9 rounded-xl [background:var(--bg-card)] flex items-center justify-center flex-shrink-0">
+                    <div key={v.id} className="flex items-center gap-4 px-5 py-3.5 hover:[background:t.card] transition-colors group">
+                      <div className="w-9 h-9 rounded-xl [background:t.card] flex items-center justify-center flex-shrink-0">
                         <span className={`text-xs font-bold ${tx}`}>{v.value.slice(0,3).toUpperCase()}</span>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -332,7 +332,7 @@ export default function ProductVariantsPage() {
                       {/* Actions */}
                       <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => startEdit(v)}
-                          className="p-2 rounded-xl [color:var(--accent)] hover:[background:var(--accent-dim)] transition-colors">
+                          className="p-2 rounded-xl [color:#6B35E8] hover:hover:bg-violet-100/20 transition-colors">
                           <Edit2 size={13} />
                         </button>
                         <button onClick={() => { if (confirm(`Delete "${v.value}"?`)) deleteMut.mutate(v.id); }}

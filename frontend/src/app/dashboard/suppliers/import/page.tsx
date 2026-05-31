@@ -46,10 +46,10 @@ export default function ImportPage() {
   const user    = useAuthStore(s => s.user);
   const storeId = user?.stores?.[0]?.id;
 
-  const tx   = "[color:var(--text-primary)]";
+  const tx   = "[color:t.text]";
   const sub  = "text-secondary";
-  const card = "[background:var(--bg-secondary)] [border-color:var(--border)]";
-  const inp  = "[background:var(--bg-secondary)] [border-color:var(--border)] [color:var(--text-primary)]";
+  const card = "[background:t.card] [border-color:t.border]";
+  const inp  = "[background:t.card] [border-color:t.border] [color:t.text]";
 
   const [step,        setStep]        = useState<Step>("url");
   const [url,         setUrl]         = useState("");
@@ -156,7 +156,7 @@ export default function ImportPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link href="/dashboard/suppliers"
-            className="w-9 h-9 rounded-xl flex items-center justify-center border [border-color:var(--border)] hover:[background:var(--bg-secondary)] transition-all">
+            className="w-9 h-9 rounded-xl flex items-center justify-center border [border-color:t.border] hover:[background:t.card] transition-all">
             <ArrowLeft size={15} className={sub} />
           </Link>
           <div>
@@ -188,7 +188,7 @@ export default function ImportPage() {
                 <button
                   onClick={() => scrapeMut.mutate(url)}
                   disabled={!url || scrapeMut.isPending}
-                  className="px-5 py-2.5 rounded-xl text-sm font-bold [color:var(--text-primary)] flex items-center gap-2 disabled:opacity-50 transition-all hover:opacity-90 flex-shrink-0"
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold [color:t.text] flex items-center gap-2 disabled:opacity-50 transition-all hover:opacity-90 flex-shrink-0"
                   style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}
                 >
                   {scrapeMut.isPending
@@ -211,7 +211,7 @@ export default function ImportPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {POPULAR_SOURCES.map(s => (
                   <div key={s.name}
-                    className="flex items-center gap-3 p-3 rounded-xl border [border-color:var(--border)] bg-[var(--bg-card)]">
+                    className="flex items-center gap-3 p-3 rounded-xl border [border-color:t.border] bg-[t.card]">
                     <span className="text-xl">{s.icon}</span>
                     <div>
                       <p className={`text-xs font-bold ${tx}`}>{s.name}</p>
@@ -280,12 +280,12 @@ export default function ImportPage() {
                       <div key={i} className="relative group">
                         <button onClick={() => setSelectedImg(i)}
                           className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all ${
-                            selectedImg === i ? "border-violet-500" : "[border-color:var(--border)]"
+                            selectedImg === i ? "border-violet-500" : "[border-color:t.border]"
                           }`}>
                           <img src={img} alt="" className="w-full h-full object-cover" />
                         </button>
                         <button onClick={() => removeImage(i)}
-                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 [color:var(--text-primary)] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 [color:t.text] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                           <Trash2 size={8} />
                         </button>
                       </div>
@@ -372,7 +372,7 @@ export default function ImportPage() {
                     <span className={`text-[10px] ${sub}`}>Quick markup:</span>
                     {[2, 2.5, 3, 4].map(mult => (
                       <button key={mult} onClick={() => setPrice((parseFloat(costPrice || "0") * mult).toFixed(2))}
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${sub} [border-color:var(--border)] hover:[background:var(--bg-card)] hover:text-secondary`}>
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${sub} [border-color:t.border] hover:[background:t.card] hover:text-secondary`}>
                         {mult}×
                       </button>
                     ))}
@@ -419,7 +419,7 @@ export default function ImportPage() {
                             ? s === "ACTIVE"
                               ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
                               : "border-violet-500 bg-violet-500/10 text-violet-400"
-                            : "[border-color:var(--border)] text-secondary"
+                            : "[border-color:t.border] text-secondary"
                         }`}>
                         {s === "ACTIVE" ? "🟢 Publish Now" : "📝 Save as Draft"}
                       </button>
@@ -430,7 +430,7 @@ export default function ImportPage() {
                 {/* Save button */}
                 <button onClick={() => saveMut.mutate()}
                   disabled={saveMut.isPending || !name || !price}
-                  className="w-full py-4 rounded-2xl text-sm font-black [color:var(--text-primary)] flex items-center justify-center gap-2 disabled:opacity-50 transition-all hover:opacity-90"
+                  className="w-full py-4 rounded-2xl text-sm font-black [color:t.text] flex items-center justify-center gap-2 disabled:opacity-50 transition-all hover:opacity-90"
                   style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)", boxShadow: "0 8px 24px rgba(124,58,237,0.3)" }}>
                   {saveMut.isPending
                     ? <><Loader2 size={16} className="animate-spin" /> Adding to Store…</>
@@ -449,7 +449,7 @@ export default function ImportPage() {
             </div>
             <h2 className={`text-2xl font-black mb-2 ${tx}`}>Product Added!</h2>
             <p className={`text-sm mb-2 ${sub}`}>
-              <strong className="[color:var(--text-primary)]">{savedProduct.name}</strong> has been added to your store.
+              <strong className="[color:t.text]">{savedProduct.name}</strong> has been added to your store.
             </p>
             {savedProduct.status === "DRAFT" && (
               <p className={`text-xs mb-8 ${sub}`}>
@@ -458,11 +458,11 @@ export default function ImportPage() {
             )}
             <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
               <button onClick={() => { setStep("url"); setUrl(""); setScraped(null); }}
-                className="px-6 py-3 rounded-xl text-sm font-bold border [border-color:var(--border)] text-primary hover:[background:var(--bg-secondary)] transition-all">
+                className="px-6 py-3 rounded-xl text-sm font-bold border [border-color:t.border] text-primary hover:[background:t.card] transition-all">
                 Import Another Product
               </button>
               <Link href="/dashboard/products"
-                className="px-6 py-3 rounded-xl text-sm font-bold [color:var(--text-primary)] transition-all hover:opacity-90 text-center"
+                className="px-6 py-3 rounded-xl text-sm font-bold [color:t.text] transition-all hover:opacity-90 text-center"
                 style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
                 View All Products →
               </Link>

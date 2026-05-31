@@ -304,15 +304,15 @@ function Sidebar({ t, pathname, plan, user, onNavClick, onLogout, theme }: any) 
           <NavGroup key={group.id} group={group} pathname={pathname} t={t} onNavClick={onNavClick} />
         ))}
 
-        {/* Locked groups hint */}
-        {lockedCount > 0 && level < 4 && (
-          <div style={{ margin:"8px 4px 4px", padding:"10px 12px", borderRadius:12, background:"rgba(107,53,232,0.04)", border:"1px solid rgba(107,53,232,0.1)", textAlign:"center" }}>
-            <p style={{ fontSize:10, color:t.textFaint, lineHeight:1.5 }}>
-              More features unlock as you grow.
+        {/* Progress hint */}
+        {lockedCount > 0 && level < 3 && (
+          <div style={{ margin:"8px 4px 4px", padding:"10px 12px", borderRadius:12, background:"rgba(107,53,232,0.04)", border:"1px solid rgba(107,53,232,0.08)", textAlign:"center" }}>
+            <p style={{ fontSize:10, color:t.textFaint, lineHeight:1.5, margin:"0 0 2px" }}>
+              {level === 0 ? "Add products to unlock Sales & Marketing" :
+               level === 1 ? "Get your first order to unlock Marketing" :
+               "Growing fast — more tools unlocking"}
             </p>
-            <p style={{ fontSize:10, color:V.v300, marginTop:2, fontWeight:600 }}>
-              {navLabel}
-            </p>
+            <p style={{ fontSize:10, color:V.v300, fontWeight:700 }}>{navLabel}</p>
           </div>
         )}
       </div>

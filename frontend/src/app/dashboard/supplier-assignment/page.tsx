@@ -11,10 +11,10 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-const tx   = "[color:var(--text-primary)]";
+const tx   = "[color:t.text]";
 const sub  = "text-secondary";
-const card = "[background:var(--bg-secondary)] [border-color:var(--border)]";
-const inp  = "[background:var(--bg-card)] [border-color:var(--border)] [color:var(--text-primary)] border rounded-xl px-3 py-2.5 text-sm outline-none w-full focus:[border-color:var(--accent)] transition-colors";
+const card = "[background:t.card] [border-color:t.border]";
+const inp  = "[background:t.card] [border-color:t.border] [color:t.text] border rounded-xl px-3 py-2.5 text-sm outline-none w-full focus:[border-color:#6B35E8] transition-colors";
 
 const STOCK_COLORS: Record<string, string> = {
   IN_STOCK:    "text-emerald-400",
@@ -96,21 +96,21 @@ export default function SupplierAssignmentPage() {
           {/* Product list */}
           <div className="col-span-2 space-y-3">
             <div className={`rounded-2xl border ${card} overflow-hidden`}>
-              <div className="p-3 border-b [border-color:var(--border)]">
+              <div className="p-3 border-b [border-color:t.border]">
                 <div className="relative">
                   <Search size={12} className={`absolute left-3 top-1/2 -translate-y-1/2 ${sub}`} />
                   <input value={searchProd} onChange={e => setSearchProd(e.target.value)}
                     className={inp + " !pl-8 !py-2 text-xs"} placeholder="Search products…" />
                 </div>
               </div>
-              <div className="max-h-[480px] overflow-y-auto divide-y [divide-color:var(--border)]">
+              <div className="max-h-[480px] overflow-y-auto divide-y [divide-color:t.border]">
                 {products.length === 0 && (
                   <div className={`p-8 text-center text-xs ${sub}`}>No products found</div>
                 )}
                 {products.map((p: any) => (
                   <button key={p.id} onClick={() => setSelectedProduct(p)}
-                    className={`w-full flex items-center gap-3 p-3 text-left transition-colors hover:[background:var(--bg-card)] ${selectedProduct?.id === p.id ? "[background:var(--bg-card)] [border-left:2px_solid_var(--accent)]" : ""}`}>
-                    <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 [background:var(--bg-card)] flex items-center justify-center">
+                    className={`w-full flex items-center gap-3 p-3 text-left transition-colors hover:[background:t.card] ${selectedProduct?.id === p.id ? "[background:t.card] [border-left:2px_solid_#6B35E8]" : ""}`}>
+                    <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 [background:t.card] flex items-center justify-center">
                       {p.images?.[0]
                         ? <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                         : <Package size={14} className={sub} />}
@@ -119,7 +119,7 @@ export default function SupplierAssignmentPage() {
                       <p className={`text-xs font-bold truncate ${tx}`}>{p.name}</p>
                       <p className={`text-[10px] ${sub}`}>${p.price.toFixed(2)}</p>
                     </div>
-                    {selectedProduct?.id === p.id && <CheckCircle size={12} className="text-[var(--accent)] flex-shrink-0" />}
+                    {selectedProduct?.id === p.id && <CheckCircle size={12} className="text-[#6B35E8] flex-shrink-0" />}
                   </button>
                 ))}
               </div>
@@ -142,7 +142,7 @@ export default function SupplierAssignmentPage() {
                     <p className={`text-xs ${sub}`}>{assignments.length} supplier{assignments.length !== 1 ? "s" : ""} assigned</p>
                   </div>
                   <button onClick={() => setShowAssignModal(true)} disabled={suppliers.length === 0}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-[var(--text-primary)] disabled:opacity-40"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-[t.text] disabled:opacity-40"
                     style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
                     <Plus size={12} /> Assign Supplier
                   </button>
@@ -152,7 +152,7 @@ export default function SupplierAssignmentPage() {
                 {assignments.length > 1 && (
                   <div className={`rounded-xl p-3 flex items-center gap-2 text-xs ${sub}`}
                     style={{ background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.15)" }}>
-                    <Star size={12} className="[color:var(--accent)]" />
+                    <Star size={12} className="[color:#6B35E8]" />
                     Priority 1 is used first. When out of stock, DropOS falls back to priority 2, then 3, etc.
                   </div>
                 )}
@@ -170,16 +170,16 @@ export default function SupplierAssignmentPage() {
                         <div className="flex items-start gap-3">
                           {/* Priority badge + controls */}
                           <div className="flex flex-col items-center gap-1">
-                            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--text-primary)] text-xs font-black"
-                              style={{ background: idx === 0 ? "linear-gradient(135deg,#7c3aed,#a855f7)" : "var(--bg-card)", color: idx === 0 ? "white" : "var(--text-secondary)" }}>
+                            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[t.text] text-xs font-black"
+                              style={{ background: idx === 0 ? "linear-gradient(135deg,#7c3aed,#a855f7)" : t.card, color: idx === 0 ? "white" : t.muted }}>
                               {a.priority}
                             </div>
                             <button onClick={() => movePriority(a, "up")} disabled={idx === 0}
-                              className={`p-0.5 rounded ${sub} hover:[color:var(--text-primary)] disabled:opacity-20`}>
+                              className={`p-0.5 rounded ${sub} hover:[color:t.text] disabled:opacity-20`}>
                               <ChevronUp size={12} />
                             </button>
                             <button onClick={() => movePriority(a, "down")} disabled={idx === assignments.length - 1}
-                              className={`p-0.5 rounded ${sub} hover:[color:var(--text-primary)] disabled:opacity-20`}>
+                              className={`p-0.5 rounded ${sub} hover:[color:t.text] disabled:opacity-20`}>
                               <ChevronDown size={12} />
                             </button>
                           </div>
@@ -188,7 +188,7 @@ export default function SupplierAssignmentPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <p className={`font-bold text-sm ${tx}`}>{a.supplier?.name}</p>
-                              {idx === 0 && <span className="text-[10px] px-2 py-0.5 rounded-full font-bold text-[var(--text-primary)]" style={{ background: "#7c3aed" }}>Primary</span>}
+                              {idx === 0 && <span className="text-[10px] px-2 py-0.5 rounded-full font-bold text-[t.text]" style={{ background: "#7c3aed" }}>Primary</span>}
                               {a.stockStatus && (
                                 <span className={`text-[10px] font-semibold ${STOCK_COLORS[a.stockStatus] || sub}`}>
                                   {a.stockStatus.replace("_", " ")}
@@ -229,10 +229,10 @@ export default function SupplierAssignmentPage() {
         {/* Assign modal */}
         {showAssignModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)" }}>
-            <div className="rounded-3xl p-6 w-full max-w-md [background:var(--bg-primary)] border [border-color:var(--border)] shadow-2xl">
+            <div className="rounded-3xl p-6 w-full max-w-md  border [border-color:t.border] shadow-2xl">
               <div className="flex items-center justify-between mb-5">
                 <h3 className={`font-black ${tx}`}>Assign Supplier</h3>
-                <button onClick={() => setShowAssignModal(false)} className="p-1.5 rounded-lg hover:[background:var(--bg-card)]">
+                <button onClick={() => setShowAssignModal(false)} className="p-1.5 rounded-lg hover:[background:t.card]">
                   <X size={14} />
                 </button>
               </div>
@@ -285,7 +285,7 @@ export default function SupplierAssignmentPage() {
                   priority:      Number(assignForm.priority) || 1,
                   notes:         assignForm.notes || undefined,
                 })} disabled={!assignForm.supplierId || assignMut.isPending}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-[var(--text-primary)] disabled:opacity-50"
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-[t.text] disabled:opacity-50"
                   style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
                   {assignMut.isPending ? "Assigning…" : "Assign Supplier"}
                 </button>
