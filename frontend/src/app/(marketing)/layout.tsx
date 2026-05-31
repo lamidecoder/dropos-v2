@@ -37,6 +37,8 @@ const FOOTER_COLS = [
     links: [
       ["Privacy Policy", "/privacy"      ],
       ["Terms of Use",   "/terms"        ],
+      ["Privacy Policy", "/privacy"      ],
+      ["Terms of Use",   "/terms"        ],
       ["Cookie Policy",  "/cookies"      ],
     ],
   },
@@ -65,7 +67,7 @@ function Nav() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", boxShadow: "0 4px 12px rgba(107,53,232,0.3)" }}>
-              <Zap size={15} color="white" />
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="white"/></svg>
             </div>
             <span className="font-black text-lg tracking-tight" style={{ color: "var(--text-primary)" }}>
               Drop<span style={{ color: "#8B5CF6" }}>OS</span>
@@ -145,7 +147,7 @@ function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>
-                <Zap size={13} color="white" />
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="white"/></svg>
               </div>
               <span className="font-black text-base" style={{ color: "var(--text-primary)" }}>Drop<span style={{ color: "#8B5CF6" }}>OS</span></span>
             </Link>

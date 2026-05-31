@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "../components/layout/Providers";
+import { CookieBanner } from "../components/CookieBanner";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body style={{ height:"100%", overflow:"auto" }}>
         <Providers>{children}</Providers>
+        <CookieBanner />
         {/* Service Worker registration */}
         <Script id="sw-register" strategy="afterInteractive">{
           `if ('serviceWorker' in navigator) {
