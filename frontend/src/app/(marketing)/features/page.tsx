@@ -104,7 +104,7 @@ const SECTIONS = [
 
 export default function FeaturesPage() {
   return (
-    <div style={{ background: "#07050F", color: "#fff", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+    <div style={{ background: "#F4F2FB", color: "#130D2E", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');`}</style>
 
       {/* Nav */}
@@ -138,14 +138,14 @@ export default function FeaturesPage() {
                 </button>
               </Link>
             </div>
-            <div className="p-6 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${section.color}25`, direction: "ltr" }}>
+            <div className="p-6 rounded-2xl" style={{ background: "rgba(107,53,232,0.03)", border: `1px solid ${section.color}25`, direction: "ltr" }}>
               <div className="grid grid-cols-1 gap-2.5">
                 {section.features.map(f => (
                   <div key={f} className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${section.color}20` }}>
                       <Check size={10} style={{ color: section.color }} strokeWidth={3} />
                     </div>
-                    <span className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>{f}</span>
+                    <span className="text-sm" style={{ color:"rgba(19,13,46,0.75)" }}>{f}</span>
                   </div>
                 ))}
               </div>
@@ -155,9 +155,9 @@ export default function FeaturesPage() {
       </div>
 
       {/* CTA */}
-      <div className="text-center px-6 py-20" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="text-center px-6 py-20" style={{ borderTop: "1px solid rgba(107,53,232,0.07)" }}>
         <h2 className="font-black text-3xl sm:text-5xl mb-4" style={{ letterSpacing: "-2px" }}>Ready to start?</h2>
-        <p className="text-base mb-8" style={{ color: "rgba(255,255,255,0.4)" }}>Free forever. No credit card. Launch in 60 seconds.</p>
+        <p className="text-base mb-8" style={{ color:"rgba(19,13,46,0.5)" }}>Free forever. No credit card. Launch in 60 seconds.</p>
         <Link href="/auth/register">
           <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white text-base" style={{ background: "linear-gradient(135deg,#6B35E8,#3D1C8A)", boxShadow: "0 12px 40px rgba(107,53,232,0.4)" }}>
             Launch your store <ArrowRight size={16} />

@@ -34,10 +34,10 @@ export default function SecurityPage() {
           <Shield size={24} style={{ color:"#8B5CF6" }}/>
         </div>
         <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color:"#8B5CF6" }}>Security & Trust</p>
-        <h1 className="font-black mb-5" style={{ fontSize:"clamp(28px,4vw,48px)", letterSpacing:"-2px", color:"var(--text-primary)" }}>
+        <h1 className="font-black mb-5" style={{ fontSize:"clamp(28px,4vw,48px)", letterSpacing:"-2px", color:"#130D2E" }}>
           We take your trust seriously.
         </h1>
-        <p className="text-base max-w-xl mx-auto" style={{ color:"var(--text-secondary)" }}>
+        <p className="text-base max-w-xl mx-auto" style={{ color:"rgba(19,13,46,0.5)" }}>
           You are trusting us with your business and your customers. Here is exactly how we protect both.
         </p>
       </section>
@@ -45,16 +45,16 @@ export default function SecurityPage() {
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="grid sm:grid-cols-2 gap-5 mb-16">
           {PILLARS.map(pillar => (
-            <div key={pillar.title} className="p-6 rounded-2xl" style={{ background:"var(--bg-card)", border:"1px solid var(--border)" }}>
+            <div key={pillar.title} className="p-6 rounded-2xl" style={{ background:"#fff", border:"1px solid rgba(107,53,232,0.1)" }}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background:`${pillar.color}12` }}>
                 <pillar.icon size={18} style={{ color:pillar.color }}/>
               </div>
-              <h2 className="font-bold text-base mb-4" style={{ color:"var(--text-primary)" }}>{pillar.title}</h2>
+              <h2 className="font-bold text-base mb-4" style={{ color:"#130D2E" }}>{pillar.title}</h2>
               <div className="space-y-2.5">
                 {pillar.points.map(pt => (
                   <div key={pt} className="flex items-start gap-2.5">
                     <Check size={11} style={{ color:pillar.color, flexShrink:0, marginTop:3 }} strokeWidth={3}/>
-                    <span className="text-sm" style={{ color:"var(--text-secondary)" }}>{pt}</span>
+                    <span className="text-sm" style={{ color:"rgba(19,13,46,0.5)" }}>{pt}</span>
                   </div>
                 ))}
               </div>
@@ -62,19 +62,19 @@ export default function SecurityPage() {
           ))}
         </div>
 
-        <h2 className="font-black text-2xl mb-2" style={{ letterSpacing:"-1px", color:"var(--text-primary)" }}>Tools we use  -  fully disclosed</h2>
-        <p className="text-sm mb-8" style={{ color:"var(--text-secondary)" }}>
+        <h2 className="font-black text-2xl mb-2" style={{ letterSpacing:"-1px", color:"#130D2E" }}>Tools we use  -  fully disclosed</h2>
+        <p className="text-sm mb-8" style={{ color:"rgba(19,13,46,0.5)" }}>
           We believe in transparency. Every third-party tool that touches your data, and why we chose it.
         </p>
         <div className="space-y-3 mb-12">
           {TOOLS.map(tool => (
-            <div key={tool.name} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background:"var(--bg-card)", border:"1px solid var(--border)" }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm" style={{ background:"var(--bg-secondary)", color:"var(--text-primary)" }}>
+            <div key={tool.name} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background:"#fff", border:"1px solid rgba(107,53,232,0.1)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm" style={{ background:"#fff", color:"#130D2E" }}>
                 {tool.name[0]}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap mb-0.5">
-                  <p className="font-bold text-sm" style={{ color:"var(--text-primary)" }}>{tool.name}</p>
+                  <p className="font-bold text-sm" style={{ color:"#130D2E" }}>{tool.name}</p>
                   <span className="text-xs px-2 py-0.5 rounded-full" style={{ background:"rgba(107,53,232,0.08)", color:"#8B5CF6" }}>{tool.role}</span>
                 </div>
                 <p className="text-xs" style={{ color:"var(--text-tertiary)" }}>{tool.why}</p>
@@ -84,8 +84,8 @@ export default function SecurityPage() {
         </div>
 
         <div className="p-6 rounded-2xl text-center" style={{ background:"rgba(107,53,232,0.06)", border:"1px solid rgba(107,53,232,0.15)" }}>
-          <h3 className="font-bold text-base mb-2" style={{ color:"var(--text-primary)" }}>Questions about security?</h3>
-          <p className="text-sm mb-4" style={{ color:"var(--text-secondary)" }}>We respond to every security question within 24 hours.</p>
+          <h3 className="font-bold text-base mb-2" style={{ color:"#130D2E" }}>Questions about security?</h3>
+          <p className="text-sm mb-4" style={{ color:"rgba(19,13,46,0.5)" }}>We respond to every security question within 24 hours.</p>
           <Link href="/contact">
             <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white"
               style={{ background:"linear-gradient(135deg,#6B35E8,#3D1C8A)" }}>

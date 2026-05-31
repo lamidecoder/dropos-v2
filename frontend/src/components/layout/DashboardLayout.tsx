@@ -135,7 +135,7 @@ const OWNER_NAV = [
     { href: "/dashboard/top-products",   icon: TrendingUp,   label: "Daily Top 10"   },
     { href: "/dashboard/competitor-spy", icon: Eye,          label: "Competitor Spy"  },
     { href: "/dashboard/products-intel", icon: Cpu,          label: "Products Intel"  },
-    { href: "/dashboard/ad-spy",         icon: Eye,          label: "Ad Spy"          },
+    // Hidden: ad-spy
     { href: "/dashboard/forecast",       icon: TrendingUp,   label: "Forecast"        },
     { href: "/dashboard/profit-rules",   icon: Target,       label: "Profit Rules"    },
     { href: "/dashboard/price-sync",     icon: RefreshCw,    label: "Price Sync"      },
@@ -147,8 +147,8 @@ const OWNER_NAV = [
   // Tools
   { id: "tools", label: "Tools", items: [
     { href: "/dashboard/chat",   icon: MessageSquare, label: "Live Chat"  },
-    { href: "/dashboard/replay", icon: PlayCircle,    label: "Replay"     },
-    { href: "/dashboard/backup", icon: Database,      label: "Backup"     },
+    // Hidden: replay
+    // Hidden: backup
   ]},
 
   // Developers

@@ -28,13 +28,13 @@ export default function ContactPage() {
   const inp = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-violet-500/60 transition-all";
 
   return (
-    <div style={{ background: "#07050F", color: "#fff", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+    <div style={{ background: "#F4F2FB", color: "#130D2E", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');`}</style>
 <div className="max-w-4xl mx-auto px-6 py-20">
         <div className="text-center mb-14">
           <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#8B5CF6" }}>Contact</p>
           <h1 className="font-black text-4xl sm:text-5xl mb-4" style={{ letterSpacing: "-2px" }}>Get in touch</h1>
-          <p className="text-base" style={{ color: "rgba(255,255,255,0.4)" }}>We reply within 24 hours. For urgent issues, message KIRO in your dashboard.</p>
+          <p className="text-base" style={{ color:"rgba(19,13,46,0.5)" }}>We reply within 24 hours. For urgent issues, message KIRO in your dashboard.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-10">
@@ -45,12 +45,12 @@ export default function ContactPage() {
               { icon: Zap,           label: "Technical support", desc: "Bugs, errors, help",       color: "#06B6D4" },
               { icon: Mail,          label: "Enterprise",        desc: "Custom plans, API access", color: "#10B981" },
             ].map(c => (
-              <div key={c.label} className="p-4 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div key={c.label} className="p-4 rounded-2xl" style={{ background: "rgba(107,53,232,0.03)", border: "1px solid rgba(107,53,232,0.08)" }}>
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: `${c.color}15` }}>
                   <c.icon size={16} style={{ color: c.color }} />
                 </div>
                 <h3 className="font-bold text-sm text-white mb-1">{c.label}</h3>
-                <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{c.desc}</p>
+                <p className="text-xs" style={{ color:"rgba(19,13,46,0.5)" }}>{c.desc}</p>
               </div>
             ))}
             <div className="p-4 rounded-2xl" style={{ background: "rgba(107,53,232,0.08)", border: "1px solid rgba(107,53,232,0.2)" }}>
@@ -68,7 +68,7 @@ export default function ContactPage() {
               <div className="p-8 rounded-2xl text-center" style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.25)" }}>
                 <Check size={40} className="mx-auto mb-4" style={{ color: "#10B981" }} />
                 <h3 className="font-bold text-lg text-white mb-2">Message sent</h3>
-                <p style={{ color: "rgba(255,255,255,0.5)" }}>We'll reply within 24 hours.</p>
+                <p style={{ color:"rgba(19,13,46,0.5)" }}>We'll reply within 24 hours.</p>
               </div>
             ) : (
               <div className="space-y-4">
