@@ -114,7 +114,7 @@ export default function FeaturesPage() {
         <h1 className="font-black mb-4" style={{ fontSize: "clamp(36px,5vw,64px)", letterSpacing: "-2px" }}>
           One platform.<br />Everything included.
         </h1>
-        <p className="text-base max-w-xl mx-auto mb-8" style={{ color: "rgba(255,255,255,0.45)" }}>
+        <p className="text-base max-w-xl mx-auto mb-8" style={{ color:"rgba(19,13,46,0.5)" }}>
           Shopify charges $79/month then nickels and dimes you for every feature. DropOS includes everything — powered by KIRO so it actually runs itself.
         </p>
         <Link href="/auth/register">
@@ -131,7 +131,7 @@ export default function FeaturesPage() {
             <div style={{ direction: "ltr" }}>
               <span className="text-xs font-black tracking-widest uppercase mb-3 block" style={{ color: section.color }}>{section.tag}</span>
               <h2 className="font-black text-2xl sm:text-3xl mb-4 text-white" style={{ letterSpacing: "-1px" }}>{section.title}</h2>
-              <p className="text-sm mb-6 leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>{section.desc}</p>
+              <p className="text-sm mb-6 leading-relaxed" style={{ color:"rgba(19,13,46,0.5)" }}>{section.desc}</p>
               <Link href="/auth/register">
                 <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: `linear-gradient(135deg,${section.color},${section.color}99)` }}>
                   Get started <ArrowRight size={13} />

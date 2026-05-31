@@ -55,7 +55,7 @@ export default function ContactPage() {
             ))}
             <div className="p-4 rounded-2xl" style={{ background: "rgba(107,53,232,0.08)", border: "1px solid rgba(107,53,232,0.2)" }}>
               <p className="text-xs font-semibold mb-1" style={{ color: "#A78BFA" }}>Fastest response</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>Message KIRO in your dashboard. It knows every feature and can fix most issues instantly.</p>
+              <p className="text-xs" style={{ color:"rgba(19,13,46,0.5)" }}>Message KIRO in your dashboard. It knows every feature and can fix most issues instantly.</p>
               <Link href="/auth/login" className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold" style={{ color: "#A78BFA" }}>
                 Open KIRO <ArrowRight size={10} />
               </Link>
@@ -74,16 +74,16 @@ export default function ContactPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Name</label>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color:"rgba(19,13,46,0.5)" }}>Name</label>
                     <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Your name" className={inp} />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Email</label>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color:"rgba(19,13,46,0.5)" }}>Email</label>
                     <input value={form.email} onChange={e => set("email", e.target.value)} type="email" placeholder="you@example.com" className={inp} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Subject</label>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color:"rgba(19,13,46,0.5)" }}>Subject</label>
                   <select value={form.subject} onChange={e => set("subject", e.target.value)} className={inp} style={{ cursor: "pointer" }}>
                     <option value="general">General question</option>
                     <option value="support">Technical support</option>
@@ -93,7 +93,7 @@ export default function ContactPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Message</label>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color:"rgba(19,13,46,0.5)" }}>Message</label>
                   <textarea value={form.message} onChange={e => set("message", e.target.value)} rows={5} placeholder="How can we help?" className={inp} style={{ resize: "none" }} />
                 </div>
                 <button onClick={submit} disabled={!form.name||!form.email||!form.message||status==="loading"}
