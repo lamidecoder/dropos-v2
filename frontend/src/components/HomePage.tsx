@@ -194,15 +194,15 @@ function Hero() {
           color: C.navy, lineHeight: 1.04,
           maxWidth: 800, margin: "0 0 20px",
         }}>
-        The AI commerce platform<br/>
-        <em style={{ fontStyle: "italic", color: C.purple }}>built for Africa.</em>
+        The smarter way<br/>
+        <em style={{ fontStyle: "italic", color: C.purple }}>to dropship.</em>
       </motion.h1>
 
       {/* Subheading */}
       <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
         style={{ fontSize: "clamp(15px, 2.5vw, 18px)", color: C.muted, maxWidth: 520, lineHeight: 1.6, marginBottom: 40 }}>
-        Launch your store in 60 seconds. Import products from any supplier.
-        Let KIRO write your copy, run your sales, and grow your revenue — automatically.
+        Launch your store in 60 seconds. Import from any supplier worldwide.
+        Let KIRO handle the copy, pricing, and sales — so you focus on growing.
       </motion.p>
 
       {/* CTA */}
@@ -400,11 +400,11 @@ function Features() {
           fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 500, letterSpacing: "-0.035em",
           color: C.navy, margin: "0 0 16px", lineHeight: 1.1,
         }}>
-          Built different.<br/>
-          <em style={{ fontStyle: "italic", color: C.purple }}>For you.</em>
+          Everything you need,<br/>
+          <em style={{ fontStyle: "italic", color: C.purple }}>nothing you don't.</em>
         </h2>
         <p style={{ fontSize: 16, color: C.muted, maxWidth: 480, margin: "0 auto", lineHeight: 1.6 }}>
-          Every feature was designed specifically for African merchants selling globally.
+          Every feature is designed to help you sell more, work less, and grow faster.
         </p>
       </div>
 
@@ -448,70 +448,102 @@ function Features() {
   );
 }
 
-// ─── Pricing Preview ───────────────────────────────────────────────────────────
-function PricingPreview() {
-  return (
-    <section style={{ padding: "80px 24px", background: "linear-gradient(160deg, #2D1B69 0%, #0D0625 100%)", margin: "0 0" }}>
-      <div style={{ maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
-        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", color: "rgba(196,181,253,0.7)", marginBottom: 12, textTransform: "uppercase" }}>PRICING</p>
-        <h2 style={{
-          fontFamily: "'Fraunces', Georgia, serif",
-          fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 500, letterSpacing: "-0.03em",
-          color: "#fff", margin: "0 0 14px", lineHeight: 1.1,
-        }}>
-          Start free.<br/>
-          <em style={{ fontStyle: "italic", color: "#C4B5FD" }}>Scale when you're ready.</em>
-        </h2>
-        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.55)", marginBottom: 48, lineHeight: 1.6 }}>
-          No hidden fees. No surprise charges. Just commerce that grows with you.
-        </p>
+// ─── Location-aware Pricing Preview ──────────────────────────────────────────
+const PRICING_BY_REGION: Record<string, {
+  symbol: string; free: string; growth: string; pro: string;
+  period: string; tagline: string; badge?: string;
+}> = {
+  NG: { symbol:"₦", free:"₦0",     growth:"₦9,500",  pro:"₦25,000", period:"/mo", tagline:"Pay in Naira. No forex stress.", badge:"🇳🇬 Nigerian prices" },
+  GH: { symbol:"₵", free:"₵0",     growth:"₵89",     pro:"₵240",    period:"/mo", tagline:"Priced for Ghana. Accept GHS payments.", badge:"🇬🇭 Ghana prices" },
+  KE: { symbol:"KSh",free:"KSh 0", growth:"KSh 1,300",pro:"KSh 3,500",period:"/mo", tagline:"Priced for Kenya. M-Pesa friendly.", badge:"🇰🇪 Kenya prices" },
+  ZA: { symbol:"R",  free:"R 0",   growth:"R 180",   pro:"R 470",   period:"/mo", tagline:"Priced for South Africa.", badge:"🇿🇦 South Africa prices" },
+  GB: { symbol:"£",  free:"£0",    growth:"£5",      pro:"£14",     period:"/mo", tagline:"Priced for the UK. Accept GBP.", badge:"🇬🇧 UK prices" },
+  US: { symbol:"$",  free:"$0",    growth:"$6",      pro:"$16",     period:"/mo", tagline:"Accept USD payments globally.", badge:"🇺🇸 US prices" },
+  DEFAULT: { symbol:"$", free:"$0", growth:"$6",     pro:"$16",     period:"/mo", tagline:"Accept payments in 50+ currencies.", },
+};
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 40 }} className="price-grid">
-          {[
-            { name: "Free",   price: "₦0",      period: "/mo", features: ["1 store", "20 products", "KIRO — 10 msg/day", "Basic analytics"], highlight: false },
-            { name: "Growth", price: "₦9,500",  period: "/mo", features: ["5 stores", "Unlimited products", "KIRO — unlimited", "Advanced analytics", "Custom domain", "Priority support"], highlight: true },
-            { name: "Pro",    price: "₦25,000", period: "/mo", features: ["Unlimited stores", "Everything in Growth", "KIRO Pro features", "API access", "Dedicated support", "White label"], highlight: false },
-          ].map(p => (
-            <div key={p.name} style={{
-              background: p.highlight ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
-              borderRadius: 20, padding: "28px 24px",
-              border: p.highlight ? "1px solid rgba(196,181,253,0.3)" : "1px solid rgba(255,255,255,0.08)",
-              position: "relative",
+function detectRegion(): string {
+  if (typeof window === "undefined") return "DEFAULT";
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz.includes("Lagos") || tz.includes("Abuja")) return "NG";
+    if (tz.includes("Accra")) return "GH";
+    if (tz.includes("Nairobi")) return "KE";
+    if (tz.includes("Johannesburg") || tz.includes("Cape_Town")) return "ZA";
+    if (tz.includes("London")) return "GB";
+    if (tz.includes("New_York") || tz.includes("Los_Angeles") || tz.includes("Chicago")) return "US";
+    const lang = navigator.language || "";
+    if (lang.includes("en-NG")) return "NG";
+    if (lang.includes("en-GH")) return "GH";
+    if (lang.includes("en-KE")) return "KE";
+    if (lang.includes("en-ZA")) return "ZA";
+    if (lang.includes("en-GB")) return "GB";
+    if (lang.includes("en-US")) return "US";
+  } catch {}
+  return "DEFAULT";
+}
+
+function PricingPreview() {
+  const [region, setRegion] = useState("DEFAULT");
+  useEffect(() => { setRegion(detectRegion()); }, []);
+  const p = PRICING_BY_REGION[region] || PRICING_BY_REGION.DEFAULT;
+
+  const plans = [
+    { name: "Free",   price: p.free,   features: ["1 store", "20 products", "KIRO — 10 msg/day", "Basic analytics"], highlight: false },
+    { name: "Growth", price: p.growth, features: ["5 stores", "Unlimited products", "KIRO — unlimited", "Custom domain", "Priority support"], highlight: true },
+    { name: "Pro",    price: p.pro,    features: ["Unlimited stores", "Everything in Growth", "API access", "Dedicated support"], highlight: false },
+  ];
+
+  return (
+    <section style={{ padding:"80px 24px", background:"linear-gradient(160deg,#2D1B69 0%,#0D0625 100%)" }}>
+      <div style={{ maxWidth:960, margin:"0 auto", textAlign:"center" }}>
+        <p style={{ fontSize:12, fontWeight:700, letterSpacing:"0.12em", color:"rgba(196,181,253,0.7)", marginBottom:12, textTransform:"uppercase" }}>PRICING</p>
+        <h2 style={{ fontFamily:"'Fraunces',Georgia,serif", fontSize:"clamp(28px,5vw,48px)", fontWeight:500, letterSpacing:"-0.03em", color:"#fff", margin:"0 0 10px", lineHeight:1.1 }}>
+          Start free.<br/>
+          <em style={{ fontStyle:"italic", color:"#C4B5FD" }}>Scale when you're ready.</em>
+        </h2>
+
+        {/* Location badge */}
+        {p.badge && (
+          <div style={{ display:"inline-flex", alignItems:"center", gap:6, margin:"14px 0 32px", padding:"6px 14px", borderRadius:99, background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.12)" }}>
+            <span style={{ fontSize:12, color:"rgba(255,255,255,0.7)", fontWeight:500 }}>{p.badge}</span>
+            <span style={{ fontSize:11, color:"rgba(196,181,253,0.6)" }}>· {p.tagline}</span>
+          </div>
+        )}
+        {!p.badge && <p style={{ fontSize:14, color:"rgba(255,255,255,0.5)", marginBottom:36 }}>{p.tagline}</p>}
+
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:36 }} className="price-grid">
+          {plans.map(plan => (
+            <div key={plan.name} style={{
+              background: plan.highlight ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.04)",
+              borderRadius:20, padding:"28px 24px",
+              border: plan.highlight ? "1px solid rgba(196,181,253,0.35)" : "1px solid rgba(255,255,255,0.08)",
+              position:"relative",
             }}>
-              {p.highlight && (
-                <div style={{
-                  position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
-                  background: "#C4B5FD", color: "#130D2E", fontSize: 10, fontWeight: 800,
-                  padding: "4px 14px", borderRadius: 99, letterSpacing: "0.06em", whiteSpace: "nowrap",
-                }}>MOST POPULAR</div>
+              {plan.highlight && (
+                <div style={{ position:"absolute", top:-12, left:"50%", transform:"translateX(-50%)", background:"#C4B5FD", color:"#130D2E", fontSize:10, fontWeight:800, padding:"4px 14px", borderRadius:99, letterSpacing:"0.06em", whiteSpace:"nowrap" }}>
+                  MOST POPULAR
+                </div>
               )}
-              <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(196,181,253,0.8)", margin: "0 0 8px" }}>{p.name}</p>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 20 }}>
-                <span style={{ fontSize: 32, fontWeight: 900, color: "#fff", letterSpacing: "-0.03em" }}>{p.price}</span>
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{p.period}</span>
+              <p style={{ fontSize:13, fontWeight:700, color:"rgba(196,181,253,0.8)", margin:"0 0 8px" }}>{plan.name}</p>
+              <div style={{ display:"flex", alignItems:"baseline", gap:4, marginBottom:20 }}>
+                <span style={{ fontSize:30, fontWeight:900, color:"#fff", letterSpacing:"-0.03em" }}>{plan.price}</span>
+                <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>{p.period}</span>
               </div>
-              {p.features.map(f => (
-                <div key={f} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                  <Check size={12} color="#A78BFA" strokeWidth={2.5}/>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{f}</span>
+              {plan.features.map(f => (
+                <div key={f} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+                  <Check size={11} color="#A78BFA" strokeWidth={2.5}/>
+                  <span style={{ fontSize:12, color:"rgba(255,255,255,0.65)" }}>{f}</span>
                 </div>
               ))}
             </div>
           ))}
         </div>
 
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 24 }}>
-          All plans include 2% transaction fee · Prices in NGN
+        <p style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginBottom:24 }}>
+          2% transaction fee on all plans · Cancel anytime
         </p>
-
-        <Link href="/auth/register" style={{
-          display: "inline-flex", alignItems: "center", gap: 8,
-          padding: "14px 32px", borderRadius: 14,
-          background: "#fff", color: C.navy,
-          textDecoration: "none", fontSize: 14, fontWeight: 700,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-          letterSpacing: "-0.01em",
-        }}>
+        <Link href="/auth/register" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"14px 32px", borderRadius:14, background:"#fff", color:C.navy, textDecoration:"none", fontSize:14, fontWeight:700, boxShadow:"0 8px 24px rgba(0,0,0,0.2)" }}>
           Start for free <ArrowRight size={14}/>
         </Link>
       </div>
@@ -526,7 +558,7 @@ function SocialProof() {
     { value: "29",   label: "Store templates" },
     { value: "60s",  label: "To launch a store" },
     { value: "54+",  label: "Backend features" },
-    { value: "100%", label: "African-built" },
+    { value: "100%", label: "Uptime SLA" },
   ];
 
   return (

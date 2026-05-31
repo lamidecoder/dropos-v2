@@ -109,6 +109,14 @@ export default function DashboardPage() {
     staleTime: 30000,
   });
 
+  // Direct product count — more reliable than analytics which may be cached
+  const { data: productCount } = useQuery({
+    queryKey: ["dashboard-product-count", storeId],
+    queryFn:  () => api.get(`/products/${storeId}?limit=1`).then(r => r.data.data?.total || r.data.total || (Array.isArray(r.data.data) ? r.data.data.length : 0)),
+    enabled:  !!storeId,
+    staleTime: 60000,
+  });
+
   const { data: pulse } = useQuery({
     queryKey: ["kiro-pulse", storeId],
     queryFn:  () => api.get(`/kai/pulse?storeId=${storeId}&limit=3`).then(r => r.data.data || []),
@@ -128,7 +136,7 @@ export default function DashboardPage() {
     { label: "Revenue (7d)",  value: fmtCurrency(stats.revenue || 0),        delta: stats.revenueDelta,  color: V.v400,  icon: TrendingUp  },
     { label: "Orders (7d)",   value: (stats.orders    || 0).toLocaleString(), delta: stats.ordersDelta,   color: V.cyan,  icon: ShoppingCart },
     { label: "Customers",     value: (stats.customers || 0).toLocaleString(), delta: undefined,            color: V.green, icon: Users        },
-    { label: "Products",      value: (stats.products  || analytics?.totalProducts || 0).toLocaleString(), delta: undefined, color: V.amber, icon: Package },
+    { label: "Products",      value: (productCount || stats.products || analytics?.totalProducts || 0).toLocaleString(), delta: undefined, color: V.amber, icon: Package },
   ];
 
   const quickActions = [
@@ -266,10 +274,10 @@ export default function DashboardPage() {
             <span style={{ fontSize: 13, fontWeight: 700, color: t.text, display: "block", marginBottom: 12 }}>Store Status</span>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[
-                { label: "Store live",      done: !!user?.stores?.[0]?.id,                         icon: Store        },
-                { label: "Products added",  done: (stats?.products || analytics?.totalProducts || 0) > 0, icon: Package      },
-                { label: "First order",     done: (stats?.orders   || analytics?.totalOrders    || orders.length || 0) > 0, icon: ShoppingCart },
-                { label: "Payment setup",   done: !!(user?.stores?.[0] as any)?.paystackPublicKey || !!(user?.stores?.[0] as any)?.currency, icon: CheckCircle2 },
+                { label: "Store live",     done: !!user?.stores?.[0]?.id,                                                                               icon: Store        },
+                { label: "Products added", done: (productCount || stats?.products || analytics?.totalProducts || 0) > 0,              icon: Package      },
+                { label: "First order",    done: orders.length > 0 || (stats?.orders || analytics?.totalOrders || 0) > 0,                             icon: ShoppingCart },
+                { label: "Payment setup",  done: !!(user?.stores?.[0] as any)?.paystackPublicKey || !!(user?.stores?.[0] as any)?.stripeAccountId || !!(user?.stores?.[0] as any)?.currency, icon: CheckCircle2 },
               ].map(item => {
                 const Icon = item.icon;
                 return (
