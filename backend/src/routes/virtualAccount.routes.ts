@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { authenticate } from "../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth";
 import { getOrCreateVirtualAccount } from "../services/virtualAccount.service";
 
 const router = Router();

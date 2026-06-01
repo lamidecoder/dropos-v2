@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { authenticate } from "../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth";
 import { generateWhatsAppLink, generateBroadcastMessage } from "../services/whatsappCommerce.service";
 
 const router = Router();
