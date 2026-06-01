@@ -165,11 +165,11 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }} className="grid-cols-2 sm:grid-cols-4">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }} className="ov-stats">
         {statCards.map((s, i) => <StatCard key={s.label} {...s} delay={i * 0.07} />)}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16 }} className="grid-1col lg:grid-2col">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 14 }} className="ov-main">
         {/* Left: Recent Orders */}
         <div>
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
@@ -318,12 +318,12 @@ export default function DashboardPage() {
       </div>
 
       <style>{`
-        @media(max-width:900px){
-          .grid-cols-2{grid-template-columns:1fr 1fr!important}
-          .grid-1col.lg\\:grid-2col{grid-template-columns:1fr!important}
+        @media(max-width:768px){
+          .ov-stats { grid-template-columns:1fr 1fr!important; gap:10px!important; }
+          .ov-main  { grid-template-columns:1fr!important; }
         }
-        @media(max-width:480px){
-          .grid-cols-2{grid-template-columns:1fr 1fr!important}
+        @media(max-width:420px){
+          .ov-stats { gap:8px!important; }
         }
       `}</style>
     </div>
