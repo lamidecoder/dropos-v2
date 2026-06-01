@@ -19,7 +19,7 @@ const C = {
   border:  "rgba(107,53,232,0.1)",
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
+const API = process.env.NEXT_PUBLIC_API_URL || "";
 
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 function Nav() {

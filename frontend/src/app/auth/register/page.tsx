@@ -47,7 +47,7 @@ export default function RegisterPage() {
   const onSubmit = (data: Form) => reg.mutate(data);
 
   const handleGoogle = () => {
-    const base = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "https://dropos-v2.onrender.com";
+    const base = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "";
     window.location.href = `${base}/api/auth/google`;
   };
 

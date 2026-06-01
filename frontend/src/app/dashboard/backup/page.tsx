@@ -62,7 +62,7 @@ export default function BackupPage() {
         <Shield size={14} color={V.green} style={{flexShrink:0}}/>
         <div style={{flex:1}}>
           <p style={{fontSize:12,fontWeight:700,color:V.green,margin:"0 0 1px"}}>Your data is safe</p>
-          <p style={{fontSize:11,color:t.muted,margin:0}}>Stored securely on Railway PostgreSQL with daily automated backups</p>
+          <p style={{fontSize:11,color:t.muted,margin:0}}>Stored securely with daily automated backups and encryption</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
           <Clock size={11} style={{color:t.muted}}/>

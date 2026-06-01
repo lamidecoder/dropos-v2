@@ -49,7 +49,7 @@ Be specific with examples. Format clearly with sections.`,
         storeId,
       });
       setResult(r.data?.data?.reply || r.data?.reply || "Analysis complete");
-    } catch { toast.error("KIRO offline — add ANTHROPIC_API_KEY to Render env"); }
+    } catch { toast.error("KIRO is temporarily unavailable. Please try again shortly."); }
     setLoading(false);
   };
 

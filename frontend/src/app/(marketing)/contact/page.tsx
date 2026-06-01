@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Zap, Mail, MessageSquare, ArrowRight, Check, Loader2 } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
+const API = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function ContactPage() {
   const [form, setForm]   = useState({ name: "", email: "", subject: "general", message: "" });

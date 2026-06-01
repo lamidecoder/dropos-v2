@@ -5,7 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useAuthStore } from "../../../store/auth.store";
 
-const BASE    = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
+const BASE    = process.env.NEXT_PUBLIC_API_URL || "";
 const ACCENT  = "#7C3AED";
 const ACCENT_D = "#5B21B6";
 
