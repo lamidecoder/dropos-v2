@@ -223,11 +223,6 @@ export const analyticsAPI = {
 
 export const adminAPI = {
   getStats:           ()                    => api.get("/admin/stats"),
-  get:                (url: string, cfg?: any) => api.get(url, cfg),
-  post:               (url: string, data?: any) => api.post(url, data),
-  patch:              (url: string, data?: any) => api.patch(url, data),
-  put:                (url: string, data?: any) => api.put(url, data),
-  delete:             (url: string)            => api.delete(url),
   getDashboard:       ()                    => api.get("/admin/stats"),
   getRevenue:         ()                    => api.get("/admin/revenue"),
   getUsers:           (p?: any)             => api.get("/admin/users", { params: p }),
