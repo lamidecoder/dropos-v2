@@ -222,37 +222,25 @@ function NavItem({ item, isActive, t, onClick }: { item: any; isActive: boolean;
 }
 
 // ── NAV GROUP ─────────────────────────────────────────────────────────────────
+// Flat nav — all sections always visible, no accordion collapse
 function NavGroup({ group, pathname, t, onNavClick }: { group: any; pathname: string; t: typeof T.dark; onNavClick?: () => void }) {
   const isActive = (item: any) =>
     item.exact
       ? pathname === item.href
       : pathname === item.href || (pathname.startsWith(item.href + "/") && item.href !== "/dashboard");
-  const hasActive = group.items.some(isActive);
-  const [open, setOpen] = useState(hasActive || !!group.alwaysOpen);
-
-  // Open group when navigating to one of its items
-  useEffect(() => { if (hasActive && !open) setOpen(true); }, [pathname]);
-
-  if (group.alwaysOpen) return (
-    <div style={{ marginBottom: 12 }}>
-      {group.items.map((item: any) => <NavItem key={item.href} item={item} isActive={isActive(item)} t={t} onClick={onNavClick} />)}
-    </div>
-  );
 
   return (
-    <div style={{ marginBottom: 2 }}>
-      <button onClick={() => setOpen((o: boolean) => !o)}
-        style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "5px 10px 3px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", color: hasActive ? t.text : t.textFaint }}>
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", flex: 1, textAlign: "left", fontFamily: "system-ui" }}>
+    <div style={{ marginBottom: group.label ? 6 : 12 }}>
+      {group.label && (
+        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:t.textFaint, textTransform:"uppercase", padding:"8px 12px 3px", margin:0, fontFamily:"system-ui" }}>
           {group.label}
-        </span>
-        <ChevronRight size={10} style={{ transform: open ? "rotate(90deg)" : "rotate(0)", transition: "transform 0.15s", flexShrink: 0 }} />
-      </button>
-      {open && (
-        <div style={{ paddingBottom: 4 }}>
-          {group.items.map((item: any) => <NavItem key={item.href} item={item} isActive={isActive(item)} t={t} onClick={onNavClick} />)}
-        </div>
+        </p>
       )}
+      <div>
+        {group.items.map((item: any) => (
+          <NavItem key={item.href} item={item} isActive={isActive(item)} t={t} onClick={onNavClick}/>
+        ))}
+      </div>
     </div>
   );
 }

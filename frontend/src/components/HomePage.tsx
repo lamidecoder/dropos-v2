@@ -62,7 +62,7 @@ function Nav() {
         {/* Desktop nav */}
         <div className="nav-links" style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {[
-            { label: "Features",   href: "/#features"  },
+            { label: "Features",   href: "/features"  },
             { label: "Pricing",    href: "/pricing"    },
             { label: "How it works", href: "/how-it-works" },
           ].map(l => (
@@ -240,8 +240,8 @@ function Hero() {
         {[
           "No credit card required",
           "Free plan available",
-          "Paystack + Stripe payments",
-          "29 store templates",
+          "Launch in 60 seconds",
+          "Cancel anytime",
         ].map(f => (
           <span key={f} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: C.muted }}>
             <Check size={11} color={C.purple} strokeWidth={2.5}/>
@@ -555,14 +555,14 @@ function PricingPreview() {
 // ─── Social Proof ──────────────────────────────────────────────────────────────
 function SocialProof() {
   const stats = [
-    { value: "29",   label: "Store templates"     },
-    { value: "60s",  label: "To launch a store"   },
-    { value: "50+",  label: "Payment currencies"  },
-    { value: "24/7", label: "KIRO always on"      },
+    { value: "29",   label: "Store templates" },
+    { value: "60s",  label: "To launch a store" },
+    { value: "54+",  label: "Backend features" },
+    { value: "100%", label: "Uptime SLA" },
   ];
 
   return (
-    <section style={{ padding: "48px 24px", maxWidth: 960, margin: "0 auto" }}>
+    <section style={{ padding: "80px 24px", maxWidth: 960, margin: "0 auto" }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 24, textAlign: "center" }} className="stats-grid">
         {stats.map((s, i) => (
           <motion.div key={s.label}
@@ -586,7 +586,7 @@ function SocialProof() {
 // ─── CTA ──────────────────────────────────────────────────────────────────────
 function FinalCTA() {
   return (
-    <section style={{ padding: "72px 24px", textAlign: "center" }}>
+    <section style={{ padding: "100px 24px", textAlign: "center" }}>
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
         <h2 style={{
           fontFamily: "'Fraunces', Georgia, serif",
@@ -621,51 +621,29 @@ function FinalCTA() {
 }
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
-const FOOTER_LINKS = [
-  { title: "Product",  links: [["Features","/features"],["Pricing","/pricing"],["How it works","/how-it-works"],["Security","/security"]] },
-  { title: "Company",  links: [["About","/about"],["Contact","/contact"]] },
-  { title: "Legal",    links: [["Privacy","/privacy"],["Terms","/terms"],["Cookies","/cookies"]] },
-];
-
 function Footer() {
   return (
-    <footer style={{ background: "#fff", borderTop: `1px solid ${C.border}`, padding: "56px 24px 32px", fontFamily: "'Plus Jakarta Sans',system-ui,sans-serif" }}>
-      <div style={{ maxWidth: 1040, margin: "0 auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 40, marginBottom: 48 }} className="footer-cols">
-          {/* Brand */}
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 9, background: "linear-gradient(145deg,#2D1B69,#0D0625)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="white"/></svg>
-              </div>
-              <span style={{ fontSize: 16, fontWeight: 800, color: C.navy, letterSpacing: "-0.02em" }}>Drop<span style={{ color: C.purple }}>OS</span></span>
-            </div>
-            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.65, maxWidth: 220, marginBottom: 16 }}>
-              The AI-powered commerce platform. Launch your store in 60 seconds.
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#10B981" }}/>
-              <span style={{ fontSize: 11, color: C.muted, fontWeight: 500 }}>All systems operational</span>
-            </div>
+    <footer style={{
+      borderTop: `1px solid ${C.border}`, padding: "40px 24px",
+      background: "#fff",
+    }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(145deg,#2D1B69,#0D0625)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="white"/></svg>
           </div>
-          {/* Link columns */}
-          {FOOTER_LINKS.map(col => (
-            <div key={col.title}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: C.muted, textTransform: "uppercase", marginBottom: 16 }}>{col.title}</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {col.links.map(([label, href]) => (
-                  <Link key={label} href={href} style={{ fontSize: 13, color: C.muted, textDecoration: "none", fontWeight: 500 }}>{label}</Link>
-                ))}
-              </div>
-            </div>
+          <span style={{ fontSize: 14, fontWeight: 800, color: C.navy, letterSpacing: "-0.02em" }}>DropOS</span>
+          <span style={{ fontSize: 12, color: C.muted }}>© 2026</span>
+        </div>
+        <div style={{ display: "flex", gap: 20 }}>
+          {["Pricing", "Features", "Privacy", "Terms"].map(l => (
+            <Link key={l} href={`/${l.toLowerCase()}`}
+              style={{ fontSize: 12, color: C.muted, textDecoration: "none", fontWeight: 500 }}>
+              {l}
+            </Link>
           ))}
         </div>
-        <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <p style={{ fontSize: 12, color: C.muted }}>© 2026 DropOS. All rights reserved.</p>
-          <p style={{ fontSize: 12, color: C.muted }}>Built for merchants who move fast 🚀</p>
-        </div>
       </div>
-      <style>{`@media(max-width:768px){ .footer-cols{grid-template-columns:1fr 1fr!important; gap:28px!important;} }`}</style>
     </footer>
   );
 }

@@ -7,8 +7,8 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
   title:       { default: "DropOS", template: "%s | DropOS" },
-  description: "KIRO builds your dropshipping store, finds winning products, and grows your revenue. Launch in 60 seconds. Free forever.",
-  keywords:    ["dropshipping","ecommerce","saas","store builder","KIRO","AI"],
+  description: "DropOS is the AI commerce platform that lets you launch an online store in 60 seconds. KIRO AI writes your copy, imports products, runs flash sales, and grows your revenue automatically. Accept Naira and international payments. No coding needed.",
+  keywords:    ["dropshipping Nigeria", "online store builder", "ecommerce Nigeria", "sell online Africa", "AI store builder", "dropshipping platform", "KIRO AI commerce", "DropOS", "sell online Nigeria", "Paystack store", "dropshipping Africa", "online business Nigeria"],
   authors:     [{ name: "DropOS" }],
   manifest:    "/manifest.json",
   appleWebApp: {
