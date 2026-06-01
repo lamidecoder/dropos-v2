@@ -1,25 +1,37 @@
 "use client";
 import { useEffect } from "react";
+import Link from "next/link";
 
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  useEffect(() => { console.error("[DropOS]", error); }, [error]);
+  useEffect(() => { console.error(error); }, [error]);
+
+  const isNetworkError = error.message?.includes("fetch") || error.message?.includes("network") || error.message?.includes("ECONNREFUSED");
+
   return (
-    <html>
-      <body style={{ margin:0, background:"#07050F", minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"system-ui", padding:"20px" }}>
-        <div style={{ textAlign:"center", maxWidth:440 }}>
-          <div style={{ width:68, height:68, borderRadius:20, background:"linear-gradient(135deg,#7C3AED,#4C1D95)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", boxShadow:"0 12px 32px rgba(124,58,237,0.3)" }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="white"/></svg>
-          </div>
-          <p style={{ fontSize:11, fontWeight:700, color:"#8B5CF6", letterSpacing:"0.15em", margin:"0 0 12px", textTransform:"uppercase" as const }}>DropOS · Something went wrong</p>
-          <h1 style={{ fontSize:"clamp(24px,5vw,40px)", fontWeight:900, color:"#fff", letterSpacing:"-0.04em", margin:"0 0 12px", lineHeight:1.1 }}>Unexpected Error</h1>
-          <p style={{ fontSize:14, color:"rgba(255,255,255,0.4)", lineHeight:1.7, margin:"0 0 28px" }}>Something went wrong loading this page. Try again or go back to the dashboard.</p>
-          <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
-            <button onClick={reset} style={{ padding:"11px 24px", borderRadius:12, background:"linear-gradient(135deg,#6B35E8,#3D1C8A)", color:"#fff", fontSize:13, fontWeight:700, border:"none", cursor:"pointer", fontFamily:"inherit" }}>Try Again</button>
-            <button onClick={() => window.location.href="/dashboard"} style={{ padding:"11px 24px", borderRadius:12, border:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.5)", fontSize:13, fontWeight:600, background:"transparent", cursor:"pointer", fontFamily:"inherit" }}>Dashboard</button>
-          </div>
-          <p style={{ fontSize:11, color:"rgba(255,255,255,0.15)", marginTop:32 }}>DropOS · droposhq.com</p>
+    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, padding:24, background:"#F4F2FB", fontFamily:"system-ui,sans-serif" }}>
+      <div style={{ width:56, height:56, borderRadius:16, background:"linear-gradient(145deg,#2D1B69,#0D0625)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="white"/></svg>
+      </div>
+      <div style={{ textAlign:"center", maxWidth:420 }}>
+        <h1 style={{ fontSize:22, fontWeight:800, color:"#130D2E", margin:"0 0 8px" }}>
+          {isNetworkError ? "Connection issue" : "Something went wrong"}
+        </h1>
+        <p style={{ fontSize:14, color:"rgba(19,13,46,0.5)", margin:"0 0 24px", lineHeight:1.6 }}>
+          {isNetworkError
+            ? "We're having trouble connecting. This usually resolves itself in 30 seconds."
+            : "An unexpected error occurred. Please try refreshing the page."}
+        </p>
+        <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
+          <button onClick={reset}
+            style={{ padding:"11px 22px", borderRadius:12, background:"#130D2E", color:"#fff", border:"none", cursor:"pointer", fontSize:14, fontWeight:700, fontFamily:"inherit" }}>
+            Try again
+          </button>
+          <Link href="/dashboard"
+            style={{ padding:"11px 22px", borderRadius:12, background:"transparent", color:"rgba(19,13,46,0.5)", textDecoration:"none", fontSize:14, fontWeight:600, border:"1px solid rgba(19,13,46,0.1)" }}>
+            Dashboard
+          </Link>
         </div>
-      </body>
-    </html>
+      </div>
+    </div>
   );
 }
