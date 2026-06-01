@@ -388,3 +388,142 @@ export const getPlatformAnalytics = async (req: AuthRequest, res: Response) => {
     data: { revenueByDay, ordersByDay, newUsersByDay },
   });
 };
+
+// ── Store Management ──────────────────────────────────────────────────────────
+export const getAllStores = async (req: AuthRequest, res: Response) => {
+  const { page=1, limit=20, search="", status="" } = req.query;
+  const { take, skip } = paginate(Number(page), Number(limit));
+  const where: any = {};
+  if (search) where.OR = [{ name:{contains:String(search),mode:"insensitive"} }, { slug:{contains:String(search),mode:"insensitive"} }];
+  if (status) where.status = String(status);
+
+  const [stores, total] = await Promise.all([
+    prisma.store.findMany({
+      where, take, skip, orderBy:{ createdAt:"desc" },
+      include: {
+        owner: { select:{ id:true, name:true, email:true, plan:true } },
+        _count: { select:{ products:true, orders:true } },
+      },
+    }),
+    prisma.store.count({ where }),
+  ]);
+
+  return res.json({ success:true, data:stores, pagination:{ page:Number(page), limit:take, total, pages:Math.ceil(total/take) } });
+};
+
+export const updateStore = async (req: AuthRequest, res: Response) => {
+  const { storeId } = req.params;
+  const { status, templateId, primaryColor, plan } = req.body;
+  
+  const data: any = {};
+  if (status) data.status = status;
+  if (templateId) data.templateId = templateId;
+  if (primaryColor) data.primaryColor = primaryColor;
+  
+  const store = await prisma.store.update({ where:{ id:storeId }, data });
+  return res.json({ success:true, message:"Store updated", data:store });
+};
+
+// ── Platform Orders ────────────────────────────────────────────────────────────
+export const getAllOrders = async (req: AuthRequest, res: Response) => {
+  const { page=1, limit=20, search="", status="" } = req.query;
+  const { take, skip } = paginate(Number(page), Number(limit));
+  const where: any = {};
+  if (status) where.status = String(status);
+  if (search) where.OR = [{ orderNumber:{contains:String(search)} }, { customerEmail:{contains:String(search)} }];
+
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where, take, skip, orderBy:{ createdAt:"desc" },
+      include: { store:{ select:{ name:true, slug:true } } },
+    }),
+    prisma.order.count({ where }),
+  ]);
+
+  return res.json({ success:true, data:orders, pagination:{ page:Number(page), limit:take, total, pages:Math.ceil(total/take) } });
+};
+
+// ── Platform Payments ──────────────────────────────────────────────────────────
+export const getAllPayments = async (req: AuthRequest, res: Response) => {
+  const { page=1, limit=20, gateway="", status="" } = req.query;
+  const { take, skip } = paginate(Number(page), Number(limit));
+  const where: any = {};
+  if (gateway) where.gateway = String(gateway);
+  if (status) where.status = String(status);
+
+  const [payments, total] = await Promise.all([
+    prisma.payment.findMany({
+      where, take, skip, orderBy:{ createdAt:"desc" },
+      include: { order:{ select:{ orderNumber:true, store:{ select:{ name:true } } } } },
+    }),
+    prisma.payment.count({ where }),
+  ]);
+
+  return res.json({ success:true, data:payments, pagination:{ page:Number(page), limit:take, total, pages:Math.ceil(total/take) } });
+};
+
+// ── Broadcast Message to All Users ────────────────────────────────────────────
+export const broadcastMessage = async (req: AuthRequest, res: Response) => {
+  const { title, message, type="info", targetPlan="" } = req.body;
+  if (!title || !message) return res.status(400).json({ success:false, error:"title and message required" });
+
+  const where: any = { role:"STORE_OWNER" };
+  if (targetPlan) where.plan = String(targetPlan);
+
+  const users = await prisma.user.findMany({ where, select:{ id:true } });
+  
+  // Create notification for each user
+  await prisma.notification.createMany({
+    data: users.map((u:any) => ({
+      userId:  u.id,
+      title,
+      body:    message,
+      type:    type as any,
+      channel: "IN_APP",
+    })),
+    skipDuplicates: true,
+  });
+
+  return res.json({ success:true, message:`Broadcast sent to ${users.length} users` });
+};
+
+// ── Manual Plan Change ─────────────────────────────────────────────────────────
+export const changeUserPlan = async (req: AuthRequest, res: Response) => {
+  const { userId } = req.params;
+  const { plan, reason } = req.body;
+  const valid = ["FREE","GROWTH","PRO","ENTERPRISE"];
+  if (!valid.includes(plan)) return res.status(400).json({ success:false, error:"Invalid plan" });
+
+  await prisma.user.update({ where:{ id:userId }, data:{ plan } });
+  
+  // Log the action
+  await prisma.auditLog.create({
+    data: {
+      userId: (req as any).user.userId,
+      action: "PLAN_CHANGE",
+      resource:"user",
+      resourceId: userId,
+      details: { plan, reason, changedBy:(req as any).user.userId },
+    } as any,
+  });
+
+  return res.json({ success:true, message:`Plan changed to ${plan}` });
+};
+
+// ── Feature Flags ──────────────────────────────────────────────────────────────
+export const getFeatureFlags = async (_req: AuthRequest, res: Response) => {
+  const settings = await prisma.platformSetting.findMany({ where:{ key:{ startsWith:"feature_" } } });
+  const flags: Record<string,boolean> = {};
+  settings.forEach((s:any) => { flags[s.key.replace("feature_","")] = s.value === "true"; });
+  return res.json({ success:true, data:flags });
+};
+
+export const updateFeatureFlag = async (req: AuthRequest, res: Response) => {
+  const { flag, enabled } = req.body;
+  await prisma.platformSetting.upsert({
+    where:  { key:`feature_${flag}` },
+    update: { value:String(enabled) },
+    create: { key:`feature_${flag}`, value:String(enabled) },
+  });
+  return res.json({ success:true, message:"Feature flag updated" });
+};
