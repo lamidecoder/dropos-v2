@@ -75,13 +75,14 @@ export default function StorefrontPage() {
     </div>
   );
 
-  const products   = productsData?.products || productsData?.data || [];
-  const categories = ["All", ...new Set(products.map((p: any) => p.category).filter(Boolean))] as string[];
+  const products   = productsData?.products || productsData?.data || productsData || [];
+  const safeProducts = Array.isArray(products) ? products : [];
+  const categories = ["All", ...new Set(safeProducts.map((p: any) => p.category).filter(Boolean))] as string[];
 
   return (
     <TemplateRenderer
       store={store}
-      products={products}
+      products={safeProducts}
       categories={categories}
       search={search}
       onSearch={setSearch}

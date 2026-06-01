@@ -3168,17 +3168,17 @@ function LuxeTemplate({ store, products=[], search, onSearch, category, onCatego
             <a href="#listings" style={{padding:"14px 40px",border:`1px solid ${brand}`,color:brand,fontSize:12,fontWeight:400,letterSpacing:"0.16em",textTransform:"uppercase",textDecoration:"none",fontFamily:"inherit"}}>VIEW LISTINGS</a>
           </motion.div>
         </div>
-        {products.length>1&&<div style={{position:"absolute",bottom:32,right:48,display:"flex",gap:8}}>
-          {products.slice(0,4).map((_,i)=><div key={i} onClick={()=>setActiveIdx(i)} style={{width:i===activeIdx?32:8,height:1,background:i===activeIdx?brand:"rgba(242,237,228,0.3)",cursor:"pointer",transition:"width 0.3s"}}/>)}
+        {(Array.isArray(products)?products:[]).length>1&&<div style={{position:"absolute",bottom:32,right:48,display:"flex",gap:8}}>
+          {(Array.isArray(products)?products:[]).slice(0,4).map((_,i)=><div key={i} onClick={()=>setActiveIdx(i)} style={{width:i===activeIdx?32:8,height:1,background:i===activeIdx?brand:"rgba(242,237,228,0.3)",cursor:"pointer",transition:"width 0.3s"}}/>)}
         </div>}
       </div>
       <div id="listings" style={{maxWidth:1280,margin:"0 auto",padding:"clamp(48px,8vw,96px) clamp(20px,4vw,48px)"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:48,borderBottom:`1px solid rgba(192,151,46,0.12)`,paddingBottom:24}}>
           <h2 style={{fontSize:"clamp(28px,4vw,44px)",fontWeight:300,margin:0,letterSpacing:"-0.01em"}}>Available Listings</h2>
-          <span style={{fontSize:12,color:brand,letterSpacing:"0.1em",textTransform:"uppercase"}}>{products.length} Properties</span>
+          <span style={{fontSize:12,color:brand,letterSpacing:"0.1em",textTransform:"uppercase"}}>{(Array.isArray(products)?products:[]).length} Properties</span>
         </div>
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"100%":"320px"},1fr))`,gap:24}}>
-          {isLoading?Array.from({length:4}).map((_,i)=><div key={i} style={{borderRadius:4,background:"rgba(192,151,46,0.04)",aspectRatio:"4/3",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
+          {isLoading?Array.from({length:4}).map((_,i)=><div key={i} style={{borderRadius:4,background:"rgba(192,151,46,0.04)",aspectRatio:"4/3",animation:"pulse 1.5s infinite"}}/>):(Array.isArray(products)?products:[]).map(p=>{
             const img=p.images?.[0]||"https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&h=400&fit=crop";
             const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false);
             return(<div key={p.id} style={{background:"#161616",border:`1px solid rgba(192,151,46,0.08)`}}>
@@ -3246,7 +3246,7 @@ function MuseTemplate({ store, products=[], search, onSearch, category, onCatego
       </div>
       <div id="work" style={{maxWidth:1400,margin:"0 auto",padding:"clamp(40px,6vw,64px) clamp(16px,3vw,32px)"}}>
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"280px"},1fr))`,gap:3,background:"#1A1A1A"}}>
-          {isLoading?Array.from({length:6}).map((_,i)=><div key={i} style={{background:"#F4F0EB",aspectRatio:"1",animation:"pulse 1.5s infinite"}}/>):products.map((p,idx)=>{
+          {isLoading?Array.from({length:6}).map((_,i)=><div key={i} style={{background:"#F4F0EB",aspectRatio:"1",animation:"pulse 1.5s infinite"}}/>):(Array.isArray(products)?products:[]).map((p,idx)=>{
             const img=p.images?.[0]||"https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&h=600&fit=crop";
             const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false); const[hov,setHov]=useState(false);
             const isBig=idx===0||(idx===3);
@@ -3320,7 +3320,7 @@ function PearlTemplate({ store, products=[], search, onSearch, category, onCateg
           <div style={{width:48,height:1,background:brand,margin:"0 auto"}}/>
         </div>
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"240px"},1fr))`,gap:24}}>
-          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{borderRadius:20,background:"rgba(200,147,108,0.06)",aspectRatio:"3/4",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
+          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{borderRadius:20,background:"rgba(200,147,108,0.06)",aspectRatio:"3/4",animation:"pulse 1.5s infinite"}}/>):(Array.isArray(products)?products:[]).map(p=>{
             const img=p.images?.[0]||"https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&h=700&fit=crop";
             const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false); const disc=p.comparePrice&&p.comparePrice>p.price?Math.round((1-p.price/p.comparePrice)*100):0;
             return(<div key={p.id} style={{borderRadius:20,overflow:"hidden",background:"#fff",boxShadow:"0 4px 24px rgba(200,147,108,0.06)"}}>
@@ -3389,10 +3389,10 @@ function ChromeTemplate({ store, products=[], search, onSearch, category, onCate
       <div id="inventory" style={{maxWidth:1280,margin:"0 auto",padding:"clamp(40px,6vw,64px) clamp(16px,3vw,32px)"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:32}}>
           <h2 style={{fontSize:"clamp(28px,5vw,52px)",fontWeight:700,margin:0,textTransform:"uppercase",letterSpacing:"-0.02em"}}>Current Inventory</h2>
-          <span style={{fontSize:12,color:brand,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase"}}>{products.length} VEHICLES</span>
+          <span style={{fontSize:12,color:brand,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase"}}>{(Array.isArray(products)?products:[]).length} VEHICLES</span>
         </div>
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"100%":"320px"},1fr))`,gap:16}}>
-          {isLoading?Array.from({length:4}).map((_,i)=><div key={i} style={{background:"#1A1A1A",aspectRatio:"16/9",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
+          {isLoading?Array.from({length:4}).map((_,i)=><div key={i} style={{background:"#1A1A1A",aspectRatio:"16/9",animation:"pulse 1.5s infinite"}}/>):(Array.isArray(products)?products:[]).map(p=>{
             const img=p.images?.[0]||"https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&h=400&fit=crop";
             const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false);
             return(<div key={p.id} style={{background:"#1A1A1A",border:`1px solid rgba(232,160,32,0.08)`,overflow:"hidden"}}>
@@ -3448,7 +3448,7 @@ function BoundTemplate({ store, products=[], search, onSearch, category, onCateg
             <a href="#shelf" style={{display:"inline-block",padding:"12px 32px",borderRadius:4,background:brand,color:"#F9F4EE",fontSize:14,fontWeight:500,textDecoration:"none",fontFamily:"'Helvetica Neue',sans-serif",letterSpacing:"0.04em"}}>Browse the Shelf →</a>
           </div>
           {w>768&&<div style={{display:"flex",gap:12,justifyContent:"center"}}>
-            {products.slice(0,3).map((p,i)=><div key={p.id||i} style={{width:120,height:180,borderRadius:4,overflow:"hidden",transform:`rotate(${[-4,0,4][i]}deg)`,boxShadow:"4px 4px 16px rgba(26,16,8,0.15)",flexShrink:0,marginTop:i===1?0:24}}>
+            {(Array.isArray(products)?products:[]).slice(0,3).map((p,i)=><div key={p.id||i} style={{width:120,height:180,borderRadius:4,overflow:"hidden",transform:`rotate(${[-4,0,4][i]}deg)`,boxShadow:"4px 4px 16px rgba(26,16,8,0.15)",flexShrink:0,marginTop:i===1?0:24}}>
               <img src={p.images?.[0]||"https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=200&h=300&fit=crop"} alt={p.name} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
             </div>)}
           </div>}
@@ -3464,7 +3464,7 @@ function BoundTemplate({ store, products=[], search, onSearch, category, onCateg
       <div id="shelf" style={{maxWidth:1200,margin:"0 auto",padding:"clamp(40px,6vw,64px) clamp(16px,4vw,40px)"}}>
         <h2 style={{fontSize:"clamp(28px,4vw,40px)",fontWeight:700,color:"#1A1008",margin:"0 0 32px",letterSpacing:"-0.02em"}}>New Arrivals</h2>
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"140px":"180px"},1fr))`,gap:24}}>
-          {isLoading?Array.from({length:10}).map((_,i)=><div key={i} style={{borderRadius:4,background:"rgba(139,58,58,0.06)",aspectRatio:"2/3",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
+          {isLoading?Array.from({length:10}).map((_,i)=><div key={i} style={{borderRadius:4,background:"rgba(139,58,58,0.06)",aspectRatio:"2/3",animation:"pulse 1.5s infinite"}}/>):(Array.isArray(products)?products:[]).map(p=>{
             const img=p.images?.[0]||"https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=450&fit=crop";
             const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false); const[hov,setHov]=useState(false);
             return(<div key={p.id} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} style={{cursor:"pointer"}}>
@@ -3511,7 +3511,7 @@ function OnyxTemplate({ store, products=[], search, onSearch, category, onCatego
         </div>
         {categories.filter(c=>c!=="All").length>0&&<div style={{display:"flex",gap:0,borderBottom:"1px solid #e8e8e8",marginBottom:32,overflowX:"auto"}}>{categories.map(c=><button key={c} onClick={()=>onCategory?.(c)} style={{padding:"10px 20px",border:"none",borderBottom:`2px solid ${category===c?"#111":"transparent"}`,background:"transparent",color:category===c?"#111":"#888",fontSize:12,fontWeight:600,cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase",fontFamily:"inherit",whiteSpace:"nowrap"}}>{c}</button>)}</div>}
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"220px"},1fr))`,gap:1,background:"#e8e8e8"}}>
-          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{background:"#fff",aspectRatio:"4/5",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
+          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{background:"#fff",aspectRatio:"4/5",animation:"pulse 1.5s infinite"}}/>):(Array.isArray(products)?products:[]).map(p=>{
             const img=p.images?.[0]||"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=500&fit=crop";
             const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false); const[hov,setHov]=useState(false);
             return(<div key={p.id} style={{background:"#fff"}} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>
@@ -3555,7 +3555,7 @@ function BlazeTemplate({ store, products=[], search, onSearch, category, onCateg
       {categories.filter(c=>c!=="All").length>0&&<div style={{borderBottom:`2px solid ${brand}20`,overflowX:"auto"}}><div style={{maxWidth:1280,margin:"0 auto",padding:"0 clamp(16px,3vw,32px)",display:"flex",gap:0}}>{categories.map(c=><button key={c} onClick={()=>onCategory?.(c)} style={{padding:"14px 20px",border:"none",borderBottom:`3px solid ${category===c?brand:"transparent"}`,background:"transparent",color:category===c?brand:"rgba(245,245,245,0.35)",fontSize:12,fontWeight:700,cursor:"pointer",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"inherit",whiteSpace:"nowrap"}}>{c}</button>)}</div></div>}
       <div id="products" style={{maxWidth:1280,margin:"0 auto",padding:"clamp(32px,5vw,56px) clamp(16px,3vw,32px)"}}>
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"220px"},1fr))`,gap:2}}>
-          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{background:"#1A1A1A",aspectRatio:"1",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
+          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{background:"#1A1A1A",aspectRatio:"1",animation:"pulse 1.5s infinite"}}/>):(Array.isArray(products)?products:[]).map(p=>{
             const img=p.images?.[0]||"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop";
             const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false);
             return(<div key={p.id} style={{background:"#1A1A1A"}}>
@@ -3599,7 +3599,7 @@ function FloraTemplate({ store, products=[], search, onSearch, category, onCateg
       {categories.filter(c=>c!=="All").length>0&&<div style={{padding:"16px clamp(16px,4vw,40px)",background:"#ECF5E4",borderBottom:"1px solid rgba(58,125,68,0.1)",overflowX:"auto"}}><div style={{display:"flex",gap:8,maxWidth:1200,margin:"0 auto"}}>{categories.map(c=><button key={c} onClick={()=>onCategory?.(c)} style={{padding:"8px 20px",borderRadius:99,border:`1px solid ${category===c?brand:"rgba(58,125,68,0.2)"}`,background:category===c?brand:"transparent",color:category===c?"#F5F9F0":"rgba(26,46,28,0.6)",fontSize:13,fontWeight:400,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>{c}</button>)}</div></div>}
       <div id="products" style={{maxWidth:1200,margin:"0 auto",padding:"clamp(40px,6vw,64px) clamp(16px,4vw,40px)"}}>
         <div style={{display:"grid",gridTemplateColumns:`repeat(auto-fill,minmax(${w<640?"44vw":"240px"},1fr))`,gap:20}}>
-          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{borderRadius:20,background:"rgba(58,125,68,0.06)",aspectRatio:"3/4",animation:"pulse 1.5s infinite"}}/>):products.map(p=>{
+          {isLoading?Array.from({length:8}).map((_,i)=><div key={i} style={{borderRadius:20,background:"rgba(58,125,68,0.06)",aspectRatio:"3/4",animation:"pulse 1.5s infinite"}}/>):(Array.isArray(products)?products:[]).map(p=>{
             const img=p.images?.[0]||"https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500&h=700&fit=crop";
             const{add}=useCart(store.id,currency); const[added,setAdded]=useState(false);
             return(<div key={p.id} style={{borderRadius:20,overflow:"hidden",background:"#fff",boxShadow:"0 2px 16px rgba(58,125,68,0.06)"}}>
