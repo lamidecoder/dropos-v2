@@ -112,7 +112,12 @@ export default function DashboardPage() {
   // Direct product count — more reliable than analytics which may be cached
   const { data: productCount } = useQuery({
     queryKey: ["dashboard-product-count", storeId],
-    queryFn:  () => api.get(`/products/${storeId}?limit=1`).then(r => r.data.data?.total || r.data.total || (Array.isArray(r.data.data) ? r.data.data.length : 0)),
+    queryFn:  () => api.get(`/products/${storeId}?limit=1`).then(r => {
+      const d = r.data;
+      return d.data?.pagination?.total || d.pagination?.total || d.data?.total || d.total ||
+             (Array.isArray(d.data?.products) ? d.data.products.length : 0) ||
+             (Array.isArray(d.data) ? d.data.length : 0) || 0;
+    }),
     enabled:  !!storeId,
     staleTime: 60000,
   });
