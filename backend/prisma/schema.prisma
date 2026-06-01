@@ -161,7 +161,10 @@ model Store {
   domain          String?     @unique
   customDomain    String?     @unique
   templateId      String?
-  paystackConnected Boolean  @default(false)
+  paystackConnected  Boolean  @default(false)
+  paystackPublicKey  String?
+  paystackSecretKey  String?
+  whatsappPhone      String?  // store-level WhatsApp for customer chat bubble
   status          StoreStatus @default(ACTIVE)
   primaryColor    String?     @default("#7c3aed")
   accentColor     String?     @default("#a855f7")

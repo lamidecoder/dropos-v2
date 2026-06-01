@@ -1,24 +1,33 @@
+"use client";
+import { motion } from "framer-motion";
 import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, padding:24, background:"#F4F2FB", fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif" }}>
-      <div style={{ width:64, height:64, borderRadius:18, background:"linear-gradient(145deg,#2D1B69,#0D0625)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="white"/></svg>
+    <div style={{ minHeight:"100vh", background:"#07050F", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Plus Jakarta Sans',system-ui", padding:"20px" }}>
+      <div style={{ position:"absolute", inset:0, pointerEvents:"none" }}>
+        <div style={{ position:"absolute", top:"20%", left:"50%", transform:"translateX(-50%)", width:600, height:400, borderRadius:"50%", background:"radial-gradient(circle,rgba(107,53,232,0.12),transparent 70%)", filter:"blur(60px)" }}/>
       </div>
-      <div style={{ textAlign:"center" }}>
-        <p style={{ fontSize:80, fontWeight:900, color:"#130D2E", margin:"0 0 8px", letterSpacing:"-0.06em", lineHeight:1, opacity:0.08 }}>404</p>
-        <h1 style={{ fontSize:24, fontWeight:800, color:"#130D2E", margin:"-40px 0 10px", letterSpacing:"-0.03em" }}>Page not found</h1>
-        <p style={{ fontSize:15, color:"rgba(19,13,46,0.5)", margin:"0 0 28px" }}>This page doesn't exist or was moved.</p>
-        <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
-          <Link href="/dashboard" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"11px 22px", borderRadius:12, background:"#130D2E", color:"#fff", textDecoration:"none", fontSize:14, fontWeight:700 }}>
-            Go to dashboard
+      <motion.div initial={{opacity:0,y:24}} animate={{opacity:1,y:0}} transition={{duration:0.6}} style={{ textAlign:"center", position:"relative", zIndex:1, maxWidth:480 }}>
+        {/* KIRO Icon */}
+        <div style={{ width:72, height:72, borderRadius:22, background:"linear-gradient(135deg,#6B35E8,#3D1C8A)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 24px", boxShadow:"0 16px 40px rgba(107,53,232,0.4)" }}>
+          <span style={{ fontSize:32 }}>⚡</span>
+        </div>
+        <p style={{ fontSize:12, fontWeight:700, color:"#8B5CF6", letterSpacing:"0.15em", margin:"0 0 12px", textTransform:"uppercase" }}>KIRO · Page Not Found</p>
+        <h1 style={{ fontSize:"clamp(40px,8vw,72px)", fontWeight:900, color:"#fff", letterSpacing:"-0.05em", margin:"0 0 16px", lineHeight:1 }}>404</h1>
+        <p style={{ fontSize:"clamp(15px,2vw,18px)", color:"rgba(255,255,255,0.5)", lineHeight:1.7, margin:"0 0 32px" }}>
+          This page doesn't exist. KIRO searched the entire platform and found nothing here.
+        </p>
+        <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+          <Link href="/dashboard" style={{ padding:"12px 28px", borderRadius:14, background:"linear-gradient(135deg,#6B35E8,#3D1C8A)", color:"#fff", fontSize:14, fontWeight:700, textDecoration:"none", boxShadow:"0 8px 24px rgba(107,53,232,0.35)" }}>
+            Back to Dashboard →
           </Link>
-          <Link href="/" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"11px 22px", borderRadius:12, background:"transparent", color:"rgba(19,13,46,0.5)", textDecoration:"none", fontSize:14, fontWeight:600, border:"1px solid rgba(19,13,46,0.1)" }}>
-            Home
+          <Link href="/kiro" style={{ padding:"12px 28px", borderRadius:14, border:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.6)", fontSize:14, fontWeight:600, textDecoration:"none" }}>
+            Ask KIRO
           </Link>
         </div>
-      </div>
+        <p style={{ fontSize:12, color:"rgba(255,255,255,0.2)", marginTop:40 }}>DropOS · droposhq.com</p>
+      </motion.div>
     </div>
   );
 }

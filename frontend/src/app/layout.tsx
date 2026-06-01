@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { KeepAlive } from "../components/KeepAlive";
 import { Providers } from "../components/layout/Providers";
 import { CookieBanner } from "../components/CookieBanner";
 import Script from "next/script";
@@ -69,7 +70,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body style={{ height:"100%", overflow:"auto" }}>
-        <Providers>{children}</Providers>
+        <Providers>
+        <KeepAlive/>{children}</Providers>
         <CookieBanner />
         {/* Service Worker registration */}
         <Script id="sw-register" strategy="afterInteractive">{

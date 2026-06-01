@@ -83,26 +83,6 @@ export default function DashboardPage() {
   const storeId = user?.stores?.[0]?.id;
   const storeSlug = user?.stores?.[0]?.slug;
 
-  // No store yet — first-time user
-  if (user && (!user.stores || user.stores.length === 0)) {
-    return (
-      <div style={{ maxWidth:560, margin:"80px auto 0", textAlign:"center", padding:"0 24px" }}>
-        <div style={{ width:72, height:72, borderRadius:20, background:"linear-gradient(145deg,#2D1B69,#0D0625)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", boxShadow:"0 8px 32px rgba(45,27,105,0.25)" }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9z" fill="white"/></svg>
-        </div>
-        <h1 style={{ fontSize:26, fontWeight:900, color:isDark?"#F0ECFF":"#130D2E", margin:"0 0 10px", letterSpacing:"-0.04em" }}>
-          Welcome, {firstName}!
-        </h1>
-        <p style={{ fontSize:15, color:isDark?"rgba(240,236,255,0.5)":"rgba(19,13,46,0.5)", margin:"0 0 32px", lineHeight:1.6 }}>
-          Your store is being set up. This usually takes a few seconds. Refresh the page to see your dashboard.
-        </p>
-        <a href="/dashboard/stores" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"13px 28px", borderRadius:12, background:"#6B35E8", color:"#fff", textDecoration:"none", fontSize:14, fontWeight:700 }}>
-          Go to my store →
-        </a>
-      </div>
-    );
-  }
-
   useEffect(() => {
     const h = new Date().getHours();
     setGreeting(h < 12 ? "morning" : h < 17 ? "afternoon" : "evening");

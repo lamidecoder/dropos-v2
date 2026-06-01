@@ -40,6 +40,8 @@ const storeSchema = z.object({
   smsPhone:          z.string().optional().nullable(),
   whatsappEnabled:   z.boolean().optional(),
   whatsappPhone:     z.string().optional().nullable(),
+  paystackPublicKey: z.string().optional().nullable(),
+  paystackSecretKey: z.string().optional().nullable(),
   notifyOwnerSms:    z.boolean().optional(),
   notifyCustomerSms: z.boolean().optional(),
 });
