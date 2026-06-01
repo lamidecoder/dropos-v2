@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap, LayoutDashboard, Package, ShoppingCart, ShoppingBag, Users,
   BarChart2, Settings, Bell, LogOut, TrendingUp, Store,
-  Tag, Truck, Download, Eye, CreditCard, Key, Building2,
+  Tag, Truck, Download, Eye, CreditCard, Key,
   Flame, Globe, RefreshCw, RotateCcw, Repeat,
   Gift, MessageSquare, Mail, Activity,
   FileText, Webhook, LifeBuoy, ChevronRight, Menu, X,
@@ -123,6 +123,7 @@ const OWNER_NAV = [
 
   // Studio  -  AI content creation
   { id: "studio", label: "Studio", items: [
+    { href: "/dashboard/store-generator", icon: Sparkles, label: "AI Store Design", badge: "NEW" },
     { href: "/dashboard/content-studio", icon: Video,      label: "Content Studio", badge: "AI" },
     { href: "/dashboard/image-studio",   icon: Image,      label: "Image Studio",   badge: "AI" },
     { href: "/dashboard/tiktok-scripts", icon: PlayCircle, label: "TikTok Scripts", badge: "AI" },
@@ -160,8 +161,6 @@ const OWNER_NAV = [
   // Account
   { id: "account", label: "Account", items: [
     { href: "/dashboard/billing",       icon: CreditCard, label: "Billing"       },
-    { href: "/dashboard/virtual-account", icon: Building2, label: "Bank Account",  badge: "NEW" },
-    { href: "/dashboard/delivery",      icon: Truck,      label: "Book Delivery", badge: "NEW" },
     { href: "/dashboard/notifications", icon: Bell,       label: "Notifications" },
     { href: "/dashboard/support",       icon: LifeBuoy,   label: "Support"       },
     { href: "/dashboard/settings",      icon: Settings,   label: "Settings"      },

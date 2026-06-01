@@ -82,6 +82,20 @@ router.get   ("/pulse",                 getPulseAlerts);
 router.patch ("/pulse/:id/read",        readPulseAlert);
 
 // Skills (saved prompts)
+import { generateStoreIdentity } from "../services/kai.storeGenerator.service";
+
+// KIRO Store Generator — describe business → full store identity
+router.post("/generate-store", async (req, res) => {
+  try {
+    const { description, storeName } = req.body;
+    if (!description) return res.status(400).json({ success:false, error:"description required" });
+    const identity = await generateStoreIdentity(description, storeName);
+    res.json({ success:true, data:identity });
+  } catch (e:any) {
+    res.status(500).json({ success:false, error:e.message });
+  }
+});
+
 // Quick Commands — power user shortcuts
 router.get("/commands", (req, res) => {
   res.json({ success: true, data: QUICK_COMMANDS });

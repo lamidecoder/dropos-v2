@@ -22,9 +22,9 @@ const changelog = [
       { type: "new",  text: "Inventory management page with low-stock alerts" },
       { type: "new",  text: "Order invoice PDF - download from any order" },
       { type: "new",  text: "Customer reviews dashboard - approve or reject" },
-      
-      
-      
+      { type: "new",  text: "Deployment configs for Railway, Render and Vercel" },
+      { type: "fix",  text: "Fixed duplicate ShippingZone model in Prisma schema" },
+      { type: "fix",  text: "Fixed broken import causing backend crash on startup" },
     ],
   },
   {
@@ -47,7 +47,7 @@ const changelog = [
       { type: "new",  text: "Payment confirmation and order status emails" },
       { type: "new",  text: "Store onboarding wizard for new users" },
       { type: "new",  text: "Subscription billing UI with plan comparison" },
-      
+      { type: "fix",  text: "Stripe webhook signature verification fixed" },
       { type: "impr", text: "Faster product image uploads with Cloudinary" },
     ],
   },

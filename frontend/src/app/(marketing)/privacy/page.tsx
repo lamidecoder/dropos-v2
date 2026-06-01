@@ -65,8 +65,8 @@ export default function PrivacyPage() {
             <ul style={{ paddingLeft: 20, margin: "10px 0 0" }}>
               <li style={{ marginBottom: 8 }}><strong>Paystack / Stripe</strong> — payment processing</li>
               <li style={{ marginBottom: 8 }}><strong>Resend</strong> — transactional emails</li>
-              <li style={{ marginBottom: 8 }}><strong>KIRO AI engine</strong> — powers AI features. Your messages are processed to generate responses and are not stored for training purposes</li>
-              <li style={{ marginBottom: 8 }}><strong>Cloud infrastructure providers</strong> — secure hosting and data storage</li>
+              <li style={{ marginBottom: 8 }}><strong>Anthropic</strong> — AI features (KIRO) — messages are processed but not stored for training</li>
+              <li style={{ marginBottom: 8 }}><strong>Railway / Render</strong> — infrastructure hosting</li>
               <li style={{ marginBottom: 8 }}><strong>Law enforcement</strong> — when legally required</li>
             </ul>
           </Section>

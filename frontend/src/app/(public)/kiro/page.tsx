@@ -5,7 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useAuthStore } from "../../../store/auth.store";
 
-const BASE    = process.env.NEXT_PUBLIC_API_URL || "";
+const BASE    = process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api";
 const ACCENT  = "#7C3AED";
 const ACCENT_D = "#5B21B6";
 
@@ -14,11 +14,18 @@ const KIROChatFull = dynamic(() => import("../../../components/kai/KIROChat"), {
 });
 
 const TL = {
-  bg:"#F4F2FB", s1:"#FAFAFC", s2:"#EEEAF8", s3:"#E5E0F5",
-  text:"#130D2E", sub:"rgba(19,13,46,0.6)", muted:"rgba(19,13,46,0.38)",
-  border:"rgba(100,70,200,0.1)", borderH:"rgba(107,53,232,0.3)",
-  accent:ACCENT, accentD:ACCENT_D, accentBg:ACCENT+"12",
-  shadow:"0 1px 4px rgba(45,27,105,0.06),0 4px 20px rgba(45,27,105,0.04)",
+  // Exact match to auth pages (#F4F2FB bg, #130D2E text, #6B35E8 accent)
+  bg:"#F4F2FB",       // same as auth page background
+  s1:"#FFFFFF",       // card white - same as auth input background
+  s2:"#F0EDF9",       // slightly tinted for sidebar hover
+  s3:"#E8E2F5",       // active states
+  text:"#130D2E",     // same as auth heading color
+  sub:"rgba(19,13,46,0.6)",    // same as auth body text
+  muted:"rgba(19,13,46,0.42)", // same as auth muted text
+  border:"rgba(107,53,232,0.1)",  // same as auth border
+  borderH:"rgba(107,53,232,0.25)",
+  accent:ACCENT, accentD:ACCENT_D, accentBg:ACCENT+"10",
+  shadow:"0 2px 12px rgba(107,53,232,0.06), 0 1px 3px rgba(19,13,46,0.04)",
   green:"#059669", amber:"#D97706", red:"#DC2626",
 };
 const TD = {
@@ -174,7 +181,7 @@ function VoiceBtn({ onTranscript, T }: { onTranscript:(t:string)=>void; T:typeof
         {isRec && interim && (
           <motion.div initial={{opacity:0,y:4,scale:.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0}}
             style={{position:"absolute",bottom:"calc(100% + 8px)",right:0,background:T.s1,border:`1px solid ${T.border}`,borderRadius:10,padding:"7px 12px",fontSize:12,color:T.text,whiteSpace:"nowrap",maxWidth:220,overflow:"hidden",textOverflow:"ellipsis",boxShadow:T.shadow,zIndex:10}}>
-            <span style={{color:"rgba(240,236,255,0.5)",fontSize:10,display:"block",marginBottom:2}}>Listening…</span>
+            <span style={{color:"rgba(19,13,46,0.4)",fontSize:10,display:"block",marginBottom:2}}>Listening…</span>
             {interim}
           </motion.div>
         )}
@@ -246,7 +253,7 @@ function AuthDropdown({ T, onLogin, onLoggedOut }: { T:typeof TL; onLogin:()=>vo
         onMouseLeave={e=>(e.currentTarget.style.borderColor=T.border)}>
         <div style={{width:28,height:28,borderRadius:8,background:`linear-gradient(135deg,${ACCENT},${ACCENT_D})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#fff",flexShrink:0}}>{initials}</div>
         <span style={{fontSize:12,fontWeight:600,color:T.text,maxWidth:72,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{first}</span>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={"rgba(240,236,255,0.5)"} strokeWidth="2.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={"rgba(19,13,46,0.4)"} strokeWidth="2.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
       </button>
 
       <AnimatePresence>
@@ -255,7 +262,7 @@ function AuthDropdown({ T, onLogin, onLoggedOut }: { T:typeof TL; onLogin:()=>vo
             style={{position:"absolute",right:0,top:"calc(100% + 7px)",minWidth:185,borderRadius:13,background:T.s1,border:`1px solid ${T.border}`,boxShadow:T.shadow,overflow:"hidden",zIndex:300}}>
             <div style={{padding:"11px 14px",borderBottom:`1px solid ${T.border}`}}>
               <p style={{fontSize:12,fontWeight:700,color:T.text}}>{user.name||"User"}</p>
-              <p style={{fontSize:11,color:"rgba(240,236,255,0.5)",marginTop:1}}>{user.email}</p>
+              <p style={{fontSize:11,color:"rgba(19,13,46,0.4)",marginTop:1}}>{user.email}</p>
             </div>
             <Link href="/dashboard" style={{textDecoration:"none"}}>
               <button style={{width:"100%",padding:"10px 14px",display:"flex",alignItems:"center",gap:9,background:"none",border:"none",cursor:"pointer",textAlign:"left",fontFamily:"inherit",transition:"background .12s"}}
@@ -311,7 +318,7 @@ function HistoryItem({ s, activeId, onSelect, onDelete, onRename, onPin, T }:
       {s.pinned && <svg width="8" height="8" viewBox="0 0 24 24" fill={T.accent} style={{flexShrink:0}}><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>}
 
       {/* Icon */}
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={s.id===activeId?T.accent:"rgba(240,236,255,0.5)"} strokeWidth="2" strokeLinecap="round" style={{flexShrink:0}}>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={s.id===activeId?T.accent:"rgba(19,13,46,0.4)"} strokeWidth="2" strokeLinecap="round" style={{flexShrink:0}}>
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
       </svg>
 
@@ -325,14 +332,14 @@ function HistoryItem({ s, activeId, onSelect, onDelete, onRename, onPin, T }:
         ) : (
           <>
             <p style={{fontSize:12,fontWeight:600,color:s.id===activeId?T.accent:T.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.title||"New conversation"}</p>
-            <p style={{fontSize:10,color:"rgba(240,236,255,0.5)",marginTop:1}}>{timeAgo(s.ts)}</p>
+            <p style={{fontSize:10,color:"rgba(19,13,46,0.4)",marginTop:1}}>{timeAgo(s.ts)}</p>
           </>
         )}
       </div>
 
       {/* Context menu trigger */}
       <button onClick={e=>{e.stopPropagation();setMenu(m=>!m);}}
-        style={{flexShrink:0,width:20,height:20,borderRadius:5,border:"none",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(240,236,255,0.5)",opacity:menu||hover?1:0,transition:"opacity .15s"}}>
+        style={{flexShrink:0,width:20,height:20,borderRadius:5,border:"none",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(19,13,46,0.4)",opacity:menu||hover?1:0,transition:"opacity .15s"}}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
       </button>
 
@@ -349,7 +356,7 @@ function HistoryItem({ s, activeId, onSelect, onDelete, onRename, onPin, T }:
               style={{width:"100%",padding:"9px 14px",border:"none",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",gap:9,fontSize:12,fontWeight:500,color:item.danger?"#EF4444":T.text,fontFamily:"inherit",textAlign:"left"}}
               onMouseEnter={e=>(e.currentTarget.style.background=T.s2)}
               onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill={item.fill?"currentColor":"none"} stroke={item.fill?"none":"currentColor"} strokeWidth="2" strokeLinecap="round" color={item.danger?"#EF4444":"rgba(240,236,255,0.5)"}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill={item.fill?"currentColor":"none"} stroke={item.fill?"none":"currentColor"} strokeWidth="2" strokeLinecap="round" color={item.danger?"#EF4444":"rgba(19,13,46,0.4)"}>
                 <path d={item.icon}/>
               </svg>
               {item.label}
@@ -379,7 +386,7 @@ function Sidebar({ history, activeId, onSelect, onNew, onDelete, onRename, onPin
         <div style={{padding:"13px 14px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}><Logo size={22}/><span style={{fontSize:13,fontWeight:700,color:T.text}}>Chat history</span></div>
           <button onClick={onClose}
-            style={{width:26,height:26,borderRadius:6,border:`1px solid ${T.border}`,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(240,236,255,0.5)"}}
+            style={{width:26,height:26,borderRadius:6,border:`1px solid ${T.border}`,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(19,13,46,0.4)"}}
             onMouseEnter={e=>(e.currentTarget.style.background=T.s2)} onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -398,7 +405,7 @@ function Sidebar({ history, activeId, onSelect, onNew, onDelete, onRename, onPin
           {history.length===0 && (
             <div style={{textAlign:"center",marginTop:32,padding:"0 12px"}}>
               <div style={{fontSize:24,marginBottom:8}}>💬</div>
-              <p style={{fontSize:12,color:"rgba(240,236,255,0.5)",lineHeight:1.7}}>No chats yet.<br/>Start a conversation<br/>and it'll appear here.</p>
+              <p style={{fontSize:12,color:"rgba(19,13,46,0.4)",lineHeight:1.7}}>No chats yet.<br/>Start a conversation<br/>and it'll appear here.</p>
             </div>
           )}
           {[...history].sort((a,b) => (b.pinned?1:0)-(a.pinned?1:0)).map(s => (
@@ -447,12 +454,12 @@ function AuthModal({ onClose, onSuccess, T }: { onClose:()=>void; onSuccess:(sid
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{display:"flex",justifyContent:"center",marginBottom:12}}><Logo size={38}/></div>
           <h2 style={{fontSize:19,fontWeight:700,color:T.text,margin:"0 0 4px",letterSpacing:"-0.3px"}}>{tab==="register"?"Create account":"Welcome back"}</h2>
-          <p style={{fontSize:12,color:"rgba(240,236,255,0.5)"}}>{tab==="register"?"Free · No card needed":"Sign in to KIRO"}</p>
+          <p style={{fontSize:12,color:"rgba(19,13,46,0.4)"}}>{tab==="register"?"Free · No card needed":"Sign in to KIRO"}</p>
         </div>
         <div style={{display:"flex",gap:2,padding:3,borderRadius:9,background:T.s2,marginBottom:16}}>
           {(["register","login"] as const).map(m=>(
             <button key={m} onClick={()=>{setTab(m);setErr("");}}
-              style={{flex:1,padding:"6px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:12,fontWeight:500,transition:"all 0.15s",background:tab===m?T.s1:"transparent",color:tab===m?T.text:"rgba(240,236,255,0.5)",boxShadow:tab===m?T.shadow:"none"}}>
+              style={{flex:1,padding:"6px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:12,fontWeight:500,transition:"all 0.15s",background:tab===m?T.s1:"transparent",color:tab===m?T.text:"rgba(19,13,46,0.4)",boxShadow:tab===m?T.shadow:"none"}}>
               {m==="register"?"Sign up":"Sign in"}
             </button>
           ))}
@@ -463,7 +470,7 @@ function AuthModal({ onClose, onSuccess, T }: { onClose:()=>void; onSuccess:(sid
           <input value={pass}  onChange={e=>setPass(e.target.value)}  placeholder="Password" type="password" style={inp} onFocus={focus} onBlur={e=>blur(e,T)} onKeyDown={e=>e.key==="Enter"&&submit()}/>
           {err && <p style={{fontSize:12,color:"#DC2626",textAlign:"center",margin:0}}>{err}</p>}
           <button onClick={submit} disabled={busy||!email||!pass}
-            style={{padding:"11px",borderRadius:9,border:"none",cursor:busy||!email||!pass?"not-allowed":"pointer",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,marginTop:2,background:busy||!email||!pass?T.s3:`linear-gradient(135deg,${ACCENT},${ACCENT_D})`,color:busy||!email||!pass?"rgba(240,236,255,0.5)":"#fff",transition:"all 0.2s",boxShadow:!busy&&email&&pass?`0 4px 14px ${ACCENT}30`:"none"}}>
+            style={{padding:"11px",borderRadius:9,border:"none",cursor:busy||!email||!pass?"not-allowed":"pointer",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,marginTop:2,background:busy||!email||!pass?T.s3:`linear-gradient(135deg,${ACCENT},${ACCENT_D})`,color:busy||!email||!pass?"rgba(19,13,46,0.4)":"#fff",transition:"all 0.2s",boxShadow:!busy&&email&&pass?`0 4px 14px ${ACCENT}30`:"none"}}>
             {busy?"…":tab==="register"?"Create account →":"Sign in →"}
           </button>
         </div>
@@ -520,8 +527,8 @@ function DemoChat({ T, onAuthNeeded }: { T:typeof TL; onAuthNeeded:()=>void }) {
             {msg.role==="ai"&&<Logo size={22}/>}
             <div style={{maxWidth:"82%",padding:msg.role==="user"?"9px 14px":"0",borderRadius:msg.role==="user"?"16px 16px 4px 16px":"0",background:msg.role==="user"?`linear-gradient(145deg,${ACCENT},${ACCENT_D})`:"transparent",color:msg.role==="user"?"#fff":T.text,fontSize:14,lineHeight:1.68,boxShadow:msg.role==="user"?`0 2px 8px ${ACCENT}28`:"none"}}>
               {msg.streaming&&!msg.text
-                ? <div style={{display:"flex",gap:4,padding:"3px 0"}}>{[0,1,2].map(i=><motion.div key={i} style={{width:5,height:5,borderRadius:"50%",background:"rgba(240,236,255,0.5)"}} animate={{y:[0,-4,0],opacity:[0.4,1,0.4]}} transition={{duration:0.6,repeat:Infinity,delay:i*0.12}}/>)}</div>
-                : <span>{msg.text}{msg.streaming&&<motion.span animate={{opacity:[1,0]}} transition={{duration:0.5,repeat:Infinity}} style={{display:"inline-block",width:2,height:13,background:"rgba(240,236,255,0.5)",marginLeft:1,verticalAlign:"text-bottom"}}/>}</span>
+                ? <div style={{display:"flex",gap:4,padding:"3px 0"}}>{[0,1,2].map(i=><motion.div key={i} style={{width:5,height:5,borderRadius:"50%",background:"rgba(19,13,46,0.4)"}} animate={{y:[0,-4,0],opacity:[0.4,1,0.4]}} transition={{duration:0.6,repeat:Infinity,delay:i*0.12}}/>)}</div>
+                : <span>{msg.text}{msg.streaming&&<motion.span animate={{opacity:[1,0]}} transition={{duration:0.5,repeat:Infinity}} style={{display:"inline-block",width:2,height:13,background:"rgba(19,13,46,0.4)",marginLeft:1,verticalAlign:"text-bottom"}}/>}</span>
               }
             </div>
           </motion.div>
@@ -530,7 +537,7 @@ function DemoChat({ T, onAuthNeeded }: { T:typeof TL; onAuthNeeded:()=>void }) {
           <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
             style={{margin:"4px 0 10px",padding:"12px 14px",borderRadius:11,background:T.accentBg,border:`1px solid ${T.border}`}}>
             <p style={{fontSize:13,fontWeight:600,color:T.text,margin:"0 0 3px"}}>KIRO is better with your store</p>
-            <p style={{fontSize:12,color:"rgba(240,236,255,0.5)",margin:"0 0 8px"}}>Free account unlocks full product import, analytics, and AI actions.</p>
+            <p style={{fontSize:12,color:"rgba(19,13,46,0.4)",margin:"0 0 8px"}}>Free account unlocks full product import, analytics, and AI actions.</p>
             <button onClick={onAuthNeeded} style={{padding:"6px 14px",borderRadius:7,border:"none",background:`linear-gradient(135deg,${ACCENT},${ACCENT_D})`,color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>Start free →</button>
           </motion.div>
         )}
@@ -735,7 +742,7 @@ export default function KIROPage() {
           <PulseDot/>
           {/* current session title */}
           {history.find(h=>h.id===sessionId) && (
-            <span style={{fontSize:11,color:"rgba(240,236,255,0.5)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>
+            <span style={{fontSize:11,color:"rgba(19,13,46,0.4)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>
               {history.find(h=>h.id===sessionId)?.title}
             </span>
           )}
@@ -792,7 +799,7 @@ export default function KIROPage() {
         <div style={{borderRight:`1px solid ${T.border}`,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"32px 24px",overflow:"hidden"}} className="kiro-left">
           <div>
             <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:.05}}>
-              <p style={{fontSize:10,fontWeight:700,color:"rgba(240,236,255,0.5)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:10}}>For African dropshippers</p>
+              <p style={{fontSize:10,fontWeight:700,color:"rgba(19,13,46,0.4)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:10}}>For African dropshippers</p>
               <h1 style={{fontSize:30,fontWeight:700,color:T.text,lineHeight:1.18,letterSpacing:"-0.5px",marginBottom:12}}>Your AI<br/>commerce<br/>partner.</h1>
               <p style={{fontSize:14,color:T.sub,lineHeight:1.7,marginBottom:24,maxWidth:270}}>Import products, write ad copy, manage orders, and understand your market — all from one conversation.</p>
             </motion.div>
@@ -809,7 +816,7 @@ export default function KIROPage() {
           <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.5}}
             style={{padding:"13px 14px",borderRadius:11,background:T.s1,border:`1px solid ${T.border}`,marginTop:20}}>
             <p style={{fontSize:13,color:T.sub,lineHeight:1.6,fontStyle:"italic",marginBottom:6}}>"KIRO found me 3 winning products and wrote all my TikTok scripts. First ₦100k month done."</p>
-            <p style={{fontSize:11,color:"rgba(240,236,255,0.5)",fontWeight:600}}>Adaeze O. · Lagos, Nigeria</p>
+            <p style={{fontSize:11,color:"rgba(19,13,46,0.4)",fontWeight:600}}>Adaeze O. · Lagos, Nigeria</p>
           </motion.div>
         </div>
 
