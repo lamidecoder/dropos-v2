@@ -95,6 +95,18 @@ export default function UserDetailPage() {
     onError:   () => toast.error("Delete failed"),
   });
 
+  const impersonateMut = useMutation({
+    mutationFn: () => adminAPI.post(`/admin/users/${userId}/impersonate`, {}),
+    onSuccess: (res: any) => {
+      const { accessToken, user: u } = res.data.data;
+      // Store token and redirect to dashboard
+      localStorage.setItem("dropos_access_token", accessToken);
+      toast.success(`Now viewing as ${u.email}`);
+      setTimeout(() => { window.location.href = "/dashboard"; }, 800);
+    },
+    onError: () => toast.error("Impersonation failed"),
+  });
+
   const toggleFlag = (flag: string) => {
     const flags = currentFlags.includes(flag)
       ? currentFlags.filter((f: string) => f !== flag)
@@ -463,6 +475,13 @@ export default function UserDetailPage() {
                     <Icon size={12} /> {label}
                   </button>
                 ))}
+                {/* Impersonate */}
+                <button
+                  onClick={() => { if(confirm(`Log in as ${user?.email}? You will be redirected to their dashboard.`)) impersonateMut.mutate(); }}
+                  disabled={impersonateMut.isPending}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all text-purple-700 dark:text-purple-300 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30">
+                  👤 {impersonateMut.isPending ? "Logging in..." : "Login as this user"}
+                </button>
               </div>
             </div>
           </div>

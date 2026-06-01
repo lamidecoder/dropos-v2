@@ -388,3 +388,176 @@ export const getPlatformAnalytics = async (req: AuthRequest, res: Response) => {
     data: { revenueByDay, ordersByDay, newUsersByDay },
   });
 };
+
+// ── Impersonation — login as any merchant ─────────────────────────────────────
+export const impersonateUser = async (req: AuthRequest, res: Response) => {
+  const { userId } = req.params;
+  const admin = req.user!;
+  if (admin.role !== "SUPER_ADMIN") return res.status(403).json({ success:false, error:"Forbidden" });
+
+  const user = await prisma.user.findUnique({ where:{ id:userId }, include:{ stores:{ select:{ id:true, slug:true } } } });
+  if (!user) return res.status(404).json({ success:false, error:"User not found" });
+
+  // Log the impersonation
+  await prisma.auditLog.create({
+    data: { userId:admin.userId, action:"IMPERSONATE", resource:"user", resourceId:userId, details:{ targetEmail:user.email } } as any,
+  });
+
+  const { signAccessToken, setRefreshCookie } = await import("../config/jwt");
+  const accessToken = signAccessToken({ userId:user.id, email:user.email, role:user.role as any, name:user.name||"" });
+  setRefreshCookie(res, signAccessToken({ userId:user.id, email:user.email, role:user.role as any, name:user.name||"" }));
+
+  return res.json({ success:true, message:`Now logged in as ${user.email}`, data:{ accessToken, user:{ id:user.id, email:user.email, name:user.name, role:user.role, stores:user.stores } } });
+};
+
+// ── Platform Coupons — create codes that work on any store ────────────────────
+export const getPlatformCoupons = async (req: AuthRequest, res: Response) => {
+  const { page=1, limit=20 } = req.query;
+  const { take, skip } = paginate(Number(page), Number(limit));
+  // Platform coupons are stored in settings
+  const setting = await prisma.platformSetting.findUnique({ where:{ key:"platform_coupons" } });
+  const coupons = setting ? JSON.parse(setting.value) : [];
+  const paged   = coupons.slice(skip, skip+take);
+  return res.json({ success:true, data:paged, pagination:{ total:coupons.length, page:Number(page), limit:take, pages:Math.ceil(coupons.length/take) } });
+};
+
+export const createPlatformCoupon = async (req: AuthRequest, res: Response) => {
+  const { code, type, value, maxUses, expiresAt, description, targetPlan } = req.body;
+  if (!code || !type || !value) return res.status(400).json({ success:false, error:"code, type, value required" });
+
+  const setting = await prisma.platformSetting.findUnique({ where:{ key:"platform_coupons" } });
+  const coupons = setting ? JSON.parse(setting.value) : [];
+
+  const existing = coupons.find((c:any) => c.code === code.toUpperCase());
+  if (existing) return res.status(400).json({ success:false, error:"Code already exists" });
+
+  const newCoupon = {
+    id: `pc_${Date.now()}`, code:code.toUpperCase(), type, value:Number(value),
+    maxUses:maxUses?Number(maxUses):null, expiresAt:expiresAt||null,
+    description:description||"", targetPlan:targetPlan||null,
+    usedCount:0, isActive:true, createdAt:new Date().toISOString(),
+  };
+
+  coupons.unshift(newCoupon);
+  await prisma.platformSetting.upsert({
+    where:{ key:"platform_coupons" },
+    update:{ value:JSON.stringify(coupons) },
+    create:{ key:"platform_coupons", value:JSON.stringify(coupons) },
+  });
+
+  await prisma.auditLog.create({
+    data:{ userId:req.user!.userId, action:"CREATE", resource:"platform_coupon", resourceId:newCoupon.id, details:newCoupon } as any,
+  });
+
+  return res.json({ success:true, message:"Coupon created", data:newCoupon });
+};
+
+export const deletePlatformCoupon = async (req: AuthRequest, res: Response) => {
+  const { couponId } = req.params;
+  const setting = await prisma.platformSetting.findUnique({ where:{ key:"platform_coupons" } });
+  const coupons = setting ? JSON.parse(setting.value) : [];
+  const filtered = coupons.filter((c:any) => c.id !== couponId);
+  await prisma.platformSetting.update({ where:{ key:"platform_coupons" }, data:{ value:JSON.stringify(filtered) } });
+  return res.json({ success:true, message:"Coupon deleted" });
+};
+
+// ── Email Templates ────────────────────────────────────────────────────────────
+export const getEmailTemplates = async (_req: AuthRequest, res: Response) => {
+  const setting = await prisma.platformSetting.findUnique({ where:{ key:"email_templates" } });
+  const defaults = {
+    welcome:       { subject:"Welcome to DropOS! 🚀", body:"Hi {{name}},\n\nWelcome to DropOS! Your store {{storeName}} is ready.\n\nStart by adding your first product or ask KIRO to set up your store for you.\n\n{{ctaUrl}}\n\nThe DropOS Team" },
+    orderConfirm:  { subject:"Order #{{orderNumber}} confirmed ✅", body:"Hi {{customerName}},\n\nYour order from {{storeName}} has been confirmed.\n\nOrder: #{{orderNumber}}\nTotal: {{total}}\nEstimated delivery: {{deliveryDate}}\n\nTrack your order: {{trackingUrl}}" },
+    orderShipped:  { subject:"Your order is on its way! 📦", body:"Hi {{customerName}},\n\nGreat news! Your order #{{orderNumber}} from {{storeName}} has been shipped.\n\nTrack it here: {{trackingUrl}}" },
+    passwordReset: { subject:"Reset your DropOS password", body:"Hi {{name}},\n\nClick the link below to reset your password. This link expires in 1 hour.\n\n{{resetUrl}}\n\nIf you didn't request this, ignore this email." },
+    planUpgraded:  { subject:"You're now on {{plan}} 🎉", body:"Hi {{name}},\n\nYour DropOS plan has been upgraded to {{plan}}. KIRO is now fully unlocked.\n\nExplore your new features: {{dashboardUrl}}" },
+  };
+  const templates = setting ? { ...defaults, ...JSON.parse(setting.value) } : defaults;
+  return res.json({ success:true, data:templates });
+};
+
+export const updateEmailTemplate = async (req: AuthRequest, res: Response) => {
+  const { key, subject, body } = req.body;
+  if (!key || !subject || !body) return res.status(400).json({ success:false, error:"key, subject, body required" });
+
+  const setting = await prisma.platformSetting.findUnique({ where:{ key:"email_templates" } });
+  const templates = setting ? JSON.parse(setting.value) : {};
+  templates[key] = { subject, body };
+
+  await prisma.platformSetting.upsert({
+    where:{ key:"email_templates" },
+    update:{ value:JSON.stringify(templates) },
+    create:{ key:"email_templates", value:JSON.stringify(templates) },
+  });
+
+  return res.json({ success:true, message:"Template saved" });
+};
+
+// ── Churn Analysis ─────────────────────────────────────────────────────────────
+export const getChurnAnalysis = async (_req: AuthRequest, res: Response) => {
+  const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate()-30);
+  const sixtyDaysAgo  = new Date(); sixtyDaysAgo.setDate(sixtyDaysAgo.getDate()-60);
+
+  const [
+    churned,         // Paid plan → suspended/no activity
+    atRisk,          // No orders in 14 days
+    recentCancels,   // Downgraded to free in last 30 days
+    avgLifetime,
+  ] = await Promise.all([
+    prisma.user.count({ where:{ role:"STORE_OWNER", status:"SUSPENDED", updatedAt:{ gte:thirtyDaysAgo } } }),
+    prisma.store.count({ where:{ status:"ACTIVE", orders:{ none:{ createdAt:{ gte:thirtyDaysAgo } } } } }),
+    prisma.user.count({ where:{ role:"STORE_OWNER", plan:"FREE", updatedAt:{ gte:thirtyDaysAgo } } }),
+    prisma.user.aggregate({ where:{ role:"STORE_OWNER" }, _avg:{ id:true } }), // placeholder
+  ]);
+
+  // Monthly churn for last 6 months
+  const months = Array.from({ length:6 }, (_,i) => {
+    const d = new Date(); d.setMonth(d.getMonth()-(5-i)); return new Date(d.getFullYear(),d.getMonth(),1);
+  });
+
+  const monthlyChurn = await Promise.all(months.map(async (start) => {
+    const end = new Date(start.getFullYear(), start.getMonth()+1, 0);
+    const count = await prisma.user.count({ where:{ role:"STORE_OWNER", status:"SUSPENDED", updatedAt:{ gte:start, lte:end } } });
+    return { month:start.toLocaleString("default",{ month:"short" }), churned:count };
+  }));
+
+  return res.json({ success:true, data:{ churned, atRisk, recentCancels, monthlyChurn, churnRate:Math.round((churned/Math.max(await prisma.user.count({ where:{ role:"STORE_OWNER" } }),1))*100) } });
+};
+
+// ── Growth Metrics — MRR, ARR, LTV ────────────────────────────────────────────
+export const getGrowthMetrics = async (_req: AuthRequest, res: Response) => {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const [totalUsers, paidUsers, monthRevenue, allRevenue] = await Promise.all([
+    prisma.user.count({ where:{ role:"STORE_OWNER" } }),
+    prisma.user.count({ where:{ role:"STORE_OWNER", plan:{ not:"FREE" } } }),
+    prisma.payment.aggregate({ where:{ status:"SUCCESS", createdAt:{ gte:monthStart } }, _sum:{ platformFee:true } }),
+    prisma.payment.aggregate({ where:{ status:"SUCCESS" }, _sum:{ platformFee:true } }),
+  ]);
+
+  const MRR = monthRevenue._sum.platformFee || 0;
+  const ARR = MRR * 12;
+  const LTV = totalUsers > 0 ? (allRevenue._sum.platformFee||0) / totalUsers : 0;
+  const ARPU = paidUsers > 0 ? MRR / paidUsers : 0;
+  const convRate = totalUsers > 0 ? Math.round((paidUsers/totalUsers)*100) : 0;
+
+  // Weekly growth (last 8 weeks)
+  const weeklyGrowth = await Promise.all(Array.from({length:8},(_,i)=>{
+    const end = new Date(); end.setDate(end.getDate()-(7*(7-i)));
+    const start = new Date(end); start.setDate(start.getDate()-7);
+    return prisma.user.count({ where:{ role:"STORE_OWNER", createdAt:{ gte:start, lte:end } } })
+      .then(count => ({ week:`W${i+1}`, newUsers:count }));
+  }));
+
+  return res.json({ success:true, data:{ MRR, ARR, LTV, ARPU, convRate, totalUsers, paidUsers, weeklyGrowth } });
+};
+
+// ── Paystack Subaccounts ───────────────────────────────────────────────────────
+export const getPaystackSubaccounts = async (_req: AuthRequest, res: Response) => {
+  const stores = await prisma.store.findMany({
+    where:{ paystackSubaccountCode:{ not:null } },
+    select:{ id:true, name:true, slug:true, paystackSubaccountCode:true, owner:{ select:{ name:true, email:true } }, _count:{ select:{ orders:true } } },
+    take:50,
+  });
+  return res.json({ success:true, data:stores });
+};

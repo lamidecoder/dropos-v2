@@ -2,17 +2,16 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "../../../lib/api";
-import { motion } from "framer-motion";
-import { Users, UserCheck, Ban, Trash2, ExternalLink } from "lucide-react";
+import { Search, Trash2, ChevronLeft, ChevronRight, Users, UserCheck, Ban, Crown, Filter } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { PageHeader, FilterBar, SearchInput, SelectFilter, DataTable, Badge, Pagination, StatGrid, StatCard } from "../../../components/admin/AdminTable";
 
-const V = { accent:"#6B35E8", v400:"#8B5CF6", green:"#10B981", amber:"#F59E0B", red:"#EF4444", cyan:"#06B6D4" };
-const STATUS_BG: Record<string,string> = { ACTIVE:"rgba(16,185,129,0.1)", PENDING_VERIFICATION:"rgba(245,158,11,0.1)", SUSPENDED:"rgba(239,68,68,0.1)", BANNED:"rgba(239,68,68,0.15)" };
-const STATUS_C:  Record<string,string> = { ACTIVE:V.green, PENDING_VERIFICATION:V.amber, SUSPENDED:V.red, BANNED:V.red };
-const PLAN_BG:   Record<string,string> = { FREE:"rgba(255,255,255,0.07)", GROWTH:"rgba(107,53,232,0.12)", PRO:"rgba(245,158,11,0.1)", ENTERPRISE:"rgba(16,185,129,0.1)" };
-const PLAN_C:    Record<string,string> = { FREE:"rgba(255,255,255,0.4)", GROWTH:V.accent, PRO:V.amber, ENTERPRISE:V.green };
+const V = { v500:"#6B35E8", v400:"#8B5CF6", green:"#10B981", amber:"#F59E0B", red:"#EF4444" };
+const t = { card:"rgba(255,255,255,0.03)", border:"rgba(255,255,255,0.07)", text:"rgba(255,255,255,0.9)", muted:"rgba(255,255,255,0.4)", faint:"rgba(255,255,255,0.02)" };
+
+const STATUS_COLOR: Record<string,string> = { ACTIVE:V.green, PENDING_VERIFICATION:V.amber, SUSPENDED:V.red, BANNED:V.red };
+const PLAN_COLOR:   Record<string,string> = { FREE:"rgba(255,255,255,0.3)", GROWTH:V.v400, PRO:"#F59E0B", ENTERPRISE:"#10B981" };
 
 export default function AdminUsersPage() {
   const qc = useQueryClient();
@@ -23,109 +22,121 @@ export default function AdminUsersPage() {
 
   const { data, isLoading } = useQuery<any>({
     queryKey: ["admin-users", page, search, status, plan],
-    queryFn:  () => adminAPI.getUsers({ page, limit:20, search, status, plan }).then((r:any) => r.data),
-    placeholderData: (prev:any) => prev,
+    queryFn:  () => adminAPI.getUsers({ page, limit:20, search, status, plan }).then((r: any) => r.data),
+    placeholderData: (prev: any) => prev,
   });
 
-  const { data: statsData } = useQuery<any>({
-    queryKey: ["admin-overview"],
-    queryFn:  () => adminAPI.getStats().then((r:any) => r.data.data),
-  });
-
-  const deleteMut  = useMutation({
+  const deleteMut = useMutation({
     mutationFn: (id:string) => adminAPI.deleteUser(id),
-    onSuccess: () => { toast.success("User deleted"); qc.invalidateQueries({ queryKey:["admin-users"] }); },
-    onError:   () => toast.error("Delete failed"),
+    onSuccess: () => { toast.success("User deleted"); qc.invalidateQueries({queryKey:["admin-users"]}); },
+    onError: () => toast.error("Delete failed"),
   });
+
   const suspendMut = useMutation({
-    mutationFn: ({id,s}:{id:string;s:string}) => s==="SUSPENDED" ? adminAPI.unbanUser(id) : adminAPI.banUser(id),
-    onSuccess: () => { toast.success("Updated"); qc.invalidateQueries({ queryKey:["admin-users"] }); },
+    mutationFn: ({id,status}:{id:string;status:string}) => status === "BANNED" ? adminAPI.banUser(id) : adminAPI.unbanUser(id),
+    onSuccess: () => { toast.success("User updated"); qc.invalidateQueries({queryKey:["admin-users"]}); },
   });
 
-  const users = data?.data || [];
-  const meta  = data?.meta || data?.pagination || { total:0, page:1, pages:1 };
-  const s     = statsData;
-
-  const rows = users.map((u: any) => ({
-    user: (
-      <div style={{ display:"flex", alignItems:"center", gap:9, minWidth:0 }}>
-        <div style={{ width:32, height:32, borderRadius:9, background:`linear-gradient(135deg,#2D1B69,#6B35E8)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"#fff", flexShrink:0 }}>
-          {u.name?.charAt(0)||"U"}
-        </div>
-        <div style={{ minWidth:0 }}>
-          <Link href={`/admin/users/${u.id}`} style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,0.9)", textDecoration:"none", display:"block", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-            {u.name}
-          </Link>
-          <p style={{ fontSize:10, color:"rgba(255,255,255,0.4)", margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{u.email}</p>
-        </div>
-      </div>
-    ),
-    plan:   <Badge label={u.plan||"FREE"} color={PLAN_C[u.plan]||PLAN_C.FREE} bg={PLAN_BG[u.plan]||PLAN_BG.FREE}/>,
-    status: <Badge label={u.status||"ACTIVE"} color={STATUS_C[u.status]||V.green} bg={STATUS_BG[u.status]||STATUS_BG.ACTIVE}/>,
-    stores: <span style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,0.7)" }}>{u._count?.stores||0}</span>,
-    joined: <span style={{ fontSize:11, color:"rgba(255,255,255,0.35)" }}>{new Date(u.createdAt).toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"2-digit"})}</span>,
-    actions: (
-      <div style={{ display:"flex", gap:5 }}>
-        <Link href={`/admin/users/${u.id}`}
-          style={{ padding:"5px 8px", borderRadius:7, background:"rgba(107,53,232,0.1)", border:"1px solid rgba(107,53,232,0.2)", color:"#A78BFA", textDecoration:"none", display:"flex", alignItems:"center" }}>
-          <ExternalLink size={11}/>
-        </Link>
-        <button onClick={() => suspendMut.mutate({ id:u.id, s:u.status })}
-          style={{ padding:"5px 8px", borderRadius:7, background:u.status==="SUSPENDED"?"rgba(16,185,129,0.1)":"rgba(239,68,68,0.07)", border:`1px solid ${u.status==="SUSPENDED"?"rgba(16,185,129,0.2)":"rgba(239,68,68,0.12)"}`, color:u.status==="SUSPENDED"?V.green:V.red, cursor:"pointer", display:"flex", alignItems:"center" }}>
-          {u.status==="SUSPENDED" ? <UserCheck size={11}/> : <Ban size={11}/>}
-        </button>
-        <button onClick={() => { if(confirm(`Delete ${u.name}?`)) deleteMut.mutate(u.id); }}
-          style={{ padding:"5px 8px", borderRadius:7, background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.1)", color:V.red, cursor:"pointer", display:"flex", alignItems:"center" }}>
-          <Trash2 size={11}/>
-        </button>
-      </div>
-    ),
-  }));
+  const users = (data as any)?.data || [];
+  const meta  = (data as any)?.meta || { total:0, page:1, pages:1 };
 
   return (
     <div>
-      <PageHeader title="Users" sub={`${(meta.total||0).toLocaleString()} merchants on the platform`}/>
+      <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}} style={{ marginBottom:20 }}>
+        <h1 style={{ fontSize:22, fontWeight:900, letterSpacing:"-0.04em", color:t.text, margin:"0 0 4px" }}>Users</h1>
+        <p style={{ fontSize:13, color:t.muted, margin:0 }}>{meta.total?.toLocaleString()||0} total users</p>
+      </motion.div>
 
-      <StatGrid cols={4}>
-        <StatCard label="Total users"    value={(s?.users?.total||0).toLocaleString()}     color={V.accent}  icon={Users}/>
-        <StatCard label="Active"         value={(s?.users?.active||0).toLocaleString()}    color={V.green}   icon={UserCheck}/>
-        <StatCard label="Suspended"      value={(s?.users?.suspended||0).toLocaleString()} color={V.red}     icon={Ban}/>
-        <StatCard label="This month"     value={`+${s?.users?.newThisMonth||0}`}           color={V.cyan}    icon={Users}/>
-      </StatGrid>
+      {/* Filters */}
+      <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" }}>
+        <div style={{ flex:1, minWidth:200, display:"flex", alignItems:"center", gap:8, padding:"9px 14px", borderRadius:12, background:t.card, border:`1px solid ${t.border}` }}>
+          <Search size={14} style={{ color:t.muted, flexShrink:0 }}/>
+          <input value={search} onChange={e=>{setSearch(e.target.value);setPage(1);}} placeholder="Search by name or email..."
+            style={{ flex:1, background:"transparent", border:"none", outline:"none", color:t.text, fontSize:13, fontFamily:"inherit" }}/>
+        </div>
+        <select value={status} onChange={e=>{setStatus(e.target.value);setPage(1);}}
+          style={{ padding:"9px 14px", borderRadius:12, border:`1px solid ${t.border}`, background:t.card, color:t.muted, fontSize:13, outline:"none", cursor:"pointer", fontFamily:"inherit" }}>
+          <option value="">All Status</option>
+          <option value="ACTIVE">Active</option>
+          <option value="PENDING_VERIFICATION">Pending</option>
+          <option value="SUSPENDED">Suspended</option>
+          <option value="BANNED">Banned</option>
+        </select>
+        <select value={plan} onChange={e=>{setPlan(e.target.value);setPage(1);}}
+          style={{ padding:"9px 14px", borderRadius:12, border:`1px solid ${t.border}`, background:t.card, color:t.muted, fontSize:13, outline:"none", cursor:"pointer", fontFamily:"inherit" }}>
+          <option value="">All Plans</option>
+          <option value="FREE">Free</option>
+          <option value="GROWTH">Growth</option>
+          <option value="PRO">Pro</option>
+        </select>
+      </div>
 
-      <FilterBar>
-        <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search by name or email..."/>
-        <SelectFilter value={status} onChange={v => { setStatus(v); setPage(1); }} options={[
-          { value:"", label:"All status" },
-          { value:"ACTIVE", label:"Active" },
-          { value:"PENDING_VERIFICATION", label:"Pending" },
-          { value:"SUSPENDED", label:"Suspended" },
-          { value:"BANNED", label:"Banned" },
-        ]}/>
-        <SelectFilter value={plan} onChange={v => { setPlan(v); setPage(1); }} options={[
-          { value:"", label:"All plans" },
-          { value:"FREE", label:"Free" },
-          { value:"GROWTH", label:"Growth" },
-          { value:"PRO", label:"Pro" },
-          { value:"ENTERPRISE", label:"Enterprise" },
-        ]}/>
-      </FilterBar>
+      {/* Table */}
+      <div style={{ borderRadius:16, overflow:"hidden", background:t.card, border:`1px solid ${t.border}` }}>
+        <div style={{ display:"grid", gridTemplateColumns:"2fr 1.5fr 1fr 1fr 100px", gap:12, padding:"10px 16px", borderBottom:`1px solid ${t.border}` }}>
+          {["User","Email","Plan","Status","Actions"].map(h => (
+            <p key={h} style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:t.muted, margin:0 }}>{h}</p>
+          ))}
+        </div>
+        {isLoading ? (
+          <div style={{ textAlign:"center", padding:"40px", color:t.muted }}>Loading users...</div>
+        ) : users.length === 0 ? (
+          <div style={{ textAlign:"center", padding:"40px" }}>
+            <Users size={28} style={{ color:t.muted, margin:"0 auto 10px" }}/>
+            <p style={{ color:t.muted, fontSize:13, margin:0 }}>No users found</p>
+          </div>
+        ) : users.map((u:any, i:number) => {
+          const statusColor = STATUS_COLOR[u.status] || V.amber;
+          const planColor   = PLAN_COLOR[u.subscription?.plan || "FREE"];
+          return (
+            <motion.div key={u.id} initial={{opacity:0}} animate={{opacity:1}} transition={{delay:i*0.02}}
+              style={{ display:"grid", gridTemplateColumns:"2fr 1.5fr 1fr 1fr 100px", gap:12, alignItems:"center", padding:"12px 16px", borderBottom:`1px solid ${t.border}`, background:i%2===0?"transparent":t.faint }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
+                <div style={{ width:32, height:32, borderRadius:10, background:`linear-gradient(135deg,${V.v500},#3D1C8A)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"#fff", flexShrink:0 }}>
+                  {u.name?.charAt(0)||"U"}
+                </div>
+                <div style={{ minWidth:0 }}>
+                  <Link href={`/admin/users/${u.id}`} style={{ fontSize:13, fontWeight:700, color:t.text, textDecoration:"none", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", display:"block" }}>{u.name}</Link>
+                  <p style={{ fontSize:11, color:t.muted, margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{new Date(u.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <p style={{ fontSize:12, color:t.muted, margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{u.email}</p>
+              <span style={{ fontSize:11, fontWeight:700, color:planColor, background:`${planColor}18`, padding:"3px 10px", borderRadius:99, width:"fit-content" }}>
+                {u.subscription?.plan || "FREE"}
+              </span>
+              <span style={{ fontSize:11, fontWeight:700, color:statusColor, background:`${statusColor}15`, padding:"3px 10px", borderRadius:99, width:"fit-content" }}>
+                {u.status?.replace("_"," ")||"ACTIVE"}
+              </span>
+              <div style={{ display:"flex", gap:4 }}>
+                <button onClick={()=>suspendMut.mutate({id:u.id,status:u.status==="ACTIVE"?"SUSPENDED":"ACTIVE"})}
+                  style={{ width:28, height:28, borderRadius:8, border:"none", background:u.status==="ACTIVE"?"rgba(239,68,68,0.1)":"rgba(16,185,129,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
+                  title={u.status==="ACTIVE"?"Suspend":"Activate"}>
+                  {u.status==="ACTIVE"?<Ban size={12} color={V.red}/>:<UserCheck size={12} color={V.green}/>}
+                </button>
+                <button onClick={()=>{if(confirm("Delete user?")){deleteMut.mutate(u.id);}}}
+                  style={{ width:28, height:28, borderRadius:8, border:"none", background:"rgba(239,68,68,0.08)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <Trash2 size={12} color={V.red}/>
+                </button>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
 
-      <DataTable
-        loading={isLoading}
-        cols={[
-          { key:"user",    label:"User",    width:"2fr"    },
-          { key:"plan",    label:"Plan",    width:"100px"  },
-          { key:"status",  label:"Status",  width:"120px"  },
-          { key:"stores",  label:"Stores",  width:"70px",  hide:"sm" },
-          { key:"joined",  label:"Joined",  width:"90px",  hide:"md" },
-          { key:"actions", label:"",        width:"110px"  },
-        ]}
-        rows={rows}
-        empty="No users found"
-      />
-
-      <Pagination page={page} pages={meta.pages||1} total={meta.total||0} onPage={setPage}/>
+      {/* Pagination */}
+      {meta.pages > 1 && (
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginTop:16 }}>
+          <button onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={page===1}
+            style={{ width:32, height:32, borderRadius:10, border:`1px solid ${t.border}`, background:t.faint, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:page===1?0.3:1 }}>
+            <ChevronLeft size={14} color={t.muted}/>
+          </button>
+          <span style={{ fontSize:13, color:t.muted }}>Page {page} of {meta.pages}</span>
+          <button onClick={()=>setPage(p=>Math.min(meta.pages,p+1))} disabled={page===meta.pages}
+            style={{ width:32, height:32, borderRadius:10, border:`1px solid ${t.border}`, background:t.faint, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:page===meta.pages?0.3:1 }}>
+            <ChevronRight size={14} color={t.muted}/>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

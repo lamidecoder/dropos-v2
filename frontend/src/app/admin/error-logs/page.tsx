@@ -1,73 +1,134 @@
 "use client";
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "../../../lib/api";
-import { CheckCircle } from "lucide-react";
-import { PageHeader, DataTable, Pagination, FilterBar, SelectFilter } from "../../../components/admin/AdminTable";
+
+import { CheckCircle, AlertCircle, ChevronDown, Shield, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 
-const V = { accent:"#6B35E8", green:"#10B981", amber:"#F59E0B", red:"#EF4444" };
+export default function ErrorLogsPage() {
+  
+  
+  const qc   = useQueryClient();
+  const card = "bg-[var(--bg-card)] border-[var(--border)]";
+  const tx   = "text-[var(--text-primary)]";
+  const sub  = "text-[var(--text-tertiary)]";
+  const [page, setPage]   = useState(1);
+  const [filter, setFilter] = useState("");
+  const [expand, setExpand] = useState<string | null>(null);
 
-export default function AdminErrorLogsPage() {
-  const qc = useQueryClient();
-  const [page, setPage]     = useState(1);
-  const [resolved, setResolved] = useState("");
-
-  const { data, isLoading } = useQuery<any>({
-    queryKey: ["admin-errors", page, resolved],
-    queryFn: () => adminAPI.get("/admin/error-logs", { params:{ page, limit:25, resolved } }).then((r:any) => r.data),
+  const { data, isLoading } = useQuery({
+    queryKey: ["error-logs", page, filter],
+    queryFn:  () => adminAPI.getErrorLogs({ page, limit: 15, resolved: filter || undefined }).then((r) => r.data),
   });
 
-  const resolveMut = useMutation({
-    mutationFn: (id:string) => adminAPI.patch(`/admin/error-logs/${id}/resolve`, {}),
-    onSuccess: () => { toast.success("Resolved"); qc.invalidateQueries({ queryKey:["admin-errors"] }); },
+  const resolveLog = useMutation({
+    mutationFn: (id: string) => adminAPI.resolveError(id),
+    onSuccess: () => { toast.success("Marked as resolved"); qc.invalidateQueries({ queryKey: ["error-logs"] }); },
+    onError:   () => toast.error("Failed to resolve"),
   });
 
-  const logs = data?.data || [];
-  const meta = data?.pagination || { total:0, pages:1 };
-
-  const rows = logs.map((l: any) => ({
-    level: (
-      <span style={{ fontSize:10, fontWeight:800, padding:"2px 8px", borderRadius:99, background:l.level==="ERROR"?"rgba(239,68,68,0.12)":"rgba(245,158,11,0.1)", color:l.level==="ERROR"?V.red:V.amber }}>
-        {l.level||"ERROR"}
-      </span>
-    ),
-    message: <span style={{ fontSize:12, color:"rgba(255,255,255,0.7)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", display:"block" }}>{l.message}</span>,
-    path:    <span style={{ fontSize:11, fontFamily:"monospace", color:"rgba(255,255,255,0.4)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", display:"block" }}>{l.path||"—"}</span>,
-    date:    <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)", whiteSpace:"nowrap" }}>{new Date(l.createdAt).toLocaleString("en-NG",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</span>,
-    action: !l.resolved && (
-      <button onClick={() => resolveMut.mutate(l.id)}
-        style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"1px solid rgba(16,185,129,0.2)", background:"rgba(16,185,129,0.08)", color:V.green, cursor:"pointer", fontSize:11, fontWeight:700, fontFamily:"inherit" }}>
-        <CheckCircle size={11}/> Resolve
-      </button>
-    ),
-  }));
+  const logs       = data?.data || [];
+  const pagination = data?.pagination;
 
   return (
-    <div>
-      <PageHeader title="Error Logs" sub={`${(meta.total||0).toLocaleString()} total errors`}/>
+      <div className="space-y-6 max-w-4xl">
+        <div>
+          <h1 className={`text-2xl font-black tracking-tight ${tx}`}>Error Logs</h1>
+          <p className={`text-sm mt-0.5 ${sub}`}>{pagination?.total || 0} total errors</p>
+        </div>
 
-      <FilterBar>
-        <SelectFilter value={resolved} onChange={v => { setResolved(v); setPage(1); }} options={[
-          { value:"", label:"All errors" },
-          { value:"false", label:"Unresolved" },
-          { value:"true", label:"Resolved" },
-        ]}/>
-      </FilterBar>
+        {/* Filters */}
+        <div className="flex gap-2">
+          {[["", "All"], ["false", "Unresolved"], ["true", "Resolved"]].map(([v, l]) => (
+            <button key={v} onClick={() => { setFilter(v); setPage(1); }}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all
+                ${filter === v ? "text-[var(--text-primary)]" : `${sub} ${"hover:bg-[var(--bg-card)]"}`}`}
+              style={filter === v ? { background: "linear-gradient(135deg,#7c3aed,#a855f7)" } : {}}>
+              {l}
+            </button>
+          ))}
+        </div>
 
-      <DataTable
-        loading={isLoading}
-        cols={[
-          { key:"level",   label:"Level",   width:"80px"  },
-          { key:"message", label:"Message", width:"2fr"   },
-          { key:"path",    label:"Path",    width:"1fr",  hide:"md" },
-          { key:"date",    label:"When",    width:"120px", hide:"sm" },
-          { key:"action",  label:"",        width:"100px" },
-        ]}
-        rows={rows}
-        empty="No error logs"
-      />
-      <Pagination page={page} pages={meta.pages||1} total={meta.total||0} onPage={setPage}/>
-    </div>
+        {/* Logs */}
+        {isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className={`rounded-2xl border p-5 animate-pulse ${card}`}>
+                <div className={`h-4 w-64 rounded mb-2 ${"bg-[var(--bg-card)]"}`} />
+                <div className={`h-3 w-40 rounded ${"bg-[var(--bg-card)]"}`} />
+              </div>
+            ))}
+          </div>
+        ) : logs.length === 0 ? (
+          <div className={`text-center py-12 ${sub}`}>
+            <Shield size={40} className="mx-auto mb-3 opacity-20" />
+            <p className="text-sm">No error logs found</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {logs.map((log: any) => (
+              <div key={log.id} className={`rounded-2xl border overflow-hidden ${card}`}>
+                <button className="w-full text-left p-5" onClick={() => setExpand(expand === log.id ? null : log.id)}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={`p-2 rounded-lg flex-shrink-0 ${log.resolved ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"}`}>
+                        {log.resolved
+                          ? <CheckCircle size={14} className="text-emerald-500" />
+                          : <AlertCircle size={14} className="text-red-500" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className={`font-semibold text-sm truncate ${tx}`}>{log.message}</div>
+                        <div className={`text-xs mt-0.5 ${sub}`}>
+                          {log.method} {log.path} · Status {log.statusCode} ·{" "}
+                          {new Date(log.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {!log.resolved && (
+                        <button onClick={(e) => { e.stopPropagation(); resolveLog.mutate(log.id); }}
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600/30 transition-all">
+                          Resolve
+                        </button>
+                      )}
+                      <ChevronDown size={14} className={`${sub} transition-transform ${expand === log.id ? "rotate-180" : ""}`} />
+                    </div>
+                  </div>
+                </button>
+
+                {expand === log.id && log.stack && (
+                  <div className={`px-5 pb-5 border-t border-[var(--border)]/50`}>
+                    <div className={`mt-4 rounded-xl p-4 font-mono text-xs overflow-x-auto whitespace-pre-wrap bg-slate-950 text-[var(--text-secondary)]`}>
+                      {log.stack}
+                    </div>
+                    {log.userId && (
+                      <p className={`text-xs mt-2 ${sub}`}>User ID: {log.userId}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination && pagination.pages > 1 && (
+          <div className="flex items-center justify-between">
+            <p className={`text-sm ${sub}`}>{pagination.total} total</p>
+            <div className="flex gap-2">
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                className={`p-2 rounded-xl border disabled:opacity-40 border-[var(--border)] hover:bg-[var(--bg-card)]`}>
+                <ChevronLeft size={16} className={sub} />
+              </button>
+              <button onClick={() => setPage(p => Math.min(pagination.pages, p + 1))} disabled={page === pagination.pages}
+                className={`p-2 rounded-xl border disabled:opacity-40 border-[var(--border)] hover:bg-[var(--bg-card)]`}>
+                <ChevronRight size={16} className={sub} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
   );
 }
