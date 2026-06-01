@@ -164,11 +164,11 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }} className="grid-cols-2 sm:grid-cols-4">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }} className="grid-cols-2 ov-stats">
         {statCards.map((s, i) => <StatCard key={s.label} {...s} delay={i * 0.07} />)}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16 }} className="grid-1col lg:grid-2col">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16 }} className="grid-1col">
         {/* Left: Recent Orders */}
         <div>
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
@@ -303,12 +303,13 @@ export default function DashboardPage() {
       </div>
 
       <style>{`
-        @media(max-width:900px){
-          .grid-cols-2{grid-template-columns:1fr 1fr!important}
-          .grid-1col.lg\\:grid-2col{grid-template-columns:1fr!important}
+        @media(max-width:768px){
+          .grid-cols-2{ grid-template-columns:1fr 1fr!important; }
+          .grid-1col{ grid-template-columns:1fr!important; }
+          .ov-stats{ grid-template-columns:1fr 1fr!important; }
         }
         @media(max-width:480px){
-          .grid-cols-2{grid-template-columns:1fr 1fr!important}
+          .grid-cols-2{ grid-template-columns:1fr 1fr!important; gap:8px!important; }
         }
       `}</style>
     </div>

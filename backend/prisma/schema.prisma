@@ -170,6 +170,7 @@ model Store {
   fontFamily      String?     @default("DM Sans")
   borderRadius    String?     @default("rounded")
   tagline         String?
+  announcement    String?
   showReviews     Boolean     @default(true)
   showInventory   Boolean     @default(true)
   productsPerRow  Int         @default(4)
@@ -198,6 +199,11 @@ model Store {
   liveChatProvider  String?     // "tawk", "crisp", "tidio", "whatsapp", or null
   liveChatId        String?     // Tawk.to property ID / Crisp website ID / Tidio key
   liveChatEnabled   Boolean     @default(false)
+  // ── Social links ────────────────────────────────────────────────────────────
+  instagram         String?
+  tiktok            String?
+  facebook          String?
+  twitter           String?
   notifyOwnerSms    Boolean     @default(true)   // SMS owner on new order
   notifyCustomerSms Boolean     @default(false)
   loyaltyEnabled    Boolean     @default(false)
