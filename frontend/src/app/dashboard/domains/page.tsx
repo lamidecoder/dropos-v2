@@ -1,305 +1,260 @@
 "use client";
-// Path: frontend/src/app/dashboard/domains/page.tsx
-
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../../components/layout/DashboardLayout";
 import { useAuthStore } from "../../../store/auth.store";
 import { api } from "../../../lib/api";
-import { Globe, Check, X, ExternalLink, Copy, AlertCircle, Search, Loader2, CheckCircle, Clock } from "lucide-react";
 import toast from "react-hot-toast";
+import { Search, Globe, Check, X, ShoppingCart, RefreshCw, Star, Lock, ExternalLink } from "lucide-react";
 
-const ROOT_DOMAIN  = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "droposhq.com";
-const VERCEL_IP    = "76.76.21.21";
-const VERCEL_CNAME = "cname.vercel-dns.com";
-const V = { v500:"#6B35E8", v400:"#8B5CF6" };
+const V = { v500:"#6B35E8", v400:"#8B5CF6", green:"#10B981", amber:"#F59E0B", red:"#EF4444" };
+
+type DomainResult = { domain:string; available:boolean; usd:number; ngn:number; tld:string; popular?:boolean };
 
 export default function DomainsPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const { user } = useAuthStore();
-  const qc = useQueryClient();
-
-  const tk = {
-    card:   isDark ? "#16122A" : "#fff",
-    border: isDark ? "rgba(255,255,255,0.07)" : "rgba(107,53,232,0.08)",
+  const t = {
+    card:   isDark ? "rgba(255,255,255,0.03)" : "#fff",
     text:   isDark ? "#F0ECFF" : "#130D2E",
-    muted:  isDark ? "rgba(240,236,255,0.45)" : "rgba(19,13,46,0.55)",
-    faint:  isDark ? "rgba(255,255,255,0.03)" : "rgba(107,53,232,0.03)",
-    green:  "#10B981", amber: "#F59E0B", red: "#EF4444",
+    muted:  isDark ? "rgba(240,236,255,0.5)" : "rgba(19,13,46,0.5)",
+    border: isDark ? "rgba(107,53,232,0.12)" : "rgba(107,53,232,0.1)",
+    faint:  isDark ? "rgba(107,53,232,0.06)" : "rgba(107,53,232,0.04)",
+    input:  isDark ? "rgba(255,255,255,0.05)" : "#fff",
   };
 
-  const storeId   = user?.stores?.[0]?.id;
-  const storeSlug = user?.stores?.[0]?.slug;
-  const freeSubdomain = `${storeSlug}.${ROOT_DOMAIN}`;
+  const user    = useAuthStore(s => s.user);
+  const storeId = user?.stores?.[0]?.id;
+  const [q, setQ]               = useState("");
+  const [results, setResults]   = useState<DomainResult[]>([]);
+  const [selected, setSelected] = useState<DomainResult|null>(null);
+  const [step, setStep]         = useState<"search"|"checkout"|"success">("search");
+  const [years, setYears]       = useState(1);
+  const [buyForm, setBuyForm]   = useState({ firstName:"", lastName:"", email:user?.email||"", phone:"", address:"", city:"", country:"NG" });
 
-  const [customDomain, setCustomDomain]   = useState("");
-  const [domainSearch, setDomainSearch]   = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [searching,    setSearching]      = useState(false);
-
-  const { data: store } = useQuery({
+  const { data: currentDomains } = useQuery({
     queryKey: ["store-domains", storeId],
-    queryFn:  () => api.get(`/stores/${storeId}`).then(r => r.data.data),
+    queryFn:  () => api.get(`/domains/store/${storeId}`).then(r => r.data.data),
     enabled:  !!storeId,
   });
 
-  const addDomainMut = useMutation({
-    mutationFn: (domain: string) => api.post(`/stores/${storeId}/custom-domain`, { domain }),
-    onSuccess: () => {
-      toast.success("Custom domain added! Configure your DNS records below.");
-      qc.invalidateQueries({ queryKey: ["store-domains", storeId] });
-      setCustomDomain("");
-    },
-    onError: (e: any) => toast.error(e.response?.data?.message || "Failed to add domain"),
+  const searchMut = useMutation({
+    mutationFn: () => api.get("/domains/search", { params:{ q } }).then(r => r.data.data),
+    onSuccess:  (data) => setResults(data),
+    onError:    () => toast.error("Search failed"),
   });
 
-  const removeDomainMut = useMutation({
-    mutationFn: (domain: string) => api.delete(`/stores/${storeId}/custom-domain`, { data: { domain } }),
-    onSuccess: () => {
-      toast.success("Domain removed");
-      qc.invalidateQueries({ queryKey: ["store-domains", storeId] });
-    },
-    onError: () => toast.error("Failed to remove domain"),
+  const buyMut = useMutation({
+    mutationFn: () => api.post("/domains/register", {
+      storeId, domain: selected?.domain, years, ...buyForm,
+    }),
+    onSuccess: () => { setStep("success"); toast.success("Domain registered! DNS will connect in 24-48 hours."); },
+    onError:   (e:any) => toast.error(e.response?.data?.error || "Purchase failed"),
   });
 
-  const verifyMut = useMutation({
-    mutationFn: (domain: string) => api.post(`/stores/${storeId}/custom-domain/verify`, { domain }),
-    onSuccess: (res) => {
-      if (res.data.data?.verified) toast.success("Domain verified! ✅");
-      else toast.error("DNS not propagated yet — try again in a few minutes.");
-      qc.invalidateQueries({ queryKey: ["store-domains", storeId] });
-    },
-    onError: () => toast.error("Verification failed"),
-  });
+  const inp = { width:"100%", padding:"10px 14px", borderRadius:10, border:`1px solid ${t.border}`, background:t.input, color:t.text, fontSize:13, fontFamily:"inherit", outline:"none" };
 
-  async function searchDomains() {
-    if (!domainSearch.trim()) return;
-    setSearching(true);
-    // Whogohost / Namecheap check — we show suggestions
-    const base = domainSearch.toLowerCase().replace(/[^a-z0-9-]/g, "");
-    const tlds  = [".com", ".com.ng", ".ng", ".store", ".shop", ".co"];
-    // Simulate check (in production, hit a domain availability API)
-    await new Promise(r => setTimeout(r, 800));
-    setSearchResults(tlds.map((tld, i) => ({
-      domain:     `${base}${tld}`,
-      available:  Math.random() > 0.3,
-      price:      tld === ".com" ? "₦8,500/yr" : tld === ".com.ng" ? "₦12,000/yr" : tld === ".ng" ? "₦25,000/yr" : "₦6,500/yr",
-      registrar:  "https://whogohost.com",
-    })));
-    setSearching(false);
-  }
-
-  const customDomains: string[] = store?.customDomains || (store?.customDomain ? [store.customDomain] : []);
-
-  function copy(text: string) {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied!");
+  if (step === "success") {
+    return (
+      <motion.div initial={{ opacity:0, scale:0.97 }} animate={{ opacity:1, scale:1 }}
+        style={{ maxWidth:500, margin:"80px auto 0", textAlign:"center", padding:"0 24px" }}>
+        <div style={{ width:64, height:64, borderRadius:"50%", background:"rgba(16,185,129,0.1)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px" }}>
+          <Check size={28} color={V.green}/>
+        </div>
+        <h1 style={{ fontSize:24, fontWeight:900, color:t.text, margin:"0 0 10px", letterSpacing:"-0.04em" }}>Domain registered! 🎉</h1>
+        <p style={{ fontSize:15, color:t.muted, margin:"0 0 8px", lineHeight:1.6 }}>
+          <strong style={{ color:t.text }}>{selected?.domain}</strong> is now yours.
+        </p>
+        <p style={{ fontSize:13, color:t.muted, margin:"0 0 28px", lineHeight:1.6 }}>
+          Your store's DNS is being configured automatically. It will be live at your domain within 24-48 hours — no action needed.
+        </p>
+        <button onClick={() => { setStep("search"); setResults([]); setQ(""); setSelected(null); }}
+          style={{ padding:"12px 24px", borderRadius:12, border:`1px solid ${t.border}`, background:t.card, color:t.text, cursor:"pointer", fontSize:14, fontWeight:600, fontFamily:"inherit" }}>
+          Buy another domain
+        </button>
+      </motion.div>
+    );
   }
 
   return (
-    <div style={{ maxWidth: 860, margin: "0 auto" }}>
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.04em", color: tk.text, margin: "0 0 4px" }}>Domains</h1>
-        <p style={{ fontSize: 13, color: tk.muted, margin: 0 }}>Manage your store's web address.</p>
+    <div style={{ maxWidth:780, margin:"0 auto" }}>
+      <motion.div initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} style={{ marginBottom:24 }}>
+        <h1 style={{ fontSize:20, fontWeight:900, color:t.text, margin:"0 0 4px", letterSpacing:"-0.03em" }}>Domain Manager</h1>
+        <p style={{ fontSize:13, color:t.muted }}>Buy a domain and connect it to your store — all in one place, no technical setup</p>
       </motion.div>
 
-      {/* Free subdomain */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-        style={{ borderRadius: 18, background: tk.card, border: `1px solid ${tk.border}`, padding: "20px 24px", marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+      {/* Current domain */}
+      {currentDomains?.customDomain && (
+        <div style={{ padding:"14px 18px", borderRadius:14, background:"rgba(16,185,129,0.05)", border:"1px solid rgba(16,185,129,0.15)", display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
+          <Check size={16} color={V.green}/>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: tk.green }}/>
-              <span style={{ fontSize: 12, fontWeight: 700, color: tk.green }}>Active — Free Subdomain</span>
+            <p style={{ fontSize:13, fontWeight:700, color:t.text, margin:0 }}>Connected: <strong>{currentDomains.customDomain}</strong></p>
+            <p style={{ fontSize:11, color:t.muted, margin:0 }}>Your store is live at this domain</p>
+          </div>
+          <a href={`https://${currentDomains.customDomain}`} target="_blank" rel="noreferrer"
+            style={{ marginLeft:"auto", color:V.green, textDecoration:"none" }}>
+            <ExternalLink size={14}/>
+          </a>
+        </div>
+      )}
+
+      {step === "search" && (
+        <>
+          {/* Search */}
+          <div style={{ background:t.card, borderRadius:20, padding:24, border:`1px solid ${t.border}`, marginBottom:16 }}>
+            <div style={{ display:"flex", gap:10 }}>
+              <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, padding:"12px 16px", borderRadius:12, border:`1px solid ${q?`rgba(107,53,232,0.3)`:t.border}`, background:t.input }}>
+                <Globe size={15} color={t.muted as string}/>
+                <input value={q} onChange={e => setQ(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,""))}
+                  placeholder="Find the perfect domain... e.g. fashionhaven"
+                  onKeyDown={e => { if (e.key==="Enter" && q) searchMut.mutate(); }}
+                  style={{ flex:1, background:"transparent", border:"none", outline:"none", color:t.text, fontSize:14, fontFamily:"inherit" }}/>
+              </div>
+              <button onClick={() => searchMut.mutate()} disabled={!q || searchMut.isPending}
+                style={{ padding:"12px 22px", borderRadius:12, border:"none", cursor:"pointer", background:"linear-gradient(135deg,#2D1B69,#6B35E8)", color:"#fff", fontSize:14, fontWeight:700, fontFamily:"inherit", display:"flex", alignItems:"center", gap:8, opacity:!q?0.5:1 }}>
+                {searchMut.isPending ? <RefreshCw size={14} style={{ animation:"spin 0.7s linear infinite" }}/> : <Search size={14}/>}
+                Search
+              </button>
             </div>
-            <p style={{ fontSize: 18, fontWeight: 800, color: tk.text, margin: "0 0 4px", letterSpacing: "-0.02em" }}>
-              {freeSubdomain}
-            </p>
-            <p style={{ fontSize: 12, color: tk.muted, margin: 0 }}>
-              Included with every DropOS store. No setup required.
-            </p>
+            {results.length === 0 && !searchMut.isPending && (
+              <p style={{ fontSize:12, color:t.muted, margin:"12px 0 0", textAlign:"center" }}>
+                Try your brand name, business name, or a catchy word
+              </p>
+            )}
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => copy(freeSubdomain)}
-              style={{ padding: "8px 14px", borderRadius: 9, border: `1px solid ${tk.border}`, background: "transparent", color: tk.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
-              <Copy size={12}/> Copy
-            </button>
-            <a href={`https://${freeSubdomain}`} target="_blank" rel="noopener noreferrer"
-              style={{ padding: "8px 14px", borderRadius: 9, border: `1px solid ${tk.border}`, background: `${V.v400}10`, color: V.v400, fontSize: 12, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, textDecoration: "none", fontWeight: 600 }}>
-              <ExternalLink size={12}/> Visit
-            </a>
-          </div>
-        </div>
-      </motion.div>
 
-      {/* Add custom domain */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-        style={{ borderRadius: 18, background: tk.card, border: `1px solid ${tk.border}`, padding: "20px 24px", marginBottom: 16 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 800, color: tk.text, margin: "0 0 4px" }}>Connect a Custom Domain</h3>
-        <p style={{ fontSize: 13, color: tk.muted, margin: "0 0 16px" }}>Already own a domain? Connect it to your store.</p>
-
-        <div style={{ display: "flex", gap: 10 }}>
-          <input value={customDomain} onChange={e => setCustomDomain(e.target.value.toLowerCase())}
-            placeholder="e.g. mymshop.com"
-            onKeyDown={e => e.key === "Enter" && customDomain && addDomainMut.mutate(customDomain)}
-            style={{ flex: 1, padding: "11px 14px", borderRadius: 11, border: `1px solid ${tk.border}`, background: isDark ? "rgba(255,255,255,0.04)" : "#f9fafb", color: tk.text, fontSize: 14, outline: "none", fontFamily: "inherit" }}/>
-          <button onClick={() => customDomain && addDomainMut.mutate(customDomain)}
-            disabled={addDomainMut.isPending || !customDomain}
-            style={{ padding: "11px 20px", borderRadius: 11, background: `linear-gradient(135deg,${V.v500},${V.v400})`, border: "none", color: "#fff", fontSize: 13, fontWeight: 700, cursor: addDomainMut.isPending||!customDomain ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, opacity: !customDomain ? 0.5 : 1 }}>
-            {addDomainMut.isPending ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }}/> : <Globe size={13}/>}
-            Connect
-          </button>
-        </div>
-
-        {/* Existing custom domains */}
-        {customDomains.length > 0 && (
-          <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
-            {customDomains.map((domain: string) => {
-              const isVerified = store?.verifiedDomains?.includes(domain);
-              return (
-                <div key={domain} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 11, background: tk.faint, border: `1px solid ${tk.border}`, flexWrap: "wrap", gap: 10 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    {isVerified
-                      ? <CheckCircle size={16} color={tk.green}/>
-                      : <Clock size={16} color={tk.amber}/>
-                    }
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: tk.text, margin: 0 }}>{domain}</p>
-                      <p style={{ fontSize: 11, color: isVerified ? tk.green : tk.amber, margin: 0 }}>
-                        {isVerified ? "Active & verified" : "Pending DNS verification"}
-                      </p>
+          {/* Results */}
+          <AnimatePresence>
+            {results.length > 0 && (
+              <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                style={{ background:t.card, borderRadius:20, border:`1px solid ${t.border}`, overflow:"hidden" }}>
+                {results.map((r, i) => (
+                  <div key={r.domain} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 20px", borderBottom:i<results.length-1?`1px solid rgba(255,255,255,0.04)`:"none", opacity:r.available?1:0.45 }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <p style={{ fontSize:15, fontWeight:700, color:t.text, margin:0 }}>{r.domain}</p>
+                        {r.popular && <span style={{ fontSize:9, fontWeight:800, color:V.amber, background:"rgba(245,158,11,0.12)", padding:"2px 7px", borderRadius:99, letterSpacing:"0.06em" }}>POPULAR</span>}
+                        {!r.available && <span style={{ fontSize:9, fontWeight:700, color:t.muted, background:t.faint, padding:"2px 7px", borderRadius:99 }}>TAKEN</span>}
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    {!isVerified && (
-                      <button onClick={() => verifyMut.mutate(domain)}
-                        disabled={verifyMut.isPending}
-                        style={{ padding: "6px 14px", borderRadius: 8, border: `1px solid ${tk.amber}40`, background: `${tk.amber}10`, color: tk.amber, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                        Verify DNS
+                    <div style={{ textAlign:"right", marginRight:14 }}>
+                      <p style={{ fontSize:15, fontWeight:800, color:r.available?t.text:t.muted, margin:0 }}>₦{r.ngn.toLocaleString()}</p>
+                      <p style={{ fontSize:10, color:t.muted, margin:0 }}>per year</p>
+                    </div>
+                    {r.available ? (
+                      <button onClick={() => { setSelected(r); setStep("checkout"); }}
+                        style={{ padding:"8px 18px", borderRadius:10, border:"none", cursor:"pointer", background:"linear-gradient(135deg,#2D1B69,#6B35E8)", color:"#fff", fontSize:13, fontWeight:700, fontFamily:"inherit", whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:6 }}>
+                        <ShoppingCart size={12}/> Buy
                       </button>
+                    ) : (
+                      <div style={{ width:64, height:34, borderRadius:10, background:t.faint, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <Lock size={13} color={t.muted as string}/>
+                      </div>
                     )}
-                    <a href={`https://${domain}`} target="_blank" rel="noopener noreferrer"
-                      style={{ padding: "6px 12px", borderRadius: 8, border: `1px solid ${tk.border}`, background: "transparent", color: tk.muted, fontSize: 12, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
-                      <ExternalLink size={11}/>
-                    </a>
-                    <button onClick={() => removeDomainMut.mutate(domain)}
-                      style={{ padding: "6px 12px", borderRadius: 8, border: `1px solid rgba(239,68,68,0.2)`, background: "rgba(239,68,68,0.06)", color: tk.red, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
-                      <X size={11}/>
-                    </button>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      {/* DNS instructions */}
-      {customDomains.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-          style={{ borderRadius: 18, background: isDark ? "#120820" : "#F5F3FF", border: `1px solid rgba(107,53,232,0.15)`, padding: "20px 24px", marginBottom: 16 }}>
-          <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-            <AlertCircle size={16} color={V.v400} style={{ flexShrink: 0, marginTop: 1 }}/>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: tk.text, margin: "0 0 4px" }}>Configure your DNS records</p>
-              <p style={{ fontSize: 13, color: tk.muted, margin: 0 }}>Add these records at your domain registrar (Namecheap, GoDaddy, Whogohost, etc.)</p>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Info */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginTop:20 }} className="info-grid">
             {[
-              { type: "A", name: "@", value: VERCEL_IP, purpose: "Root domain (yourdomain.com)" },
-              { type: "CNAME", name: "www", value: VERCEL_CNAME, purpose: "WWW version" },
-            ].map(rec => (
-              <div key={rec.type} style={{ borderRadius: 10, border: `1px solid ${tk.border}`, background: tk.card, overflow: "hidden" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "60px 80px 1fr auto", gap: 0, fontSize: 12 }}>
-                  {[
-                    { label: "TYPE",    val: rec.type  },
-                    { label: "NAME",    val: rec.name  },
-                    { label: "VALUE",   val: rec.value },
-                    { label: "",        val: "copy"    },
-                  ].map((cell, ci) => (
-                    <div key={ci} style={{ padding: "12px 14px", borderRight: ci < 3 ? `1px solid ${tk.border}` : "none" }}>
-                      {ci === 0 && <p style={{ fontSize: 10, color: tk.muted, margin: "0 0 3px", fontWeight: 700, textTransform: "uppercase" }}>Type</p>}
-                      {ci === 1 && <p style={{ fontSize: 10, color: tk.muted, margin: "0 0 3px", fontWeight: 700, textTransform: "uppercase" }}>Name</p>}
-                      {ci === 2 && <p style={{ fontSize: 10, color: tk.muted, margin: "0 0 3px", fontWeight: 700, textTransform: "uppercase" }}>Value</p>}
-                      {ci === 3 && <div style={{ display: "flex", alignItems: "center", height: "100%" }}>
-                        <button onClick={() => copy(rec.value)} style={{ background: "none", border: "none", cursor: "pointer", color: V.v400, display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, fontFamily: "inherit" }}>
-                          <Copy size={11}/> Copy
-                        </button>
-                      </div>}
-                      {ci < 3 && <p style={{ fontSize: 12, fontWeight: ci === 2 ? 500 : 700, color: tk.text, margin: 0, fontFamily: ci === 2 ? "monospace" : "inherit", wordBreak: "break-all" }}>{cell.val}</p>}
-                    </div>
-                  ))}
-                </div>
-                <div style={{ padding: "6px 14px 8px", borderTop: `1px solid ${tk.border}`, background: tk.faint }}>
-                  <p style={{ fontSize: 11, color: tk.muted, margin: 0 }}>{rec.purpose} · DNS changes can take up to 48 hours</p>
-                </div>
+              { emoji:"🔒", title:"Secured instantly", desc:"DNS is auto-configured to your DropOS store in minutes" },
+              { emoji:"🇳🇬", title:"Pay in Naira",     desc:"No dollar card needed. Pay through your usual payment method" },
+              { emoji:"🔄", title:"Auto-renewal",       desc:"We remind you before expiry. Never lose your domain" },
+            ].map(c => (
+              <div key={c.title} style={{ padding:16, borderRadius:14, background:t.card, border:`1px solid ${t.border}`, textAlign:"center" }}>
+                <p style={{ fontSize:24, margin:"0 0 8px" }}>{c.emoji}</p>
+                <p style={{ fontSize:13, fontWeight:700, color:t.text, margin:"0 0 4px" }}>{c.title}</p>
+                <p style={{ fontSize:11, color:t.muted, margin:0, lineHeight:1.5 }}>{c.desc}</p>
               </div>
             ))}
           </div>
+        </>
+      )}
+
+      {step === "checkout" && selected && (
+        <motion.div initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }}>
+          <button onClick={() => setStep("search")} style={{ fontSize:12, color:t.muted, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", marginBottom:16 }}>
+            ← Back to search
+          </button>
+
+          {/* Summary */}
+          <div style={{ padding:20, borderRadius:16, background:"linear-gradient(135deg,rgba(107,53,232,0.1),rgba(107,53,232,0.05))", border:`1px solid rgba(107,53,232,0.2)`, marginBottom:20 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+              <Globe size={28} color={V.v400}/>
+              <div style={{ flex:1 }}>
+                <p style={{ fontSize:18, fontWeight:900, color:t.text, margin:0, letterSpacing:"-0.02em" }}>{selected.domain}</p>
+                <p style={{ fontSize:13, color:t.muted, margin:"2px 0 0" }}>Will connect to your store automatically</p>
+              </div>
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:16 }}>
+              <p style={{ fontSize:13, color:t.muted, margin:0 }}>Registration period:</p>
+              {[1,2,3].map(y => (
+                <button key={y} onClick={() => setYears(y)}
+                  style={{ padding:"5px 14px", borderRadius:8, border:`1px solid ${years===y?"rgba(107,53,232,0.4)":t.border}`, background:years===y?`${V.v500}12`:"transparent", color:years===y?V.v400:t.muted, cursor:"pointer", fontSize:12, fontWeight:700, fontFamily:"inherit" }}>
+                  {y}yr — ₦{(selected.ngn*y).toLocaleString()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Contact details */}
+          <div style={{ background:t.card, borderRadius:18, padding:24, border:`1px solid ${t.border}`, marginBottom:16 }}>
+            <p style={{ fontSize:14, fontWeight:700, color:t.text, margin:"0 0 16px" }}>Registration details</p>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }} className="form-grid">
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:t.muted, display:"block", marginBottom:5 }}>First name</label>
+                <input value={buyForm.firstName} onChange={e=>setBuyForm(f=>({...f,firstName:e.target.value}))} style={inp} placeholder="Olamide"/>
+              </div>
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:t.muted, display:"block", marginBottom:5 }}>Last name</label>
+                <input value={buyForm.lastName} onChange={e=>setBuyForm(f=>({...f,lastName:e.target.value}))} style={inp} placeholder="Sotunde"/>
+              </div>
+              <div style={{ gridColumn:"1/-1" }}>
+                <label style={{ fontSize:12, fontWeight:600, color:t.muted, display:"block", marginBottom:5 }}>Email</label>
+                <input type="email" value={buyForm.email} onChange={e=>setBuyForm(f=>({...f,email:e.target.value}))} style={inp}/>
+              </div>
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:t.muted, display:"block", marginBottom:5 }}>Phone</label>
+                <input value={buyForm.phone} onChange={e=>setBuyForm(f=>({...f,phone:e.target.value}))} style={inp} placeholder="+2348012345678"/>
+              </div>
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:t.muted, display:"block", marginBottom:5 }}>City</label>
+                <input value={buyForm.city} onChange={e=>setBuyForm(f=>({...f,city:e.target.value}))} style={inp} placeholder="Lagos"/>
+              </div>
+              <div style={{ gridColumn:"1/-1" }}>
+                <label style={{ fontSize:12, fontWeight:600, color:t.muted, display:"block", marginBottom:5 }}>Address</label>
+                <input value={buyForm.address} onChange={e=>setBuyForm(f=>({...f,address:e.target.value}))} style={inp} placeholder="123 Anywhere Street"/>
+              </div>
+            </div>
+          </div>
+
+          {/* Total + buy */}
+          <div style={{ padding:18, borderRadius:14, background:t.faint, border:`1px solid ${t.border}`, marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <div>
+              <p style={{ fontSize:12, color:t.muted, margin:0 }}>Total for {years} year{years>1?"s":""}</p>
+              <p style={{ fontSize:22, fontWeight:900, color:t.text, margin:0, letterSpacing:"-0.04em" }}>₦{(selected.ngn*years).toLocaleString()}</p>
+            </div>
+            <p style={{ fontSize:11, color:V.green, background:"rgba(16,185,129,0.1)", padding:"4px 12px", borderRadius:99, fontWeight:700 }}>
+              ✅ Auto DNS setup included
+            </p>
+          </div>
+
+          <button onClick={() => buyMut.mutate()}
+            disabled={!buyForm.firstName||!buyForm.lastName||!buyForm.email||!buyForm.phone||!buyForm.address||!buyForm.city||buyMut.isPending}
+            style={{ width:"100%", padding:"15px 0", borderRadius:14, border:"none", cursor:"pointer", background:"linear-gradient(135deg,#2D1B69,#6B35E8)", color:"#fff", fontSize:15, fontWeight:800, fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity:(!buyForm.firstName||!buyForm.email||!buyForm.phone)?0.5:1, boxShadow:"0 6px 24px rgba(107,53,232,0.25)" }}>
+            {buyMut.isPending ? <><RefreshCw size={15} style={{ animation:"spin 0.7s linear infinite" }}/> Registering…</> : <><ShoppingCart size={15}/> Complete purchase — ₦{(selected.ngn*years).toLocaleString()}</>}
+          </button>
         </motion.div>
       )}
 
-      {/* Domain search / purchase */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-        style={{ borderRadius: 18, background: tk.card, border: `1px solid ${tk.border}`, padding: "20px 24px" }}>
-        <h3 style={{ fontSize: 15, fontWeight: 800, color: tk.text, margin: "0 0 4px" }}>Find a Domain</h3>
-        <p style={{ fontSize: 13, color: tk.muted, margin: "0 0 16px" }}>Search for available domains and purchase through our partner registrars.</p>
-
-        <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", borderRadius: 11, border: `1px solid ${tk.border}`, background: isDark ? "rgba(255,255,255,0.04)" : "#f9fafb" }}>
-            <Search size={14} color={tk.muted}/>
-            <input value={domainSearch} onChange={e => setDomainSearch(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && searchDomains()}
-              placeholder="Search for a domain name..." 
-              style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 14, color: tk.text, fontFamily: "inherit" }}/>
-          </div>
-          <button onClick={searchDomains} disabled={searching || !domainSearch}
-            style={{ padding: "11px 20px", borderRadius: 11, background: `linear-gradient(135deg,${V.v500},${V.v400})`, border: "none", color: "#fff", fontSize: 13, fontWeight: 700, cursor: searching||!domainSearch ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, opacity: !domainSearch ? 0.5 : 1 }}>
-            {searching ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }}/> : <Search size={13}/>}
-            Search
-          </button>
-        </div>
-
-        {searchResults.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {searchResults.map(r => (
-              <div key={r.domain} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 11, border: `1px solid ${r.available ? tk.green+"30" : tk.border}`, background: r.available ? `${tk.green}06` : tk.faint }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  {r.available
-                    ? <Check size={15} color={tk.green}/>
-                    : <X size={15} color={tk.muted}/>
-                  }
-                  <div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: r.available ? tk.text : tk.muted, margin: 0 }}>{r.domain}</p>
-                    <p style={{ fontSize: 11, color: r.available ? tk.green : tk.muted, margin: 0 }}>
-                      {r.available ? "Available" : "Taken"}
-                    </p>
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  {r.available && <span style={{ fontSize: 13, fontWeight: 700, color: tk.text }}>{r.price}</span>}
-                  {r.available && (
-                    <a href={`${r.registrar}/domain-registration?domain=${r.domain}`} target="_blank" rel="noopener noreferrer"
-                      style={{ padding: "7px 16px", borderRadius: 8, background: `linear-gradient(135deg,${V.v500},${V.v400})`, color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
-                      Buy →
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
-            <p style={{ fontSize: 12, color: tk.muted, textAlign: "center", marginTop: 8 }}>
-              Domains purchased through <strong>Whogohost</strong> — Nigeria's leading registrar.
-              After purchase, add it above to connect to your store.
-            </p>
-          </div>
-        )}
-      </motion.div>
-
-      <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
+      <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @media(max-width:640px){ .info-grid{grid-template-columns:1fr!important;} .form-grid{grid-template-columns:1fr!important;} }
+      `}</style>
     </div>
   );
 }

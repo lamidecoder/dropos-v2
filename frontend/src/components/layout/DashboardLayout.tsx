@@ -16,7 +16,7 @@ import {
   Sparkles, Wallet, AlertCircle, Check, Info,
   Radio, Upload, Paintbrush, Percent, BarChart,
   Target, Clock, Layers, Shield, Copy, PlayCircle,
-  Database, Users2, TrendingDown, Cpu,
+  Database, Users2, TrendingDown, Cpu, Rocket,
 } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import CreditWallet from "../ui/CreditWallet";
@@ -113,6 +113,7 @@ const OWNER_NAV = [
     { href: "/dashboard/loyalty",         icon: Star,          label: "Loyalty"         },
     { href: "/dashboard/referral",        icon: Users,         label: "Referral"        },
     { href: "/dashboard/affiliates",      icon: Users2,        label: "Affiliates"      },
+    { href: "/dashboard/ads",             icon: Zap,           label: "Ad Studio",        badge: "AI"  },
     { href: "/dashboard/emails",          icon: Mail,          label: "Email Campaigns" },
     { href: "/dashboard/broadcasts",      icon: Radio,         label: "Broadcasts"      },
     { href: "/dashboard/comeback",        icon: RotateCcw,     label: "Win-Back"        },
@@ -123,7 +124,8 @@ const OWNER_NAV = [
 
   // Studio  -  AI content creation
   { id: "studio", label: "Studio", items: [
-    { href: "/dashboard/store-generator", icon: Sparkles, label: "AI Store Design", badge: "NEW" },
+    { href: "/dashboard/store-generator",  icon: Sparkles,   label: "AI Store Design",  badge: "NEW"  },
+    { href: "/dashboard/start-business",   icon: Rocket,     label: "Start a Business", badge: "NEW"  },
     { href: "/dashboard/content-studio", icon: Video,      label: "Content Studio", badge: "AI" },
     { href: "/dashboard/image-studio",   icon: Image,      label: "Image Studio",   badge: "AI" },
     { href: "/dashboard/tiktok-scripts", icon: PlayCircle, label: "TikTok Scripts", badge: "AI" },
@@ -161,6 +163,7 @@ const OWNER_NAV = [
   // Account
   { id: "account", label: "Account", items: [
     { href: "/dashboard/billing",       icon: CreditCard, label: "Billing"       },
+    { href: "/dashboard/domains",       icon: Globe, label: "Domains",        badge: "NEW" },
     { href: "/dashboard/notifications", icon: Bell,       label: "Notifications" },
     { href: "/dashboard/support",       icon: LifeBuoy,   label: "Support"       },
     { href: "/dashboard/settings",      icon: Settings,   label: "Settings"      },
