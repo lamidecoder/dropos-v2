@@ -253,11 +253,3 @@ app.use(notFound);
 app.use(errorHandler);
 
 export default app;
-// ── New feature routes ─────────────────────────────────────────────────────────
-import adsRoutes    from "./routes/ads.routes";
-import domainRoutes from "./routes/domain.routes";
-import bizGenRoutes from "./routes/bizGen.routes";
-
-app.use("/api/ads",     adsRoutes);
-app.use("/api/domains", domainRoutes);
-app.use("/api/biz",     bizGenRoutes);

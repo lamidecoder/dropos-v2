@@ -161,9 +161,14 @@ model Store {
   domain          String?     @unique
   customDomain    String?     @unique
   templateId      String?
-  paystackConnected  Boolean  @default(false)
-  paystackPublicKey  String?
-  paystackSecretKey  String?
+  // Bank account — merchant receives 98% of sales directly to their bank
+  bankName            String?  // e.g. "GTBank"
+  bankCode            String?  // Paystack bank code e.g. "058"
+  accountNumber       String?  // 10-digit NUBAN
+  accountName         String?  // Verified account name
+  paystackSubCode     String?  // Paystack subaccount code — auto-created on bank setup
+  paystackConnected   Boolean  @default(false)
+  whatsappPhone       String?  // store-level WhatsApp for customer chat bubble
   status          StoreStatus @default(ACTIVE)
   primaryColor    String?     @default("#7c3aed")
   accentColor     String?     @default("#a855f7")
