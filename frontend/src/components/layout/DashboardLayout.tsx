@@ -113,7 +113,7 @@ const OWNER_NAV = [
     { href: "/dashboard/loyalty",         icon: Star,          label: "Loyalty"         },
     { href: "/dashboard/referral",        icon: Users,         label: "Referral"        },
     { href: "/dashboard/affiliates",      icon: Users2,        label: "Affiliates"      },
-    { href: "/dashboard/ads",             icon: Zap,           label: "Ad Studio",        badge: "AI"  },
+    { href: "/dashboard/ads",             icon: Zap,           label: "Ad Copy",          badge: "AI"  },
     { href: "/dashboard/emails",          icon: Mail,          label: "Email Campaigns" },
     { href: "/dashboard/broadcasts",      icon: Radio,         label: "Broadcasts"      },
     { href: "/dashboard/comeback",        icon: RotateCcw,     label: "Win-Back"        },
@@ -124,8 +124,7 @@ const OWNER_NAV = [
 
   // Studio  -  AI content creation
   { id: "studio", label: "Studio", items: [
-    { href: "/dashboard/store-generator",  icon: Sparkles,   label: "AI Store Design",  badge: "NEW"  },
-    { href: "/dashboard/start-business",   icon: Rocket,     label: "Start a Business", badge: "NEW"  },
+        { href: "/dashboard/start-business",   icon: Rocket,     label: "Start a Business", badge: "NEW"  },
     { href: "/dashboard/content-studio", icon: Video,      label: "Content Studio", badge: "AI" },
     { href: "/dashboard/image-studio",   icon: Image,      label: "Image Studio",   badge: "AI" },
     { href: "/dashboard/tiktok-scripts", icon: PlayCircle, label: "TikTok Scripts", badge: "AI" },

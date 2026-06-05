@@ -44,7 +44,11 @@ export default function RegisterPage() {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = (data: Form) => reg.mutate(data);
+  const [agreedToTos, setAgreedToTos] = useState(false);
+  const onSubmit = (data: Form) => {
+    if (!agreedToTos) return;
+    reg.mutate(data);
+  };
 
   const handleGoogle = () => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "";
@@ -269,7 +273,15 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <button type="submit" disabled={reg.isPending}
+                        {/* Terms of Service */}
+            <div style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"8px 0" }}>
+              <input type="checkbox" id="tos" checked={agreedToTos} onChange={e => setAgreedToTos(e.target.checked)}
+                style={{ marginTop:2, accentColor:"#6B35E8", width:15, height:15, flexShrink:0, cursor:"pointer" }}/>
+              <label htmlFor="tos" style={{ fontSize:12, color:"rgba(255,255,255,0.5)", lineHeight:1.5, cursor:"pointer" }}>
+                I agree to DropOS&apos;s <a href="/terms" target="_blank" rel="noreferrer" style={{ color:"rgba(167,139,250,0.85)", textDecoration:"underline" }}>Terms of Service</a> and <a href="/privacy" target="_blank" rel="noreferrer" style={{ color:"rgba(167,139,250,0.85)", textDecoration:"underline" }}>Privacy Policy</a>
+              </label>
+            </div>
+            <button type="submit" disabled={reg.isPending || !agreedToTos}
               style={{
                 width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
                 gap: 8, padding: "14px 16px", borderRadius: 12, marginTop: 16,

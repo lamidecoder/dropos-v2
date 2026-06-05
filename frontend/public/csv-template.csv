@@ -1,0 +1,4 @@
+name,price,description,category,stock,images,compareAtPrice,costPrice,sku,weight,tags
+"Blue Denim Jacket - Women's XL",15000,"Stylish blue denim jacket, perfect for casual outings. Comfortable and durable.",Fashion,50,https://example.com/image.jpg,18000,5000,SKU-001,0.8,"fashion,jacket,denim"
+"Wireless Bluetooth Earbuds",8500,"High quality TWS earbuds with 20hr battery life and noise cancellation.",Electronics,100,https://example.com/image.jpg,12000,2500,SKU-002,0.15,"electronics,earbuds,bluetooth"
+"Kitchen Knife Set - 5 Piece",12000,"Professional stainless steel kitchen knife set with wooden block.",Home & Kitchen,30,https://example.com/image.jpg,15000,4000,SKU-003,1.2,"kitchen,knives,cooking"

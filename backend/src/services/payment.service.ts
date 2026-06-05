@@ -48,20 +48,27 @@ export const constructStripeEvent = (payload: Buffer, sig: string) => {
 
 // ── Paystack ──────────────────────────────────────────────────────────────────
 const PAYSTACK_BASE = "https://api.paystack.co";
-const paystackHeaders = {
-  Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-  "Content-Type": "application/json",
-};
+
+// Returns headers using merchant's own key when available, falls back to platform key
+function getPaystackHeaders(secretKey?: string | null) {
+  const key = secretKey || process.env.PAYSTACK_SECRET_KEY || "";
+  return {
+    Authorization: `Bearer ${key}`,
+    "Content-Type": "application/json",
+  };
+}
 
 export const initializePaystack = async (params: {
-  amount:      number;
-  currency:    string;
-  email:       string;
-  orderId:     string;
-  storeId:     string;
-  callbackUrl: string;
+  amount:          number;
+  currency:        string;
+  email:           string;
+  orderId:         string;
+  storeId:         string;
+  callbackUrl:     string;
+  storeSecretKey?: string | null; // Merchant's own Paystack secret key
 }) => {
   try {
+    const headers = getPaystackHeaders(params.storeSecretKey);
     const { data } = await axios.post(
       `${PAYSTACK_BASE}/transaction/initialize`,
       {
@@ -74,7 +81,7 @@ export const initializePaystack = async (params: {
           storeId: params.storeId,
         },
       },
-      { headers: paystackHeaders }
+      { headers }
     );
     return { authorizationUrl: data.data.authorization_url, reference: data.data.reference };
   } catch (err: any) {
@@ -95,13 +102,22 @@ export const verifyPaystack = async (reference: string) => {
   }
 };
 
-export const verifyPaystackWebhook = (payload: string, signature: string): boolean => {
+export const verifyPaystackWebhook = (payload: string, signature: string, storeSecretKey?: string | null): boolean => {
   const crypto = require("crypto");
-  const hash = crypto
-    .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY!)
-    .update(payload)
-    .digest("hex");
-  return hash === signature;
+  // Try the store's key first, then fall back to platform key
+  const keysToTry = [
+    storeSecretKey,
+    process.env.PAYSTACK_SECRET_KEY,
+  ].filter(Boolean);
+
+  for (const key of keysToTry) {
+    const hash = crypto
+      .createHmac("sha512", key!)
+      .update(payload)
+      .digest("hex");
+    if (hash === signature) return true;
+  }
+  return false;
 };
 
 // ── Flutterwave ───────────────────────────────────────────────────────────────

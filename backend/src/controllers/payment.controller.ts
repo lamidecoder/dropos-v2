@@ -51,13 +51,16 @@ export const initializePayment = async (req: Request, res: Response) => {
       customerEmail: order.customerEmail,
     });
   } else if (gateway === "PAYSTACK") {
+    // Use the store's own Paystack key if configured, otherwise fall back to platform key
+    const storeSecretKey = (order.store as any)?.paystackSecretKey || null;
     initData = await initializePaystack({
-      amount:      order.total,
-      currency:    order.currency === "NGN" ? "NGN" : "NGN",
-      email:       order.customerEmail,
-      orderId:     order.id,
-      storeId:     order.storeId,
+      amount:         order.total,
+      currency:       order.currency === "NGN" ? "NGN" : "NGN",
+      email:          order.customerEmail,
+      orderId:        order.id,
+      storeId:        order.storeId,
       callbackUrl,
+      storeSecretKey, // ← merchant's money goes to their account
     });
   } else if (gateway === "FLUTTERWAVE") {
     initData = await initializeFlutterwave({
@@ -119,12 +122,20 @@ export const paystackWebhook = async (req: Request, res: Response) => {
   const sig     = req.headers["x-paystack-signature"] as string;
   const payload = (req.body as Buffer).toString();
 
-  if (!verifyPaystackWebhook(payload, sig)) {
-    throw new AppError("Invalid webhook signature", 400);
-  }
-
   let event: any;
   try { event = JSON.parse(payload); } catch { return res.json({ received: true }); }
+
+  // Look up the store's secret key to verify signature properly
+  const storeId      = event.data?.metadata?.storeId;
+  let storeSecretKey = null;
+  if (storeId) {
+    const store = await prisma.store.findUnique({ where:{ id:storeId }, select:{ paystackSecretKey:true } });
+    storeSecretKey = (store as any)?.paystackSecretKey || null;
+  }
+
+  if (!verifyPaystackWebhook(payload, sig, storeSecretKey)) {
+    throw new AppError("Invalid webhook signature", 400);
+  }
 
   if (event.event === "charge.success") {
     const orderId = event.data?.metadata?.orderId;
