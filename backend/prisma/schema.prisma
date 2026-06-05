@@ -168,7 +168,6 @@ model Store {
   accountName         String?  // Verified account name
   paystackSubCode     String?  // Paystack subaccount code — auto-created on bank setup
   paystackConnected   Boolean  @default(false)
-  whatsappPhone       String?  // store-level WhatsApp for customer chat bubble
   status          StoreStatus @default(ACTIVE)
   primaryColor    String?     @default("#7c3aed")
   accentColor     String?     @default("#a855f7")
