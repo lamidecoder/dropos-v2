@@ -5,7 +5,7 @@ import axios from "axios";
 import { useAuthStore } from "../store/auth.store";
 
 export const api = axios.create({
-  baseURL:         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseURL:         process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api",
   withCredentials: true,
   headers:         { "Content-Type": "application/json" },
   timeout:         30000,
@@ -13,7 +13,7 @@ export const api = axios.create({
 
 // Public API - no auth, no redirects - for storefront use
 export const publicApi = axios.create({
-  baseURL:  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseURL:  process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api",
   timeout:  30000,
   headers:  { "Content-Type": "application/json" },
 });
@@ -86,7 +86,7 @@ api.interceptors.response.use(
         : null;
 
       const { data } = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/auth/refresh`,
+        `${process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api"}/auth/refresh`,
         { refreshToken: storedRefreshToken },
         { withCredentials: true }
       );
@@ -179,7 +179,7 @@ export const notificationAPI = {
 export const uploadAPI = {
   image: async (file: File, folder?: string): Promise<{ success: boolean; data: { url: string; publicId?: string } }> => {
     const token = useAuthStore.getState().accessToken;
-    const BASE  = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/api$/, "") + "/api";
+    const BASE  = (process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api").replace(/\/api$/, "") + "/api";
     const fd    = new FormData();
     fd.append("image", file);
     if (folder) fd.append("folder", folder);
@@ -197,7 +197,7 @@ export const uploadAPI = {
   },
   images: async (files: File[]): Promise<{ data: { data: { urls: string[] } } }> => {
     const token = useAuthStore.getState().accessToken;
-    const BASE  = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/api$/, "") + "/api";
+    const BASE  = (process.env.NEXT_PUBLIC_API_URL || "https://dropos-v2.onrender.com/api").replace(/\/api$/, "") + "/api";
     const fd    = new FormData();
     files.forEach(f => fd.append("images", f));
     const res = await fetch(`${BASE}/upload/images`, {
