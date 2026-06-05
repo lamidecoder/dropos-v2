@@ -439,7 +439,7 @@ export const getChurnAnalysis = async (_req: AuthRequest, res: Response) => {
   ] = await Promise.all([
     prisma.user.count({ where:{ role:"STORE_OWNER", status:"SUSPENDED", updatedAt:{ gte:thirtyDaysAgo } } }),
     prisma.store.count({ where:{ status:"ACTIVE", orders:{ none:{ createdAt:{ gte:thirtyDaysAgo } } } } }),
-    prisma.user.count({ where:{ role:"STORE_OWNER", plan:"FREE", updatedAt:{ gte:thirtyDaysAgo } } }),
+    prisma.user.count({ where:{ role:"STORE_OWNER", plan:"FREE", updatedAt:{ gte:thirtyDaysAgo } } as any }),
     prisma.user.count({ where:{ role:"STORE_OWNER" } }),
   ]);
 
