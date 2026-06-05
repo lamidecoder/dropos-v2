@@ -249,6 +249,18 @@ app.use("/api/reports",        reportsRoutes);
 app.use("/api/virtual-account", virtualAccountRoutes);
 app.use("/api/whatsapp",       whatsappRoutes);
 app.use("/api/delivery",       deliveryRoutes);
+
+// ── New feature routes ─────────────────────────────────────────────────────────
+import adsRoutes    from "./routes/ads.routes";
+import domainRoutes from "./routes/domain.routes";
+import bizGenRoutes from "./routes/bizGen.routes";
+import bankRoutes   from "./routes/bank.routes";
+
+app.use("/api/ads",     adsRoutes);
+app.use("/api/domains", domainRoutes);
+app.use("/api/biz",     bizGenRoutes);
+app.use("/api/banks",   bankRoutes);
+
 app.use(notFound);
 app.use(errorHandler);
 
