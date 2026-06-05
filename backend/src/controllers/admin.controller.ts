@@ -279,7 +279,7 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
 
 // ── Platform Settings ─────────────────────────────────────────────────────────
 export const getSettings = async (_req: AuthRequest, res: Response) => {
-  const settings = await prisma.platformSettings.findUnique({ where: { id: "singleton" } });
+  const settings = await (prisma.platformSettings as any).findUnique({ where: { id: "singleton" } });
   return res.json({ success: true, data: settings });
 };
 
@@ -294,7 +294,7 @@ export const updateSettings = async (req: AuthRequest, res: Response) => {
   });
   const data = schema.parse(req.body);
 
-  const settings = await prisma.platformSettings.update({
+  const settings = await (prisma.platformSettings as any).update({
     where: { id: "singleton" },
     data,
   });
@@ -415,7 +415,7 @@ export const getPlatformCoupons = async (req: AuthRequest, res: Response) => {
   const { page=1, limit=20 } = req.query;
   const { take, skip } = paginate(Number(page), Number(limit));
   // Platform coupons are stored in settings
-  const setting = await prisma.platformSettings.findUnique({ where:{ key:"platform_coupons" } });
+  const setting = await (prisma.platformSettings as any).findUnique({ where:{ key:"platform_coupons" } });
   const coupons = setting ? JSON.parse(setting.value) : [];
   const paged   = coupons.slice(skip, skip+take);
   return res.json({ success:true, data:paged, pagination:{ total:coupons.length, page:Number(page), limit:take, pages:Math.ceil(coupons.length/take) } });
@@ -507,7 +507,7 @@ export const getAllStores = async (req: AuthRequest, res: Response) => {
   ];
   if (status) where.status = String(status);
   const [stores, total] = await Promise.all([
-    prisma.store.findMany({ where, take, skip, orderBy:{ createdAt:"desc" }, include:{ owner:{ select:{ id:true, name:true, email:true, plan:true } }, _count:{ select:{ products:true, orders:true } } } }),
+    (prisma.store as any).findMany({ where, take, skip, orderBy:{ createdAt:"desc" }, include:{ owner:{ select:{ id:true, name:true, email:true, plan:true } }, _count:{ select:{ products:true, orders:true } } } }),
     prisma.store.count({ where }),
   ]);
   return res.json({ success:true, data:stores, pagination:{ page:Number(page), limit:take, total, pages:Math.ceil(total/take) } });
@@ -563,7 +563,7 @@ export const broadcastMessage = async (req: AuthRequest, res: Response) => {
   if (targetPlan) (where as any).plan = String(targetPlan);
   const users = await prisma.user.findMany({ where, select:{ id:true } });
   await prisma.notification.createMany({
-    data: users.map((u:any) => ({ userId:u.id, title, body:message, type:type as any, channel:"IN_APP" })),
+    data: users.map((u:any) => ({ userId:u.id, title, message, body:message, type:type as any, channel:"IN_APP" })),
     skipDuplicates: true,
   });
   return res.json({ success:true, message:`Broadcast sent to ${users.length} users` });
@@ -575,7 +575,7 @@ export const changeUserPlan = async (req: AuthRequest, res: Response) => {
   const { plan, reason } = req.body;
   const valid = ["FREE","GROWTH","PRO","ENTERPRISE"];
   if (!valid.includes(plan)) return res.status(400).json({ success:false, error:"Invalid plan" });
-  await (prisma.user as any).update({ where:{ id:userId }, data:{ plan } });
+  await (prisma.user as any).update({ where:{ id:userId }, data:{ plan } as any });
   await prisma.auditLog.create({
     data:{ userId:(req as any).user.userId, action:"PLAN_CHANGE", resource:"user", resourceId:userId, details:{ plan, reason } } as any,
   });
@@ -584,7 +584,7 @@ export const changeUserPlan = async (req: AuthRequest, res: Response) => {
 
 // ── Feature Flags ──────────────────────────────────────────────────────────────
 export const getFeatureFlags = async (_req: AuthRequest, res: Response) => {
-  const settings = await prisma.platformSettings.findMany({ where:{ key:{ startsWith:"feature_" } } });
+  const settings = await (prisma.platformSettings as any).findMany({ where:{ key:{ startsWith:"feature_" } } });
   const flags: Record<string,boolean> = {};
   settings.forEach((s:any) => { flags[s.key.replace("feature_","")] = s.value === "true"; });
   return res.json({ success:true, data:flags });
@@ -592,7 +592,7 @@ export const getFeatureFlags = async (_req: AuthRequest, res: Response) => {
 
 export const updateFeatureFlag = async (req: AuthRequest, res: Response) => {
   const { flag, enabled } = req.body;
-  await prisma.platformSettings.upsert({
+  await (prisma.platformSettings as any).upsert({
     where:  { key:`feature_${flag}` },
     update: { value:String(enabled) },
     create: { key:`feature_${flag}`, value:String(enabled) },
@@ -605,20 +605,20 @@ export const updateFeatureFlag = async (req: AuthRequest, res: Response) => {
 export const createPlatformCoupon = async (req: AuthRequest, res: Response) => {
   const { code, type, value, maxUses, expiresAt, description, targetPlan } = req.body;
   if (!code || !type || !value) return res.status(400).json({ success:false, error:"code, type, value required" });
-  const setting = await prisma.platformSettings.findUnique({ where:{ key:"platform_coupons" } });
+  const setting = await (prisma.platformSettings as any).findUnique({ where:{ key:"platform_coupons" } });
   const coupons = setting ? JSON.parse(setting.value) : [];
   if (coupons.find((c:any) => c.code === code.toUpperCase())) return res.status(400).json({ success:false, error:"Code already exists" });
   const newCoupon = { id:`pc_${Date.now()}`, code:code.toUpperCase(), type, value:Number(value), maxUses:maxUses?Number(maxUses):null, expiresAt:expiresAt||null, description:description||"", targetPlan:targetPlan||null, usedCount:0, isActive:true, createdAt:new Date().toISOString() };
   coupons.unshift(newCoupon);
-  await prisma.platformSettings.upsert({ where:{ key:"platform_coupons" }, update:{ value:JSON.stringify(coupons) }, create:{ key:"platform_coupons", value:JSON.stringify(coupons) } });
+  await (prisma.platformSettings as any).upsert({ where:{ key:"platform_coupons" }, update:{ value:JSON.stringify(coupons) }, create:{ key:"platform_coupons", value:JSON.stringify(coupons) } });
   return res.json({ success:true, data:newCoupon });
 };
 
 export const deletePlatformCoupon = async (req: AuthRequest, res: Response) => {
   const { couponId } = req.params;
-  const setting = await prisma.platformSettings.findUnique({ where:{ key:"platform_coupons" } });
+  const setting = await (prisma.platformSettings as any).findUnique({ where:{ key:"platform_coupons" } });
   const coupons = setting ? JSON.parse(setting.value).filter((c:any) => c.id !== couponId) : [];
-  await prisma.platformSettings.update({ where:{ key:"platform_coupons" }, data:{ value:JSON.stringify(coupons) } });
+  await (prisma.platformSettings as any).update({ where:{ key:"platform_coupons" }, data:{ value:JSON.stringify(coupons) } });
   return res.json({ success:true });
 };
 
@@ -632,7 +632,7 @@ const EMAIL_DEFAULTS = {
 };
 
 export const getEmailTemplates = async (_req: AuthRequest, res: Response) => {
-  const setting = await prisma.platformSettings.findUnique({ where:{ key:"email_templates" } });
+  const setting = await (prisma.platformSettings as any).findUnique({ where:{ key:"email_templates" } });
   const custom   = setting ? JSON.parse(setting.value) : {};
   return res.json({ success:true, data:{ ...EMAIL_DEFAULTS, ...custom } });
 };
@@ -640,10 +640,10 @@ export const getEmailTemplates = async (_req: AuthRequest, res: Response) => {
 export const updateEmailTemplate = async (req: AuthRequest, res: Response) => {
   const { key, subject, body } = req.body;
   if (!key || !subject || !body) return res.status(400).json({ success:false, error:"key, subject, body required" });
-  const setting   = await prisma.platformSettings.findUnique({ where:{ key:"email_templates" } });
+  const setting   = await (prisma.platformSettings as any).findUnique({ where:{ key:"email_templates" } });
   const templates = setting ? JSON.parse(setting.value) : {};
   templates[key]  = { subject, body };
-  await prisma.platformSettings.upsert({ where:{ key:"email_templates" }, update:{ value:JSON.stringify(templates) }, create:{ key:"email_templates", value:JSON.stringify(templates) } });
+  await (prisma.platformSettings as any).upsert({ where:{ key:"email_templates" }, update:{ value:JSON.stringify(templates) }, create:{ key:"email_templates", value:JSON.stringify(templates) } });
   return res.json({ success:true });
 };
 
