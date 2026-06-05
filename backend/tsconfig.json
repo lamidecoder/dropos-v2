@@ -25,7 +25,8 @@
     "baseUrl": ".",
     "noImplicitAny": false,
     "noEmitOnError": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "ignoreDeprecations": "6.0"
   },
   "include": [
     "src/**/*",

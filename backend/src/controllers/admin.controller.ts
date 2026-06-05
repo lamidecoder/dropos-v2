@@ -404,8 +404,8 @@ export const impersonateUser = async (req: AuthRequest, res: Response) => {
   });
 
   const { signAccessToken, setRefreshCookie } = await import("../config/jwt");
-  const accessToken = signAccessToken({ userId:user.id, email:user.email, role:user.role as any, name:user.name||"" });
-  setRefreshCookie(res, signAccessToken({ userId:user.id, email:user.email, role:user.role as any, name:user.name||"" }));
+  const accessToken = signAccessToken({ userId:user.id, email:user.email, role:user.role as any });
+  setRefreshCookie(res, signAccessToken({ userId:user.id, email:user.email, role:user.role as any }));
 
   return res.json({ success:true, message:`Now logged in as ${user.email}`, data:{ accessToken, user:{ id:user.id, email:user.email, name:user.name, role:user.role, stores:user.stores } } });
 };
@@ -415,82 +415,16 @@ export const getPlatformCoupons = async (req: AuthRequest, res: Response) => {
   const { page=1, limit=20 } = req.query;
   const { take, skip } = paginate(Number(page), Number(limit));
   // Platform coupons are stored in settings
-  const setting = await prisma.platformSetting.findUnique({ where:{ key:"platform_coupons" } });
+  const setting = await prisma.platformSettings.findUnique({ where:{ key:"platform_coupons" } });
   const coupons = setting ? JSON.parse(setting.value) : [];
   const paged   = coupons.slice(skip, skip+take);
   return res.json({ success:true, data:paged, pagination:{ total:coupons.length, page:Number(page), limit:take, pages:Math.ceil(coupons.length/take) } });
 };
 
-export const createPlatformCoupon = async (req: AuthRequest, res: Response) => {
-  const { code, type, value, maxUses, expiresAt, description, targetPlan } = req.body;
-  if (!code || !type || !value) return res.status(400).json({ success:false, error:"code, type, value required" });
 
-  const setting = await prisma.platformSetting.findUnique({ where:{ key:"platform_coupons" } });
-  const coupons = setting ? JSON.parse(setting.value) : [];
-
-  const existing = coupons.find((c:any) => c.code === code.toUpperCase());
-  if (existing) return res.status(400).json({ success:false, error:"Code already exists" });
-
-  const newCoupon = {
-    id: `pc_${Date.now()}`, code:code.toUpperCase(), type, value:Number(value),
-    maxUses:maxUses?Number(maxUses):null, expiresAt:expiresAt||null,
-    description:description||"", targetPlan:targetPlan||null,
-    usedCount:0, isActive:true, createdAt:new Date().toISOString(),
-  };
-
-  coupons.unshift(newCoupon);
-  await prisma.platformSetting.upsert({
-    where:{ key:"platform_coupons" },
-    update:{ value:JSON.stringify(coupons) },
-    create:{ key:"platform_coupons", value:JSON.stringify(coupons) },
-  });
-
-  await prisma.auditLog.create({
-    data:{ userId:req.user!.userId, action:"CREATE", resource:"platform_coupon", resourceId:newCoupon.id, details:newCoupon } as any,
-  });
-
-  return res.json({ success:true, message:"Coupon created", data:newCoupon });
-};
-
-export const deletePlatformCoupon = async (req: AuthRequest, res: Response) => {
-  const { couponId } = req.params;
-  const setting = await prisma.platformSetting.findUnique({ where:{ key:"platform_coupons" } });
-  const coupons = setting ? JSON.parse(setting.value) : [];
-  const filtered = coupons.filter((c:any) => c.id !== couponId);
-  await prisma.platformSetting.update({ where:{ key:"platform_coupons" }, data:{ value:JSON.stringify(filtered) } });
-  return res.json({ success:true, message:"Coupon deleted" });
-};
 
 // ── Email Templates ────────────────────────────────────────────────────────────
-export const getEmailTemplates = async (_req: AuthRequest, res: Response) => {
-  const setting = await prisma.platformSetting.findUnique({ where:{ key:"email_templates" } });
-  const defaults = {
-    welcome:       { subject:"Welcome to DropOS! 🚀", body:"Hi {{name}},\n\nWelcome to DropOS! Your store {{storeName}} is ready.\n\nStart by adding your first product or ask KIRO to set up your store for you.\n\n{{ctaUrl}}\n\nThe DropOS Team" },
-    orderConfirm:  { subject:"Order #{{orderNumber}} confirmed ✅", body:"Hi {{customerName}},\n\nYour order from {{storeName}} has been confirmed.\n\nOrder: #{{orderNumber}}\nTotal: {{total}}\nEstimated delivery: {{deliveryDate}}\n\nTrack your order: {{trackingUrl}}" },
-    orderShipped:  { subject:"Your order is on its way! 📦", body:"Hi {{customerName}},\n\nGreat news! Your order #{{orderNumber}} from {{storeName}} has been shipped.\n\nTrack it here: {{trackingUrl}}" },
-    passwordReset: { subject:"Reset your DropOS password", body:"Hi {{name}},\n\nClick the link below to reset your password. This link expires in 1 hour.\n\n{{resetUrl}}\n\nIf you didn't request this, ignore this email." },
-    planUpgraded:  { subject:"You're now on {{plan}} 🎉", body:"Hi {{name}},\n\nYour DropOS plan has been upgraded to {{plan}}. KIRO is now fully unlocked.\n\nExplore your new features: {{dashboardUrl}}" },
-  };
-  const templates = setting ? { ...defaults, ...JSON.parse(setting.value) } : defaults;
-  return res.json({ success:true, data:templates });
-};
 
-export const updateEmailTemplate = async (req: AuthRequest, res: Response) => {
-  const { key, subject, body } = req.body;
-  if (!key || !subject || !body) return res.status(400).json({ success:false, error:"key, subject, body required" });
-
-  const setting = await prisma.platformSetting.findUnique({ where:{ key:"email_templates" } });
-  const templates = setting ? JSON.parse(setting.value) : {};
-  templates[key] = { subject, body };
-
-  await prisma.platformSetting.upsert({
-    where:{ key:"email_templates" },
-    update:{ value:JSON.stringify(templates) },
-    create:{ key:"email_templates", value:JSON.stringify(templates) },
-  });
-
-  return res.json({ success:true, message:"Template saved" });
-};
 
 // ── Churn Analysis ─────────────────────────────────────────────────────────────
 export const getChurnAnalysis = async (_req: AuthRequest, res: Response) => {
@@ -506,7 +440,7 @@ export const getChurnAnalysis = async (_req: AuthRequest, res: Response) => {
     prisma.user.count({ where:{ role:"STORE_OWNER", status:"SUSPENDED", updatedAt:{ gte:thirtyDaysAgo } } }),
     prisma.store.count({ where:{ status:"ACTIVE", orders:{ none:{ createdAt:{ gte:thirtyDaysAgo } } } } }),
     prisma.user.count({ where:{ role:"STORE_OWNER", plan:"FREE", updatedAt:{ gte:thirtyDaysAgo } } }),
-    prisma.user.aggregate({ where:{ role:"STORE_OWNER" }, _avg:{ id:true } }), // placeholder
+    prisma.user.count({ where:{ role:"STORE_OWNER" } }),
   ]);
 
   // Monthly churn for last 6 months
@@ -530,7 +464,7 @@ export const getGrowthMetrics = async (_req: AuthRequest, res: Response) => {
 
   const [totalUsers, paidUsers, monthRevenue, allRevenue] = await Promise.all([
     prisma.user.count({ where:{ role:"STORE_OWNER" } }),
-    prisma.user.count({ where:{ role:"STORE_OWNER", plan:{ not:"FREE" } } }),
+    prisma.user.count({ where:{ role:"STORE_OWNER" } as any }),
     prisma.payment.aggregate({ where:{ status:"SUCCESS", createdAt:{ gte:monthStart } }, _sum:{ platformFee:true } }),
     prisma.payment.aggregate({ where:{ status:"SUCCESS" }, _sum:{ platformFee:true } }),
   ]);
@@ -555,9 +489,162 @@ export const getGrowthMetrics = async (_req: AuthRequest, res: Response) => {
 // ── Paystack Subaccounts ───────────────────────────────────────────────────────
 export const getPaystackSubaccounts = async (_req: AuthRequest, res: Response) => {
   const stores = await prisma.store.findMany({
-    where:{ paystackSubaccountCode:{ not:null } },
-    select:{ id:true, name:true, slug:true, paystackSubaccountCode:true, owner:{ select:{ name:true, email:true } }, _count:{ select:{ orders:true } } },
+    where:{ paystackSubCode:{ not:null } },
+    select:{ id:true, name:true, slug:true, paystackSubCode:true, owner:{ select:{ name:true, email:true } }, _count:{ select:{ orders:true } } },
     take:50,
   });
   return res.json({ success:true, data:stores });
 };
+
+// ── Store Management ──────────────────────────────────────────────────────────
+export const getAllStores = async (req: AuthRequest, res: Response) => {
+  const { page=1, limit=20, search="", status="" } = req.query;
+  const { take, skip } = paginate(Number(page), Number(limit));
+  const where: any = {};
+  if (search) where.OR = [
+    { name:{ contains:String(search), mode:"insensitive" } },
+    { slug:{ contains:String(search), mode:"insensitive" } },
+  ];
+  if (status) where.status = String(status);
+  const [stores, total] = await Promise.all([
+    prisma.store.findMany({ where, take, skip, orderBy:{ createdAt:"desc" }, include:{ owner:{ select:{ id:true, name:true, email:true, plan:true } }, _count:{ select:{ products:true, orders:true } } } }),
+    prisma.store.count({ where }),
+  ]);
+  return res.json({ success:true, data:stores, pagination:{ page:Number(page), limit:take, total, pages:Math.ceil(total/take) } });
+};
+
+export const updateStore = async (req: AuthRequest, res: Response) => {
+  const { storeId } = req.params;
+  const { status, templateId, primaryColor } = req.body;
+  const data: any = {};
+  if (status)      data.status      = status;
+  if (templateId)  data.templateId  = templateId;
+  if (primaryColor)data.primaryColor = primaryColor;
+  const store = await prisma.store.update({ where:{ id:storeId }, data });
+  return res.json({ success:true, data:store });
+};
+
+// ── Platform Orders ────────────────────────────────────────────────────────────
+export const getAllOrders = async (req: AuthRequest, res: Response) => {
+  const { page=1, limit=25, search="", status="" } = req.query;
+  const { take, skip } = paginate(Number(page), Number(limit));
+  const where: any = {};
+  if (status) where.status = String(status);
+  if (search) where.OR = [
+    { orderNumber:{ contains:String(search) } },
+    { customerEmail:{ contains:String(search) } },
+  ];
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({ where, take, skip, orderBy:{ createdAt:"desc" }, include:{ store:{ select:{ name:true, slug:true } } } }),
+    prisma.order.count({ where }),
+  ]);
+  return res.json({ success:true, data:orders, pagination:{ page:Number(page), limit:take, total, pages:Math.ceil(total/take) } });
+};
+
+// ── Platform Payments ──────────────────────────────────────────────────────────
+export const getAllPayments = async (req: AuthRequest, res: Response) => {
+  const { page=1, limit=25, gateway="", status="" } = req.query;
+  const { take, skip } = paginate(Number(page), Number(limit));
+  const where: any = {};
+  if (gateway) where.gateway = String(gateway);
+  if (status)  where.status  = String(status);
+  const [payments, total] = await Promise.all([
+    prisma.payment.findMany({ where, take, skip, orderBy:{ createdAt:"desc" }, include:{ order:{ select:{ orderNumber:true, store:{ select:{ name:true } } } } } }),
+    prisma.payment.count({ where }),
+  ]);
+  return res.json({ success:true, data:payments, pagination:{ page:Number(page), limit:take, total, pages:Math.ceil(total/take) } });
+};
+
+// ── Broadcast ─────────────────────────────────────────────────────────────────
+export const broadcastMessage = async (req: AuthRequest, res: Response) => {
+  const { title, message, type="info", targetPlan="" } = req.body;
+  if (!title || !message) return res.status(400).json({ success:false, error:"title and message required" });
+  const where: any = { role:"STORE_OWNER" };
+  if (targetPlan) (where as any).plan = String(targetPlan);
+  const users = await prisma.user.findMany({ where, select:{ id:true } });
+  await prisma.notification.createMany({
+    data: users.map((u:any) => ({ userId:u.id, title, body:message, type:type as any, channel:"IN_APP" })),
+    skipDuplicates: true,
+  });
+  return res.json({ success:true, message:`Broadcast sent to ${users.length} users` });
+};
+
+// ── Manual Plan Change ─────────────────────────────────────────────────────────
+export const changeUserPlan = async (req: AuthRequest, res: Response) => {
+  const { userId } = req.params;
+  const { plan, reason } = req.body;
+  const valid = ["FREE","GROWTH","PRO","ENTERPRISE"];
+  if (!valid.includes(plan)) return res.status(400).json({ success:false, error:"Invalid plan" });
+  await (prisma.user as any).update({ where:{ id:userId }, data:{ plan } });
+  await prisma.auditLog.create({
+    data:{ userId:(req as any).user.userId, action:"PLAN_CHANGE", resource:"user", resourceId:userId, details:{ plan, reason } } as any,
+  });
+  return res.json({ success:true, message:`Plan changed to ${plan}` });
+};
+
+// ── Feature Flags ──────────────────────────────────────────────────────────────
+export const getFeatureFlags = async (_req: AuthRequest, res: Response) => {
+  const settings = await prisma.platformSettings.findMany({ where:{ key:{ startsWith:"feature_" } } });
+  const flags: Record<string,boolean> = {};
+  settings.forEach((s:any) => { flags[s.key.replace("feature_","")] = s.value === "true"; });
+  return res.json({ success:true, data:flags });
+};
+
+export const updateFeatureFlag = async (req: AuthRequest, res: Response) => {
+  const { flag, enabled } = req.body;
+  await prisma.platformSettings.upsert({
+    where:  { key:`feature_${flag}` },
+    update: { value:String(enabled) },
+    create: { key:`feature_${flag}`, value:String(enabled) },
+  });
+  return res.json({ success:true, message:"Feature flag updated" });
+};
+
+
+
+export const createPlatformCoupon = async (req: AuthRequest, res: Response) => {
+  const { code, type, value, maxUses, expiresAt, description, targetPlan } = req.body;
+  if (!code || !type || !value) return res.status(400).json({ success:false, error:"code, type, value required" });
+  const setting = await prisma.platformSettings.findUnique({ where:{ key:"platform_coupons" } });
+  const coupons = setting ? JSON.parse(setting.value) : [];
+  if (coupons.find((c:any) => c.code === code.toUpperCase())) return res.status(400).json({ success:false, error:"Code already exists" });
+  const newCoupon = { id:`pc_${Date.now()}`, code:code.toUpperCase(), type, value:Number(value), maxUses:maxUses?Number(maxUses):null, expiresAt:expiresAt||null, description:description||"", targetPlan:targetPlan||null, usedCount:0, isActive:true, createdAt:new Date().toISOString() };
+  coupons.unshift(newCoupon);
+  await prisma.platformSettings.upsert({ where:{ key:"platform_coupons" }, update:{ value:JSON.stringify(coupons) }, create:{ key:"platform_coupons", value:JSON.stringify(coupons) } });
+  return res.json({ success:true, data:newCoupon });
+};
+
+export const deletePlatformCoupon = async (req: AuthRequest, res: Response) => {
+  const { couponId } = req.params;
+  const setting = await prisma.platformSettings.findUnique({ where:{ key:"platform_coupons" } });
+  const coupons = setting ? JSON.parse(setting.value).filter((c:any) => c.id !== couponId) : [];
+  await prisma.platformSettings.update({ where:{ key:"platform_coupons" }, data:{ value:JSON.stringify(coupons) } });
+  return res.json({ success:true });
+};
+
+// ── Email Templates ────────────────────────────────────────────────────────────
+const EMAIL_DEFAULTS = {
+  welcome:       { subject:"Welcome to DropOS! 🚀", body:"Hi {{name}},\n\nWelcome to DropOS! Your store is ready.\n\nThe DropOS Team" },
+  orderConfirm:  { subject:"Order #{{orderNumber}} confirmed ✅", body:"Hi {{customerName}},\n\nYour order from {{storeName}} has been confirmed.\nTotal: {{total}}" },
+  orderShipped:  { subject:"Your order is on its way! 📦", body:"Hi {{customerName}},\n\nYour order #{{orderNumber}} has shipped!\nTrack: {{trackingUrl}}" },
+  passwordReset: { subject:"Reset your DropOS password", body:"Hi {{name}},\n\nReset your password: {{resetUrl}}\n\nExpires in 1 hour." },
+  planUpgraded:  { subject:"You're now on {{plan}} 🎉", body:"Hi {{name}},\n\nYour plan is now {{plan}}. KIRO is fully unlocked.\n\n{{dashboardUrl}}" },
+};
+
+export const getEmailTemplates = async (_req: AuthRequest, res: Response) => {
+  const setting = await prisma.platformSettings.findUnique({ where:{ key:"email_templates" } });
+  const custom   = setting ? JSON.parse(setting.value) : {};
+  return res.json({ success:true, data:{ ...EMAIL_DEFAULTS, ...custom } });
+};
+
+export const updateEmailTemplate = async (req: AuthRequest, res: Response) => {
+  const { key, subject, body } = req.body;
+  if (!key || !subject || !body) return res.status(400).json({ success:false, error:"key, subject, body required" });
+  const setting   = await prisma.platformSettings.findUnique({ where:{ key:"email_templates" } });
+  const templates = setting ? JSON.parse(setting.value) : {};
+  templates[key]  = { subject, body };
+  await prisma.platformSettings.upsert({ where:{ key:"email_templates" }, update:{ value:JSON.stringify(templates) }, create:{ key:"email_templates", value:JSON.stringify(templates) } });
+  return res.json({ success:true });
+};
+
+

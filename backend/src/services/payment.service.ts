@@ -94,7 +94,7 @@ export const verifyPaystack = async (reference: string) => {
   try {
     const { data } = await axios.get(
       `${PAYSTACK_BASE}/transaction/verify/${reference}`,
-      { headers: paystackHeaders }
+      { headers: getPaystackHeaders() }
     );
     return data.data;
   } catch (err: any) {
