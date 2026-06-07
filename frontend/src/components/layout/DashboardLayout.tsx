@@ -72,102 +72,47 @@ const V = {
 
 // ── COMPLETE NAV  -  all 83 pages covered ───────────────────────────────────────
 const OWNER_NAV = [
-  // Always-visible top links
+  // Core — always visible
   { id: "top", label: null, alwaysOpen: true, items: [
-    { href: "/kiro",            icon: Zap,            label: "KIRO",     ai: true, shortcut: "⌘K" },
-    { href: "/dashboard",       icon: LayoutDashboard, label: "Overview", exact: true },
+    { href: "/kiro",      icon: Zap,             label: "KIRO",     ai: true, shortcut: "⌘K" },
+    { href: "/dashboard", icon: LayoutDashboard,  label: "Overview", exact: true },
   ]},
 
-  // Store management
+  // Store
   { id: "store", label: "Store", items: [
-    { href: "/dashboard/stores",              icon: Store,       label: "My Stores"          },
-    { href: "/dashboard/products",            icon: Package,     label: "Products"           },
-    { href: "/dashboard/orders",              icon: ShoppingCart,label: "Orders"             },
-    { href: "/dashboard/customers",           icon: Users,       label: "Customers"          },
-    { href: "/dashboard/inventory",           icon: BarChart2,   label: "Inventory"          },
-    { href: "/dashboard/import",              icon: Download,    label: "Import Products"    },
-    { href: "/dashboard/bulk-import",         icon: Upload,      label: "Bulk Import"        },
-    { href: "/dashboard/suppliers",           icon: Truck,       label: "Suppliers"          },
-    { href: "/dashboard/supplier-assignment", icon: Users2,      label: "Supplier Assign"    },
-    { href: "/dashboard/customize",           icon: Paintbrush,  label: "Customize Store"    },
-    { href: "/dashboard/currency",            icon: Globe,       label: "Currency"           },
+    { href: "/dashboard/stores",    icon: Store,        label: "My Stores"        },
+    { href: "/dashboard/products",  icon: Package,      label: "Products"         },
+    { href: "/dashboard/orders",    icon: ShoppingCart, label: "Orders"           },
+    { href: "/dashboard/customers", icon: Users,        label: "Customers"        },
+    { href: "/dashboard/customize", icon: Paintbrush,   label: "Customize"        },
+    { href: "/dashboard/import",    icon: Download,     label: "Import Products"  },
   ]},
 
-  // Sales & fulfilment
-  { id: "sales", label: "Sales", items: [
-    { href: "/dashboard/shipping",      icon: Truck,       label: "Shipping"       },
-    { href: "/dashboard/fulfillment",   icon: Package,     label: "Fulfilment"     },
-    { href: "/dashboard/autopilot",     icon: Bot,         label: "Auto-Pilot"     },
-    { href: "/dashboard/discounts",     icon: Percent,     label: "Discounts"      },
-    { href: "/dashboard/refunds",       icon: RefreshCw,   label: "Refunds"        },
-    { href: "/dashboard/returns",       icon: RotateCcw,   label: "Returns"        },
-    { href: "/dashboard/subscriptions", icon: Repeat,      label: "Subscriptions"  },
+  // Sell
+  { id: "sell", label: "Sell", items: [
+    { href: "/dashboard/discounts",      icon: Percent,     label: "Discounts"        },
+    { href: "/dashboard/flash-sales",    icon: Flame,       label: "Flash Sales"      },
+    { href: "/dashboard/abandoned-carts",icon: ShoppingCart,label: "Abandoned Carts"  },
+    { href: "/dashboard/shipping",       icon: Truck,       label: "Shipping"         },
   ]},
 
-  // Marketing
-  { id: "marketing", label: "Marketing", items: [
-    { href: "/dashboard/coupons",         icon: Tag,           label: "Coupons"         },
-    { href: "/dashboard/flash-sales",     icon: Flame,         label: "Flash Sales"     },
-    { href: "/dashboard/gift-cards",      icon: Gift,          label: "Gift Cards"      },
-    { href: "/dashboard/bundle-builder",  icon: ShoppingBag,   label: "Bundle Builder"  },
-    { href: "/dashboard/loyalty",         icon: Star,          label: "Loyalty"         },
-    { href: "/dashboard/referral",        icon: Users,         label: "Referral"        },
-    { href: "/dashboard/affiliates",      icon: Users2,        label: "Affiliates"      },
-    { href: "/dashboard/ads",             icon: Zap,           label: "Ad Copy",          badge: "AI"  },
-    { href: "/dashboard/emails",          icon: Mail,          label: "Email Campaigns" },
-    { href: "/dashboard/broadcasts",      icon: Radio,         label: "Broadcasts"      },
-    { href: "/dashboard/comeback",        icon: RotateCcw,     label: "Win-Back"        },
-    { href: "/dashboard/abandoned-carts", icon: ShoppingCart,  label: "Abandoned Carts" },
-    { href: "/dashboard/reviews",         icon: Star,          label: "Reviews"         },
-    { href: "/dashboard/funnel",          icon: Target,        label: "Funnel"          },
-  ]},
-
-  // Studio  -  AI content creation
-  { id: "studio", label: "Studio", items: [
-        { href: "/dashboard/start-business",   icon: Rocket,     label: "Start a Business", badge: "NEW"  },
-    { href: "/dashboard/content-studio", icon: Video,      label: "Content Studio", badge: "AI" },
-    { href: "/dashboard/image-studio",   icon: Image,      label: "Image Studio",   badge: "AI" },
-    { href: "/dashboard/tiktok-scripts", icon: PlayCircle, label: "TikTok Scripts", badge: "AI" },
-  ]},
-
-  // Intelligence & analytics
-  { id: "intelligence", label: "Intelligence", items: [
-    { href: "/dashboard/analytics",      icon: Activity,     label: "Analytics"       },
-    { href: "/dashboard/winning-products", icon: TrendingUp, label: "Product Intel",  badge: "AI" },
-    { href: "/dashboard/top-products",   icon: TrendingUp,   label: "Daily Top 10"   },
-    { href: "/dashboard/competitor-spy", icon: Eye,          label: "Competitor Spy"  },
-    { href: "/dashboard/products-intel", icon: Cpu,          label: "Products Intel"  },
-    // Hidden: ad-spy
-    { href: "/dashboard/forecast",       icon: TrendingUp,   label: "Forecast"        },
-    { href: "/dashboard/profit-rules",   icon: Target,       label: "Profit Rules"    },
-    { href: "/dashboard/price-sync",     icon: RefreshCw,    label: "Price Sync"      },
-    { href: "/dashboard/grader",         icon: BarChart,     label: "Store Grader"    },
-    { href: "/dashboard/kai-power",      icon: Zap,          label: "KIRO Power",     badge: "AI" },
-    { href: "/dashboard/reports",        icon: FileText,     label: "Reports"         },
-  ]},
-
-  // Tools
-  { id: "tools", label: "Tools", items: [
-    { href: "/dashboard/chat",   icon: MessageSquare, label: "Live Chat"  },
-    // Hidden: replay
-    // Hidden: backup
-  ]},
-
-  // Developers
-  { id: "developers", label: "Developers", items: [
-    { href: "/dashboard/api-keys", icon: Key,     label: "API Keys"  },
-    { href: "/dashboard/webhooks", icon: Webhook, label: "Webhooks"  },
+  // Grow
+  { id: "grow", label: "Grow", items: [
+    { href: "/dashboard/ads",           icon: Zap,      label: "Ad Copy",         badge: "AI"  },
+    { href: "/dashboard/analytics",     icon: Activity, label: "Analytics"               },
+    { href: "/dashboard/start-business",icon: Rocket,   label: "Start a Business", badge: "AI" },
+    { href: "/dashboard/domains",       icon: Globe,    label: "Domains",         badge: "NEW" },
+    { href: "/dashboard/referral",      icon: Users,    label: "Referral"                },
   ]},
 
   // Account
   { id: "account", label: "Account", items: [
-    { href: "/dashboard/billing",       icon: CreditCard, label: "Billing"       },
-    { href: "/dashboard/domains",       icon: Globe, label: "Domains",        badge: "NEW" },
-    { href: "/dashboard/notifications", icon: Bell,       label: "Notifications" },
-    { href: "/dashboard/support",       icon: LifeBuoy,   label: "Support"       },
-    { href: "/dashboard/settings",      icon: Settings,   label: "Settings"      },
+    { href: "/dashboard/billing",   icon: CreditCard, label: "Billing"    },
+    { href: "/dashboard/settings",  icon: Settings,   label: "Settings"   },
+    { href: "/dashboard/support",   icon: LifeBuoy,   label: "Support"    },
   ]},
 ];
+
 
 const BOTTOM_NAV = [
   { href: "/dashboard",          icon: LayoutDashboard, label: "Home",     exact: true },
