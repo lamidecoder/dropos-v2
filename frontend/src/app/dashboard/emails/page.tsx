@@ -18,8 +18,9 @@ const CAMPAIGN_TYPES = [
   { id:"promo",      emoji:"🎉", label:"Promotional",        desc:"Announce sales, new arrivals, events" },
 ];
 
-function CampaignCard({ c, t }: any) {
+function CampaignCard({ c, t, onSend, sending }: any) {
   const statusColor = c.status === "active" ? V.green : c.status === "sent" ? V.v400 : V.amber;
+  const isSent = c.status === "sent";
   return (
     <div className="flex items-center gap-4 p-4 rounded-2xl" style={{ background:t.faint, border:`1px solid ${t.border}` }}>
       <div className="text-2xl flex-shrink-0">{c.emoji || "📧"}</div>
@@ -28,7 +29,7 @@ function CampaignCard({ c, t }: any) {
         <p className="text-xs mt-0.5" style={{ color:t.muted }}>
           {c.recipients?.toLocaleString() || 0} recipients
           {c.openRate ? ` · ${c.openRate}% open rate` : ""}
-          {c.sentAt ? ` · ${new Date(c.sentAt).toLocaleDateString()}` : ""}
+          {c.sentAt ? ` · Sent ${new Date(c.sentAt).toLocaleDateString()}` : ""}
         </p>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
@@ -37,6 +38,14 @@ function CampaignCard({ c, t }: any) {
             <p className="text-sm font-bold" style={{ color:t.text }}>{c.openRate}%</p>
             <p className="text-xs" style={{ color:t.muted }}>opened</p>
           </div>
+        )}
+        {!isSent && (
+          <button onClick={() => onSend(c.id)} disabled={sending}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+            style={{ background:`linear-gradient(135deg,${V.v500},#3D1C8A)`, border:"none", cursor:"pointer", opacity:sending?0.6:1 }}>
+            {sending ? <Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/> : <Send size={11}/>}
+            Send
+          </button>
         )}
         <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
           style={{ color:statusColor, background:`${statusColor}18` }}>
@@ -159,6 +168,19 @@ export default function EmailsPage() {
   };
   const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
   const [showNew, setShowNew] = useState(false);
+  const [sending, setSending] = useState<string|null>(null);
+
+  const sendMut = useMutation({
+    mutationFn: (campaignId: string) => api.post(`/emails/${storeId}/campaigns/${campaignId}/send`, { storeId }),
+    onSuccess: () => { toast.success("Campaign sent to all customers! 🎉"); qc.invalidateQueries({queryKey:["email-campaigns"]}); setSending(null); },
+    onError: (e: any) => { toast.error(e.response?.data?.message || "Send failed — check RESEND_API_KEY in Render"); setSending(null); },
+  });
+
+  const handleSend = (campaignId: string) => {
+    if (!confirm("Send this campaign to all your customers now?")) return;
+    setSending(campaignId);
+    sendMut.mutate(campaignId);
+  };
 
   const { data: campaigns } = useQuery({
     queryKey: ["email-campaigns", storeId],
@@ -241,7 +263,7 @@ export default function EmailsPage() {
         <div className="space-y-3">
           {campaigns.map((c: any, i: number) => (
             <motion.div key={c.id} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.04}}>
-              <CampaignCard c={c} t={t}/>
+              <CampaignCard c={c} t={t} onSend={handleSend} sending={sending === c.id}/>
             </motion.div>
           ))}
         </div>

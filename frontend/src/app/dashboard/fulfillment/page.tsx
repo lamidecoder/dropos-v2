@@ -33,6 +33,23 @@ export default function FulfillmentPage() {
     faint:  isDark ? "rgba(255,255,255,0.03)" : "rgba(107,53,232,0.03)",
   };
   const storeId = useAuthStore(s => s.user?.stores?.[0]?.id);
+  const [showCJModal, setShowCJModal] = useState(false);
+  const [cjEmail, setCJEmail] = useState("");
+  const [cjPassword, setCJPassword] = useState("");
+
+  const { data: integrations } = useQuery({
+    queryKey: ["fulfillment-integrations", storeId],
+    queryFn: () => api.get(`/fulfillment/status/${storeId}`).then(r => r.data.data?.integrations || {}).catch(() => ({})),
+    enabled: !!storeId,
+  });
+
+  const cjMut = useMutation({
+    mutationFn: () => api.post("/fulfillment/connect/cj", { storeId, email: cjEmail, password: cjPassword }),
+    onSuccess: () => { toast.success("CJDropshipping connected! Auto-fulfillment is now active."); setShowCJModal(false); qc.invalidateQueries({queryKey:["fulfillment-integrations"]}); },
+    onError: (e: any) => toast.error(e.response?.data?.message || "Connection failed — check your CJ credentials"),
+  });
+
+  const cjConnected = integrations?.cj?.connected;
   const qc = useQueryClient();
   const [tab, setTab] = useState("UNFULFILLED");
 
@@ -73,6 +90,31 @@ export default function FulfillmentPage() {
             KIRO auto-fulfils with connected suppliers
           </p>
         </div>
+        {/* CJDropshipping connect banner */}
+        {!cjConnected && (
+          <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px", borderRadius:12,
+            background:"rgba(6,182,212,0.05)", border:"1px solid rgba(6,182,212,0.2)" }}>
+            <span style={{ fontSize:18 }}>🔗</span>
+            <p style={{ fontSize:13, color:"#06B6D4", fontWeight:600, margin:0, flex:1 }}>
+              Connect CJDropshipping to enable one-click auto-fulfillment
+            </p>
+            <button onClick={() => setShowCJModal(true)}
+              style={{ padding:"7px 14px", borderRadius:9, border:"none", cursor:"pointer",
+                background:"linear-gradient(135deg,#06B6D4,#0891B2)", color:"#fff",
+                fontSize:12, fontWeight:700, fontFamily:"inherit", whiteSpace:"nowrap" }}>
+              Connect CJ
+            </button>
+          </div>
+        )}
+        {cjConnected && (
+          <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 14px", borderRadius:10,
+            background:"rgba(16,185,129,0.06)", border:"1px solid rgba(16,185,129,0.15)" }}>
+            <span style={{ fontSize:14 }}>✅</span>
+            <p style={{ fontSize:12, color:"#10B981", fontWeight:700, margin:0 }}>
+              CJDropshipping connected · Auto-fulfillment active
+            </p>
+          </div>
+        )}
         <div className="flex gap-2">
           <button onClick={() => refetch()}
             className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold"
@@ -167,6 +209,52 @@ export default function FulfillmentPage() {
               </motion.div>
             );
           })}
+        </div>
+      )}
+
+      {/* CJDropshipping Connect Modal */}
+      {showCJModal && (
+        <div style={{ position:"fixed", inset:0, zIndex:50, display:"flex", alignItems:"center", justifyContent:"center", padding:16, background:"rgba(0,0,0,0.6)", backdropFilter:"blur(8px)" }}
+          onClick={e => e.target === e.currentTarget && setShowCJModal(false)}>
+          <div style={{ width:"100%", maxWidth:420, borderRadius:20, overflow:"hidden", background: isDark?"#181230":"#fff", border:`1px solid ${t.border}` }}>
+            <div style={{ padding:"20px 24px", borderBottom:`1px solid ${t.border}`, display:"flex", alignItems:"center", gap:12 }}>
+              <div style={{ width:36, height:36, borderRadius:10, background:"rgba(6,182,212,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <Zap size={16} color="#06B6D4"/>
+              </div>
+              <div>
+                <p style={{ fontSize:15, fontWeight:800, color:t.text, margin:0 }}>Connect CJDropshipping</p>
+                <p style={{ fontSize:12, color:t.muted, margin:0 }}>Enter your CJ account credentials</p>
+              </div>
+            </div>
+            <div style={{ padding:24 }}>
+              <p style={{ fontSize:13, color:t.muted, margin:"0 0 16px", lineHeight:1.6 }}>
+                Once connected, KIRO will automatically place orders with CJDropshipping when customers buy from your store.
+              </p>
+              <div style={{ marginBottom:12 }}>
+                <label style={{ fontSize:12, fontWeight:700, color:t.muted, display:"block", marginBottom:5 }}>CJ Email</label>
+                <input value={cjEmail} onChange={e => setCJEmail(e.target.value)} type="email" placeholder="your@email.com"
+                  style={{ width:"100%", padding:"10px 14px", borderRadius:11, border:`1px solid ${t.border}`, background:isDark?"rgba(255,255,255,0.05)":"#f5f3ff", color:t.text, fontSize:13, outline:"none", fontFamily:"inherit" }}/>
+              </div>
+              <div style={{ marginBottom:20 }}>
+                <label style={{ fontSize:12, fontWeight:700, color:t.muted, display:"block", marginBottom:5 }}>CJ Password</label>
+                <input value={cjPassword} onChange={e => setCJPassword(e.target.value)} type="password" placeholder="••••••••"
+                  style={{ width:"100%", padding:"10px 14px", borderRadius:11, border:`1px solid ${t.border}`, background:isDark?"rgba(255,255,255,0.05)":"#f5f3ff", color:t.text, fontSize:13, outline:"none", fontFamily:"inherit" }}/>
+              </div>
+              <p style={{ fontSize:11, color:t.muted, margin:"0 0 16px" }}>
+                Don't have a CJ account? <a href="https://cjdropshipping.com" target="_blank" rel="noreferrer" style={{ color:"#06B6D4", textDecoration:"none", fontWeight:600 }}>Sign up free →</a>
+              </p>
+              <div style={{ display:"flex", gap:10 }}>
+                <button onClick={() => setShowCJModal(false)}
+                  style={{ flex:1, padding:"11px 0", borderRadius:12, border:`1px solid ${t.border}`, background:"transparent", color:t.muted, cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:600 }}>
+                  Cancel
+                </button>
+                <button onClick={() => cjMut.mutate()} disabled={!cjEmail || !cjPassword || cjMut.isPending}
+                  style={{ flex:2, padding:"11px 0", borderRadius:12, border:"none", cursor:"pointer", background:"linear-gradient(135deg,#06B6D4,#0891B2)", color:"#fff", fontSize:14, fontWeight:700, fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity:!cjEmail||!cjPassword?0.5:1 }}>
+                  {cjMut.isPending ? "Connecting…" : "Connect CJDropshipping"}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>

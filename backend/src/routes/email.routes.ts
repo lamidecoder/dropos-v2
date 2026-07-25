@@ -78,6 +78,60 @@ router.post("/low-stock-check/:storeId", authenticate, async (req: AuthRequest, 
   });
 });
 
+
+// POST /api/emails/:storeId/campaigns/:campaignId/send — send to all customers
+router.post("/:storeId/campaigns/:campaignId/send", authenticate, async (req: any, res) => {
+  const { storeId, campaignId } = req.params;
+  const { prisma } = require("../config/database");
+  const RESEND_KEY = process.env.RESEND_API_KEY;
+
+  // Get campaign
+  const campaign = await (prisma.emailCampaign as any).findFirst({
+    where: { id: campaignId, storeId },
+  }).catch(() => null);
+
+  if (!campaign) return res.status(404).json({ success: false, message: "Campaign not found" });
+  if (campaign.status === "sent") return res.status(400).json({ success: false, message: "Already sent" });
+
+  // Get store + customers
+  const [store, customers] = await Promise.all([
+    prisma.store.findUnique({ where:{ id: storeId }, select:{ name: true, slug: true } }),
+    prisma.customer.findMany({ where:{ storeId }, select:{ email: true, name: true }, take: 500 }),
+  ]);
+
+  if (!customers.length) return res.status(400).json({ success: false, message: "No customers to send to" });
+  if (!RESEND_KEY) return res.status(400).json({ success: false, message: "Email not configured. Add RESEND_API_KEY in Render environment settings." });
+
+  // Send to all customers via Resend
+  const FROM = `${store?.name || "DropOS Store"} <hello@droposhq.com>`;
+  let sent = 0, failed = 0;
+
+  for (const customer of customers) {
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: FROM,
+          to: customer.email,
+          subject: campaign.subject,
+          text: campaign.body,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">${(campaign.body || "").replace(/\n/g, "<br/>")}</div>`,
+        }),
+      });
+      sent++;
+    } catch { failed++; }
+  }
+
+  // Mark as sent
+  await (prisma.emailCampaign as any).update({
+    where: { id: campaignId },
+    data: { status: "sent", sentAt: new Date(), recipients: sent },
+  }).catch(() => {});
+
+  return res.json({ success: true, data: { sent, failed, total: customers.length } });
+});
+
 export default router;
 
 // POST /api/email/weekly-digest/:storeId — trigger weekly digest for a store

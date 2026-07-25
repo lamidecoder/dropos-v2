@@ -18,6 +18,8 @@ const V = { v500:"#6B35E8", v400:"#8B5CF6", v300:"#A78BFA", green:"#10B981", amb
 // ── Image Uploader (inline, fully styled) ─────────────────────────────────────
 function ImageUploader({ images, onChange, maxImages=8, t, isDark }: any) {
   const [uploading, setUploading] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkAction, setBulkAction] = useState("");
   const [drag, setDrag] = useState(false);
   const [err, setErr] = useState("");
   const ref = useRef<HTMLInputElement>(null);
