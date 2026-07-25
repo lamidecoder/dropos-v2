@@ -77,9 +77,11 @@ export default function CustomersPage() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("recent");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["customers", storeId],
     queryFn: () => api.get(`/customers/${storeId}`).then(r => r.data.data),
+    retry: 2,
+    enabled: !!storeId,
   });
 
   const customers: any[] = data || [];

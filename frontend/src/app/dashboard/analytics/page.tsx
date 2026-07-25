@@ -52,6 +52,16 @@ function fmt(n: number) {
 
 function StatCard({ label, value, delta, icon: Icon, color, t }: any) {
   const positive = delta >= 0;
+
+  if (isError) return (
+    <div style={{ maxWidth:480, margin:"80px auto", textAlign:"center", padding:"0 24px" }}>
+      <p style={{ fontSize:16, fontWeight:700, color:"#130D2E", margin:"0 0 12px" }}>Could not load analytics</p>
+      <p style={{ fontSize:13, color:"rgba(19,13,46,0.5)", margin:"0 0 20px" }}>Backend may be starting up. Wait 30s and try again.</p>
+      <button onClick={() => refetch()} style={{ padding:"10px 22px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#2D1B69,#6B35E8)", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Retry</button>
+    </div>
+  );
+
+
   return (
     <div className="p-5 rounded-2xl" style={{ background:t.card, border:`1px solid ${t.border}` }}>
       <div className="flex items-center justify-between mb-3">
@@ -79,7 +89,7 @@ export default function AnalyticsPage() {
 
   const days = period === "7 days" ? 7 : period === "30 days" ? 30 : period === "90 days" ? 90 : 365;
 
-  const { data: analytics } = useQuery({
+  const { data: analytics, isLoading, isError, refetch } = useQuery({
     queryKey: ["analytics", storeId, period],
     queryFn:  () => api.get(`/analytics/${storeId}?period=${days}`).then(r => r.data.data),
     enabled:  !!storeId,

@@ -33,6 +33,25 @@ router.post("/:id/flash-sales",       authenticate, createFlashSale);
 router.patch("/:id/flash-sales/:saleId", authenticate, updateFlashSale);
 router.delete("/:id/flash-sales/:saleId", authenticate, deleteFlashSale);
 
+
+// Custom domain management
+router.get("/:storeId/custom-domain", authenticate, async (req, res) => {
+  const { storeId } = req.params;
+  const store = await (req.app.get("prisma") || require("../config/database").prisma).store.findUnique({
+    where: { id: storeId },
+    select: { customDomain: true, domain: true },
+  });
+  return res.json({ success: true, data: { customDomain: store?.customDomain || null, subdomain: store?.domain || null } });
+});
+
+router.post("/:storeId/custom-domain", authenticate, async (req, res) => {
+  const { storeId } = req.params;
+  const { domain } = req.body;
+  const { prisma } = require("../config/database");
+  await prisma.store.update({ where: { id: storeId }, data: { customDomain: domain || null } });
+  return res.json({ success: true, message: domain ? "Custom domain saved" : "Custom domain removed" });
+});
+
 export default router;
 // Custom domain lookup — used by frontend for custom domain routing
 router.get("/domain/:hostname", async (req: any, res: any) => {

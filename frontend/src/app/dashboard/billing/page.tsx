@@ -10,6 +10,13 @@ import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
+const FALLBACK_PLANS = [
+  { id:"free",       name:"Starter",    price:0,     currency:"NGN", interval:"month", features:["1 store","50 products","Basic analytics","Community support"], trxFee:"2%" },
+  { id:"growth",     name:"Growth",     price:9500,  currency:"NGN", interval:"month", features:["3 stores","500 products","Advanced analytics","Email support","No transaction fee"], trxFee:"0%" },
+  { id:"pro",        name:"Pro",        price:24500, currency:"NGN", interval:"month", features:["Unlimited stores","Unlimited products","Priority support","Custom domain","API access"], trxFee:"0%" },
+];
+
+
 const V = { v500:"#6B35E8", v400:"#8B5CF6", green:"#10B981", amber:"#F59E0B" };
 
 const PLANS = [
@@ -63,7 +70,7 @@ export default function BillingPage() {
 
   const { data: plans } = useQuery({
     queryKey: ["billing-plans"],
-    queryFn:  () => api.get("/billing/plans").then(r => r.data.data),
+    queryFn:  () => api.get("/billing/plans").then(r => r.data.data).catch(() => FALLBACK_PLANS),
     staleTime: Infinity,
   });
 

@@ -22,7 +22,7 @@ export default function ReferralPage() {
   const user = useAuthStore(s => s.user);
   const [copied, setCopied] = useState(false);
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["referral-stats"],
     queryFn: () => api.get("/referral/stats").then(r => r.data.data),
   });
@@ -35,6 +35,22 @@ export default function ReferralPage() {
     toast.success("Link copied!");
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (isLoading) return (
+    <div style={{ maxWidth:600, margin:"0 auto", padding:24 }}>
+      {[80, 60, 80, 60].map((w, i) => (
+        <div key={i} style={{ height:80, borderRadius:16, background:"rgba(107,53,232,0.06)", marginBottom:12, animation:"pulse 1.5s ease-in-out infinite" }}/>
+      ))}
+      <style>{"@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}"}</style>
+    </div>
+  );
+
+  if (isError) return (
+    <div style={{ maxWidth:480, margin:"80px auto", textAlign:"center", padding:"0 24px" }}>
+      <p style={{ fontSize:15, fontWeight:700, color:"#130D2E", margin:"0 0 12px" }}>Could not load referral data</p>
+      <p style={{ fontSize:13, color:"rgba(19,13,46,0.5)" }}>Backend may be starting up.</p>
+    </div>
+  );
 
   const stats = [
     { label:"Total Referrals",  value: data?.referrals || 0,                color: V.v400,  icon: Users      },
