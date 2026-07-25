@@ -134,12 +134,35 @@ export const createOrder = async (req: Request, res: Response) => {
     include: { items: true },
   });
 
-  // Decrement inventory
+  // Decrement inventory + check for low stock
   for (const item of data.items) {
-    await prisma.product.update({
+    const updated = await prisma.product.update({
       where: { id: item.productId },
       data:  { inventory: { decrement: item.quantity } },
+      select:{ id:true, name:true, inventory:true, storeId:true },
     });
+    // Create low-stock notification if below threshold
+    const LOW_STOCK_THRESHOLD = 10;
+    if ((updated.inventory ?? 0) <= LOW_STOCK_THRESHOLD && (updated.inventory ?? 0) >= 0) {
+      const storeOwner = await prisma.store.findUnique({
+        where: { id: updated.storeId },
+        select: { userId: true, name: true },
+      }).catch(() => null);
+      if (storeOwner?.userId) {
+        await prisma.notification.create({
+          data: {
+            userId:  storeOwner.userId,
+            storeId: updated.storeId,
+            type:    "product",
+            title:   updated.inventory === 0 ? "Out of stock!" : "Low stock alert",
+            message: updated.inventory === 0
+              ? `"${updated.name}" is out of stock. Restock now to keep selling.`
+              : `"${updated.name}" has only ${updated.inventory} unit${updated.inventory === 1 ? "" : "s"} left.`,
+            read:    false,
+          },
+        }).catch(() => {}); // don't fail order if notification fails
+      }
+    }
   }
 
   // Send order confirmation to customer (email + optional SMS)

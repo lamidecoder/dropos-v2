@@ -92,6 +92,9 @@ export default function StorefrontPage() {
       onSort={setSort}
       isLoading={productsLoading}
       flashSales={flashSales || []}
+      collections={collections || []}
+      announcement={store?.announcement || ""}
+      announcementEnabled={!!store?.announcement}
     />
   );
 }

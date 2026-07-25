@@ -88,6 +88,19 @@ router.delete("/:storeId/collections/:id", authenticate, async (req, res) => {
   return res.json({ success: true });
 });
 
+
+// GET /api/stores/public/:slug/collections — storefront collections
+router.get("/public/:slug/collections", async (req, res) => {
+  const { prisma } = require("../config/database");
+  const store = await prisma.store.findUnique({ where:{ slug: req.params.slug }, select:{ id:true } });
+  if (!store) return res.json({ success:true, data:[] });
+  const collections = await (prisma.collection as any).findMany({
+    where: { storeId: store.id },
+    orderBy: { createdAt: "desc" },
+  }).catch(() => []);
+  return res.json({ success:true, data: collections });
+});
+
 export default router;
 // Custom domain lookup — used by frontend for custom domain routing
 router.get("/domain/:hostname", async (req: any, res: any) => {

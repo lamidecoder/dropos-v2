@@ -306,6 +306,7 @@ export default function SettingsPage() {
                 <p className="text-xs mb-4" style={{ color: t.muted }}>Choose what you want to be notified about</p>
                 {[
                   { key: "orders",    label: "New Orders",          desc: "Get notified when a customer places an order" },
+                  { key: "lowStock",  label: "Low Stock Alerts",    desc: "Get notified when a product has ≤10 units left" },
                   { key: "kiro",      label: "KIRO Alerts",         desc: "Morning briefs, opportunities, and urgent alerts" },
                   { key: "security",  label: "Security Alerts",     desc: "Login attempts and account security" },
                   { key: "marketing", label: "Marketing Tips",      desc: "Product ideas and growth suggestions" },

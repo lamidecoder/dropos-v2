@@ -3765,8 +3765,28 @@ const REGISTRY: Record<string, (props: TemplateProps) => JSX.Element> = {
 
 };
 
+
+// Announcement bar shown above every template
+const AnnouncementBar = ({ text, brand }: { text: string; brand: string }) => (
+  <div style={{
+    width:"100%", padding:"8px 16px", background:brand, color:"#fff",
+    textAlign:"center", fontSize:13, fontWeight:600,
+    position:"sticky", top:0, zIndex:200,
+  }}>
+    {text}
+  </div>
+);
+
 export function TemplateRenderer(props: TemplateProps) {
   const templateId = props.store?.templateId || props.store?.theme || "aurora";
   const Component  = REGISTRY[templateId] || AuroraTemplate;
-  return <Component {...props} />;
+  const brand = props.store?.primaryColor || "#6B35E8";
+  return (
+    <>
+      {props.announcementEnabled && props.announcement && (
+        <AnnouncementBar text={props.announcement} brand={brand}/>
+      )}
+      <Component {...props} />
+    </>
+  );
 }
