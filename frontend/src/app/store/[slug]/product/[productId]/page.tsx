@@ -38,6 +38,108 @@ const TEMPLATE_STYLES: Record<string, {
 
 const DEFAULT_STYLE = { bg:"#FAFAFA", text:"#111", muted:"rgba(17,17,17,0.5)", border:"rgba(0,0,0,0.08)", card:"#fff", btnBg:"linear-gradient(135deg,#6B35E8,#4C1D95)", btnText:"#fff", font:"'Inter',sans-serif", dark:false };
 
+// ── Real reviews section ──────────────────────────────────────────────────────
+function ReviewsSection({ slug, productId, brand, s }: any) {
+  const [rating, setRating]   = useState(5);
+  const [hover, setHover]     = useState(0);
+  const [name, setName]       = useState("");
+  const [body, setBody]       = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted]   = useState(false);
+
+  const { data: reviews = [], refetch } = useQuery({
+    queryKey: ["reviews", productId],
+    queryFn:  () => publicApi.get(`/reviews/${slug}/${productId}`).then(r => r.data.data || []),
+    enabled:  !!productId,
+  });
+
+  const avg = reviews.length
+    ? (reviews.reduce((a: number, r: any) => a + (r.rating || 5), 0) / reviews.length).toFixed(1)
+    : null;
+
+  const submit = async () => {
+    if (!name.trim() || !body.trim()) { alert("Please enter your name and review"); return; }
+    setSubmitting(true);
+    try {
+      await publicApi.post(`/reviews/${slug}/${productId}`, { customerName:name, body, rating });
+      setSubmitted(true);
+      setBody(""); setName(""); setRating(5);
+      refetch();
+    } catch { alert("Failed to submit review. Please try again."); }
+    setSubmitting(false);
+  };
+
+  return (
+    <div>
+      {/* Summary */}
+      {avg && (
+        <div style={{ textAlign:"center", padding:"16px 0 24px", borderBottom:`1px solid ${s.border}` }}>
+          <div style={{ fontSize:48, fontWeight:900, color:brand, letterSpacing:"-0.04em" }}>{avg}</div>
+          <div style={{ display:"flex", gap:3, justifyContent:"center", margin:"8px 0" }}>
+            {[1,2,3,4,5].map(i=><Star key={i} size={18} fill={i<=Math.round(Number(avg))?brand:"none"} color={brand}/>)}
+          </div>
+          <p style={{ fontSize:13, color:s.muted }}>Based on {reviews.length} review{reviews.length!==1?"s":""}</p>
+        </div>
+      )}
+
+      {/* Review list */}
+      {reviews.length > 0 && (
+        <div style={{ marginBottom:24 }}>
+          {reviews.slice(0,5).map((r: any, i: number) => (
+            <div key={r.id||i} style={{ padding:"16px 0", borderBottom:`1px solid ${s.border}` }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                <div style={{ display:"flex", gap:2 }}>
+                  {[1,2,3,4,5].map(i=><Star key={i} size={12} fill={i<=(r.rating||5)?brand:"none"} color={brand}/>)}
+                </div>
+                <span style={{ fontSize:12, fontWeight:600, color:s.text }}>{r.customerName||"Verified buyer"}</span>
+                <span style={{ fontSize:11, color:s.muted, marginLeft:"auto" }}>
+                  {new Date(r.createdAt).toLocaleDateString("en-NG",{month:"short",day:"numeric",year:"numeric"})}
+                </span>
+              </div>
+              <p style={{ fontSize:13, color:s.muted, margin:0, lineHeight:1.6 }}>{r.body||r.content||r.comment||""}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Submit review */}
+      {submitted ? (
+        <div style={{ padding:20, borderRadius:14, background:`${brand}10`, border:`1px solid ${brand}25`, textAlign:"center" }}>
+          <p style={{ fontSize:14, fontWeight:700, color:brand, margin:"0 0 4px" }}>✅ Review submitted!</p>
+          <p style={{ fontSize:12, color:s.muted, margin:0 }}>Thank you. Your review will appear after approval.</p>
+        </div>
+      ) : (
+        <div style={{ padding:20, borderRadius:14, background:s.card, border:`1px solid ${s.border}` }}>
+          <p style={{ fontSize:14, fontWeight:700, color:s.text, margin:"0 0 16px" }}>Write a review</p>
+          {/* Star rating picker */}
+          <div style={{ display:"flex", gap:4, marginBottom:14 }}>
+            {[1,2,3,4,5].map(i => (
+              <button key={i} onClick={()=>setRating(i)}
+                onMouseEnter={()=>setHover(i)} onMouseLeave={()=>setHover(0)}
+                style={{ background:"none", border:"none", cursor:"pointer", padding:2 }}>
+                <Star size={22} fill={(hover||rating)>=i?brand:"none"} color={brand}/>
+              </button>
+            ))}
+            <span style={{ fontSize:12, color:s.muted, alignSelf:"center", marginLeft:4 }}>
+              {["","Terrible","Poor","OK","Good","Excellent"][rating]}
+            </span>
+          </div>
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name"
+            style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${s.border}`, background:"transparent", color:s.text, fontSize:13, outline:"none", marginBottom:10, fontFamily:"inherit" }}/>
+          <textarea value={body} onChange={e=>setBody(e.target.value)} rows={3}
+            placeholder="What did you think of this product?"
+            style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${s.border}`, background:"transparent", color:s.text, fontSize:13, outline:"none", resize:"none", fontFamily:"inherit", marginBottom:12 }}/>
+          <button onClick={submit} disabled={submitting}
+            style={{ width:"100%", padding:"12px 0", borderRadius:10, border:"none", cursor:"pointer", background:brand, color:"#fff", fontSize:14, fontWeight:700, fontFamily:"inherit", opacity:submitting?0.6:1 }}>
+            {submitting ? "Submitting…" : "Submit review"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 export default function ProductPage() {
   const { slug, productId } = useParams<{ slug: string; productId: string }>();
   const router = useRouter();
@@ -293,13 +395,7 @@ export default function ProductPage() {
             </div>
           )}
           {tab==="reviews"&&(
-            <div style={{ textAlign:"center", padding:"24px 0" }}>
-              <div style={{ fontSize:48, fontWeight:900, color:brand, letterSpacing:"-0.04em" }}>4.8</div>
-              <div style={{ display:"flex", gap:2, justifyContent:"center", margin:"8px 0" }}>
-                {[1,2,3,4,5].map(i=><Star key={i} size={16} fill={i<=5?brand:"none"} color={brand}/>)}
-              </div>
-              <p style={{ fontSize:13, color:s.muted }}>Based on 24 reviews</p>
-            </div>
+            <ReviewsSection slug={slug} productId={productId} brand={brand} s={s}/>
           )}
         </div>
       </div>

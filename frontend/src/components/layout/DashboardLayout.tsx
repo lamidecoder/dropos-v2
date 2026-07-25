@@ -287,6 +287,18 @@ function Sidebar({ t, pathname, plan, user, onNavClick, onLogout, theme }: any) 
 
 // ── MAIN LAYOUT ───────────────────────────────────────────────────────────────
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [notifCount, setNotifCount] = useState(0);
+  useEffect(() => {
+    const fetch_count = () => {
+      api.get("/notifications/unread-count")
+        .then(r => setNotifCount(r.data?.data?.count || 0))
+        .catch(() => {});
+    };
+    fetch_count();
+    const interval = setInterval(fetch_count, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const { user, logout } = useAuthStore();
   const pathname  = usePathname();
   const router    = useRouter();
@@ -449,7 +461,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {/* Notifications */}
               <Link href="/dashboard/notifications" style={{ textDecoration:"none" }}>
                 <button style={{ position:"relative", width:36, height:36, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", border:`1px solid ${t.border}`, cursor:"pointer", background:t.navHover }}>
-                  <Bell size={14} color={t.textMuted} />
+                  <div style={{ position:"relative", display:"inline-flex" }}>
+                    <Bell size={14} color={t.textMuted} />
+                    {notifCount > 0 && (
+                      <span style={{ position:"absolute", top:-4, right:-4, width:14, height:14, borderRadius:"50%", background:"#EF4444", display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, fontWeight:800, color:"#fff", lineHeight:1 }}>
+                        {notifCount > 9 ? "9+" : notifCount}
+                      </span>
+                    )}
+                  </div>
                   <span style={{ position:"absolute", top:8, right:8, width:6, height:6, borderRadius:"50%", background:V.v400, border:`1.5px solid ${t.bg}` }} />
                 </button>
               </Link>
@@ -615,3 +634,4 @@ function getPageTitle(pathname: string): string {
   };
   return MAP[pathname] || "Dashboard";
 }
+
