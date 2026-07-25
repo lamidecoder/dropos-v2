@@ -1714,3 +1714,16 @@ model KaiActionLog {
   @@index([storeId])
   @@map("kai_action_logs")
 }
+
+model Collection {
+  id          String   @id @default(cuid())
+  storeId     String
+  name        String
+  description String?
+  emoji       String?  @default("📦")
+  productIds  String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+}
+

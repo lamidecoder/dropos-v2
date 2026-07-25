@@ -1,77 +1,85 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { adminAPI } from "../../../lib/api";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { UserMinus, AlertTriangle, TrendingDown, RefreshCw } from "lucide-react";
-import { PageHeader, StatGrid, StatCard } from "../../../components/admin/AdminTable";
 import { motion } from "framer-motion";
-
-const V = { accent:"#6B35E8", green:"#10B981", amber:"#F59E0B", red:"#EF4444", cyan:"#06B6D4" };
-const t = { card:"rgba(255,255,255,0.03)", border:"rgba(255,255,255,0.07)", text:"rgba(255,255,255,0.9)", muted:"rgba(255,255,255,0.4)" };
+import { api } from "../../../lib/api";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingDown, Users, AlertTriangle, RefreshCw } from "lucide-react";
 
 export default function AdminChurnPage() {
-  const { data:raw, isLoading } = useQuery<any>({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["admin-churn"],
-    queryFn: () => adminAPI.get("/admin/churn").then((r:any) => r.data.data),
+    queryFn: () => api.get("/admin/churn").then(r => r.data.data),
+    refetchInterval: 60_000,
   });
 
-  const c = raw || {};
+  const stats = [
+    { label:"Churned (30d)",  value:data?.churned || 0,        color:"#EF4444", icon:TrendingDown },
+    { label:"At Risk",        value:data?.atRisk  || 0,        color:"#F59E0B", icon:AlertTriangle },
+    { label:"Churn Rate",     value:`${data?.churnRate || 0}%`,color:"#8B5CF6", icon:Users        },
+  ];
 
-  const actionItems = [
-    { icon:"📧", title:"Send win-back campaign", desc:`${c.atRisk||0} stores have had no orders in 14+ days. Broadcast a flash sale nudge.`, color:V.amber, urgent: (c.atRisk||0) > 0 },
-    { icon:"💰", title:"Offer downgrade incentive", desc:`${c.recentCancels||0} merchants switched to Free this month. Send a 30% discount offer to win them back.`, color:V.accent, urgent: (c.recentCancels||0) > 0 },
-    { icon:"📞", title:"Manual outreach", desc:`${c.churned||0} accounts suspended in last 30 days. Review and reach out to high-value ones.`, color:V.red, urgent: (c.churned||0) > 3 },
+  const suggestions = [
+    "Send win-back email to churned merchants with 2-month free Growth offer",
+    "Reach out personally to 'at risk' merchants who haven't logged in 14+ days",
+    "Add a cancellation flow that offers a discount before they leave",
+    "Survey churned merchants — ask why they left in 1 question",
   ];
 
   return (
-    <div>
-      <PageHeader title="Churn Analysis" sub="Merchant retention and at-risk account tracking"/>
-
-      <StatGrid cols={4}>
-        <StatCard label="Churned (30d)"     value={c.churned||0}       color={V.red}   icon={UserMinus} sub={-(c.churnRate||0)}/>
-        <StatCard label="At-risk stores"    value={c.atRisk||0}        color={V.amber} icon={AlertTriangle}/>
-        <StatCard label="Recent downgrades" value={c.recentCancels||0} color={V.accent} icon={TrendingDown}/>
-        <StatCard label="Churn rate"        value={`${c.churnRate||0}%`} color={V.red}  icon={RefreshCw}/>
-      </StatGrid>
-
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }} className="adm-2col">
-        {/* Monthly churn chart */}
-        <motion.div initial={{ opacity:0,y:12 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.15 }}
-          style={{ background:t.card, borderRadius:18, padding:24, border:`1px solid ${t.border}` }}>
-          <p style={{ fontSize:14, fontWeight:700, color:t.text, margin:"0 0 4px" }}>Monthly churn</p>
-          <p style={{ fontSize:12, color:t.muted, margin:"0 0 18px" }}>Suspended accounts per month</p>
-          <div style={{ height:200 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={c.monthlyChurn||[]} margin={{ top:0,right:0,left:-20,bottom:0 }}>
-                <XAxis dataKey="month" tick={{ fill:"rgba(255,255,255,0.3)",fontSize:11 }} axisLine={false} tickLine={false}/>
-                <YAxis tick={{ fill:"rgba(255,255,255,0.3)",fontSize:11 }} axisLine={false} tickLine={false} allowDecimals={false}/>
-                <Tooltip contentStyle={{ background:"#0d0a1a",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,fontSize:12 }}/>
-                <Bar dataKey="churned" fill={V.red} radius={[4,4,0,0]} name="Churned"/>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-
-        {/* Action items */}
-        <motion.div initial={{ opacity:0,y:12 }} animate={{ opacity:1,y:0 }} transition={{ delay:0.2 }}
-          style={{ background:t.card, borderRadius:18, padding:24, border:`1px solid ${t.border}` }}>
-          <p style={{ fontSize:14, fontWeight:700, color:t.text, margin:"0 0 18px" }}>Recommended actions</p>
-          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {actionItems.map((a, i) => (
-              <div key={i} style={{ padding:"14px 16px", borderRadius:12, background:a.urgent?`${a.color}08`:"rgba(255,255,255,0.02)", border:`1px solid ${a.urgent?`${a.color}20`:"rgba(255,255,255,0.05)"}` }}>
-                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:5 }}>
-                  <span style={{ fontSize:18 }}>{a.icon}</span>
-                  <p style={{ fontSize:13, fontWeight:700, color:a.urgent?t.text:"rgba(255,255,255,0.5)", margin:0 }}>{a.title}</p>
-                  {a.urgent && <span style={{ fontSize:9, fontWeight:800, padding:"2px 6px", borderRadius:99, background:`${a.color}20`, color:a.color, textTransform:"uppercase", letterSpacing:"0.05em", marginLeft:"auto" }}>Action needed</span>}
-                </div>
-                <p style={{ fontSize:12, color:t.muted, margin:0, lineHeight:1.5 }}>{a.desc}</p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+    <div className="p-6 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight mb-1">Churn Analysis</h1>
+          <p className="text-sm text-gray-500">Monitor merchant retention and at-risk accounts</p>
+        </div>
+        <button onClick={() => refetch()} className="flex items-center gap-2 px-3 py-2 rounded-xl border text-sm">
+          <RefreshCw size={13}/> Refresh
+        </button>
       </div>
 
-      <style>{`@media(max-width:768px){ .adm-2col{grid-template-columns:1fr!important;} }`}</style>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        {stats.map((s,i) => (
+          <motion.div key={s.label} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.06}}
+            className="p-5 rounded-2xl border bg-white dark:bg-white/5">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+              style={{ background:`${s.color}15` }}>
+              <s.icon size={16} style={{ color:s.color }}/>
+            </div>
+            <p className="text-2xl font-black mb-0.5" style={{ color:s.color }}>{isLoading?"—":s.value}</p>
+            <p className="text-xs text-gray-500">{s.label}</p>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Chart */}
+      {data?.monthlyChurn?.length > 0 && (
+        <div className="rounded-2xl border bg-white dark:bg-white/5 p-5 mb-6">
+          <p className="font-bold text-sm mb-4">Monthly Churn (last 6 months)</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={data.monthlyChurn}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)"/>
+              <XAxis dataKey="month" tick={{ fontSize:11 }} axisLine={false} tickLine={false}/>
+              <YAxis tick={{ fontSize:11 }} axisLine={false} tickLine={false}/>
+              <Tooltip contentStyle={{ borderRadius:10, border:"1px solid #e5e7eb", fontSize:12 }}/>
+              <Bar dataKey="churned" fill="#EF4444" radius={[6,6,0,0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Recommendations */}
+      <div className="rounded-2xl border bg-white dark:bg-white/5 p-5">
+        <p className="font-bold text-sm mb-4">💡 Recommended actions</p>
+        <div className="flex flex-col gap-3">
+          {suggestions.map((s,i) => (
+            <div key={i} className="flex gap-3 p-3 rounded-xl bg-purple-50 dark:bg-purple-900/10">
+              <span className="text-purple-600 font-bold text-sm flex-shrink-0">{i+1}.</span>
+              <p className="text-sm text-gray-700 dark:text-gray-300">{s}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -81,7 +81,8 @@ const OWNER_NAV = [
   // Store
   { id: "store", label: "Store", items: [
     { href: "/dashboard/stores",    icon: Store,        label: "My Stores"        },
-    { href: "/dashboard/products",  icon: Package,      label: "Products"         },
+    { href: "/dashboard/products",    icon: Package,      label: "Products"         },
+    { href: "/dashboard/collections", icon: Layers,      label: "Collections"      },
     { href: "/dashboard/orders",    icon: ShoppingCart, label: "Orders"           },
     { href: "/dashboard/customers", icon: Users,        label: "Customers"        },
     { href: "/dashboard/customize", icon: Paintbrush,   label: "Customize"        },
@@ -117,7 +118,7 @@ const OWNER_NAV = [
 
 const BOTTOM_NAV = [
   { href: "/dashboard",          icon: LayoutDashboard, label: "Home",     exact: true },
-  { href: "/dashboard/products", icon: Package,         label: "Products"             },
+  { href: "/dashboard/products",    icon: Package,         label: "Products"             },
   { href: "/kiro",               icon: Zap,             label: "KIRO",     ai: true   },
   { href: "/dashboard/orders",   icon: ShoppingCart,    label: "Orders"               },
   { href: "/dashboard/settings", icon: Settings,        label: "More"                 },

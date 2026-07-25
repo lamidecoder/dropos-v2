@@ -52,6 +52,42 @@ router.post("/:storeId/custom-domain", authenticate, async (req, res) => {
   return res.json({ success: true, message: domain ? "Custom domain saved" : "Custom domain removed" });
 });
 
+
+// ── Product Collections ─────────────────────────────────────────────────────
+router.get("/:storeId/collections", authenticate, async (req, res) => {
+  const { prisma } = require("../config/database");
+  const collections = await (prisma.collection as any).findMany({
+    where: { storeId: req.params.storeId },
+    orderBy: { createdAt: "desc" },
+  }).catch(() => []);
+  return res.json({ success: true, data: collections });
+});
+
+router.post("/:storeId/collections", authenticate, async (req, res) => {
+  const { prisma } = require("../config/database");
+  const { name, description, emoji, productIds } = req.body;
+  const col = await (prisma.collection as any).create({
+    data: { storeId: req.params.storeId, name, description, emoji, productIds: productIds || [] },
+  });
+  return res.json({ success: true, data: col });
+});
+
+router.put("/:storeId/collections/:id", authenticate, async (req, res) => {
+  const { prisma } = require("../config/database");
+  const { name, description, emoji, productIds } = req.body;
+  const col = await (prisma.collection as any).update({
+    where: { id: req.params.id },
+    data: { name, description, emoji, productIds: productIds || [] },
+  });
+  return res.json({ success: true, data: col });
+});
+
+router.delete("/:storeId/collections/:id", authenticate, async (req, res) => {
+  const { prisma } = require("../config/database");
+  await (prisma.collection as any).delete({ where: { id: req.params.id } }).catch(() => {});
+  return res.json({ success: true });
+});
+
 export default router;
 // Custom domain lookup — used by frontend for custom domain routing
 router.get("/domain/:hostname", async (req: any, res: any) => {
