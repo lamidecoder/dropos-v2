@@ -113,6 +113,13 @@ export default function DashboardOverview() {
     retry:    2,
   });
 
+  const { data: storeData } = useQuery({
+    queryKey:  ["dashboard-store", storeId],
+    queryFn:   () => api.get(`/stores/${storeId}`).then(r => r.data.data),
+    enabled:   !!storeId,
+  });
+  const store = storeData || user?.stores?.[0];
+
   const { data: productCount } = useQuery({
     queryKey: ["dashboard-products", storeId],
     queryFn:  () => api.get(`/products/${storeId}?limit=1`).then(r => r.data.total || r.data.data?.total || 0),
@@ -174,8 +181,7 @@ export default function DashboardOverview() {
     { label:"Products",      value: aLoading ? "—" : (productCount || 0),                 delta: undefined,                  color:V.amber, icon:Package,      delay:0.15 },
   ];
 
-  const store = user?.stores?.[0];
-  const storeUrl = store ? `https://${store.slug}.droposhq.com` : null;
+  const storeUrl = storeData ? `https://${(storeData as any).slug}.droposhq.com` : user?.stores?.[0]?.slug ? `https://${user.stores[0].slug}.droposhq.com` : null;
 
   return (
     <div style={{ maxWidth:960, margin:"0 auto" }}>
@@ -198,7 +204,16 @@ export default function DashboardOverview() {
       </div>
 
       {/* Onboarding */}
-      <OnboardingTips/>
+      <OnboardingTips
+        isDark={isDark}
+        storeSlug={store?.slug}
+        completedSteps={[
+          ...(storeId ? ["store"] : []),
+          ...((productCount || 0) > 0 ? ["product"] : []),
+          ...((analytics?.orders || 0) > 0 ? ["kiro"] : []),
+          ...((store as any)?.paystackConnected || (store as any)?.bankName ? ["payment"] : []),
+        ]}
+      />
 
       {/* Stats */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }} className="stats-grid">

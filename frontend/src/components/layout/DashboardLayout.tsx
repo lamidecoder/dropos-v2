@@ -107,6 +107,7 @@ const OWNER_NAV = [
 
   // Account
   { id: "account", label: "Account", items: [
+    { href: "/dashboard/go-live",    icon: Rocket,     label: "Go Live",   badge: "🚀" },
     { href: "/dashboard/billing",   icon: CreditCard, label: "Billing"    },
     { href: "/dashboard/settings",  icon: Settings,   label: "Settings"   },
     { href: "/dashboard/support",   icon: LifeBuoy,   label: "Support"    },
