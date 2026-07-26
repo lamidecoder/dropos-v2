@@ -516,12 +516,17 @@ function CartDrawer({ store, brand, currency }: any) {
 }
 
 // ── Shared: Trust Bar ─────────────────────────────────────────────────────────
-function TrustBar({ brand, dark }: { brand: string; dark?: boolean }) {
+function TrustBar({ brand, dark, store }: { brand: string; dark?: boolean; store?: any }) {
+  const reviewCount = store?.reviewCount || store?.totalReviews;
+  const currency    = store?.currency || "NGN";
+  const freeShipMin = store?.freeShippingMin;
+  const returnDays  = store?.returnPolicy || 7;
+
   const items = [
-    { icon: "🚚", label: "Free Delivery", sub: "Orders over ₦15k" },
-    { icon: "🔒", label: "Secure Checkout", sub: "Paystack protected" },
-    { icon: "↩️", label: "Easy Returns", sub: "7-day policy" },
-    { icon: "⭐", label: "5-Star Service", sub: "1,000+ reviews" },
+    { icon: "🚚", label: "Fast Delivery",    sub: freeShipMin ? `Free over ${currency === "NGN" ? "₦" : "$"}${Number(freeShipMin).toLocaleString()}` : "Nationwide delivery" },
+    { icon: "🔒", label: "Secure Checkout",  sub: "Paystack protected"   },
+    { icon: "↩️", label: "Easy Returns",     sub: `${returnDays}-day policy` },
+    { icon: "⭐", label: "Top Rated",         sub: reviewCount ? `${reviewCount}+ happy customers` : "Verified by customers" },
   ];
   const bg     = dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)";
   const border = dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
@@ -714,7 +719,7 @@ function AuroraTemplate({ store, products = [], search, onSearch, category, onCa
         </div>
       </div>
 
-      <TrustBar brand={brand} />
+      <TrustBar brand={brand} store={store}/>
 
       {/* Categories */}
       {categories.filter(c => c !== "All").length > 0 && (
@@ -788,7 +793,7 @@ function ObsidianTemplate({ store, products = [], search, onSearch, category, on
         </motion.div>
       </div>
 
-      <TrustBar brand={brand} dark />
+      <TrustBar brand={brand} store={store} dark />
 
       {/* Category pills */}
       {categories.filter(c => c !== "All").length > 0 && (
@@ -1001,7 +1006,7 @@ function VoltageTemplate({ store, products = [], search, onSearch, category, onC
         </Link>
       </div>
 
-      <TrustBar brand={brand} />
+      <TrustBar brand={brand} store={store}/>
 
       {/* Category strips */}
       {categories.filter(c => c !== "All").length > 0 && (
@@ -1725,7 +1730,7 @@ function GlowTemplate({ store, products = [], search, onSearch, category, onCate
         </div>
       </div>
 
-      <TrustBar brand={brand}/>
+      <TrustBar brand={brand} store={store}/>
       <Newsletter brand={brand}/>
       <StoreFooter store={store} brand={brand}/>
       <CartDrawer store={store} brand={brand} currency={currency}/>
@@ -1874,7 +1879,7 @@ function TerraTemplate({ store, products = [], search, onSearch, category, onCat
         </div>
       </div>
 
-      <TrustBar brand={brand}/>
+      <TrustBar brand={brand} store={store}/>
       <Newsletter brand={brand}/>
       <StoreFooter store={store} brand={brand}/>
       <CartDrawer store={store} brand={brand} currency={currency}/>
@@ -2172,7 +2177,7 @@ function ArtisanTemplate({ store, products = [], search, onSearch, category, onC
         </div>
       </div>
 
-      <TrustBar brand={brand}/>
+      <TrustBar brand={brand} store={store}/>
       <Newsletter brand={brand}/>
       <StoreFooter store={store} brand={brand}/>
       <CartDrawer store={store} brand={brand} currency={currency}/>
@@ -2448,7 +2453,7 @@ function SageTemplate({ store, products = [], search, onSearch, category, onCate
         </div>
       </div>
 
-      <TrustBar brand={brand}/>
+      <TrustBar brand={brand} store={store}/>
       <Newsletter brand={brand}/>
       <StoreFooter store={store} brand={brand}/>
       <CartDrawer store={store} brand={brand} currency={currency}/>
@@ -2972,7 +2977,7 @@ function DuskTemplate({ store, products = [], search, onSearch, category, onCate
         </div>
       </div>
 
-      <TrustBar brand={brand}/>
+      <TrustBar brand={brand} store={store}/>
       <Newsletter brand={brand}/>
       <StoreFooter store={store} brand={brand}/>
       <CartDrawer store={store} brand={brand} currency={currency}/>
@@ -3125,7 +3130,7 @@ function KidsTemplate({ store, products = [], search, onSearch, category, onCate
         </div>
       </div>
 
-      <TrustBar brand={brand}/>
+      <TrustBar brand={brand} store={store}/>
       <Newsletter brand={brand}/>
       <StoreFooter store={store} brand={brand}/>
       <CartDrawer store={store} brand={brand} currency={currency}/>
@@ -3342,7 +3347,7 @@ function PearlTemplate({ store, products=[], search, onSearch, category, onCateg
           })}
         </div>
       </div>
-      <TrustBar brand={brand}/><Newsletter brand={brand}/><StoreFooter store={store} brand={brand}/><CartDrawer store={store} brand={brand} currency={currency}/>
+      <TrustBar brand={brand} store={store}/><Newsletter brand={brand}/><StoreFooter store={store} brand={brand}/><CartDrawer store={store} brand={brand} currency={currency}/>
     </div>
   );
 }
@@ -3483,7 +3488,7 @@ function BoundTemplate({ store, products=[], search, onSearch, category, onCateg
           })}
         </div>
       </div>
-      <TrustBar brand={brand}/><Newsletter brand={brand}/><StoreFooter store={store} brand={brand}/><CartDrawer store={store} brand={brand} currency={currency}/>
+      <TrustBar brand={brand} store={store}/><Newsletter brand={brand}/><StoreFooter store={store} brand={brand}/><CartDrawer store={store} brand={brand} currency={currency}/>
     </div>
   );
 }

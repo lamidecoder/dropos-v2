@@ -175,6 +175,7 @@ app.get("/api/health", (_req: Request, res: Response) => {
 });
 
 // CORE BUSINESS ROUTES
+app.use("/api/auth", googleAuthRoutes);
 app.use("/api/auth",                 authRoutes);
 app.use("/api/stores",               storeRoutes);
 app.use("/api/products",             productRoutes);
@@ -255,6 +256,7 @@ import adsRoutes    from "./routes/ads.routes";
 import domainRoutes from "./routes/domain.routes";
 import bizGenRoutes from "./routes/bizGen.routes";
 import bankRoutes   from "./routes/bank.routes";
+import googleAuthRoutes from "./routes/google.auth.routes";
 
 app.use("/api/ads",     adsRoutes);
 app.use("/api/domains", domainRoutes);

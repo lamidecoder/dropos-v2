@@ -39,12 +39,8 @@ const COHORT_DATA = [
   { month:"Apr", day30:61, day60:40, day90:26 },
 ];
 
-const KIRO_INSIGHTS = [
-  { icon:"📈", text:"Revenue up 34% vs last period — your LED mask restock drove most of the growth" },
-  { icon:"⏰", text:"Peak buying hours are 7–9pm on Thursdays and Fridays — schedule posts then" },
-  { icon:"🛒", text:"Cart abandonment rate is 68% — consider enabling Pay on Delivery to recover these" },
-  { icon:"⚠️", text:"3 products haven't sold in 14 days — want me to run a flash sale or rewrite their descriptions?" },
-];
+// KIRO insights are generated dynamically from real store data via /kai/pulse
+// No hardcoded insights - they're fetched in the component
 
 function fmt(n: number) {
   return new Intl.NumberFormat("en", {style:"currency",currency:"NGN",maximumFractionDigits:0}).format(n||0);
@@ -132,7 +128,7 @@ export default function AnalyticsPage() {
           <p className="text-xs font-bold" style={{color:V.v300}}>KIRO Insights</p>
         </div>
         <div className="grid sm:grid-cols-2 gap-2">
-          {KIRO_INSIGHTS.map((insight,i) => (
+          {(analyticsInsights || []).map((insight:any,i:number) => (
             <div key={i} className="flex items-start gap-2.5">
               <span className="text-sm flex-shrink-0">{insight.icon}</span>
               <p className="text-xs leading-relaxed" style={{color:"rgba(255,255,255,0.55)"}}>{insight.text}</p>
