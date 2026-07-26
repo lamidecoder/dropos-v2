@@ -73,12 +73,24 @@ export default function NotificationsPage() {
       </motion.div>
 
       {isLoading ? (
-        <div style={{textAlign:"center",padding:"60px 0",color:t.muted}}>Loading...</div>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {Array.from({length:5}).map((_,i)=>(
+            <div key={i} style={{display:"flex",gap:12,padding:14,borderRadius:14,background:t.card,border:`1px solid ${t.border}`,animation:"pulse 1.5s ease-in-out infinite",animationDelay:`${i*0.08}s`}}>
+              <div style={{width:36,height:36,borderRadius:10,background:t.faint,flexShrink:0}}/>
+              <div style={{flex:1,display:"flex",flexDirection:"column",gap:6}}>
+                <div style={{height:12,borderRadius:5,background:t.faint,width:"60%"}}/>
+                <div style={{height:10,borderRadius:5,background:t.faint,width:"80%"}}/>
+                <div style={{height:9,borderRadius:5,background:t.faint,width:"30%"}}/>
+              </div>
+            </div>
+          ))}
+          <style>{"@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}"}</style>
+        </div>
       ) : notifs.length === 0 ? (
         <div style={{textAlign:"center",padding:"60px 20px",borderRadius:16,background:t.faint,border:`1px solid ${t.border}`}}>
           <Bell size={36} style={{color:t.muted,margin:"0 auto 12px"}}/>
-          <p style={{fontWeight:700,fontSize:15,color:t.text,margin:"0 0 6px"}}>No notifications</p>
-          <p style={{fontSize:13,color:t.muted,margin:0}}>Order alerts, KIRO insights, and store updates appear here.</p>
+          <p style={{fontWeight:700,fontSize:15,color:t.text,margin:"0 0 6px"}}>You're all caught up 🎉</p>
+          <p style={{fontSize:13,color:t.muted,margin:0}}>New orders, low stock alerts, and KIRO insights will appear here.</p>
         </div>
       ) : (
         <div style={{display:"flex",flexDirection:"column",gap:8}}>

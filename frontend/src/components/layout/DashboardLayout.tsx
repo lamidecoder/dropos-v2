@@ -17,6 +17,7 @@ import {
   Radio, Upload, Paintbrush, Percent, BarChart,
   Target, Clock, Layers, Shield, Copy, PlayCircle,
   Database, Users2, TrendingDown, Cpu, Rocket,
+  Share2, Building2,
 } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import CreditWallet from "../ui/CreditWallet";
@@ -108,7 +109,9 @@ const OWNER_NAV = [
 
   // Account
   { id: "account", label: "Account", items: [
+    { href: "/dashboard/share",     icon: Share2,     label: "Share Store",  },
     { href: "/dashboard/go-live",    icon: Rocket,     label: "Go Live",   badge: "🚀" },
+    { href: "/dashboard/virtual-account", icon: Building2, label: "Virtual Account" },
     { href: "/dashboard/billing",   icon: CreditCard, label: "Billing"    },
     { href: "/dashboard/settings",  icon: Settings,   label: "Settings"   },
     { href: "/dashboard/support",   icon: LifeBuoy,   label: "Support"    },

@@ -1,50 +1,48 @@
 "use client";
-import { motion } from "framer-motion";
 import { useTheme } from "../layout/DashboardLayout";
 
-export function Skeleton({ style, h, w, rounded = 12 }: { style?: React.CSSProperties; h?: number|string; w?: number|string; rounded?: number }) {
+export function Skeleton({ w = "100%", h = 16, r = 8, className = "" }: {
+  w?: string | number; h?: number; r?: number; className?: string;
+}) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const base  = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
-  const shine = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)";
   return (
-    <motion.div style={{ height:h||"100%", width:w||"100%", borderRadius:rounded, background:base, overflow:"hidden", position:"relative", ...style }}>
-      <motion.div style={{ position:"absolute", inset:0, background:`linear-gradient(90deg, transparent 0%, ${shine} 50%, transparent 100%)` }}
-        animate={{ x:["-100%","200%"] }} transition={{ duration:1.5, repeat:Infinity, ease:"linear" }} />
-    </motion.div>
+    <div style={{
+      width: w, height: h, borderRadius: r, flexShrink: 0,
+      background: isDark
+        ? "linear-gradient(90deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 100%)"
+        : "linear-gradient(90deg,rgba(19,13,46,0.04) 0%,rgba(19,13,46,0.08) 50%,rgba(19,13,46,0.04) 100%)",
+      backgroundSize: "200% 100%",
+      animation: "shimmer 1.6s infinite",
+    }} className={className}/>
   );
 }
 
-export function TableSkeleton({ rows = 5 }: { rows?: number }) {
-  const { theme } = useTheme(); const isDark = theme === "dark";
-  const t = isDark ? { card:"#181230", border:"rgba(255,255,255,0.06)", faint:"rgba(255,255,255,0.04)" } : { card:"#fff", border:"rgba(15,5,32,0.07)", faint:"rgba(15,5,32,0.03)" };
+export function SkeletonCard({ lines = 3, t }: { lines?: number; t?: any }) {
   return (
-    <div style={{ borderRadius:16, overflow:"hidden", background:t.card, border:`1px solid ${t.border}` }}>
+    <div style={{ padding: 16, borderRadius: 16, border: `1px solid ${t?.border || "rgba(107,53,232,0.08)"}`, background: t?.card || "#fff" }}>
+      <Skeleton h={12} w="60%" r={6}/>
+      {Array.from({ length: lines - 1 }).map((_, i) => (
+        <div key={i} style={{ marginTop: 8 }}>
+          <Skeleton h={10} w={`${90 - i * 15}%`} r={5}/>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
+  return (
+    <div>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", borderBottom:`1px solid ${t.border}` }}>
-          <Skeleton h={36} w={36} rounded={8} style={{ flexShrink:0 }} />
-          <div style={{ flex:1 }}>
-            <Skeleton h={12} w="50%" rounded={6} style={{ marginBottom:6 }} />
-            <Skeleton h={10} w="30%" rounded={6} />
-          </div>
-          <Skeleton h={24} w={60} rounded={6} style={{ flexShrink:0 }} />
+        <div key={i} style={{ display: "flex", gap: 16, padding: "12px 16px", alignItems: "center", borderBottom: "1px solid rgba(107,53,232,0.05)" }}>
+          {Array.from({ length: cols }).map((_, j) => (
+            <Skeleton key={j} h={12} w={j === 0 ? 40 : `${Math.random() * 40 + 40}%`} r={5}/>
+          ))}
         </div>
       ))}
     </div>
   );
 }
 
-export function CardSkeleton({ count = 4 }: { count?: number }) {
-  const cols = Math.min(count, 4);
-  return (
-    <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols},1fr)`, gap:12 }}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} style={{ padding:16, borderRadius:16, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)" }}>
-          <Skeleton h={32} w={32} rounded={10} style={{ marginBottom:12 }} />
-          <Skeleton h={24} w="60%" rounded={6} style={{ marginBottom:6 }} />
-          <Skeleton h={14} w="40%" rounded={6} />
-        </div>
-      ))}
-    </div>
-  );
-}
+export const skeletonCSS = `@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`;
